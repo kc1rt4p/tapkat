@@ -1,0 +1,8 @@
+{
+    "dart.flutterSdkPath": ".fvm/flutter_sdk",
+    "dart.flutterSdkPaths": ["/Users/kcirtap/fvm/versions"],
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": true,
+        "source.fixAll": true,
+    }
+}
