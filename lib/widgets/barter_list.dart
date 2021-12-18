@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:tapkat/screens/barter_list/barter_list_screen.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/style.dart';
-import 'package:tapkat/widgets/barter_list_item.dart';
 
 class BarterList extends StatefulWidget {
-  final List<BarterListItem> items;
+  final List<Widget> items;
   final String label;
   final Function()? onViewAllTapped;
   final bool removeMargin;

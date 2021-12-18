@@ -9,6 +9,7 @@ class BarterListItem extends StatefulWidget {
   final double? width;
   final double? height;
   final bool hideLikeBtn;
+  final Function()? onLikeTapped;
 
   const BarterListItem({
     Key? key,
@@ -20,6 +21,7 @@ class BarterListItem extends StatefulWidget {
     this.width = 160.0,
     this.height = 190.0,
     this.hideLikeBtn = false,
+    this.onLikeTapped,
   }) : super(key: key);
 
   @override
@@ -29,45 +31,45 @@ class BarterListItem extends StatefulWidget {
 class _BarterListItemState extends State<BarterListItem> {
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: widget.onTapped,
-      child: Stack(
-        children: [
-          Container(
-            height: widget.height,
-            width: widget.width,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20.0),
-              boxShadow: [
-                BoxShadow(
-                  offset: Offset(1, 1),
-                  color: Colors.grey,
-                ),
-              ],
-            ),
-            child: Column(
-              children: [
-                Expanded(
-                  flex: 2,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(20.0),
-                        topRight: Radius.circular(20.0),
-                      ),
-                      color: Colors.grey,
-                      image: DecorationImage(
-                        image: widget.imageUrl.isNotEmpty
-                            ? NetworkImage(widget.imageUrl)
-                            : AssetImage('assets/images/image_placeholder.jpg')
-                                as ImageProvider<Object>,
-                        fit: BoxFit.cover,
-                      ),
+    return Stack(
+      children: [
+        Container(
+          height: widget.height,
+          width: widget.width,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20.0),
+            boxShadow: [
+              BoxShadow(
+                offset: Offset(1, 1),
+                color: Colors.grey,
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              Expanded(
+                flex: 2,
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(20.0),
+                      topRight: Radius.circular(20.0),
+                    ),
+                    color: Colors.grey,
+                    image: DecorationImage(
+                      image: widget.imageUrl.isNotEmpty
+                          ? NetworkImage(widget.imageUrl)
+                          : AssetImage('assets/images/image_placeholder.jpg')
+                              as ImageProvider<Object>,
+                      fit: BoxFit.cover,
                     ),
                   ),
                 ),
-                Expanded(
+              ),
+              Expanded(
+                child: InkWell(
+                  onTap: widget.onTapped,
                   child: Container(
                     padding: EdgeInsets.all(10.0),
                     width: double.infinity,
@@ -84,24 +86,34 @@ class _BarterListItemState extends State<BarterListItem> {
                     ),
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-          Visibility(
-            visible: !widget.hideLikeBtn,
-            child: Positioned(
-              top: 10,
-              right: 10,
-              child: Icon(
-                widget.liked != null && widget.liked!
-                    ? Icons.favorite
-                    : Icons.favorite_outline,
+        ),
+        Visibility(
+          visible: !widget.hideLikeBtn,
+          child: Positioned(
+            top: 5,
+            right: 5,
+            child: Container(
+              padding: EdgeInsets.all(5.0),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
                 color: Colors.white,
+              ),
+              child: GestureDetector(
+                onTap: widget.onLikeTapped,
+                child: Icon(
+                  widget.liked != null && widget.liked!
+                      ? Icons.favorite
+                      : Icons.favorite_outline,
+                  color: Colors.red,
+                ),
               ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

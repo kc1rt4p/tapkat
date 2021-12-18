@@ -1,6 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_progress_hud/flutter_progress_hud.dart';
+import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
 import 'package:tapkat/screens/product/product_details_screen.dart';
 import 'package:tapkat/screens/root/home/bloc/home_bloc.dart';
 import 'package:tapkat/screens/search/search_result_screen.dart';
@@ -20,15 +22,19 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final _homeBloc = HomeBloc();
+  late AuthBloc _authBloc;
   List<dynamic> _recommendedList = [];
   List<dynamic> _trendingList = [];
   List<dynamic> _myProductList = [];
 
   final _keywordTextController = TextEditingController();
 
+  User? _user;
+
   @override
   void initState() {
-    _homeBloc.add(InitializeHomeScreen());
+    _authBloc = BlocProvider.of<AuthBloc>(context);
+    _authBloc.add(GetCurrentuser());
     super.initState();
   }
 
@@ -38,23 +44,39 @@ class _HomeScreenState extends State<HomeScreen> {
     return ProgressHUD(
       indicatorColor: kBackgroundColor,
       backgroundColor: Colors.white,
-      child: BlocListener(
-        bloc: _homeBloc,
-        listener: (context, state) {
-          if (state is HomeLoading) {
-            ProgressHUD.of(context)!.show();
-          } else {
-            ProgressHUD.of(context)!.dismiss();
-          }
+      child: MultiBlocListener(
+        listeners: [
+          BlocListener(
+            bloc: _homeBloc,
+            listener: (context, state) {
+              if (state is HomeLoading) {
+                ProgressHUD.of(context)!.show();
+              } else {
+                ProgressHUD.of(context)!.dismiss();
+              }
 
-          if (state is HomeScreenInitialized) {
-            setState(() {
-              _recommendedList = state.recommended;
-              _trendingList = state.trending;
-              _myProductList = state.yourItems;
-            });
-          }
-        },
+              if (state is HomeScreenInitialized) {
+                setState(() {
+                  _recommendedList = state.recommended;
+                  _trendingList = state.trending;
+                  _myProductList = state.yourItems;
+                });
+              }
+            },
+          ),
+          BlocListener(
+            bloc: _authBloc,
+            listener: (context, state) {
+              if (state is GetCurrentUsersuccess) {
+                _homeBloc.add(InitializeHomeScreen());
+                setState(() {
+                  _user = state.user;
+                });
+              }
+            },
+            child: Container(),
+          )
+        ],
         child: Column(
           children: [
             Container(
