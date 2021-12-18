@@ -24,3 +24,9 @@ class SaveOffer extends ProductEvent {
     required this.selectedMedia,
   });
 }
+
+class GetProductDetails extends ProductEvent {
+  final String productId;
+
+  GetProductDetails(this.productId);
+}

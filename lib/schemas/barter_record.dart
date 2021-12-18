@@ -101,13 +101,13 @@ abstract class BarterRecord
 }
 
 Map<String, dynamic> createBarterRecordData({
-  String? userid1,
-  String? userid2,
+  required String? userid1,
+  required String? userid2,
   bool? user1Accepted,
   bool? user2Accepted,
   String? u1P1Id,
-  String? u1P1Name,
-  double? u1P1Price,
+  required String? u1P1Name,
+  required double? u1P1Price,
   String? u2P1Id,
   String? u2P1Name,
   double? u2P1Price,
@@ -115,10 +115,10 @@ Map<String, dynamic> createBarterRecordData({
   DateTime? lastProposedDate,
   String? dealStatus,
   DateTime? dealDate,
-  String? u1P1Image,
+  required String? u1P1Image,
   String? u2P1Image,
-  String? barterid,
-  int? barterNo,
+  required String? barterid,
+  required int? barterNo,
 }) =>
     serializers.toFirestore(
         BarterRecord.serializer,

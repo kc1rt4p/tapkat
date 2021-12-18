@@ -88,7 +88,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       BarterList(
                         context: context,
                         items: _recommendedList.map((product) {
-                          print(product);
                           final productName =
                               getJsonField(product, r'''$.productname''')
                                   .toString();
@@ -141,16 +140,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               context,
                               MaterialPageRoute(
                                 builder: (context) => ProductDetailsScreen(
-                                  ownItem: false,
                                   productId: productId,
-                                  productName: productName,
-                                  owner: owner,
-                                  rating: rating,
-                                  price: price,
-                                  desc: desc,
-                                  address: address,
-                                  imgUrl: imgUrl,
-                                  likes: likes,
                                 ),
                               ),
                             ),
@@ -220,16 +210,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               context,
                               MaterialPageRoute(
                                 builder: (context) => ProductDetailsScreen(
-                                  ownItem: false,
                                   productId: productId,
-                                  productName: productName,
-                                  price: price,
-                                  desc: desc,
-                                  imgUrl: imgUrl,
-                                  owner: owner,
-                                  address: address,
-                                  rating: rating,
-                                  likes: likes,
                                 ),
                               ),
                             ),
@@ -294,16 +275,8 @@ class _HomeScreenState extends State<HomeScreen> {
                               context,
                               MaterialPageRoute(
                                 builder: (context) => ProductDetailsScreen(
-                                  ownItem: false,
+                                  ownItem: true,
                                   productId: productId,
-                                  productName: productName,
-                                  price: price,
-                                  desc: desc,
-                                  imgUrl: imgUrl,
-                                  owner: owner,
-                                  address: address,
-                                  rating: rating,
-                                  likes: likes,
                                 ),
                               ),
                             ),
