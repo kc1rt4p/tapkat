@@ -96,7 +96,7 @@ class _BarterListItemState extends State<BarterListItem> {
             top: 5,
             right: 5,
             child: Container(
-              padding: EdgeInsets.all(5.0),
+              padding: EdgeInsets.all(2.0),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: Colors.white,

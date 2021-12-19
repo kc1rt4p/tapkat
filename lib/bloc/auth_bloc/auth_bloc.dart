@@ -14,21 +14,22 @@ part 'auth_event.dart';
 part 'auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
-  final _authService = AuthService();
+  final authService = AuthService();
+  User? currentUser;
   AuthBloc() : super(AuthInitial()) {
     on<AuthEvent>((event, emit) async {
       emit(AuthLoading());
       print('new event: $event');
       if (event is InitializeAuth) {
-        emit(AuthInitialized(_authService.tapkatFirebaseUserStream()));
+        emit(AuthInitialized(authService.tapkatFirebaseUserStream()));
       }
 
       if (event is GetCurrentuser) {
-        emit(GetCurrentUsersuccess(_authService.currentUser!.user!));
+        emit(GetCurrentUsersuccess(authService.currentUser!.user!));
       }
 
       if (event is SignUp) {
-        final user = await _authService.createAccountWithEmail(
+        final user = await authService.createAccountWithEmail(
           event.context,
           event.email,
           event.password,
@@ -44,7 +45,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
           await UsersRecord.collection.doc(user.uid).update(usersCreateData);
 
-          _authService.currentUser = TapkatFirebaseUser(user);
+          authService.currentUser = TapkatFirebaseUser(user);
+          currentUser = user;
 
           emit(ShowSignUpPhoto());
         } else {
@@ -64,30 +66,30 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           );
 
           final userRef =
-              UsersRecord.collection.doc(_authService.currentUser!.user!.uid);
+              UsersRecord.collection.doc(authService.currentUser!.user!.uid);
 
           await userRef.update(usersUpdateData);
 
-          emit(AuthSignedIn(_authService.currentUser!.user!));
+          emit(AuthSignedIn(authService.currentUser!.user!));
         } else {
           emit(AuthError('error saving user photo'));
         }
       }
 
       if (event is SkipSignUpPhoto && event is SignUpPhotoSuccess) {
-        print('user: ${_authService.currentUser!.user!.uid}');
-        if (_authService.currentUser != null) {
-          emit(AuthSignedIn(_authService.currentUser!.user!));
+        print('user: ${authService.currentUser!.user!.uid}');
+        if (authService.currentUser != null) {
+          emit(AuthSignedIn(authService.currentUser!.user!));
         }
       }
 
       if (event is SignInWithEmail) {
-        print('signing in with email');
-        final user = await _authService.signInWithEmail(
+        final user = await authService.signInWithEmail(
             event.context, event.email, event.password);
-        print(user.toString());
         if (user != null) {
           print('success sign in');
+          currentUser = user;
+          authService.currentUser = TapkatFirebaseUser(user);
           emit(AuthSignedIn(user));
         } else {
           emit(AuthError(''));

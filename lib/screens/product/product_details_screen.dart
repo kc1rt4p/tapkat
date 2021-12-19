@@ -214,6 +214,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                           child: Center(
                                             child: Text(
                                               'View ${mappedProductDetails != null ? mappedProductDetails!['ownerName'] : ''}\'s Store',
+                                              overflow: TextOverflow.ellipsis,
                                               style: TextStyle(
                                                 color: Colors.white,
                                                 fontSize: 12.0,
