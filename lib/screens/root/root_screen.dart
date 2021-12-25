@@ -48,7 +48,7 @@ class _RootScreenState extends State<RootScreen> {
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(50.0),
               ),
-              padding: EdgeInsets.all(5.0),
+              padding: EdgeInsets.all(8.0),
               child: FloatingActionButton(
                 heroTag: 'addProductBtn',
                 backgroundColor: Color(0xFFBB3F03),

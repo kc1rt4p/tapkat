@@ -11,11 +11,13 @@ class ApiService {
   ApiService._();
   ApiService();
   Future<Response> get(
-      {required String url,
-      Map<String, dynamic>? header,
-      Map<String, dynamic>? body}) async {
-    return await _safeFetch(() => _dio.get(url,
-        queryParameters: body, options: Options(headers: header)));
+      {required String url, Map<String, dynamic>? body}) async {
+    return await _safeFetch(
+      () => _dio.get(
+        url,
+        queryParameters: body,
+      ),
+    );
   }
 
   Future<Response> delete({
@@ -26,17 +28,41 @@ class ApiService {
     return await _safeFetch(() => _dio.delete('url'));
   }
 
+  Future<Response> patch({
+    required String url,
+    Map<String, dynamic>? body,
+    Map<String, dynamic>? header,
+  }) async {
+    return await _safeFetch(
+      () => _dio.patch(
+        url,
+        data: body,
+        options: Options(
+          headers: header,
+        ),
+      ),
+    );
+  }
+
   Future<Response> post({
     required String url,
     Map<String, dynamic>? body,
     Map<String, dynamic>? header,
+    Map<String, dynamic>? params,
+    Function(int, int)? onSendProgress,
     FormData? formData,
   }) async {
     return await _safeFetch(
       () => _dio.post(
         url,
         data: body ?? formData,
-        options: Options(headers: header),
+        options: Options(
+          headers: header,
+          contentType:
+              formData != null ? 'multipart/form-data' : 'application/json',
+        ),
+        onSendProgress: onSendProgress,
+        queryParameters: params,
       ),
     );
   }

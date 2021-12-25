@@ -5,17 +5,18 @@ import 'package:dio/dio.dart';
 class ErrorExceptions {
   static Map<String, String> handleError(dynamic error) {
     String errorCode = "";
-    String errorDescription = "";
-    if (error is String) {
-      errorDescription = error;
-    } else if (error is TypeError) {
-      errorDescription = "Type error";
-    } else if (error is FormatException) {
-      errorDescription = "Parsing JSON exception.";
-    } else if (error is DioError) {
-      if (error is SocketException || error.error is SocketException) {
+    String errorDescription = _getInternalServerErrorMessage();
+
+    if (error is String) errorDescription = error;
+
+    if (error is TypeError) errorDescription = 'Type Error';
+
+    if (error is FormatException) errorDescription = 'Parsing JSON Exception';
+
+    if (error is DioError) {
+      if (error is SocketException || error.error is SocketException)
         errorDescription = _getTimeoutMessage();
-      } else {
+      else {
         DioError dioError = error;
         switch (dioError.type) {
           case DioErrorType.cancel:
@@ -25,7 +26,7 @@ class ErrorExceptions {
             errorDescription = _getTimeoutMessage();
             break;
           case DioErrorType.other:
-            errorDescription = _getTimeoutMessage();
+            errorDescription = dioError.message;
             break;
           case DioErrorType.receiveTimeout:
             errorDescription = _getTimeoutMessage();
@@ -40,17 +41,20 @@ class ErrorExceptions {
             break;
         }
       }
-    } else if (error is Map) {
+    }
+
+    if (error is Map) {
       return error as Map<String, String>;
-    } else if (error is Exception) {
+    }
+
+    if (error is Exception) {
       if (error.toString().contains("ipify")) {
         errorDescription = _getTimeoutMessage();
       } else {
         errorDescription = _getInternalServerErrorMessage();
       }
-    } else {
-      errorDescription = _getInternalServerErrorMessage();
     }
+
     return {errorCode: errorDescription};
   }
 

@@ -9,10 +9,12 @@ import 'package:tapkat/utilities/auth_util.dart';
 const allowedFormats = {'image/png', 'image/jpeg', 'video/mp4', 'image/gif'};
 
 class SelectedMedia {
-  const SelectedMedia(this.storagePath, this.bytes, [this.rawPath]);
+  const SelectedMedia(this.fileName, this.storagePath, this.bytes,
+      [this.rawPath]);
   final String storagePath;
   final Uint8List bytes;
   final String? rawPath;
+  final String fileName;
 }
 
 enum MediaSource {
@@ -134,7 +136,7 @@ Future<SelectedMedia?> selectMedia({
     return null;
   }
   final path = storagePath(currentUserUid, pickedMedia!.name, isVideo);
-  return SelectedMedia(path, mediaBytes, pickedMedia.path);
+  return SelectedMedia(pickedMedia.name, path, mediaBytes, pickedMedia.path);
 }
 
 bool validateFileFormat(String filePath, BuildContext context) {

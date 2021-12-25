@@ -40,6 +40,8 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
 
   StreamSubscription? _productMarkerStream;
 
+  int currentPage = 0;
+
   @override
   void initState() {
     _searchBloc.add(InitializeSearch(widget.keyword));
@@ -159,12 +161,60 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                     ),
                   ),
                 ),
+                Container(
+                  width: double.infinity,
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 20.0, vertical: 5.0),
+                  height: SizeConfig.screenHeight * .06,
+                  color: kBackgroundColor,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Expanded(
+                        child: InkWell(
+                          onTap: _onPrevTapped,
+                          child: Container(
+                            child: Center(
+                                child: Icon(
+                              Icons.arrow_left,
+                              size: 40.0,
+                              color:
+                                  currentPage == 0 ? Colors.grey : Colors.white,
+                            )),
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: InkWell(
+                          onTap: _onNextTapped,
+                          child: Container(
+                            child: Center(
+                                child: Icon(
+                              Icons.arrow_right,
+                              size: 40.0,
+                              color: Colors.white,
+                            )),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
         ),
       ),
     );
+  }
+
+  _onNextTapped() {
+    //
+  }
+
+  _onPrevTapped() {
+    //
   }
 
   _buildMapView() {

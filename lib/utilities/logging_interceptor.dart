@@ -261,8 +261,11 @@ class LoggingInterceptor extends Interceptor {
   void _printMapAsTable(Map map, {String? header}) {
     if (map.isEmpty) return;
     logPrint('╔ $header ');
-    map.forEach(
-        (dynamic key, dynamic value) => _printKV(key.toString(), value));
+    map.forEach((dynamic key, dynamic value) {
+      if (value != null) {
+        _printKV(key.toString(), value);
+      }
+    });
     _printLine('╚');
   }
 }

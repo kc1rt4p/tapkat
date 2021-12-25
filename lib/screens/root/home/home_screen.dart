@@ -3,11 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_progress_hud/flutter_progress_hud.dart';
 import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
+import 'package:tapkat/models/product.dart';
+import 'package:tapkat/models/request/add_product_request.dart';
+import 'package:tapkat/screens/barter_list/barter_list_screen.dart';
+import 'package:tapkat/screens/product/bloc/product_bloc.dart';
 import 'package:tapkat/screens/product/product_details_screen.dart';
 import 'package:tapkat/screens/root/home/bloc/home_bloc.dart';
 import 'package:tapkat/screens/search/search_result_screen.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
-import 'package:tapkat/utilities/helper.dart';
 import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/widgets/barter_list.dart';
 import 'package:tapkat/widgets/barter_list_item.dart';
@@ -22,10 +25,12 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final _homeBloc = HomeBloc();
+  final _productBloc = ProductBloc();
   late AuthBloc _authBloc;
-  List<dynamic> _recommendedList = [];
-  List<dynamic> _trendingList = [];
-  List<dynamic> _myProductList = [];
+  List<ProductModel> _recommendedList = [];
+  List<ProductModel> _trendingList = [];
+  List<ProductModel> _myProductList = [];
+  List<ProductModel> _userFavourites = [];
 
   final _keywordTextController = TextEditingController();
 
@@ -47,6 +52,20 @@ class _HomeScreenState extends State<HomeScreen> {
       child: MultiBlocListener(
         listeners: [
           BlocListener(
+            bloc: _productBloc,
+            listener: (context, state) {
+              if (state is ProductLoading) {
+                ProgressHUD.of(context)!.show();
+              } else {
+                ProgressHUD.of(context)!.dismiss();
+              }
+
+              if (state is AddLikeSuccess) {
+                _homeBloc.add(InitializeHomeScreen());
+              }
+            },
+          ),
+          BlocListener(
             bloc: _homeBloc,
             listener: (context, state) {
               if (state is HomeLoading) {
@@ -60,6 +79,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   _recommendedList = state.recommended;
                   _trendingList = state.trending;
                   _myProductList = state.yourItems;
+                  _userFavourites = state.userLikedItems;
                 });
               }
             },
@@ -110,195 +130,93 @@ class _HomeScreenState extends State<HomeScreen> {
                       BarterList(
                         context: context,
                         items: _recommendedList.map((product) {
-                          final productName =
-                              getJsonField(product, r'''$.productname''')
-                                  .toString();
-
-                          final price = getPriceWithCurrency(
-                                  getJsonField(product, r'''$.price''')
-                                      .toString())
-                              .maybeHandleOverflow(
-                            maxChars: 12,
-                            replacement: '…',
-                          );
-
-                          final productId =
-                              getJsonField(product, r'''$.productid''')
-                                  .toString();
-
-                          final imgUrl = getJsonField(
-                                  product, r'''$.media_primary.url''') ??
-                              'https://storage.googleapis.com/map-surf-assets/noimage.jpg';
-
-                          final desc =
-                              getJsonField(product, r'''$.productdesc''')
-                                  .toString()
-                                  .maybeHandleOverflow(
-                                    replacement: '…',
-                                  );
-                          final owner = getJsonField(product, r'''$.userid''')
-                              .toString()
-                              .maybeHandleOverflow(
-                                replacement: '…',
-                              );
-                          final rating = getJsonField(product, r'''$.rating''')
-                              .toString()
-                              .maybeHandleOverflow(
-                                replacement: '…',
-                              );
-                          final address =
-                              (product as Map<String, dynamic>)['address'];
-                          final likes = getJsonField(product, r'''$.likes''')
-                              .toString()
-                              .maybeHandleOverflow(
-                                replacement: '…',
-                              );
-
                           return BarterListItem(
-                            itemName: productName,
-                            itemPrice: price,
-                            imageUrl: imgUrl,
+                            liked: _userFavourites.any(
+                                (fav) => fav.productid == product.productid),
+                            itemName: product.productname ?? '',
+                            itemPrice: product.price != null
+                                ? product.price!.toStringAsFixed(2)
+                                : '0',
+                            imageUrl: product.mediaPrimary != null
+                                ? product.mediaPrimary!.url!
+                                : '',
                             onTapped: () => Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => ProductDetailsScreen(
-                                  productId: productId,
+                                  productId: product.productid ?? '',
                                 ),
                               ),
                             ),
+                            onLikeTapped: () => _onLikeTapped(product),
                           );
                         }).toList(),
                         label: 'Recommended For You',
+                        onViewAllTapped: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => BarterListScreen(
+                              listType: 'reco',
+                              showAdd: false,
+                            ),
+                          ),
+                        ),
                       ),
                       BarterList(
                         context: context,
                         items: _trendingList.map((product) {
-                          final productName =
-                              getJsonField(product, r'''$.productname''')
-                                  .toString();
-
-                          final price = getPriceWithCurrency(
-                                  getJsonField(product, r'''$.price''')
-                                      .toString())
-                              .maybeHandleOverflow(
-                            maxChars: 12,
-                            replacement: '…',
-                          );
-
-                          final productId =
-                              getJsonField(product, r'''$.productid''')
-                                  .toString();
-
-                          final imgUrl = getJsonField(
-                                  product, r'''$.media_primary.url''') ??
-                              'https://storage.googleapis.com/map-surf-assets/noimage.jpg';
-
-                          final desc =
-                              getJsonField(product, r'''$.productdesc''')
-                                  .toString()
-                                  .maybeHandleOverflow(
-                                    replacement: '…',
-                                  );
-
-                          final owner = getJsonField(product, r'''$.userid''')
-                              .toString()
-                              .maybeHandleOverflow(
-                                replacement: '…',
-                              );
-                          final rating = getJsonField(product, r'''$.rating''')
-                              .toString()
-                              .maybeHandleOverflow(
-                                replacement: '…',
-                              );
-                          final address =
-                              (product as Map<String, dynamic>)['address'];
-
-                          getJsonField(product, r'''$.address''')
-                              .toString()
-                              .maybeHandleOverflow(
-                                replacement: '…',
-                              );
-                          final likes = getJsonField(product, r'''$.likes''')
-                              .toString()
-                              .maybeHandleOverflow(
-                                replacement: '…',
-                              );
-
                           return BarterListItem(
-                            itemName: productName,
-                            itemPrice: price,
-                            imageUrl: imgUrl,
+                            itemName: product.productname ?? '',
+                            itemPrice: product.price != null
+                                ? product.price!.toStringAsFixed(2)
+                                : '0',
+                            imageUrl: product.mediaPrimary != null
+                                ? product.mediaPrimary!.url!
+                                : '',
                             onTapped: () => Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => ProductDetailsScreen(
-                                  productId: productId,
+                                  productId: product.productid ?? '',
                                 ),
+                              ),
+                            ),
+                            onLikeTapped: () => _productBloc.add(
+                              AddLike(
+                                ProductRequestModel.fromProduct(product),
                               ),
                             ),
                           );
                         }).toList(),
                         label: 'People are Looking For',
+                        onViewAllTapped: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => BarterListScreen(
+                              listType: 'demand',
+                              showAdd: false,
+                            ),
+                          ),
+                        ),
                       ),
                       BarterList(
                         context: context,
                         ownList: true,
                         items: _myProductList.map((product) {
-                          final productName =
-                              getJsonField(product, r'''$.productname''')
-                                  .toString();
-
-                          final price = getPriceWithCurrency(
-                                  getJsonField(product, r'''$.price''')
-                                      .toString())
-                              .maybeHandleOverflow(
-                            maxChars: 12,
-                            replacement: '…',
-                          );
-
-                          final desc =
-                              getJsonField(product, r'''$.productdesc''')
-                                  .toString()
-                                  .maybeHandleOverflow(
-                                    replacement: '…',
-                                  );
-
-                          final productId =
-                              getJsonField(product, r'''$.productid''')
-                                  .toString();
-
-                          final imgUrl = getJsonField(
-                                  product, r'''$.media_primary.url''') ??
-                              'https://storage.googleapis.com/map-surf-assets/noimage.jpg';
-
-                          final owner = getJsonField(product, r'''$.userid''')
-                              .toString()
-                              .maybeHandleOverflow(
-                                replacement: '…',
-                              );
-                          final rating = getJsonField(product, r'''$.rating''')
-                              .toString()
-                              .maybeHandleOverflow(
-                                replacement: '…',
-                              );
-                          final address =
-                              (product as Map<String, dynamic>)['address'];
-                          final likes = getJsonField(product, r'''$.likes''')
-                              .toString()
-                              .maybeHandleOverflow(
-                                replacement: '…',
-                              );
-
                           return BarterListItem(
-                            itemName: productName,
-                            itemPrice: price,
-                            imageUrl: imgUrl,
+                            hideLikeBtn: true,
+                            itemName: product.productname ?? '',
+                            itemPrice: product.price != null
+                                ? product.price!.toStringAsFixed(2)
+                                : '0',
+                            imageUrl: product.mediaPrimary != null
+                                ? product.mediaPrimary!.url!
+                                : '',
                             onTapped: () => Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => ProductDetailsScreen(
-                                  ownItem: true,
-                                  productId: productId,
+                                  productId: product.productid ?? '',
                                 ),
                               ),
                             ),
@@ -307,6 +225,15 @@ class _HomeScreenState extends State<HomeScreen> {
                         label: 'Your Items',
                         smallItems: true,
                         removeMargin: true,
+                        onViewAllTapped: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => BarterListScreen(
+                              listType: 'user',
+                              showAdd: true,
+                            ),
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -317,6 +244,18 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
+  }
+
+  _onLikeTapped(ProductModel product) {
+    final alreadyLiked =
+        _userFavourites.any((fav) => fav.productid == product.productid);
+
+    if (!alreadyLiked)
+      _productBloc.add(
+        AddLike(
+          ProductRequestModel.fromProduct(product),
+        ),
+      );
   }
 
   _onSearchSubmitted(String? val) {

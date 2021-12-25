@@ -8,3 +8,5 @@ abstract class HomeEvent extends Equatable {
 }
 
 class InitializeHomeScreen extends HomeEvent {}
+
+class GetUserFavorites extends HomeEvent {}

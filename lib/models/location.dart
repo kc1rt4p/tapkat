@@ -16,8 +16,8 @@ class LocationModel {
 
   Map<String, dynamic> toJson() {
     return {
-      'longitude': this.longitude,
-      'latitude': this.latitude,
+      '_longitude': this.longitude,
+      '_latitude': this.latitude,
     };
   }
 }

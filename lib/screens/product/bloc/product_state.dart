@@ -11,16 +11,34 @@ class ProductInitial extends ProductState {}
 
 class ProductLoading extends ProductState {}
 
-class SaveOfferSuccess extends ProductState {}
+class SaveProductSuccess extends ProductState {
+  final String productId;
+
+  SaveProductSuccess(this.productId);
+}
 
 class GetProductDetailsSuccess extends ProductState {
-  final Map<String, dynamic> mappedProductDetails;
+  final ProductModel product;
 
-  GetProductDetailsSuccess(this.mappedProductDetails);
+  GetProductDetailsSuccess(this.product);
 }
 
 class ProductError extends ProductState {
   final String message;
 
   ProductError(this.message);
+}
+
+class AddLikeSuccess extends ProductState {}
+
+class GetProductsSuccess extends ProductState {
+  final List<ProductModel> list;
+
+  GetProductsSuccess(this.list);
+}
+
+class GetFirstProductsSuccess extends ProductState {
+  final List<ProductModel> list;
+
+  GetFirstProductsSuccess(this.list);
 }

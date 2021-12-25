@@ -1,9 +1,9 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:tapkat/backend.dart';
-import 'package:tapkat/services/firebase.dart';
-import 'package:tapkat/services/http/api_calls.dart';
-import 'package:tapkat/utilities/helper.dart';
+import 'package:tapkat/models/product.dart';
+import 'package:tapkat/models/request/add_product_request.dart';
+import 'package:tapkat/repositories/product_repository.dart';
+import 'package:tapkat/services/auth_service.dart';
 import 'package:tapkat/utilities/upload_media.dart';
 
 part 'product_event.dart';
@@ -11,64 +11,72 @@ part 'product_state.dart';
 
 class ProductBloc extends Bloc<ProductEvent, ProductState> {
   ProductBloc() : super(ProductInitial()) {
+    final _productRepo = ProductRepository();
+    final _authService = AuthService();
+
     on<ProductEvent>((event, emit) async {
       emit(ProductLoading());
 
       try {
-        if (event is SaveOffer) {
-          final downloadUrl = await uploadData(
-              event.selectedMedia.storagePath, event.selectedMedia.bytes);
+        final _user = await _authService.getCurrentUser();
+        if (event is SaveProduct) {
+          final productId = await _productRepo.addProduct(event.productRequest);
 
-          if (downloadUrl == null) return;
+          if (productId == null) {
+            emit(ProductError('Unable to add product'));
+            return;
+          }
 
-          await addProductCall(
-            userid: event.userid,
-            productname: event.productname,
-            productdesc: event.productdesc,
-            price: event.price,
-            type: event.type,
-            mediaType: 'image',
-            imageUrl: downloadUrl,
+          final upload = await _productRepo.addProductImages(
+            userId: _user!.uid,
+            productId: productId,
+            images: event.media,
           );
 
-          emit(SaveOfferSuccess());
+          if (upload == null) {
+            emit(ProductError('Error while uploading product images'));
+            return;
+          }
+
+          emit(SaveProductSuccess(productId));
+        }
+
+        if (event is GetFirstProducts) {
+          final result =
+              await _productRepo.getFirstProducts(event.listType, event.userId);
+
+          emit(GetFirstProductsSuccess(result));
+        }
+
+        if (event is GetNextProducts) {
+          final result = await _productRepo.getNextProducts(
+              listType: event.listType,
+              lastProductId: event.lastProductId,
+              startAfterVal: event.startAfterVal);
+
+          emit(GetProductsSuccess(result));
+        }
+
+        if (event is AddLike) {
+          if (_user != null) {
+            final result = await _productRepo.addLike(
+              productRequest: event.product,
+              userId: _user.uid,
+            );
+
+            if (result) {
+              final addToFavResult = await _productRepo.addToWishList(
+                  event.product.productid!, _user.uid);
+              emit(AddLikeSuccess());
+            } else
+              emit(ProductError('unable to add like to product'));
+          }
         }
 
         if (event is GetProductDetails) {
-          final callResult =
-              await getProductDetailsCall(productid: event.productId);
-          print(callResult);
-          if (callResult != null) {
-            print('call result: $callResult');
-            final _mappedProductDetails = {
-              'productId':
-                  getJsonField(callResult, r'''$.productid''').toString(),
-              'productName':
-                  getJsonField(callResult, r'''$.productname''').toString(),
-              'imgUrl': getJsonField(callResult, r'''$.media_primary.url''') ??
-                  'https://storage.googleapis.com/map-surf-assets/noimage.jpg',
-              'price': getPriceWithCurrency(
-                  getJsonField(callResult, r'''$.price''').toString()),
-              'rating': getJsonField(callResult, r'''$.rating''').toString(),
-              'likes': getJsonField(callResult, r'''$.likes''').toString(),
-              'productDesc':
-                  getJsonField(callResult, r'''$.productdesc''').toString(),
-              'ownerName': getJsonField(callResult, r'''$.userid''').toString(),
-              'lastUpdated':
-                  getJsonField(callResult, r'''$.updated_time''').toString(),
-              'ownerId': getJsonField(callResult, r'''$.userid''').toString(),
-              'userLikedStream': queryUsersRecord(
-                queryBuilder: (usersRecord) => usersRecord.where(
-                  'uid',
-                  isEqualTo:
-                      getJsonField(callResult, r'''$.userid''').toString(),
-                ),
-                singleRecord: true,
-              ),
-              'address': (callResult as Map<String, dynamic>)['address'],
-            };
-            emit(GetProductDetailsSuccess(_mappedProductDetails));
-          }
+          final product = await _productRepo.getProduct(event.productId);
+
+          emit(GetProductDetailsSuccess(product));
         }
       } catch (e) {
         print('error on product: ${e.toString()}');

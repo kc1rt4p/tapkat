@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:tapkat/screens/barter_list/barter_list_screen.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/style.dart';
 
@@ -57,17 +56,7 @@ class _BarterListState extends State<BarterList> {
                           borderRadius: BorderRadius.circular(8.0),
                         ),
                         child: GestureDetector(
-                          onTap: widget.onViewAllTapped ??
-                              () => Navigator.push(
-                                    widget.context,
-                                    MaterialPageRoute(
-                                      builder: (context) => BarterListScreen(
-                                        title: widget.label,
-                                        items: widget.items,
-                                        showAdd: widget.ownList,
-                                      ),
-                                    ),
-                                  ),
+                          onTap: widget.onViewAllTapped,
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [

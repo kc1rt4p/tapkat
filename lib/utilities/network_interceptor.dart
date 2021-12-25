@@ -13,10 +13,6 @@ class NetworkInterceptor extends Interceptor {
 
   @override
   void onError(DioError error, ErrorInterceptorHandler handler) async {
-    //not need error handling for API.SYSTEM_PARAM
-    var code = "";
-    var message = "";
-
     super.onError(error, handler);
   }
 }

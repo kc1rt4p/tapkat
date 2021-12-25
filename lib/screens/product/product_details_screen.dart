@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_progress_hud/flutter_progress_hud.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:tapkat/models/media_primary_model.dart';
+import 'package:tapkat/models/product.dart';
 import 'package:tapkat/screens/barter/barter_screen.dart';
 import 'package:tapkat/screens/product/bloc/product_bloc.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
@@ -31,6 +33,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   final _carouselController = CarouselController();
   int _currentCarouselIndex = 0;
   Map<String, dynamic>? mappedProductDetails;
+  ProductModel? _product;
 
   @override
   void initState() {
@@ -48,7 +51,6 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
         child: BlocListener(
           bloc: _productBloc,
           listener: (context, state) {
-            print('current prod details state: $state');
             if (state is ProductLoading) {
               ProgressHUD.of(context)!.show();
             } else {
@@ -57,9 +59,15 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
 
             if (state is GetProductDetailsSuccess) {
               setState(() {
-                mappedProductDetails = state.mappedProductDetails;
+                _product = state.product;
+                _product!.media!.insert(
+                  0,
+                  MediaPrimaryModel(
+                    url: _product!.mediaPrimary!.url,
+                    type: _product!.mediaPrimary!.type,
+                  ),
+                );
               });
-              print('address: ${mappedProductDetails!['address']}');
             }
           },
           child: Container(
@@ -77,68 +85,99 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                           child: Stack(
                             alignment: Alignment.center,
                             children: [
-                              CarouselSlider(
-                                carouselController: _carouselController,
-                                options: CarouselOptions(
-                                    height: SizeConfig.screenHeight * .3,
-                                    enableInfiniteScroll: false,
-                                    aspectRatio: 1,
-                                    viewportFraction: 1,
-                                    onPageChanged: (index, _) {
-                                      setState(() {
-                                        _currentCarouselIndex = index;
-                                      });
-                                    }),
-                                items: List.generate(5, (index) {
-                                  return Container(
-                                    width: double.infinity,
-                                    decoration: BoxDecoration(
-                                      image: DecorationImage(
-                                        fit: BoxFit.cover,
-                                        image: mappedProductDetails != null &&
-                                                mappedProductDetails!['imgUrl']
-                                                    .isEmpty
-                                            ? AssetImage(
-                                                    'assets/images/image_placeholder.jpg')
-                                                as ImageProvider<Object>
-                                            : CachedNetworkImageProvider(
-                                                mappedProductDetails != null &&
-                                                        (mappedProductDetails![
-                                                                    'imgUrl']
-                                                                as String)
-                                                            .isNotEmpty
-                                                    ? mappedProductDetails![
-                                                        'imgUrl']
-                                                    : 'https://storage.googleapis.com/map-surf-assets/noimage.jpg'),
+                              _product != null
+                                  ? CarouselSlider(
+                                      carouselController: _carouselController,
+                                      options: CarouselOptions(
+                                          height: SizeConfig.screenHeight * .3,
+                                          enableInfiniteScroll: false,
+                                          aspectRatio: 1,
+                                          viewportFraction: 1,
+                                          onPageChanged: (index, _) {
+                                            setState(() {
+                                              _currentCarouselIndex = index;
+                                            });
+                                          }),
+                                      items: _product!.media!.map((img) {
+                                        return Container(
+                                          width: double.infinity,
+                                          decoration: BoxDecoration(
+                                            image: DecorationImage(
+                                              fit: BoxFit.cover,
+                                              image: mappedProductDetails !=
+                                                          null &&
+                                                      mappedProductDetails![
+                                                              'imgUrl']
+                                                          .isEmpty
+                                                  ? AssetImage(
+                                                          'assets/images/image_placeholder.jpg')
+                                                      as ImageProvider<Object>
+                                                  : CachedNetworkImageProvider(img
+                                                                  .url !=
+                                                              null &&
+                                                          img.url!.isNotEmpty
+                                                      ? img.url!
+                                                      : 'https://storage.googleapis.com/map-surf-assets/noimage.jpg'),
+                                            ),
+                                          ),
+                                        );
+                                      }).toList(),
+                                    )
+                                  : Container(
+                                      height: SizeConfig.screenHeight * .3,
+                                      width: double.infinity,
+                                      decoration: BoxDecoration(
+                                        image: DecorationImage(
+                                          fit: BoxFit.cover,
+                                          image: AssetImage(
+                                              'assets/images/image_placeholder.jpg'),
+                                        ),
                                       ),
                                     ),
-                                  );
-                                }),
-                              ),
-                              Positioned(
-                                bottom: 8,
-                                child: Container(
-                                  width: SizeConfig.screenWidth,
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: List.generate(5, (index) {
-                                      return Container(
-                                        margin: index < 5
-                                            ? EdgeInsets.only(right: 8.0)
-                                            : null,
-                                        height: 8.0,
-                                        width: 8.0,
-                                        decoration: BoxDecoration(
-                                          color: _currentCarouselIndex == index
-                                              ? Colors.white
-                                              : Colors.grey,
-                                          shape: BoxShape.circle,
+                              _product != null
+                                  ? Visibility(
+                                      visible: _product!.media != null,
+                                      child: Positioned(
+                                        bottom: 8,
+                                        child: Container(
+                                          width: SizeConfig.screenWidth,
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: _product!.media!
+                                                .asMap()
+                                                .keys
+                                                .map((key) {
+                                              return Container(
+                                                margin:
+                                                    _product!.media!.length < 5
+                                                        ? EdgeInsets.only(
+                                                            right: 8.0)
+                                                        : null,
+                                                height:
+                                                    _currentCarouselIndex != key
+                                                        ? 8.0
+                                                        : 9.0,
+                                                width:
+                                                    _currentCarouselIndex != key
+                                                        ? 8.0
+                                                        : 9.0,
+                                                decoration: BoxDecoration(
+                                                  color:
+                                                      _currentCarouselIndex ==
+                                                              key
+                                                          ? Colors.white
+                                                          : Colors
+                                                              .grey.shade400,
+                                                  shape: BoxShape.circle,
+                                                ),
+                                              );
+                                            }).toList(),
+                                          ),
                                         ),
-                                      );
-                                    }),
-                                  ),
-                                ),
-                              ),
+                                      ),
+                                    )
+                                  : Container(),
                             ],
                           ),
                         ),
@@ -155,9 +194,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                   Container(
                                     margin: EdgeInsets.only(bottom: 16.0),
                                     child: Text(
-                                      mappedProductDetails != null
-                                          ? mappedProductDetails!['productName']
-                                              as String
+                                      _product != null &&
+                                              _product!.productname!.isNotEmpty
+                                          ? _product!.productname!
                                           : '',
                                       style: Style.subtitle1
                                           .copyWith(color: Colors.black),
@@ -168,12 +207,13 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                       children: [
                                         Expanded(
                                           child: Text(
-                                            mappedProductDetails != null
-                                                ? mappedProductDetails!['price']
-                                                    as String
+                                            _product != null &&
+                                                    _product!.price != null &&
+                                                    _product!.currency != null
+                                                ? '${_product!.currency!} ${_product!.price!.toStringAsFixed(2)}'
                                                 : '',
                                             style: TextStyle(
-                                              fontSize: 24.0,
+                                              fontSize: 22.0,
                                               fontWeight: FontWeight.w500,
                                             ),
                                           ),
@@ -190,9 +230,10 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                               ),
                                             ),
                                             Text(
-                                              mappedProductDetails != null
-                                                  ? mappedProductDetails![
-                                                      'ownerName']
+                                              _product != null &&
+                                                      _product!
+                                                          .userid!.isNotEmpty
+                                                  ? _product!.userid!
                                                   : '',
                                               overflow: TextOverflow.ellipsis,
                                               style: TextStyle(
@@ -213,7 +254,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                           ),
                                           child: Center(
                                             child: Text(
-                                              'View ${mappedProductDetails != null ? mappedProductDetails!['ownerName'] : ''}\'s Store',
+                                              'View ${_product != null && _product!.userid!.isNotEmpty ? _product!.userid! : ''}\'s Store',
                                               overflow: TextOverflow.ellipsis,
                                               style: TextStyle(
                                                 color: Colors.white,
@@ -251,15 +292,16 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                   size: 16.0,
                                                 ),
                                                 Text(
-                                                  mappedProductDetails != null
-                                                      ? (mappedProductDetails![
-                                                                  'address']
-                                                              as Map<String,
-                                                                  dynamic>)[
-                                                          'city'] as String
+                                                  _product != null &&
+                                                          _product!
+                                                              .address!
+                                                              .address!
+                                                              .isNotEmpty
+                                                      ? _product!
+                                                          .address!.address!
                                                       : '',
                                                   style: TextStyle(
-                                                    fontSize: 16.0,
+                                                    fontSize: 14.0,
                                                     fontWeight: FontWeight.w600,
                                                   ),
                                                 )
@@ -273,12 +315,14 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                           i != 5 ? 5.0 : 0.0),
                                                   child: Icon(
                                                     i <
-                                                            int.parse(
-                                                                mappedProductDetails !=
+                                                            (_product != null &&
+                                                                    _product!
+                                                                            .rating !=
                                                                         null
-                                                                    ? mappedProductDetails![
-                                                                        'rating']
-                                                                    : '0')
+                                                                ? _product!
+                                                                    .rating!
+                                                                    .round()
+                                                                : 0)
                                                         ? Icons.star
                                                         : Icons.star_border,
                                                     color: Color(0xFFFFC107),
@@ -290,8 +334,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                           ],
                                         ),
                                         Text(
-                                          mappedProductDetails != null
-                                              ? mappedProductDetails!['rating']
+                                          _product != null &&
+                                                  _product!.rating != null
+                                              ? _product!.rating!.toString()
                                               : '0',
                                           style: TextStyle(fontSize: 16.0),
                                         ),
@@ -307,11 +352,12 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                     color: Color(0xFF94D2BD),
                                                   ),
                                                   SizedBox(width: 5.0),
-                                                  Text(mappedProductDetails !=
-                                                          null
-                                                      ? mappedProductDetails![
-                                                          'likes'] as String
-                                                      : ''),
+                                                  Text(_product != null &&
+                                                          _product!.likes !=
+                                                              null
+                                                      ? _product!.likes!
+                                                          .toString()
+                                                      : '0'),
                                                   SizedBox(width: 20.0),
                                                   Icon(
                                                     FontAwesomeIcons.share,
@@ -355,11 +401,10 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                           ),
                                         ),
                                         Container(
-                                          child: Text(
-                                              mappedProductDetails != null
-                                                  ? mappedProductDetails![
-                                                      'productDesc']
-                                                  : ''),
+                                          child: Text(_product != null &&
+                                                  _product!.productdesc != null
+                                              ? _product!.productdesc!
+                                              : '0'),
                                         ),
                                       ],
                                     ),

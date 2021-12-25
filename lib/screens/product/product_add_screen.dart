@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:carousel_slider/carousel_controller.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +12,8 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_api_headers/google_api_headers.dart';
 import 'package:google_maps_webservice/places.dart';
 import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
+import 'package:tapkat/models/location.dart';
+import 'package:tapkat/models/request/add_product_request.dart';
 import 'package:tapkat/screens/product/bloc/product_bloc.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/dialog_message.dart';
@@ -31,10 +35,9 @@ class _ProductAddScreenState extends State<ProductAddScreen> {
   final _productBloc = ProductBloc();
   late AuthBloc _authBloc;
 
-  SelectedMedia? _selectedMedia;
+  List<SelectedMedia> _selectedMedia = [];
 
   final _nameTextController = TextEditingController();
-  final _titleTextController = TextEditingController();
   final _priceTextController = TextEditingController();
   final _offerTypeTextController = TextEditingController();
   final _descTextController = TextEditingController();
@@ -50,6 +53,8 @@ class _ProductAddScreenState extends State<ProductAddScreen> {
   final webGoogleMapsApiKey = 'AIzaSyAzPjfTTLzdfp-56tarHguvLXgdw7QAGkg';
 
   User? _user;
+  int _currentCarouselIndex = 0;
+  final _carouselController = CarouselController();
 
   @override
   void initState() {
@@ -92,9 +97,9 @@ class _ProductAddScreenState extends State<ProductAddScreen> {
                     ProgressHUD.of(context)!.dismiss();
                   }
 
-                  if (state is SaveOfferSuccess) {
+                  if (state is SaveProductSuccess) {
                     await DialogMessage.show(context,
-                        message: 'A new offer has been added');
+                        message: 'An offer has been added');
 
                     Navigator.pop(context);
                   }
@@ -138,7 +143,7 @@ class _ProductAddScreenState extends State<ProductAddScreen> {
                                   ),
                                 ),
                               ),
-                              SizedBox(height: 10.0),
+                              SizedBox(height: 16.0),
                               CustomTextFormField(
                                 label: 'Name',
                                 hintText: 'Enter your offer\'s name',
@@ -216,20 +221,37 @@ class _ProductAddScreenState extends State<ProductAddScreen> {
   }
 
   _onSaveTapped() {
-    if (_selectedMedia == null) {
+    if (_selectedMedia.length < 1) {
       setState(() {
         showImageError = true;
       });
     }
     if (!_formKey.currentState!.validate()) return;
 
-    _productBloc.add(SaveOffer(
+    final newProduct = ProductRequestModel(
       userid: _user!.uid,
       productname: _nameTextController.text.trim(),
       productdesc: _descTextController.text.trim(),
       price: double.parse(_priceTextController.text.trim()),
       type: _selectedOfferType!,
-      selectedMedia: _selectedMedia!,
+      location: LocationModel(
+        longitude: _selectedLocation!.geometry!.location.lng,
+        latitude: _selectedLocation!.geometry!.location.lat,
+      ),
+      address: _selectedLocation!.addressComponents[0] != null
+          ? _selectedLocation!.addressComponents[0]!.longName
+          : null,
+      city: _selectedLocation!.addressComponents[1] != null
+          ? _selectedLocation!.addressComponents[1]!.longName
+          : null,
+      country: _selectedLocation!.addressComponents.last != null
+          ? _selectedLocation!.addressComponents.last!.longName
+          : null,
+    );
+
+    _productBloc.add(SaveProduct(
+      media: _selectedMedia,
+      productRequest: newProduct,
     ));
   }
 
@@ -242,7 +264,7 @@ class _ProductAddScreenState extends State<ProductAddScreen> {
     if (selectedMedia != null &&
         validateFileFormat(selectedMedia.storagePath, context)) {
       setState(() {
-        _selectedMedia = selectedMedia;
+        _selectedMedia.add(selectedMedia);
         showImageError = false;
       });
     }
@@ -370,48 +392,152 @@ class _ProductAddScreenState extends State<ProductAddScreen> {
   Stack _buildPhoto() {
     return Stack(
       children: [
-        Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20.0),
-            color: Colors.white,
-            image: DecorationImage(
-              image: _selectedMedia == null
-                  ? AssetImage('assets/images/image_placeholder.jpg')
-                      as ImageProvider<Object>
-                  : FileImage(
-                      File(_selectedMedia!.rawPath!),
+        _selectedMedia.length > 0
+            ? Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20.0),
+                ),
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    CarouselSlider(
+                      carouselController: _carouselController,
+                      options: CarouselOptions(
+                          height: 160.0,
+                          enableInfiniteScroll: false,
+                          aspectRatio: 1,
+                          viewportFraction: 1,
+                          onPageChanged: (index, _) {
+                            setState(() {
+                              _currentCarouselIndex = index;
+                            });
+                          }),
+                      items: _selectedMedia.map((media) {
+                        return Stack(
+                          children: [
+                            Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(20.0),
+                                color: Colors.white,
+                                image: DecorationImage(
+                                  image: FileImage(File(media.rawPath!)),
+                                  scale: 1.0,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                              height: 160.0,
+                              width: double.infinity,
+                            ),
+                            Positioned(
+                              top: 5,
+                              right: 10,
+                              child: InkWell(
+                                onTap: () {
+                                  setState(() {
+                                    _selectedMedia.remove(media);
+                                  });
+                                  Future.delayed(Duration(milliseconds: 300),
+                                      () => setState(() {}));
+                                },
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.red,
+                                    borderRadius: BorderRadius.circular(50.0),
+                                    // border: Border.all(color: Colors.black45),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black,
+                                        offset: Offset(0, 0),
+                                        blurRadius: 3.0,
+                                      ),
+                                    ],
+                                  ),
+                                  height: 30.0,
+                                  width: 30.0,
+                                  child: Icon(
+                                    Icons.delete,
+                                    color: Colors.white,
+                                    size: 20.0,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      }).toList(),
                     ),
-              scale: 1.0,
-              fit: BoxFit.cover,
-            ),
-          ),
-          height: 150.0,
-          width: double.infinity,
-        ),
-        Positioned(
-          bottom: 0,
-          right: 10,
-          child: InkWell(
-            onTap: _onPhotoTapped,
-            child: Container(
-              decoration: BoxDecoration(
-                color: kBackgroundColor,
-                borderRadius: BorderRadius.circular(50.0),
-                // border: Border.all(color: Colors.black45),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black,
-                    offset: Offset(0, 0),
-                    blurRadius: 3.0,
+                    Positioned(
+                      bottom: 8,
+                      child: Container(
+                        width: SizeConfig.screenWidth,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: _selectedMedia.asMap().keys.map((key) {
+                            return Container(
+                              margin: _selectedMedia.length > 1
+                                  ? key < 5
+                                      ? EdgeInsets.only(right: 8.0)
+                                      : null
+                                  : null,
+                              height: 8.0,
+                              width: 8.0,
+                              decoration: BoxDecoration(
+                                color: _currentCarouselIndex == key
+                                    ? Colors.white
+                                    : Colors.grey,
+                                shape: BoxShape.circle,
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            : Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20.0),
+                  color: Colors.grey,
+                  image: DecorationImage(
+                    image: AssetImage('assets/images/image_placeholder.jpg'),
+                    scale: 1.0,
+                    fit: BoxFit.cover,
                   ),
-                ],
+                ),
+                child: Text(''),
+                height: 160.0,
+                width: double.infinity,
               ),
-              height: 30.0,
-              width: 30.0,
-              child: Icon(
-                Icons.photo_camera,
-                color: Colors.white,
-                size: 20.0,
+        Visibility(
+          visible: _selectedMedia.length < 5,
+          child: Positioned(
+            bottom: 5,
+            right: 10,
+            child: InkWell(
+              onTap: _onPhotoTapped,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: kBackgroundColor,
+                  borderRadius: BorderRadius.circular(50.0),
+                  // border: Border.all(color: Colors.black45),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black,
+                      offset: Offset(0, 0),
+                      blurRadius: 3.0,
+                    ),
+                  ],
+                ),
+                height: 30.0,
+                width: 30.0,
+                child: Icon(
+                  _selectedMedia.length > 0
+                      ? Icons.add_a_photo
+                      : Icons.photo_camera,
+                  color: Colors.white,
+                  size: 20.0,
+                ),
               ),
             ),
           ),

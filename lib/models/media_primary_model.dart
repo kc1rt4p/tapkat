@@ -9,8 +9,8 @@ class MediaPrimaryModel {
 
   factory MediaPrimaryModel.fromJson(Map<String, dynamic> json) {
     return MediaPrimaryModel(
-      url: json['url'],
-      type: json['type'],
+      url: json['url'] ?? '',
+      type: json['type'] ?? '',
     );
   }
 

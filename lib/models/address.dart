@@ -17,11 +17,13 @@ class AddressModel {
 
   factory AddressModel.fromJson(Map<String, dynamic> json) {
     return AddressModel(
-      postCode: json['postCode'],
+      postCode: json['postcode'],
       city: json['city'],
       address: json['address'],
       country: json['country'],
-      location: LocationModel.fromJson(json['location']),
+      location: json['location'] != null && json['location'] != ''
+          ? LocationModel.fromJson(json['location'] as dynamic)
+          : null,
     );
   }
 

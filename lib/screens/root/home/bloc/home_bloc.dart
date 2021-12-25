@@ -1,8 +1,9 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:tapkat/models/product.dart';
+import 'package:tapkat/repositories/product_repository.dart';
 import 'package:tapkat/services/auth_service.dart';
-import 'package:tapkat/services/http/api_calls.dart';
-import 'package:tapkat/utilities/helper.dart';
 
 part 'home_event.dart';
 part 'home_state.dart';
@@ -10,45 +11,46 @@ part 'home_state.dart';
 class HomeBloc extends Bloc<HomeEvent, HomeState> {
   HomeBloc() : super(HomeInitial()) {
     final _authService = AuthService();
+    final _productRepo = ProductRepository();
+    User? _user;
     on<HomeEvent>((event, emit) async {
       emit(HomeLoading());
-      if (event is InitializeHomeScreen) {
-        final _user = await _authService.getCurrentUser();
-        if (_user != null) {
-          final recommendedCallResult =
-              await getRecommendedProductsCall(userid: _user.uid);
-          final recommendedList =
-              (getJsonField(recommendedCallResult, r'''$.products''')
-                          ?.toList() ??
-                      [])
-                  .take(20)
-                  .toList();
 
-          final trendingCallResult =
-              await getProductsInDemandCall(userid: _user.uid);
-          final trendingList =
-              (getJsonField(trendingCallResult, r'''$.products''')?.toList() ??
-                      [])
-                  .take(20)
-                  .toList();
+      try {
+        _user = await _authService.getCurrentUser();
 
-          final userProductsCallResult =
-              await getUserProductsCall(userid: _user.uid);
-          final userProductList =
-              (getJsonField(userProductsCallResult, r'''$.products''')
-                          ?.toList() ??
-                      [])
-                  .take(20)
-                  .toList();
+        if (event is GetUserFavorites) {
+          if (_user != null) {
+            final _userLikedItems =
+                await _productRepo.getUserFavourites(_user!.uid);
 
-          emit(
-            HomeScreenInitialized(
-              recommended: recommendedList,
-              trending: trendingList,
-              yourItems: userProductList,
-            ),
-          );
+            emit(GetUserFavoritesSuccess(_userLikedItems));
+          }
         }
+
+        if (event is InitializeHomeScreen) {
+          if (_user != null) {
+            final recommendedList =
+                await _productRepo.getFirstProducts('reco', _user!.uid);
+            final trendingList =
+                await _productRepo.getFirstProducts('demand', _user!.uid);
+            final userItems =
+                await _productRepo.getFirstProducts('user', _user!.uid);
+            final _userLikedItems =
+                await _productRepo.getUserFavourites(_user!.uid);
+
+            emit(
+              HomeScreenInitialized(
+                recommended: recommendedList,
+                trending: trendingList,
+                yourItems: userItems,
+                userLikedItems: _userLikedItems,
+              ),
+            );
+          }
+        }
+      } catch (e) {
+        print('ERROR ON HOME BLOC: ${e.toString()}');
       }
     });
   }
