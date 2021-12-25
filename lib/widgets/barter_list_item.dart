@@ -95,21 +95,24 @@ class _BarterListItemState extends State<BarterListItem> {
           child: Positioned(
             top: 5,
             right: 5,
-            child: Container(
-              padding: EdgeInsets.all(2.0),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white,
-              ),
-              child: GestureDetector(
-                onTap: widget.onLikeTapped,
-                child: Icon(
-                  widget.liked != null && widget.liked!
-                      ? Icons.favorite
-                      : Icons.favorite_outline,
-                  color: Colors.red,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Icon(
+                  Icons.favorite,
+                  color: Colors.white,
+                  size: 30,
                 ),
-              ),
+                GestureDetector(
+                  onTap: widget.onLikeTapped,
+                  child: Icon(
+                    widget.liked != null && widget.liked!
+                        ? Icons.favorite
+                        : Icons.favorite_outline,
+                    color: Colors.red,
+                  ),
+                ),
+              ],
             ),
           ),
         ),

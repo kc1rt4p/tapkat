@@ -36,15 +36,12 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
                 await _productRepo.getFirstProducts('demand', _user!.uid);
             final userItems =
                 await _productRepo.getFirstProducts('user', _user!.uid);
-            final _userLikedItems =
-                await _productRepo.getUserFavourites(_user!.uid);
 
             emit(
               HomeScreenInitialized(
                 recommended: recommendedList,
                 trending: trendingList,
                 yourItems: userItems,
-                userLikedItems: _userLikedItems,
               ),
             );
           }

@@ -2,9 +2,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_progress_hud/flutter_progress_hud.dart';
+import 'package:tapkat/backend.dart';
 import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/models/request/add_product_request.dart';
+import 'package:tapkat/schemas/user_likes_record.dart';
 import 'package:tapkat/screens/barter_list/barter_list_screen.dart';
 import 'package:tapkat/screens/product/bloc/product_bloc.dart';
 import 'package:tapkat/screens/product/product_details_screen.dart';
@@ -79,7 +81,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   _recommendedList = state.recommended;
                   _trendingList = state.trending;
                   _myProductList = state.yourItems;
-                  _userFavourites = state.userLikedItems;
                 });
               }
             },
@@ -130,26 +131,59 @@ class _HomeScreenState extends State<HomeScreen> {
                       BarterList(
                         context: context,
                         items: _recommendedList.map((product) {
-                          return BarterListItem(
-                            liked: _userFavourites.any(
-                                (fav) => fav.productid == product.productid),
-                            itemName: product.productname ?? '',
-                            itemPrice: product.price != null
-                                ? product.price!.toStringAsFixed(2)
-                                : '0',
-                            imageUrl: product.mediaPrimary != null
-                                ? product.mediaPrimary!.url!
-                                : '',
-                            onTapped: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => ProductDetailsScreen(
-                                  productId: product.productid ?? '',
-                                ),
+                          return StreamBuilder<List<UserLikesRecord?>>(
+                              stream: queryUserLikesRecord(
+                                queryBuilder: (userLikesRecord) =>
+                                    userLikesRecord
+                                        .where('userid', isEqualTo: _user!.uid)
+                                        .where('productid',
+                                            isEqualTo: product.productid),
+                                singleRecord: true,
                               ),
-                            ),
-                            onLikeTapped: () => _onLikeTapped(product),
-                          );
+                              builder: (context, snapshot) {
+                                bool liked = false;
+                                UserLikesRecord? record;
+                                if (snapshot.hasData) {
+                                  if (snapshot.data != null &&
+                                      snapshot.data!.isNotEmpty) {
+                                    record = snapshot.data!.first;
+                                    if (record != null) {
+                                      liked = record.liked ?? false;
+                                    }
+                                  }
+                                }
+
+                                return BarterListItem(
+                                  // liked: _userFavourites.any(
+                                  //     (fav) => fav.productid == product.productid),
+                                  liked: liked,
+                                  itemName: product.productname ?? '',
+                                  itemPrice: product.price != null
+                                      ? product.price!.toStringAsFixed(2)
+                                      : '0',
+                                  imageUrl: product.mediaPrimary != null
+                                      ? product.mediaPrimary!.url!
+                                      : '',
+                                  onTapped: () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          ProductDetailsScreen(
+                                        productId: product.productid ?? '',
+                                      ),
+                                    ),
+                                  ),
+                                  onLikeTapped: () {
+                                    if (record != null) {
+                                      final newData = createUserLikesRecordData(
+                                        liked: !record.liked!,
+                                      );
+
+                                      record.reference!.update(newData);
+                                    }
+                                  },
+                                );
+                              });
                         }).toList(),
                         label: 'Recommended For You',
                         onViewAllTapped: () => Navigator.push(
@@ -165,28 +199,61 @@ class _HomeScreenState extends State<HomeScreen> {
                       BarterList(
                         context: context,
                         items: _trendingList.map((product) {
-                          return BarterListItem(
-                            itemName: product.productname ?? '',
-                            itemPrice: product.price != null
-                                ? product.price!.toStringAsFixed(2)
-                                : '0',
-                            imageUrl: product.mediaPrimary != null
-                                ? product.mediaPrimary!.url!
-                                : '',
-                            onTapped: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => ProductDetailsScreen(
-                                  productId: product.productid ?? '',
-                                ),
+                          return StreamBuilder<List<UserLikesRecord?>>(
+                              stream: queryUserLikesRecord(
+                                queryBuilder: (userLikesRecord) =>
+                                    userLikesRecord
+                                        .where('userid', isEqualTo: _user!.uid)
+                                        .where('productid',
+                                            isEqualTo: product.productid),
+                                singleRecord: true,
                               ),
-                            ),
-                            onLikeTapped: () => _productBloc.add(
-                              AddLike(
-                                ProductRequestModel.fromProduct(product),
-                              ),
-                            ),
-                          );
+                              builder: (context, snapshot) {
+                                bool liked = false;
+                                UserLikesRecord? record;
+                                if (snapshot.hasData) {
+                                  if (snapshot.data != null &&
+                                      snapshot.data!.isNotEmpty) {
+                                    record = snapshot.data!.first;
+                                    if (record != null) {
+                                      liked = record.liked ?? false;
+                                    }
+                                  }
+                                }
+
+                                print('HOME SCREEN - RECORD: $record');
+
+                                return BarterListItem(
+                                  // liked: _userFavourites.any(
+                                  //     (fav) => fav.productid == product.productid),
+                                  liked: liked,
+                                  itemName: product.productname ?? '',
+                                  itemPrice: product.price != null
+                                      ? product.price!.toStringAsFixed(2)
+                                      : '0',
+                                  imageUrl: product.mediaPrimary != null
+                                      ? product.mediaPrimary!.url!
+                                      : '',
+                                  onTapped: () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          ProductDetailsScreen(
+                                        productId: product.productid ?? '',
+                                      ),
+                                    ),
+                                  ),
+                                  onLikeTapped: () {
+                                    if (record != null) {
+                                      final newData = createUserLikesRecordData(
+                                        liked: !record.liked!,
+                                      );
+
+                                      record.reference!.update(newData);
+                                    }
+                                  },
+                                );
+                              });
                         }).toList(),
                         label: 'People are Looking For',
                         onViewAllTapped: () => Navigator.push(

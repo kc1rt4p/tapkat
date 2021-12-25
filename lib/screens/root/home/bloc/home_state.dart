@@ -13,13 +13,11 @@ class HomeScreenInitialized extends HomeState {
   final List<ProductModel> recommended;
   final List<ProductModel> trending;
   final List<ProductModel> yourItems;
-  final List<ProductModel> userLikedItems;
 
   HomeScreenInitialized({
     required this.recommended,
     required this.trending,
     required this.yourItems,
-    required this.userLikedItems,
   });
 }
 

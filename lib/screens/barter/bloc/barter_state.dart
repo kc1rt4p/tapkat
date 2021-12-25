@@ -13,9 +13,9 @@ class BarterLoading extends BarterState {}
 
 class BarterInitialized extends BarterState {
   final Stream<List<BarterRecord?>> barterStream;
-  final List<dynamic> userProducts;
+  final List<ProductModel> userProducts;
 
-  final List<dynamic> user2Products;
+  final List<ProductModel> user2Products;
 
   BarterInitialized({
     required this.barterStream,

@@ -7,6 +7,7 @@ import 'package:flutter_progress_hud/flutter_progress_hud.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
+import 'package:tapkat/models/product.dart';
 import 'package:tapkat/schemas/barter_record.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/size_config.dart';
@@ -18,11 +19,11 @@ import 'package:tapkat/widgets/custom_button.dart';
 import 'bloc/barter_bloc.dart';
 
 class BarterScreen extends StatefulWidget {
-  final Map<String, dynamic> mappedProductDetails;
+  final ProductModel product;
 
   const BarterScreen({
     Key? key,
-    required this.mappedProductDetails,
+    required this.product,
   }) : super(key: key);
 
   @override
@@ -30,14 +31,14 @@ class BarterScreen extends StatefulWidget {
 }
 
 class _BarterScreenState extends State<BarterScreen> {
-  late Map<String, dynamic> _mappedProductDetails;
+  late ProductModel _product;
   late AuthBloc _authBloc;
   final _barterBloc = BarterBloc();
-  List<dynamic> offers = [];
-  List<dynamic> wants = [];
+  List<ProductModel> offers = [];
+  List<ProductModel> wants = [];
   late String _participantName;
-  List<dynamic> participantItems = [];
-  List<dynamic> userItems = [];
+  List<ProductModel> participantItems = [];
+  List<ProductModel> userItems = [];
   User? _currentUser;
   BarterRecord? _barterRecord;
   StreamSubscription<List<BarterRecord?>>? _barterStreamSub;
@@ -45,23 +46,15 @@ class _BarterScreenState extends State<BarterScreen> {
   @override
   void initState() {
     _authBloc = BlocProvider.of<AuthBloc>(context);
-    _mappedProductDetails = widget.mappedProductDetails;
+    _product = widget.product;
 
-    _participantName = _mappedProductDetails['ownerName'] as String;
+    _participantName = _product.userid ?? '';
     _participantName = _participantName[0].toUpperCase() +
         _participantName.substring(1).toLowerCase();
     _authBloc.add(GetCurrentuser());
 
     setState(() {
-      wants.add({
-        'productid': _mappedProductDetails['productId'],
-        'media_primary': {
-          'url': _mappedProductDetails['imgUrl'],
-        },
-        'productname': _mappedProductDetails['productName'],
-        'price': double.parse(
-            (_mappedProductDetails['price'] as String).substring(1)),
-      });
+      wants.add(_product);
     });
 
     super.initState();
@@ -69,7 +62,7 @@ class _BarterScreenState extends State<BarterScreen> {
 
   @override
   void dispose() {
-    _barterStreamSub!.cancel();
+    _barterStreamSub?.cancel();
     _barterStreamSub = null;
 
     super.dispose();
@@ -88,6 +81,7 @@ class _BarterScreenState extends State<BarterScreen> {
             BlocListener(
               bloc: _barterBloc,
               listener: (context, state) {
+                print('barter bloc current state: $state');
                 if (state is BarterLoading) {
                   ProgressHUD.of(context)!.show();
                 } else {
@@ -99,6 +93,8 @@ class _BarterScreenState extends State<BarterScreen> {
                     participantItems = state.user2Products;
                     userItems = state.userProducts;
                   });
+                  print('partItems: $participantItems');
+                  print('userItems: $userItems');
                   _barterStreamSub = state.barterStream.listen((barterRecord) {
                     if (barterRecord.first != null) {
                       setState(() {
@@ -107,11 +103,16 @@ class _BarterScreenState extends State<BarterScreen> {
                     }
                   });
                 }
+
+                if (state is BarterError) {
+                  print('error: ${state.message}');
+                }
               },
             ),
             BlocListener(
               bloc: _authBloc,
               listener: (context, state) {
+                print('auth bloc current state: $state');
                 if (state is AuthLoading) {
                   ProgressHUD.of(context)!.show();
                 } else {
@@ -126,16 +127,14 @@ class _BarterScreenState extends State<BarterScreen> {
                     InitializeBarter(
                       createBarterRecordData(
                         barterid: _currentUser!.uid +
-                            _mappedProductDetails['ownerId'] +
-                            _mappedProductDetails['productId'],
+                            _product.userid! +
+                            _product.productid!,
                         userid1: _currentUser!.uid,
-                        userid2: _mappedProductDetails['ownerId'],
-                        barterNo: _mappedProductDetails[''],
-                        u1P1Name: _mappedProductDetails['productName'],
-                        u1P1Price: double.parse(
-                            (_mappedProductDetails['price'] as String)
-                                .substring(1)),
-                        u1P1Image: _mappedProductDetails['imgUrl'],
+                        userid2: _product.productid!,
+                        u1P1Name: _product.productname,
+                        u1P1Price: _product.price!.toDouble(),
+                        u1P1Image: _product.mediaPrimary!.url!,
+                        barterNo: 0,
                       ),
                     ),
                   );
@@ -176,16 +175,14 @@ class _BarterScreenState extends State<BarterScreen> {
                                     children: [
                                       BarterListItem(
                                         hideLikeBtn: true,
-                                        itemName: item['productname'],
-                                        itemPrice: item['currency'] ??
+                                        itemName: item.productname ?? '',
+                                        itemPrice: item.currency ??
                                             '\$' +
-                                                ((item['price'] + 0.00)
-                                                        as double)
+                                                (item.price!)
                                                     .toStringAsFixed(2),
-                                        imageUrl: item['imgUrl'] ??
-                                                item['media_primary'] != null
-                                            ? (item['media_primary']
-                                                as Map<String, dynamic>)['url']
+                                        imageUrl: item.mediaPrimary != null &&
+                                                item.mediaPrimary!.url != null
+                                            ? item.mediaPrimary!.url!
                                             : 'https://storage.googleapis.com/map-surf-assets/noimage.jpg',
                                       ),
                                       Positioned(
@@ -194,9 +191,9 @@ class _BarterScreenState extends State<BarterScreen> {
                                         child: InkWell(
                                           onTap: () {
                                             setState(() {
-                                              wants.removeWhere((product) =>
-                                                  product['productid'] ==
-                                                  item['productid']);
+                                              offers.removeWhere((product) =>
+                                                  product.productid ==
+                                                  item.productid);
                                             });
                                           },
                                           child: Container(
@@ -234,16 +231,14 @@ class _BarterScreenState extends State<BarterScreen> {
                                     children: [
                                       BarterListItem(
                                         hideLikeBtn: true,
-                                        itemName: item['productname'],
-                                        itemPrice: item['currency'] ??
+                                        itemName: item.productname ?? '',
+                                        itemPrice: item.currency ??
                                             '\$' +
-                                                ((item['price'] + 0.00)
-                                                        as double)
+                                                (item.price!)
                                                     .toStringAsFixed(2),
-                                        imageUrl: item['imgUrl'] ??
-                                                item['media_primary'] != null
-                                            ? (item['media_primary']
-                                                as Map<String, dynamic>)['url']
+                                        imageUrl: item.mediaPrimary != null &&
+                                                item.mediaPrimary!.url != null
+                                            ? item.mediaPrimary!.url!
                                             : 'https://storage.googleapis.com/map-surf-assets/noimage.jpg',
                                       ),
                                       Positioned(
@@ -253,8 +248,8 @@ class _BarterScreenState extends State<BarterScreen> {
                                           onTap: () {
                                             setState(() {
                                               offers.removeWhere((product) =>
-                                                  product['productid'] ==
-                                                  item['productid']);
+                                                  product.productid ==
+                                                  item.productid);
                                             });
                                           },
                                           child: Container(
@@ -373,7 +368,7 @@ class _BarterScreenState extends State<BarterScreen> {
         isDismissible: false,
         context: context,
         builder: (context) {
-          List<dynamic> selectedItems = [];
+          List<ProductModel> selectedItems = [];
           return StatefulBuilder(builder: (context, setState) {
             return Container(
               padding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 20.0),
@@ -406,37 +401,26 @@ class _BarterScreenState extends State<BarterScreen> {
                             margin: EdgeInsets.only(right: 8.0, bottom: 5.0),
                             child: BarterListItem(
                               hideLikeBtn: true,
-                              itemName: item['productname'],
-                              itemPrice: item['currency'] +
-                                  ((item['price'] + 0.00) as double)
-                                      .toStringAsFixed(2),
-                              imageUrl: item['media_primary'] != null
-                                  ? (item['media_primary']
-                                      as Map<String, dynamic>)['url']
+                              itemName: item.productname ?? '',
+                              itemPrice: item.currency ??
+                                  '\$' + (item.price!).toStringAsFixed(2),
+                              imageUrl: item.mediaPrimary != null &&
+                                      item.mediaPrimary!.url != null
+                                  ? item.mediaPrimary!.url!
                                   : 'https://storage.googleapis.com/map-surf-assets/noimage.jpg',
                               onTapped: () {
                                 if (!selectedItems.any((want) =>
-                                    want['productid'] == item['productid'])) {
+                                    want.productid == item.productid)) {
                                   setState(() {
-                                    selectedItems.add({
-                                      'productid': item['productid'],
-                                      'media_primary': {
-                                        'url': item['media_primary'] != null
-                                            ? (item['media_primary']
-                                                as Map<String, dynamic>)['url']
-                                            : 'https://storage.googleapis.com/map-surf-assets/noimage.jpg',
-                                      },
-                                      'productname': item['productname'],
-                                      'price': item['price'],
-                                    });
+                                    selectedItems.add(item);
                                   });
                                 }
                               },
                             ),
                           ),
                           Visibility(
-                            visible: wants.any((product) =>
-                                product['productid'] == item['productid']),
+                            visible: wants
+                                .any((product) => product.productid == item),
                             child: Container(
                               margin: EdgeInsets.only(right: 8.0),
                               width: 160.0,
@@ -466,7 +450,7 @@ class _BarterScreenState extends State<BarterScreen> {
                           ),
                           Visibility(
                             visible: selectedItems.any((product) =>
-                                product['productid'] == item['productid']),
+                                product.productid == item.productid),
                             child: Container(
                               margin: EdgeInsets.only(right: 8.0),
                               width: 160.0,
@@ -493,11 +477,9 @@ class _BarterScreenState extends State<BarterScreen> {
                                     GestureDetector(
                                       onTap: () {
                                         setState(() {
-                                          selectedItems.removeWhere(
-                                            (product) =>
-                                                product['productid'] ==
-                                                item['productid'],
-                                          );
+                                          selectedItems.removeWhere((product) =>
+                                              product.productid ==
+                                              item.productid);
                                         });
                                       },
                                       child: Icon(
@@ -533,13 +515,13 @@ class _BarterScreenState extends State<BarterScreen> {
         });
   }
 
-  _addWantedItems(List<dynamic> items) {
+  _addWantedItems(List<ProductModel> items) {
     setState(() {
       wants.addAll(items);
     });
   }
 
-  _addOfferedItems(List<dynamic> items) {
+  _addOfferedItems(List<ProductModel> items) {
     setState(() {
       offers.addAll(items);
     });
@@ -550,7 +532,7 @@ class _BarterScreenState extends State<BarterScreen> {
         isDismissible: false,
         context: context,
         builder: (context) {
-          List<dynamic> selectedItems = [];
+          List<ProductModel> selectedItems = [];
           return StatefulBuilder(builder: (context, setState) {
             return Container(
               padding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 20.0),
@@ -575,7 +557,7 @@ class _BarterScreenState extends State<BarterScreen> {
                         color: kBackgroundColor,
                       ),
                     ),
-                    items: participantItems.map((item) {
+                    items: userItems.map((item) {
                       return Stack(
                         alignment: Alignment.topCenter,
                         children: [
@@ -583,29 +565,18 @@ class _BarterScreenState extends State<BarterScreen> {
                             margin: EdgeInsets.only(right: 8.0, bottom: 5.0),
                             child: BarterListItem(
                               hideLikeBtn: true,
-                              itemName: item['productname'],
-                              itemPrice: item['currency'] +
-                                  ((item['price'] + 0.00) as double)
-                                      .toStringAsFixed(2),
-                              imageUrl: item['media_primary'] != null
-                                  ? (item['media_primary']
-                                      as Map<String, dynamic>)['url']
+                              itemName: item.productname ?? '',
+                              itemPrice: item.currency ??
+                                  '\$' + (item.price!).toStringAsFixed(2),
+                              imageUrl: item.mediaPrimary != null &&
+                                      item.mediaPrimary!.url != null
+                                  ? item.mediaPrimary!.url!
                                   : 'https://storage.googleapis.com/map-surf-assets/noimage.jpg',
                               onTapped: () {
                                 if (!selectedItems.any((want) =>
-                                    want['productid'] == item['productid'])) {
+                                    want.productid == item.productid)) {
                                   setState(() {
-                                    selectedItems.add({
-                                      'productid': item['productid'],
-                                      'media_primary': {
-                                        'url': item['media_primary'] != null
-                                            ? (item['media_primary']
-                                                as Map<String, dynamic>)['url']
-                                            : 'https://storage.googleapis.com/map-surf-assets/noimage.jpg',
-                                      },
-                                      'productname': item['productname'],
-                                      'price': item['price'],
-                                    });
+                                    selectedItems.add(item);
                                   });
                                 }
                               },
@@ -613,7 +584,7 @@ class _BarterScreenState extends State<BarterScreen> {
                           ),
                           Visibility(
                             visible: offers.any((product) =>
-                                product['productid'] == item['productid']),
+                                product.productid == item.productid),
                             child: Container(
                               margin: EdgeInsets.only(right: 8.0),
                               width: 160.0,
@@ -643,7 +614,7 @@ class _BarterScreenState extends State<BarterScreen> {
                           ),
                           Visibility(
                             visible: selectedItems.any((product) =>
-                                product['productid'] == item['productid']),
+                                product.productid == item.productid),
                             child: Container(
                               margin: EdgeInsets.only(right: 8.0),
                               width: 160.0,
@@ -670,11 +641,9 @@ class _BarterScreenState extends State<BarterScreen> {
                                     GestureDetector(
                                       onTap: () {
                                         setState(() {
-                                          selectedItems.removeWhere(
-                                            (product) =>
-                                                product['productid'] ==
-                                                item['productid'],
-                                          );
+                                          selectedItems.removeWhere((product) =>
+                                              product.productid ==
+                                              item.productid);
                                         });
                                       },
                                       child: Icon(

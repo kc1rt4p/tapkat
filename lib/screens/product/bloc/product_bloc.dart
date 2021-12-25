@@ -58,19 +58,20 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
         }
 
         if (event is AddLike) {
-          if (_user != null) {
-            final result = await _productRepo.addLike(
-              productRequest: event.product,
-              userId: _user.uid,
-            );
+          // if (_user != null) {
+          //   final data = createUserLikesRecordData(
+          //     userid: _user.uid,
+          //     productid: event.product.productid,
+          //     liked: true,
+          //   );
 
-            if (result) {
-              final addToFavResult = await _productRepo.addToWishList(
-                  event.product.productid!, _user.uid);
-              emit(AddLikeSuccess());
-            } else
-              emit(ProductError('unable to add like to product'));
-          }
+          //   if (result) {
+          //     final addToFavResult = await _productRepo.addToWishList(
+          //         event.product.productid!, _user.uid);
+          //     emit(AddLikeSuccess());
+          //   } else
+          //     emit(ProductError('unable to add like to product'));
+          // }
         }
 
         if (event is GetProductDetails) {

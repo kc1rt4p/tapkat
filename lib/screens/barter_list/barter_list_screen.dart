@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_progress_hud/flutter_progress_hud.dart';
+import 'package:tapkat/backend.dart';
 import 'package:tapkat/models/product.dart';
+import 'package:tapkat/schemas/user_likes_record.dart';
 import 'package:tapkat/screens/product/bloc/product_bloc.dart';
 import 'package:tapkat/screens/product/product_add_screen.dart';
 import 'package:tapkat/screens/product/product_details_screen.dart';
@@ -174,25 +176,72 @@ class _BarterListScreenState extends State<BarterListScreen> {
                             crossAxisSpacing: 12.0,
                             children: _list
                                 .map((product) => Center(
-                                      child: BarterListItem(
-                                        itemName: product.productname ?? '',
-                                        itemPrice: product.price != null
-                                            ? product.price.toString()
-                                            : '',
-                                        imageUrl: product.mediaPrimary != null
-                                            ? product.mediaPrimary!.url ?? ''
-                                            : '',
-                                        onTapped: () => Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                ProductDetailsScreen(
-                                              productId:
-                                                  product.productid ?? '',
-                                            ),
+                                      child: StreamBuilder<
+                                              List<UserLikesRecord?>>(
+                                          stream: queryUserLikesRecord(
+                                            queryBuilder: (userLikesRecord) =>
+                                                userLikesRecord
+                                                    .where('userid',
+                                                        isEqualTo:
+                                                            widget.userId)
+                                                    .where('productid',
+                                                        isEqualTo:
+                                                            product.productid),
+                                            singleRecord: true,
                                           ),
-                                        ),
-                                      ),
+                                          builder: (context, snapshot) {
+                                            bool liked = false;
+                                            UserLikesRecord? record;
+                                            if (snapshot.hasData) {
+                                              if (snapshot.data != null &&
+                                                  snapshot.data!.isNotEmpty) {
+                                                record = snapshot.data!.first;
+                                                if (record != null) {
+                                                  liked = record.liked ?? false;
+                                                }
+                                              }
+                                            }
+
+                                            print(
+                                                'BARTER LIST SCREEN - RECORD: $record');
+
+                                            return BarterListItem(
+                                              // liked: _userFavourites.any(
+                                              //     (fav) => fav.productid == product.productid),
+                                              liked: liked,
+                                              itemName:
+                                                  product.productname ?? '',
+                                              itemPrice: product.price != null
+                                                  ? product.price!
+                                                      .toStringAsFixed(2)
+                                                  : '0',
+                                              imageUrl: product.mediaPrimary !=
+                                                      null
+                                                  ? product.mediaPrimary!.url!
+                                                  : '',
+                                              onTapped: () => Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      ProductDetailsScreen(
+                                                    productId:
+                                                        product.productid ?? '',
+                                                  ),
+                                                ),
+                                              ),
+                                              onLikeTapped: () {
+                                                if (record != null) {
+                                                  final newData =
+                                                      createUserLikesRecordData(
+                                                    liked: !record.liked!,
+                                                  );
+
+                                                  record.reference!
+                                                      .update(newData);
+                                                }
+                                              },
+                                            );
+                                          }),
                                     ))
                                 .toList(),
                           )
