@@ -377,13 +377,14 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                               children: [
                                                 Row(
                                                   children: [
-                                                    StreamBuilder<
-                                                            List<
-                                                                UserLikesRecord?>>(
-                                                        stream:
-                                                            queryUserLikesRecord(
-                                                          queryBuilder: (userLikesRecord) =>
-                                                              userLikesRecord
+                                                    _user != null &&
+                                                            _product != null
+                                                        ? StreamBuilder<
+                                                                List<
+                                                                    UserLikesRecord?>>(
+                                                            stream:
+                                                                queryUserLikesRecord(
+                                                              queryBuilder: (userLikesRecord) => userLikesRecord
                                                                   .where(
                                                                       'userid',
                                                                       isEqualTo:
@@ -394,62 +395,63 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                                       isEqualTo:
                                                                           _product!
                                                                               .productid),
-                                                          singleRecord: true,
-                                                        ),
-                                                        builder: (context,
-                                                            snapshot) {
-                                                          bool liked = false;
-                                                          UserLikesRecord?
-                                                              record;
-                                                          if (snapshot
-                                                              .hasData) {
-                                                            if (snapshot.data !=
-                                                                    null &&
-                                                                snapshot.data!
-                                                                    .isNotEmpty) {
-                                                              record = snapshot
-                                                                  .data!.first;
-                                                              if (record !=
-                                                                  null) {
-                                                                liked = record
-                                                                        .liked ??
-                                                                    false;
-                                                              }
-                                                            }
-                                                          }
-
-                                                          return GestureDetector(
-                                                            onTap: () {
-                                                              if (record !=
-                                                                  null) {
-                                                                final newData =
-                                                                    createUserLikesRecordData(
-                                                                  liked: !record
-                                                                      .liked!,
-                                                                );
-
-                                                                record
-                                                                    .reference!
-                                                                    .update(
-                                                                        newData);
-                                                              }
-                                                            },
-                                                            child: Icon(
-                                                              liked
-                                                                  ? FontAwesomeIcons
-                                                                      .solidHeart
-                                                                  : FontAwesomeIcons
-                                                                      .heart,
-                                                              color: Color(
-                                                                  0xFF94D2BD),
+                                                              singleRecord:
+                                                                  true,
                                                             ),
-                                                          );
-                                                        }),
-                                                    Icon(
-                                                      FontAwesomeIcons
-                                                          .solidHeart,
-                                                      color: Color(0xFF94D2BD),
-                                                    ),
+                                                            builder: (context,
+                                                                snapshot) {
+                                                              bool liked =
+                                                                  false;
+                                                              UserLikesRecord?
+                                                                  record;
+                                                              if (snapshot
+                                                                  .hasData) {
+                                                                if (snapshot.data !=
+                                                                        null &&
+                                                                    snapshot
+                                                                        .data!
+                                                                        .isNotEmpty) {
+                                                                  record =
+                                                                      snapshot
+                                                                          .data!
+                                                                          .first;
+                                                                  if (record !=
+                                                                      null) {
+                                                                    liked = record
+                                                                            .liked ??
+                                                                        false;
+                                                                  }
+                                                                }
+                                                              }
+
+                                                              return GestureDetector(
+                                                                onTap: () {
+                                                                  if (record !=
+                                                                      null) {
+                                                                    final newData =
+                                                                        createUserLikesRecordData(
+                                                                      liked: !record
+                                                                          .liked!,
+                                                                    );
+
+                                                                    record
+                                                                        .reference!
+                                                                        .update(
+                                                                            newData);
+                                                                  }
+                                                                },
+                                                                child: Icon(
+                                                                  liked
+                                                                      ? FontAwesomeIcons
+                                                                          .solidHeart
+                                                                      : FontAwesomeIcons
+                                                                          .heart,
+                                                                  color: Color(
+                                                                      0xFF94D2BD),
+                                                                ),
+                                                              );
+                                                            })
+                                                        : Container(),
                                                     SizedBox(width: 5.0),
                                                     Text(_product != null &&
                                                             _product!.likes !=
