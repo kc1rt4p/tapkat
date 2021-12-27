@@ -40,6 +40,7 @@ class _LoginScreenState extends State<LoginScreen> {
       body: ProgressHUD(
         indicatorColor: kBackgroundColor,
         backgroundColor: Colors.white,
+        barrierEnabled: false,
         child: BlocListener(
           bloc: _authBloc,
           listener: (context, state) {

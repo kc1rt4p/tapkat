@@ -93,4 +93,10 @@ class _MyAppState extends State<MyApp> {
       ),
     );
   }
+
+  @override
+  void dispose() {
+    _userStream?.cancel();
+    super.dispose();
+  }
 }

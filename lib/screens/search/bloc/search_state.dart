@@ -10,7 +10,7 @@ abstract class SearchState extends Equatable {
 class SearchInitial extends SearchState {}
 
 class SearchSuccess extends SearchState {
-  final List<dynamic> searchResults;
+  final List<ProductModel> searchResults;
 
   SearchSuccess(this.searchResults);
 }

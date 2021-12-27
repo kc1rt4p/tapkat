@@ -7,6 +7,18 @@ class Style {
   static const Color secondaryColor = Color(0xFFEE8B60);
   static const Color tertiaryColor = Color(0xFFFFFFFF);
 
+  static TextStyle get fieldTitle => GoogleFonts.getFont(
+        'Poppins',
+        fontWeight: FontWeight.w500,
+        fontSize: 10,
+      );
+
+  static TextStyle get fieldText => GoogleFonts.getFont(
+        'Poppins',
+        fontWeight: FontWeight.w600,
+        fontSize: 12,
+      );
+
   String primaryFontFamily = 'Poppins';
   String secondaryFontFamily = 'Roboto';
   static TextStyle get title1 => GoogleFonts.getFont(

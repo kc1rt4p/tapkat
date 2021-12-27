@@ -56,6 +56,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
       body: ProgressHUD(
         indicatorColor: kBackgroundColor,
         backgroundColor: Colors.white,
+        barrierEnabled: false,
         child: BlocListener(
           bloc: _searchBloc,
           listener: (context, state) {
@@ -67,6 +68,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
 
             if (state is GetProductMarkersSuccess) {
               _productMarkerStream = state.productMarkers.listen((list) {
+                print(list);
                 setState(() {
                   productMarkers = list;
                 });

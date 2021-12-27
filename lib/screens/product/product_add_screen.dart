@@ -70,6 +70,7 @@ class _ProductAddScreenState extends State<ProductAddScreen> {
       body: ProgressHUD(
           indicatorColor: kBackgroundColor,
           backgroundColor: Colors.white,
+          barrierEnabled: false,
           child: MultiBlocListener(
             listeners: [
               BlocListener(
@@ -228,31 +229,33 @@ class _ProductAddScreenState extends State<ProductAddScreen> {
     }
     if (!_formKey.currentState!.validate()) return;
 
-    final newProduct = ProductRequestModel(
-      userid: _user!.uid,
-      productname: _nameTextController.text.trim(),
-      productdesc: _descTextController.text.trim(),
-      price: double.parse(_priceTextController.text.trim()),
-      type: _selectedOfferType!,
-      location: LocationModel(
-        longitude: _selectedLocation!.geometry!.location.lng,
-        latitude: _selectedLocation!.geometry!.location.lat,
-      ),
-      address: _selectedLocation!.addressComponents[0] != null
-          ? _selectedLocation!.addressComponents[0]!.longName
-          : null,
-      city: _selectedLocation!.addressComponents[1] != null
-          ? _selectedLocation!.addressComponents[1]!.longName
-          : null,
-      country: _selectedLocation!.addressComponents.last != null
-          ? _selectedLocation!.addressComponents.last!.longName
-          : null,
-    );
+    if (_selectedLocation!.addressComponents.isNotEmpty) {
+      final newProduct = ProductRequestModel(
+        userid: _user!.uid,
+        productname: _nameTextController.text.trim(),
+        productdesc: _descTextController.text.trim(),
+        price: double.parse(_priceTextController.text.trim()),
+        type: _selectedOfferType!,
+        location: LocationModel(
+          longitude: _selectedLocation!.geometry!.location.lng,
+          latitude: _selectedLocation!.geometry!.location.lat,
+        ),
+        address: _selectedLocation!.addressComponents[0] != null
+            ? _selectedLocation!.addressComponents[0]!.longName
+            : null,
+        city: _selectedLocation!.addressComponents[1] != null
+            ? _selectedLocation!.addressComponents[1]!.longName
+            : null,
+        country: _selectedLocation!.addressComponents.last != null
+            ? _selectedLocation!.addressComponents.last!.longName
+            : null,
+      );
 
-    _productBloc.add(SaveProduct(
-      media: _selectedMedia,
-      productRequest: newProduct,
-    ));
+      _productBloc.add(SaveProduct(
+        media: _selectedMedia,
+        productRequest: newProduct,
+      ));
+    }
   }
 
   _onPhotoTapped() async {

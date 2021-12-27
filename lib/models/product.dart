@@ -16,6 +16,7 @@ class ProductModel {
   int? likes;
   AddressModel? address;
   num? rating;
+  String? imgUrl;
 
   ProductModel({
     this.productid,
@@ -32,6 +33,7 @@ class ProductModel {
     this.address,
     this.rating,
     this.media,
+    this.imgUrl,
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
@@ -48,7 +50,7 @@ class ProductModel {
           ? MediaPrimaryModel.fromJson(json['media_primary'])
           : null,
       price: json['price'],
-      likes: json['likes'],
+      likes: json['likes'] is String ? int.parse(json['likes']) : json['likes'],
       address: json['address'] != null
           ? AddressModel.fromJson(json['address'])
           : null,
@@ -58,6 +60,7 @@ class ProductModel {
               .map((m) => MediaPrimaryModel.fromJson(m))
               .toList()
           : [],
+      imgUrl: json['image_url'] as String?,
     );
   }
 

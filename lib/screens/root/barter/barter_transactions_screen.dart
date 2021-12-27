@@ -34,11 +34,27 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                   children: [
                     Expanded(
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             'Barters You Initiated',
                             style: Style.subtitle2
                                 .copyWith(color: kBackgroundColor),
+                          ),
+                          Expanded(
+                            child: Container(
+                              width: double.infinity,
+                              padding: EdgeInsets.symmetric(vertical: 10.0),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    'No Barters Found',
+                                    style: Style.subtitle2,
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
                         ],
                       ),
@@ -56,11 +72,27 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                   children: [
                     Expanded(
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             'Offers from Other Users',
                             style: Style.subtitle2
                                 .copyWith(color: kBackgroundColor),
+                          ),
+                          Expanded(
+                            child: Container(
+                              width: double.infinity,
+                              padding: EdgeInsets.symmetric(vertical: 10.0),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    'No Barters Found',
+                                    style: Style.subtitle2,
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
                         ],
                       ),

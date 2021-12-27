@@ -36,6 +36,7 @@ class _SignUpPhotoSelectionScreenState
       body: ProgressHUD(
         indicatorColor: kBackgroundColor,
         backgroundColor: Colors.white,
+        barrierEnabled: false,
         child: BlocListener(
           bloc: _authBloc,
           listener: (context, state) {

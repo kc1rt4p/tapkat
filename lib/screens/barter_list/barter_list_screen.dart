@@ -20,12 +20,14 @@ class BarterListScreen extends StatefulWidget {
 
   final String listType;
   final String? userId;
+  final bool ownListing;
 
   const BarterListScreen({
     Key? key,
     required this.listType,
     this.userId,
     this.showAdd = false,
+    this.ownListing = false,
   }) : super(key: key);
 
   @override
@@ -68,7 +70,7 @@ class _BarterListScreenState extends State<BarterListScreen> {
     return Scaffold(
       backgroundColor: Color(0xFFEBFBFF),
       body: ProgressHUD(
-        barrierEnabled: true,
+        barrierEnabled: false,
         indicatorColor: kBackgroundColor,
         backgroundColor: Colors.white,
         child: BlocListener(
@@ -253,7 +255,8 @@ class _BarterListScreenState extends State<BarterListScreen> {
                                   ),
                                   SizedBox(height: 16.0),
                                   Visibility(
-                                    visible: widget.showAdd,
+                                    visible:
+                                        widget.showAdd && widget.ownListing,
                                     child: Padding(
                                       padding: const EdgeInsets.symmetric(
                                           horizontal: 30.0),

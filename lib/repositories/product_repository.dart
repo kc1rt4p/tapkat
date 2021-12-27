@@ -16,11 +16,9 @@ class ProductRepository {
       url: 'users/likes/$userId',
     );
 
-    print('===== RESPONSE: $response');
-
     if (response.data['status'] != 'SUCCESS') return [];
 
-    return (response.data['like_list'] as List<Map<String, dynamic>>)
+    return (response.data['like_list'] as List<dynamic>)
         .map((json) => ProductModel.fromJson(json))
         .toList();
   }

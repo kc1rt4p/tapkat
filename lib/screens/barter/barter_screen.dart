@@ -76,6 +76,7 @@ class _BarterScreenState extends State<BarterScreen> {
       body: ProgressHUD(
         indicatorColor: kBackgroundColor,
         backgroundColor: Colors.white,
+        barrierEnabled: false,
         child: MultiBlocListener(
           listeners: [
             BlocListener(
@@ -130,7 +131,7 @@ class _BarterScreenState extends State<BarterScreen> {
                             _product.userid! +
                             _product.productid!,
                         userid1: _currentUser!.uid,
-                        userid2: _product.productid!,
+                        userid2: _product.userid!,
                         u1P1Name: _product.productname,
                         u1P1Price: _product.price!.toDouble(),
                         u1P1Image: _product.mediaPrimary!.url!,
@@ -409,6 +410,10 @@ class _BarterScreenState extends State<BarterScreen> {
                                   ? item.mediaPrimary!.url!
                                   : 'https://storage.googleapis.com/map-surf-assets/noimage.jpg',
                               onTapped: () {
+                                if (wants.any((product) =>
+                                    product.productid == item.productid))
+                                  return;
+
                                 if (!selectedItems.any((want) =>
                                     want.productid == item.productid)) {
                                   setState(() {
@@ -419,8 +424,8 @@ class _BarterScreenState extends State<BarterScreen> {
                             ),
                           ),
                           Visibility(
-                            visible: wants
-                                .any((product) => product.productid == item),
+                            visible: wants.any((product) =>
+                                product.productid == item.productid),
                             child: Container(
                               margin: EdgeInsets.only(right: 8.0),
                               width: 160.0,
@@ -434,16 +439,12 @@ class _BarterScreenState extends State<BarterScreen> {
                               padding: EdgeInsets.symmetric(
                                   horizontal: 12.0, vertical: 5.0),
                               child: Center(
-                                child: Row(
-                                  children: [
-                                    Text(
-                                      'ADDED',
-                                      style: Style.bodyText2.copyWith(
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ],
+                                child: Text(
+                                  'ADDED',
+                                  style: Style.bodyText2.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
                                 ),
                               ),
                             ),

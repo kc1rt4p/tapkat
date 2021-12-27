@@ -10,6 +10,7 @@ class CustomAppBar extends StatefulWidget {
   final Widget? child;
   final bool hideBack;
   final Widget? action;
+  final Widget? leading;
 
   const CustomAppBar({
     Key? key,
@@ -18,6 +19,7 @@ class CustomAppBar extends StatefulWidget {
     this.child,
     this.hideBack = false,
     this.action,
+    this.leading,
   }) : super(key: key);
 
   @override
@@ -41,7 +43,7 @@ class _CustomAppBarState extends State<CustomAppBar> {
                 : MainAxisAlignment.start,
             children: [
               widget.hideBack
-                  ? Container()
+                  ? widget.leading ?? Container()
                   : GestureDetector(
                       onTap:
                           widget.onBackTapped ?? () => Navigator.pop(context),

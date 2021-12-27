@@ -43,7 +43,7 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
             BarterInitialized(
               barterStream: queryBarterRecord(
                 queryBuilder: (barterRecord) => barterRecord.where('barterid',
-                    isEqualTo: event.barterData['barterid'] as String),
+                    isEqualTo: event.barterData['barterid']),
                 singleRecord: true,
               ),
               userProducts: userProducts,

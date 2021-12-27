@@ -51,6 +51,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return ProgressHUD(
       indicatorColor: kBackgroundColor,
       backgroundColor: Colors.white,
+      barrierEnabled: false,
       child: MultiBlocListener(
         listeners: [
           BlocListener(
@@ -219,11 +220,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   }
                                 }
 
-                                print('HOME SCREEN - RECORD: $record');
-
                                 return BarterListItem(
-                                  // liked: _userFavourites.any(
-                                  //     (fav) => fav.productid == product.productid),
                                   liked: liked,
                                   itemName: product.productname ?? '',
                                   itemPrice: product.price != null
@@ -296,6 +293,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             builder: (context) => BarterListScreen(
                               listType: 'user',
                               showAdd: true,
+                              userId: _user!.uid,
                             ),
                           ),
                         ),

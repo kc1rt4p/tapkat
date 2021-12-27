@@ -55,6 +55,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
       body: ProgressHUD(
           indicatorColor: kBackgroundColor,
           backgroundColor: Colors.white,
+          barrierEnabled: false,
           child: MultiBlocListener(
             listeners: [
               BlocListener(
@@ -225,6 +226,8 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                     .productname!.isNotEmpty
                                             ? _product!.productname!
                                             : '',
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
                                         style: Style.subtitle1
                                             .copyWith(color: Colors.black),
                                       ),
