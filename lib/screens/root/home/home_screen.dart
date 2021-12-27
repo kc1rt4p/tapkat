@@ -154,8 +154,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                 }
 
                                 return BarterListItem(
-                                  // liked: _userFavourites.any(
-                                  //     (fav) => fav.productid == product.productid),
                                   liked: liked,
                                   itemName: product.productname ?? '',
                                   itemPrice: product.price != null

@@ -202,12 +202,7 @@ class _BarterListScreenState extends State<BarterListScreen> {
                                               }
                                             }
 
-                                            print(
-                                                'BARTER LIST SCREEN - RECORD: $record');
-
                                             return BarterListItem(
-                                              // liked: _userFavourites.any(
-                                              //     (fav) => fav.productid == product.productid),
                                               liked: liked,
                                               itemName:
                                                   product.productname ?? '',

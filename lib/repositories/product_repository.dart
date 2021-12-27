@@ -1,4 +1,6 @@
 import 'package:dio/dio.dart';
+import 'package:http_parser/http_parser.dart';
+import 'package:mime_type/mime_type.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/models/request/add_product_request.dart';
 import 'package:tapkat/models/upload_product_image_response.dart';
@@ -57,14 +59,25 @@ class ProductRepository {
       'primary_media': images.first.fileName,
     });
 
-    images.forEach(
-      (img) => formData.files.add(
+    print(images.first.fileName.split('.')[1]);
+
+    images.forEach((img) {
+      final mimeType = mime(img.fileName);
+      String mimee = mimeType!.split('/')[0];
+      String type = mimeType.split('/')[1];
+
+      formData.files.add(
         MapEntry(
           'media',
-          MultipartFile.fromFileSync(img.rawPath!),
+          MultipartFile.fromFileSync(
+            img.rawPath!,
+            // contentType:
+            //     MediaType('image', images.first.fileName.split('.')[1]),
+            contentType: MediaType(mimee, type),
+          ),
         ),
-      ),
-    );
+      );
+    });
 
     final response = await _apiService.post(
       url: 'products/upload',
@@ -72,13 +85,15 @@ class ProductRepository {
       onSendProgress: (sent, total) {
         print('sent: $sent == total: $total');
       },
-      header: {
-        'Content-Type': 'multipart/form-data',
-      },
     );
 
     print('formData fields: ${formData.fields}');
-    print('formData files: ${formData.files}');
+
+    formData.files.forEach((element) {
+      print(element.value.filename);
+      print(element.value.contentType);
+      print(element.value.isFinalized);
+    });
 
     if (response.data['status'] == 'SUCCESS') return null;
 
