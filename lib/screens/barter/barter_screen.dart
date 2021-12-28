@@ -9,11 +9,11 @@ import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/schemas/barter_record.dart';
+import 'package:tapkat/screens/barter/barter_chat_screen.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/utilities/style.dart';
 import 'package:tapkat/widgets/barter_list_item.dart';
-import 'package:tapkat/widgets/custom_app_bar.dart';
 import 'package:tapkat/widgets/custom_button.dart';
 
 import 'bloc/barter_bloc.dart';
@@ -146,7 +146,47 @@ class _BarterScreenState extends State<BarterScreen> {
           child: Container(
             child: Column(
               children: [
-                CustomAppBar(label: 'Barter with $_participantName'),
+                Container(
+                  padding:
+                      EdgeInsets.fromLTRB(16.0, SizeConfig.paddingTop, 16.0, 0),
+                  height: kToolbarHeight + SizeConfig.paddingTop,
+                  color: kBackgroundColor,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      GestureDetector(
+                        onTap: () => Navigator.pop(context),
+                        child: FaIcon(
+                          FontAwesomeIcons.chevronLeft,
+                          color: Colors.white,
+                        ),
+                      ),
+                      Text(
+                        'Barter with $_participantName',
+                        style: Style.subtitle1.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => BarterChatScreen(
+                                barterRecord: _barterRecord!,
+                              ),
+                            ),
+                          );
+                        },
+                        child: FaIcon(
+                          Icons.mail,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
                 Expanded(
                   child: Container(
                     padding: EdgeInsets.symmetric(
@@ -169,6 +209,7 @@ class _BarterScreenState extends State<BarterScreen> {
                               label:
                                   'You want this item(s) from $_participantName',
                               items: wants.map((item) {
+                                print('item====== ${item.toJson()}');
                                 return Container(
                                   margin:
                                       EdgeInsets.only(right: 8.0, bottom: 5.0),
@@ -177,10 +218,10 @@ class _BarterScreenState extends State<BarterScreen> {
                                       BarterListItem(
                                         hideLikeBtn: true,
                                         itemName: item.productname ?? '',
-                                        itemPrice: item.currency ??
-                                            '\$' +
-                                                (item.price!)
-                                                    .toStringAsFixed(2),
+                                        itemPrice: (item.currency ?? '\$') +
+                                            (item.price != null
+                                                ? ' ${item.price!.toStringAsFixed(2)}'
+                                                : '0.00'),
                                         imageUrl: item.mediaPrimary != null &&
                                                 item.mediaPrimary!.url != null
                                             ? item.mediaPrimary!.url!
@@ -233,10 +274,10 @@ class _BarterScreenState extends State<BarterScreen> {
                                       BarterListItem(
                                         hideLikeBtn: true,
                                         itemName: item.productname ?? '',
-                                        itemPrice: item.currency ??
-                                            '\$' +
-                                                (item.price!)
-                                                    .toStringAsFixed(2),
+                                        itemPrice: (item.currency ?? '\$') +
+                                            (item.price != null
+                                                ? ' ${item.price!.toStringAsFixed(2)}'
+                                                : '0.00'),
                                         imageUrl: item.mediaPrimary != null &&
                                                 item.mediaPrimary!.url != null
                                             ? item.mediaPrimary!.url!

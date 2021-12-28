@@ -104,6 +104,10 @@ class _ProductAddScreenState extends State<ProductAddScreen> {
 
                     Navigator.pop(context);
                   }
+
+                  if (state is ProductError) {
+                    print('====ERROR PRODUCT BLOC: ${state.message}');
+                  }
                 },
               ),
             ],

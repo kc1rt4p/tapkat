@@ -85,15 +85,13 @@ class ProductRepository {
       },
     );
 
-    print('formData fields: ${formData.fields}');
-
     formData.files.forEach((element) {
       print(element.value.filename);
       print(element.value.contentType);
       print(element.value.isFinalized);
     });
 
-    if (response.data['status'] == 'SUCCESS') return null;
+    if (response.data['status'] != 'SUCCESS') return null;
 
     return UploadProductImageResponseModel.fromJson(response.data);
   }

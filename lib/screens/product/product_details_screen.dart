@@ -263,7 +263,10 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                 _product != null &&
                                                         _product!
                                                             .userid!.isNotEmpty
-                                                    ? _product!.userid!
+                                                    ? _product!.userid!.length >
+                                                            8
+                                                        ? '${_product!.userid!.substring(0, 7)}...'
+                                                        : _product!.userid!
                                                     : '',
                                                 overflow: TextOverflow.ellipsis,
                                                 style: TextStyle(
@@ -285,7 +288,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                             ),
                                             child: Center(
                                               child: Text(
-                                                'View ${_product != null && _product!.userid!.isNotEmpty ? _product!.userid! : ''}\'s Store',
+                                                'View ${_product != null && _product!.userid!.isNotEmpty ? _product!.userid!.length > 8 ? '${_product!.userid!.substring(0, 7)}...' : _product!.productname! : ''}\'s Store',
                                                 overflow: TextOverflow.ellipsis,
                                                 style: TextStyle(
                                                   color: Colors.white,

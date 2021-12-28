@@ -31,6 +31,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
   late AuthBloc _authBloc;
   List<ProductModel> _list = [];
   bool editProfile = false;
+  final _displayNameTextController = TextEditingController();
+  final _emailTextController = TextEditingController();
+  final _phoneTextController = TextEditingController();
+  final _locationTextController = TextEditingController();
 
   @override
   void initState() {
@@ -314,7 +318,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     Widget? suffix,
   }) {
     return Container(
-      margin: EdgeInsets.only(bottom: 5.0),
+      margin: EdgeInsets.only(bottom: 3.0),
       padding: EdgeInsets.symmetric(
         horizontal: 20.0,
       ),
@@ -329,6 +333,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             decoration: InputDecoration(
               isDense: true,
               isCollapsed: true,
+              contentPadding: EdgeInsets.zero,
               hintText: '',
               disabledBorder: InputBorder.none,
               border: !editProfile
