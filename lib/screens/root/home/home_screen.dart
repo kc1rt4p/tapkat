@@ -90,10 +90,11 @@ class _HomeScreenState extends State<HomeScreen> {
             bloc: _authBloc,
             listener: (context, state) {
               if (state is GetCurrentUsersuccess) {
-                _homeBloc.add(InitializeHomeScreen());
                 setState(() {
                   _user = state.user;
                 });
+
+                _homeBloc.add(InitializeHomeScreen());
               }
             },
             child: Container(),

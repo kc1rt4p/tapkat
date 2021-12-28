@@ -337,6 +337,7 @@ class _BarterListScreenState extends State<BarterListScreen> {
         listType: widget.listType,
         lastProductId: _list.last.productid!,
         startAfterVal: _list.last.price!.toString(),
+        userId: widget.listType == 'user' ? widget.userId : '',
       ),
     );
 

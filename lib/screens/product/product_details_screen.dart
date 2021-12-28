@@ -236,6 +236,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                       child: Row(
                                         children: [
                                           Expanded(
+                                            flex: 1,
                                             child: Text(
                                               _product != null &&
                                                       _product!.price != null &&
@@ -243,57 +244,63 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                   ? '${_product!.currency!} ${_product!.price!.toStringAsFixed(2)}'
                                                   : '',
                                               style: TextStyle(
-                                                fontSize: 22.0,
+                                                color: kBackgroundColor,
+                                                fontFamily: 'Poppins',
+                                                fontSize: 20.0,
                                                 fontWeight: FontWeight.w500,
                                               ),
                                             ),
                                           ),
-                                          Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.end,
-                                            children: [
-                                              Text(
-                                                'Listed by:',
-                                                style: TextStyle(
-                                                  fontSize: 13.0,
-                                                  color: Color(0xFF414141),
-                                                ),
-                                              ),
-                                              Text(
-                                                _product != null &&
-                                                        _product!
-                                                            .userid!.isNotEmpty
-                                                    ? _product!.userid!.length >
-                                                            8
-                                                        ? '${_product!.userid!.substring(0, 7)}...'
-                                                        : _product!.userid!
-                                                    : '',
-                                                overflow: TextOverflow.ellipsis,
-                                                style: TextStyle(
-                                                  fontSize: 15.0,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
+                                          // Column(
+                                          //   crossAxisAlignment:
+                                          //       CrossAxisAlignment.end,
+                                          //   children: [
+                                          //     Text(
+                                          //       'Listed by:',
+                                          //       style: TextStyle(
+                                          //         fontSize: 13.0,
+                                          //         color: Color(0xFF414141),
+                                          //       ),
+                                          //     ),
+                                          //     Text(
+                                          //       _product != null &&
+                                          //               _product!
+                                          //                   .userid!.isNotEmpty
+                                          //           ? _product!.userid!.length >
+                                          //                   8
+                                          //               ? '${_product!.userid!.substring(0, 8)}...'
+                                          //               : _product!.userid!
+                                          //           : '',
+                                          //       overflow: TextOverflow.ellipsis,
+                                          //       style: TextStyle(
+                                          //         fontSize: 15.0,
+                                          //         fontWeight: FontWeight.w600,
+                                          //       ),
+                                          //     ),
+                                          //   ],
+                                          // ),
                                           SizedBox(width: 16.0),
-                                          Container(
-                                            padding: EdgeInsets.symmetric(
-                                                horizontal: 20.0,
-                                                vertical: 10.0),
-                                            decoration: BoxDecoration(
-                                              color: Color(0xFFBB3F03),
-                                              borderRadius:
-                                                  BorderRadius.circular(9.0),
-                                            ),
-                                            child: Center(
-                                              child: Text(
-                                                'View ${_product != null && _product!.userid!.isNotEmpty ? _product!.userid!.length > 8 ? '${_product!.userid!.substring(0, 7)}...' : _product!.productname! : ''}\'s Store',
-                                                overflow: TextOverflow.ellipsis,
-                                                style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 12.0,
-                                                  fontWeight: FontWeight.w500,
+                                          Expanded(
+                                            flex: 2,
+                                            child: Container(
+                                              padding: EdgeInsets.symmetric(
+                                                  horizontal: 20.0,
+                                                  vertical: 10.0),
+                                              decoration: BoxDecoration(
+                                                color: Color(0xFFBB3F03),
+                                                borderRadius:
+                                                    BorderRadius.circular(9.0),
+                                              ),
+                                              child: Center(
+                                                child: Text(
+                                                  'View ${_product != null && _product!.userid!.isNotEmpty ? _product!.userid!.length > 10 ? '${_product!.userid!.substring(0, 12)}...' : _product!.userid! : ''}\'s Store',
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 12.0,
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
                                                 ),
                                               ),
                                             ),

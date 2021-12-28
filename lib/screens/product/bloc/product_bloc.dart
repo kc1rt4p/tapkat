@@ -50,9 +50,11 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
 
         if (event is GetNextProducts) {
           final result = await _productRepo.getNextProducts(
-              listType: event.listType,
-              lastProductId: event.lastProductId,
-              startAfterVal: event.startAfterVal);
+            listType: event.listType,
+            lastProductId: event.lastProductId,
+            startAfterVal: event.startAfterVal,
+            userId: event.listType == 'user' ? event.userId : '',
+          );
 
           emit(GetProductsSuccess(result));
         }
