@@ -38,6 +38,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   void initState() {
+    _authBloc = BlocProvider.of<AuthBloc>(context);
     _profileBloc.add(InitializeProfileScreen());
     super.initState();
   }
@@ -150,10 +151,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                           _buildInfoItem(
                                             label: 'Display name',
                                             controller: TextEditingController(
-                                              text:
-                                                  _user!.displayName!.isNotEmpty
-                                                      ? _user!.displayName
-                                                      : 'Unknown',
+                                              text: _user != null &&
+                                                      _user!.displayName !=
+                                                          null &&
+                                                      _user!.displayName!
+                                                          .isNotEmpty
+                                                  ? _user!.displayName
+                                                  : 'Unknown',
                                             ),
                                           ),
                                           _buildInfoItem(
@@ -165,10 +169,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                           _buildInfoItem(
                                             label: 'Phone number',
                                             controller: TextEditingController(
-                                              text:
-                                                  _user!.phoneNumber!.isNotEmpty
-                                                      ? _user!.phoneNumber
-                                                      : '123456789',
+                                              text: _user != null &&
+                                                      _user!.displayName !=
+                                                          null &&
+                                                      _user!.phoneNumber!
+                                                          .isNotEmpty
+                                                  ? _user!.phoneNumber
+                                                  : '123456789',
                                             ),
                                           ),
                                           _buildInfoItem(
@@ -249,12 +256,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                                     .toStringAsFixed(
                                                                         2)
                                                                 : '0',
-                                                            imageUrl:
-                                                                product.imgUrl !=
-                                                                        null
-                                                                    ? product
-                                                                        .imgUrl!
-                                                                    : '',
+                                                            imageUrl: product
+                                                                            .mediaPrimary !=
+                                                                        null &&
+                                                                    product.mediaPrimary!
+                                                                            .url !=
+                                                                        null &&
+                                                                    product
+                                                                        .mediaPrimary!
+                                                                        .url!
+                                                                        .isNotEmpty
+                                                                ? product
+                                                                    .mediaPrimary!
+                                                                    .url!
+                                                                : '',
                                                             onTapped: () =>
                                                                 Navigator.push(
                                                               context,

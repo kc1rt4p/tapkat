@@ -7,9 +7,9 @@ import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/models/request/add_product_request.dart';
 import 'package:tapkat/schemas/user_likes_record.dart';
-import 'package:tapkat/screens/barter_list/barter_list_screen.dart';
 import 'package:tapkat/screens/product/bloc/product_bloc.dart';
 import 'package:tapkat/screens/product/product_details_screen.dart';
+import 'package:tapkat/screens/product/product_list_screen.dart';
 import 'package:tapkat/screens/root/home/bloc/home_bloc.dart';
 import 'package:tapkat/screens/search/search_result_screen.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
@@ -189,7 +189,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         onViewAllTapped: () => Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => BarterListScreen(
+                            builder: (context) => ProductListScreen(
                               listType: 'reco',
                               showAdd: false,
                             ),
@@ -255,7 +255,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         onViewAllTapped: () => Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => BarterListScreen(
+                            builder: (context) => ProductListScreen(
                               listType: 'demand',
                               showAdd: false,
                             ),
@@ -280,6 +280,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               MaterialPageRoute(
                                 builder: (context) => ProductDetailsScreen(
                                   productId: product.productid ?? '',
+                                  ownItem: true,
                                 ),
                               ),
                             ),
@@ -291,10 +292,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         onViewAllTapped: () => Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => BarterListScreen(
+                            builder: (context) => ProductListScreen(
                               listType: 'user',
                               showAdd: true,
                               userId: _user!.uid,
+                              ownListing: true,
                             ),
                           ),
                         ),

@@ -15,14 +15,14 @@ import 'package:tapkat/widgets/custom_app_bar.dart';
 import 'package:tapkat/widgets/custom_button.dart';
 import 'package:tapkat/widgets/custom_search_bar.dart';
 
-class BarterListScreen extends StatefulWidget {
+class ProductListScreen extends StatefulWidget {
   final bool showAdd;
 
   final String listType;
   final String? userId;
   final bool ownListing;
 
-  const BarterListScreen({
+  const ProductListScreen({
     Key? key,
     required this.listType,
     this.userId,
@@ -31,10 +31,10 @@ class BarterListScreen extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _BarterListScreenState createState() => _BarterListScreenState();
+  _ProductListScreenState createState() => _ProductListScreenState();
 }
 
-class _BarterListScreenState extends State<BarterListScreen> {
+class _ProductListScreenState extends State<ProductListScreen> {
   final _productBloc = ProductBloc();
   late String _title;
   List<ProductModel> _list = [];

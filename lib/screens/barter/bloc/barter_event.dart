@@ -7,6 +7,26 @@ abstract class BarterEvent extends Equatable {
   List<Object> get props => [];
 }
 
+class SendMessage extends BarterEvent {
+  final ChatMessageModel message;
+
+  SendMessage(this.message);
+}
+
+class InitializeBarterChat extends BarterEvent {
+  final String barterId;
+
+  InitializeBarterChat(this.barterId);
+}
+
+class InitializeBarterTransactions extends BarterEvent {}
+
+class StreamBarter extends BarterEvent {
+  final BarterRecordModel barterRecord;
+
+  StreamBarter(this.barterRecord);
+}
+
 class InitializeBarter extends BarterEvent {
   final Map<String, dynamic> barterData;
 

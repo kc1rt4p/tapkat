@@ -39,12 +39,12 @@ class _BarterListItemState extends State<BarterListItem> {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(20.0),
-            boxShadow: [
-              BoxShadow(
-                offset: Offset(1, 1),
-                color: Colors.grey,
-              ),
-            ],
+            // boxShadow: [
+            //   BoxShadow(
+            //     offset: Offset(1, 1),
+            //     color: Colors.grey,
+            //   ),
+            // ],
           ),
           child: Column(
             children: [
@@ -101,7 +101,7 @@ class _BarterListItemState extends State<BarterListItem> {
                 Icon(
                   Icons.favorite,
                   color: Colors.white,
-                  size: 30,
+                  size: 27,
                 ),
                 GestureDetector(
                   onTap: widget.onLikeTapped,

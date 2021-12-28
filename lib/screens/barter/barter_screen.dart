@@ -7,6 +7,7 @@ import 'package:flutter_progress_hud/flutter_progress_hud.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
+import 'package:tapkat/models/barter_record_model.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/schemas/barter_record.dart';
 import 'package:tapkat/screens/barter/barter_chat_screen.dart';
@@ -19,11 +20,13 @@ import 'package:tapkat/widgets/custom_button.dart';
 import 'bloc/barter_bloc.dart';
 
 class BarterScreen extends StatefulWidget {
-  final ProductModel product;
+  final ProductModel? product;
+  final BarterRecordModel? barterRecord;
 
   const BarterScreen({
     Key? key,
-    required this.product,
+    this.product,
+    this.barterRecord,
   }) : super(key: key);
 
   @override
@@ -31,7 +34,7 @@ class BarterScreen extends StatefulWidget {
 }
 
 class _BarterScreenState extends State<BarterScreen> {
-  late ProductModel _product;
+  ProductModel? _product;
   late AuthBloc _authBloc;
   final _barterBloc = BarterBloc();
   List<ProductModel> offers = [];
@@ -42,20 +45,36 @@ class _BarterScreenState extends State<BarterScreen> {
   User? _currentUser;
   BarterRecord? _barterRecord;
   StreamSubscription<List<BarterRecord?>>? _barterStreamSub;
+  String? _barterId;
 
   @override
   void initState() {
     _authBloc = BlocProvider.of<AuthBloc>(context);
-    _product = widget.product;
-
-    _participantName = _product.userid ?? '';
-    _participantName = _participantName[0].toUpperCase() +
-        _participantName.substring(1).toLowerCase();
     _authBloc.add(GetCurrentuser());
+    if (widget.product != null) {
+      _product = widget.product!;
+      _participantName = _product!.userid ?? '';
+      _participantName = _participantName[0].toUpperCase() +
+          _participantName.substring(1).toLowerCase();
 
-    setState(() {
-      wants.add(_product);
-    });
+      setState(() {
+        wants.add(_product!);
+      });
+    } else {
+      _participantName = widget.barterRecord!.userid1 ?? '';
+      _participantName = _participantName[0].toUpperCase() +
+          _participantName.substring(1).toLowerCase();
+    }
+
+    if (widget.barterRecord != null) {
+      setState(() {
+        _barterId = widget.barterRecord!.barterId;
+      });
+    }
+
+    _participantName = _participantName.length > 10
+        ? _participantName.substring(0, 10) + '...'
+        : _participantName;
 
     super.initState();
   }
@@ -97,11 +116,11 @@ class _BarterScreenState extends State<BarterScreen> {
                   print('partItems: $participantItems');
                   print('userItems: $userItems');
                   _barterStreamSub = state.barterStream.listen((barterRecord) {
-                    if (barterRecord.first != null) {
-                      setState(() {
-                        _barterRecord = barterRecord.first;
-                      });
-                    }
+                    setState(() {
+                      _barterRecord = barterRecord.first;
+                    });
+
+                    print('BARTER RECORD==== ${_barterRecord!.barterid}');
                   });
                 }
 
@@ -124,21 +143,27 @@ class _BarterScreenState extends State<BarterScreen> {
                     _currentUser = state.user;
                   });
 
-                  _barterBloc.add(
-                    InitializeBarter(
-                      createBarterRecordData(
-                        barterid: _currentUser!.uid +
-                            _product.userid! +
-                            _product.productid!,
-                        userid1: _currentUser!.uid,
-                        userid2: _product.userid!,
-                        u1P1Name: _product.productname,
-                        u1P1Price: _product.price!.toDouble(),
-                        u1P1Image: _product.mediaPrimary!.url!,
-                        barterNo: 0,
+                  if (widget.barterRecord == null && widget.product != null) {
+                    _barterId = _currentUser!.uid +
+                        _product!.userid! +
+                        _product!.productid!;
+
+                    _barterBloc.add(
+                      InitializeBarter(
+                        createBarterRecordData(
+                          barterid: _barterId,
+                          userid1: _currentUser!.uid,
+                          userid2: _product!.userid!,
+                          u1P1Name: _product!.productname,
+                          u1P1Price: _product!.price!.toDouble(),
+                          u1P1Image: _product!.mediaPrimary!.url!,
+                          barterNo: 0,
+                        ),
                       ),
-                    ),
-                  );
+                    );
+                  } else {
+                    _barterBloc.add(StreamBarter(widget.barterRecord!));
+                  }
                 }
               },
             ),
@@ -170,14 +195,16 @@ class _BarterScreenState extends State<BarterScreen> {
                       ),
                       GestureDetector(
                         onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => BarterChatScreen(
-                                barterRecord: _barterRecord!,
+                          if (_barterId != null) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => BarterChatScreen(
+                                  barterId: _barterId!,
+                                ),
                               ),
-                            ),
-                          );
+                            );
+                          }
                         },
                         child: FaIcon(
                           Icons.mail,
@@ -372,12 +399,13 @@ class _BarterScreenState extends State<BarterScreen> {
         children: [
           Row(
             children: [
-              Text(
-                label,
-                style: Style.subtitle2.copyWith(
-                    color: kBackgroundColor, fontWeight: FontWeight.bold),
+              Expanded(
+                child: Text(
+                  label,
+                  style: Style.subtitle2.copyWith(
+                      color: kBackgroundColor, fontWeight: FontWeight.bold),
+                ),
               ),
-              Spacer(),
               labelAction ?? Container(),
             ],
           ),

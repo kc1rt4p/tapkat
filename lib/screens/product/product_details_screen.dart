@@ -12,6 +12,7 @@ import 'package:tapkat/models/product.dart';
 import 'package:tapkat/schemas/user_likes_record.dart';
 import 'package:tapkat/screens/barter/barter_screen.dart';
 import 'package:tapkat/screens/product/bloc/product_bloc.dart';
+import 'package:tapkat/screens/store/store_screen.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/utilities/style.dart';
@@ -280,26 +281,47 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                           //   ],
                                           // ),
                                           SizedBox(width: 16.0),
-                                          Expanded(
-                                            flex: 2,
-                                            child: Container(
-                                              padding: EdgeInsets.symmetric(
-                                                  horizontal: 20.0,
-                                                  vertical: 10.0),
-                                              decoration: BoxDecoration(
-                                                color: Color(0xFFBB3F03),
-                                                borderRadius:
-                                                    BorderRadius.circular(9.0),
-                                              ),
-                                              child: Center(
-                                                child: Text(
-                                                  'View ${_product != null && _product!.userid!.isNotEmpty ? _product!.userid!.length > 10 ? '${_product!.userid!.substring(0, 12)}...' : _product!.userid! : ''}\'s Store',
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                  style: TextStyle(
-                                                    color: Colors.white,
-                                                    fontSize: 12.0,
-                                                    fontWeight: FontWeight.w500,
+                                          Visibility(
+                                            visible: !widget.ownItem,
+                                            child: Expanded(
+                                              flex: 2,
+                                              child: InkWell(
+                                                onTap: () {
+                                                  Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                      builder: ((context) =>
+                                                          StoreScreen(
+                                                            userId: _product!
+                                                                .userid!,
+                                                            userName: _product!
+                                                                .userid!,
+                                                          )),
+                                                    ),
+                                                  );
+                                                },
+                                                child: Container(
+                                                  padding: EdgeInsets.symmetric(
+                                                      horizontal: 20.0,
+                                                      vertical: 10.0),
+                                                  decoration: BoxDecoration(
+                                                    color: Color(0xFFBB3F03),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            9.0),
+                                                  ),
+                                                  child: Center(
+                                                    child: Text(
+                                                      'View ${_product != null && _product!.userid!.isNotEmpty ? _product!.userid!.length > 10 ? '${_product!.userid!.substring(0, 12)}...' : _product!.userid! : ''}\'s Store',
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                      style: TextStyle(
+                                                        color: Colors.white,
+                                                        fontSize: 12.0,
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                      ),
+                                                    ),
                                                   ),
                                                 ),
                                               ),
