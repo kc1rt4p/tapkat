@@ -260,7 +260,7 @@ class _BarterScreenState extends State<BarterScreen> {
                                         child: InkWell(
                                           onTap: () {
                                             setState(() {
-                                              offers.removeWhere((product) =>
+                                              wants.removeWhere((product) =>
                                                   product.productid ==
                                                   item.productid);
                                             });
