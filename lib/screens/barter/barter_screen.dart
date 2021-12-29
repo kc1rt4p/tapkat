@@ -8,6 +8,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
 import 'package:tapkat/models/barter_record_model.dart';
+import 'package:tapkat/models/media_primary_model.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/schemas/barter_record.dart';
 import 'package:tapkat/screens/barter/barter_chat_screen.dart';
@@ -69,6 +70,15 @@ class _BarterScreenState extends State<BarterScreen> {
     if (widget.barterRecord != null) {
       setState(() {
         _barterId = widget.barterRecord!.barterId;
+        wants.add(ProductModel(
+          productid: widget.barterRecord!.u1P1Id,
+          productname: widget.barterRecord!.u1P1Name,
+          price: widget.barterRecord!.u1P1Price,
+          mediaPrimary: MediaPrimaryModel(
+            type: 'image',
+            url: widget.barterRecord!.u1P1Image,
+          ),
+        ));
       });
     }
 

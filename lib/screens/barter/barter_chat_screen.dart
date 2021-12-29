@@ -11,7 +11,6 @@ import 'package:tapkat/screens/barter/bloc/barter_bloc.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/widgets/custom_app_bar.dart';
-import 'package:timeago/timeago.dart' as timeago;
 
 class BarterChatScreen extends StatefulWidget {
   final String barterId;
@@ -210,7 +209,9 @@ class _BarterChatScreenState extends State<BarterChatScreen> {
                   : CrossAxisAlignment.end,
               children: [
                 Text(
-                  msg.userId == _user!.uid ? 'You' : msg.userName ?? 'Unknown',
+                  msg.userId == _user!.uid
+                      ? 'You'
+                      : msg.userName ?? 'Anonymous',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
@@ -227,13 +228,13 @@ class _BarterChatScreenState extends State<BarterChatScreen> {
               ],
             ),
           ),
-          Text(
-            timeago.format(msg.dateCreated ?? DateTime.now()),
-            style: TextStyle(
-              fontFamily: 'Poppins',
-              fontSize: 10.0,
-            ),
-          ),
+          // Text(
+          //   timeago.format(msg.dateCreated ?? DateTime.now()),
+          //   style: TextStyle(
+          //     fontFamily: 'Poppins',
+          //     fontSize: 10.0,
+          //   ),
+          // ),
         ],
       ),
     );

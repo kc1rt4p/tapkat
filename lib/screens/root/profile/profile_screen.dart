@@ -1,12 +1,17 @@
 import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_google_places/flutter_google_places.dart';
 import 'package:flutter_progress_hud/flutter_progress_hud.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:google_api_headers/google_api_headers.dart';
+import 'package:google_maps_webservice/places.dart';
 import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
 import 'package:tapkat/models/product.dart';
+import 'package:tapkat/screens/product/product_add_screen.dart';
 import 'package:tapkat/screens/product/product_details_screen.dart';
 import 'package:tapkat/screens/root/profile/bloc/profile_bloc.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
@@ -34,7 +39,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final _displayNameTextController = TextEditingController();
   final _emailTextController = TextEditingController();
   final _phoneTextController = TextEditingController();
+  PlaceDetails? _selectedLocation;
   final _locationTextController = TextEditingController();
+  final iOSGoogleMapsApiKey = 'AIzaSyBCyNgeJDA8_nwdGrPf5ecuIsVFRXSF0mQ';
+  final androidGoogleMapsApiKey = 'AIzaSyAH4fWM5IbEO0X-Txkm6HNsFAQ3KOfW20I';
+  final webGoogleMapsApiKey = 'AIzaSyAzPjfTTLzdfp-56tarHguvLXgdw7QAGkg';
 
   @override
   void initState() {
@@ -67,6 +76,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     _user = state.user;
                     _list = state.list;
                   });
+
+                  _displayNameTextController.text =
+                      _user!.displayName ?? 'Unknown';
+                  _emailTextController.text = _user!.email ?? 'Unknown';
+                  _phoneTextController.text = _user!.phoneNumber ?? 'Unknown';
+                  _locationTextController.text = 'Unknown';
                 }
               },
             ),
@@ -118,16 +133,49 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                           .copyWith(color: Colors.white),
                                     ),
                                     Spacer(),
-                                    GestureDetector(
-                                      onTap: () {
-                                        setState(() {
-                                          editProfile = !editProfile;
-                                        });
-                                      },
-                                      child: Icon(
-                                        FontAwesomeIcons.solidEdit,
-                                        color: Colors.white,
-                                        size: 18.0,
+                                    Visibility(
+                                      visible: editProfile,
+                                      child: Row(
+                                        children: [
+                                          GestureDetector(
+                                            onTap: () {
+                                              setState(() {
+                                                editProfile = !editProfile;
+                                              });
+                                            },
+                                            child: Icon(
+                                              FontAwesomeIcons.times,
+                                              color: Colors.white,
+                                              size: 18.0,
+                                            ),
+                                          ),
+                                          SizedBox(width: 10.0),
+                                          GestureDetector(
+                                            onTap: () {
+                                              //
+                                            },
+                                            child: Icon(
+                                              FontAwesomeIcons.solidSave,
+                                              color: Colors.white,
+                                              size: 18.0,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Visibility(
+                                      visible: !editProfile,
+                                      child: GestureDetector(
+                                        onTap: () {
+                                          setState(() {
+                                            editProfile = !editProfile;
+                                          });
+                                        },
+                                        child: Icon(
+                                          FontAwesomeIcons.solidEdit,
+                                          color: Colors.white,
+                                          size: 18.0,
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -150,44 +198,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         children: [
                                           _buildInfoItem(
                                             label: 'Display name',
-                                            controller: TextEditingController(
-                                              text: _user != null &&
-                                                      _user!.displayName !=
-                                                          null &&
-                                                      _user!.displayName!
-                                                          .isNotEmpty
-                                                  ? _user!.displayName
-                                                  : 'Unknown',
-                                            ),
+                                            controller:
+                                                _displayNameTextController,
                                           ),
                                           _buildInfoItem(
                                             label: 'Email',
-                                            controller: TextEditingController(
-                                              text: _user!.email,
-                                            ),
+                                            controller: _emailTextController,
                                           ),
                                           _buildInfoItem(
                                             label: 'Phone number',
-                                            controller: TextEditingController(
-                                              text: _user != null &&
-                                                      _user!.displayName !=
-                                                          null &&
-                                                      _user!.phoneNumber!
-                                                          .isNotEmpty
-                                                  ? _user!.phoneNumber
-                                                  : '123456789',
-                                            ),
+                                            controller: _phoneTextController,
                                           ),
                                           _buildInfoItem(
                                             label: 'Location',
-                                            controller: TextEditingController(
-                                                text:
-                                                    'Naga City, Camarines Sur, Philippines'),
+                                            controller: _locationTextController,
                                             suffix: Icon(
                                               FontAwesomeIcons.mapMarked,
                                               color: kBackgroundColor,
                                               size: 12.0,
                                             ),
+                                            onTap: _onSelectLocation,
+                                            readOnly: true,
                                           ),
                                         ],
                                       ),
@@ -222,6 +253,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                             ),
                                             Spacer(),
                                             GestureDetector(
+                                              onTap: () async {
+                                                await Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        ProductAddScreen(),
+                                                  ),
+                                                );
+
+                                                _profileBloc.add(
+                                                    InitializeProfileScreen());
+                                              },
                                               child: Icon(
                                                 FontAwesomeIcons.plus,
                                                 color: Colors.white,
@@ -277,6 +320,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                                 builder:
                                                                     (context) =>
                                                                         ProductDetailsScreen(
+                                                                  ownItem: true,
                                                                   productId:
                                                                       product.productid ??
                                                                           '',
@@ -331,6 +375,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required String label,
     required TextEditingController controller,
     Widget? suffix,
+    Function()? onTap,
+    bool readOnly = false,
   }) {
     return Container(
       margin: EdgeInsets.only(bottom: 3.0),
@@ -343,7 +389,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             controller: controller,
             style: Style.fieldText,
             textAlign: TextAlign.center,
-            readOnly: !editProfile,
+            readOnly: !editProfile || readOnly,
+            onTap: onTap,
             enabled: editProfile,
             decoration: InputDecoration(
               isDense: true,
@@ -455,6 +502,56 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
       ],
     );
+  }
+
+  Future<Null> displayPrediction(Prediction? p) async {
+    if (p != null) {
+      // get detail (lat/lng)
+      GoogleMapsPlaces _places = GoogleMapsPlaces(
+        apiKey: googleMapsApiKey,
+        apiHeaders: await GoogleApiHeaders().getHeaders(),
+      );
+      PlacesDetailsResponse detail =
+          await _places.getDetailsByPlaceId(p.placeId!);
+      setState(() {
+        _selectedLocation = detail.result;
+      });
+      _locationTextController.text = _selectedLocation!.formattedAddress!;
+    }
+  }
+
+  String get googleMapsApiKey {
+    if (kIsWeb) {
+      return webGoogleMapsApiKey;
+    }
+    switch (defaultTargetPlatform) {
+      case TargetPlatform.macOS:
+      case TargetPlatform.windows:
+        return '';
+      case TargetPlatform.iOS:
+        return iOSGoogleMapsApiKey;
+      case TargetPlatform.android:
+        return androidGoogleMapsApiKey;
+      default:
+        return webGoogleMapsApiKey;
+    }
+  }
+
+  Future<void> _onSelectLocation() async {
+    // show input autocomplete with selected mode
+    // then get the Prediction selected
+    Prediction? p = await PlacesAutocomplete.show(
+      context: context,
+      apiKey: googleMapsApiKey,
+      onError: (response) => print('Error occured when getting places response:'
+          '\n${response.errorMessage}'),
+      mode: Mode.overlay,
+      types: [],
+      components: [],
+      strictbounds: false,
+    );
+
+    if (p != null && p.placeId != null) displayPrediction(p);
   }
 
   _onPhotoTapped() {
