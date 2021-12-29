@@ -17,6 +17,13 @@ class SaveProduct extends ProductEvent {
   });
 }
 
+class AddProductImage extends ProductEvent {
+  final String productId;
+  final List<SelectedMedia> media;
+
+  AddProductImage(this.productId, this.media);
+}
+
 class GetFirstProducts extends ProductEvent {
   final String listType;
   final String? userId;
@@ -48,4 +55,23 @@ class AddLike extends ProductEvent {
   final ProductRequestModel product;
 
   AddLike(this.product);
+}
+
+class DeleteProduct extends ProductEvent {
+  final String productId;
+
+  DeleteProduct(this.productId);
+}
+
+class EditProduct extends ProductEvent {
+  final ProductRequestModel product;
+
+  EditProduct(this.product);
+}
+
+class DeleteImages extends ProductEvent {
+  final List<String> imgUrls;
+  final String productId;
+
+  DeleteImages(this.imgUrls, this.productId);
 }

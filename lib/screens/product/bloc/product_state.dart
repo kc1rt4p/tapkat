@@ -31,6 +31,8 @@ class ProductError extends ProductState {
 
 class AddLikeSuccess extends ProductState {}
 
+class AddProductImageSuccess extends ProductState {}
+
 class GetProductsSuccess extends ProductState {
   final List<ProductModel> list;
 
@@ -41,4 +43,14 @@ class GetFirstProductsSuccess extends ProductState {
   final List<ProductModel> list;
 
   GetFirstProductsSuccess(this.list);
+}
+
+class DeleteProductSuccess extends ProductState {}
+
+class EditProductSuccess extends ProductState {}
+
+class DeleteImagesSuccess extends ProductState {
+  final List<String> urls;
+
+  DeleteImagesSuccess(this.urls);
 }

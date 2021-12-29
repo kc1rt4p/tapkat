@@ -164,15 +164,20 @@ class _HomeScreenState extends State<HomeScreen> {
                                   imageUrl: product.mediaPrimary != null
                                       ? product.mediaPrimary!.url!
                                       : '',
-                                  onTapped: () => Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          ProductDetailsScreen(
-                                        productId: product.productid ?? '',
+                                  onTapped: () async {
+                                    await Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            ProductDetailsScreen(
+                                          productId: product.productid ?? '',
+                                          ownItem: false,
+                                        ),
                                       ),
-                                    ),
-                                  ),
+                                    );
+
+                                    _homeBloc.add(InitializeHomeScreen());
+                                  },
                                   onLikeTapped: () {
                                     if (record != null) {
                                       final newData = createUserLikesRecordData(
@@ -230,15 +235,20 @@ class _HomeScreenState extends State<HomeScreen> {
                                   imageUrl: product.mediaPrimary != null
                                       ? product.mediaPrimary!.url!
                                       : '',
-                                  onTapped: () => Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          ProductDetailsScreen(
-                                        productId: product.productid ?? '',
+                                  onTapped: () async {
+                                    await Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            ProductDetailsScreen(
+                                          productId: product.productid ?? '',
+                                          ownItem: false,
+                                        ),
                                       ),
-                                    ),
-                                  ),
+                                    );
+
+                                    _homeBloc.add(InitializeHomeScreen());
+                                  },
                                   onLikeTapped: () {
                                     if (record != null) {
                                       final newData = createUserLikesRecordData(
@@ -275,31 +285,39 @@ class _HomeScreenState extends State<HomeScreen> {
                             imageUrl: product.mediaPrimary != null
                                 ? product.mediaPrimary!.url!
                                 : '',
-                            onTapped: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => ProductDetailsScreen(
-                                  productId: product.productid ?? '',
-                                  ownItem: true,
+                            onTapped: () async {
+                              await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => ProductDetailsScreen(
+                                    productId: product.productid ?? '',
+                                    ownItem: true,
+                                  ),
                                 ),
-                              ),
-                            ),
+                              );
+
+                              _homeBloc.add(InitializeHomeScreen());
+                            },
                           );
                         }).toList(),
                         label: 'Your Items',
                         smallItems: true,
                         removeMargin: true,
-                        onViewAllTapped: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ProductListScreen(
-                              listType: 'user',
-                              showAdd: true,
-                              userId: _user!.uid,
-                              ownListing: true,
+                        onViewAllTapped: () async {
+                          await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ProductListScreen(
+                                listType: 'user',
+                                showAdd: true,
+                                userId: _user!.uid,
+                                ownListing: true,
+                              ),
                             ),
-                          ),
-                        ),
+                          );
+
+                          _homeBloc.add(InitializeHomeScreen());
+                        },
                       ),
                     ],
                   ),

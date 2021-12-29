@@ -146,16 +146,42 @@ class ProductRepository {
     return response.data['status'] == 'SUCCESS';
   }
 
-  Future<bool> updateProduct(ProductModel product) async {
+  Future<bool> updateProduct(ProductRequestModel product) async {
     final response = await _apiService.post(
       url: 'products/update/${product.productid}',
       body: {
         'psk': psk,
-        ...product.toJson(),
+        ...product.toJson(updating: true),
       },
     );
 
     return response.data['status'] == 'SUCCESS';
+  }
+
+  Future<bool> deleteImages(
+      List<String> urls, String userId, String productId) async {
+    var body = {
+      'psk': psk,
+      'userid': userId,
+      'productid': productId,
+    };
+
+    if (urls.length > 0) {
+      urls.asMap().forEach((key, value) {
+        body.addAll({
+          'media${key + 1}': value,
+        });
+      });
+    }
+
+    final response = await _apiService.post(
+      url: 'products/delete',
+      body: body,
+    );
+
+    if (response.data['status'] != 'SUCCESS') return false;
+
+    return true;
   }
 
   Future<List<ProductModel>> searchProducts(List<String> keyword) async {
@@ -170,8 +196,7 @@ class ProductRepository {
       },
     );
 
-    if ((response.data['status'] as String).toLowerCase() != 'SUCCESS')
-      return [];
+    if (response.data['status'] != 'SUCCESS') return [];
 
     return (response.data['products'] as List<dynamic>)
         .map((json) => ProductModel.fromJson(json))

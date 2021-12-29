@@ -62,6 +62,10 @@ class _BarterChatScreenState extends State<BarterChatScreen> {
                       ProgressHUD.of(context)!.dismiss();
                     }
 
+                    if (state is SendMessageSuccess) {
+                      _messageTextController.clear();
+                    }
+
                     if (state is BarterChatInitialized) {
                       setState(() {
                         _user = state.user;
@@ -73,6 +77,7 @@ class _BarterChatScreenState extends State<BarterChatScreen> {
                         if (list.isNotEmpty) {
                           setState(() {
                             _messages = list;
+                            print(_messages.first.dateCreated);
                           });
                         }
                       });
@@ -86,8 +91,9 @@ class _BarterChatScreenState extends State<BarterChatScreen> {
                     padding:
                         EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
                     reverse: true,
-                    children:
-                        _messages.map((msg) => _buildChatItem(msg)).toList(),
+                    children: _messages.reversed
+                        .map((msg) => _buildChatItem(msg))
+                        .toList(),
                   ),
                 ),
               ),
@@ -168,8 +174,6 @@ class _BarterChatScreenState extends State<BarterChatScreen> {
         ChatMessageModel(
           barterId: _barterId,
           message: _messageTextController.text.trim(),
-          userId: _user!.uid,
-          userName: _user!.displayName,
         ),
       ),
     );
@@ -179,29 +183,31 @@ class _BarterChatScreenState extends State<BarterChatScreen> {
     return Container(
       margin: EdgeInsets.only(top: 8.0),
       child: Column(
-        crossAxisAlignment: msg.userId == _user!.uid
+        crossAxisAlignment: msg.userId != _user!.uid
             ? CrossAxisAlignment.start
             : CrossAxisAlignment.end,
         children: [
           Container(
             padding: EdgeInsets.all(10.0),
             decoration: BoxDecoration(
-              color: msg.userId == _user!.uid
+              color: msg.userId != _user!.uid
                   ? kBackgroundColor
                   : Color(0xFFBB3F03),
               borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(10.0),
                 topRight: Radius.circular(10.0),
-                bottomLeft: msg.userId != _user!.uid
+                bottomLeft: msg.userId == _user!.uid
                     ? Radius.circular(10.0)
                     : Radius.zero,
-                bottomRight: msg.userId == _user!.uid
+                bottomRight: msg.userId != _user!.uid
                     ? Radius.circular(10.0)
                     : Radius.zero,
               ),
             ),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: msg.userId != _user!.uid
+                  ? CrossAxisAlignment.start
+                  : CrossAxisAlignment.end,
               children: [
                 Text(
                   msg.userId == _user!.uid ? 'You' : msg.userName ?? 'Unknown',

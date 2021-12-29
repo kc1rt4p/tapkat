@@ -67,7 +67,6 @@ class BarterRecordModel {
 
   Map<String, dynamic> toJson() {
     return {
-      'id': this.id,
       'userid1': this.userid1,
       'userid2': this.userid2,
       'user1Accepted': this.user1Accepted,

@@ -87,7 +87,9 @@ class _ProductListScreenState extends State<ProductListScreen> {
                 currentPage = 0;
                 _list = state.list;
                 indicators.clear();
-                indicators.add(_list.last);
+                if (_list.isNotEmpty) {
+                  indicators.add(_list.last);
+                }
               });
             }
 
@@ -205,6 +207,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                                             }
 
                                             return BarterListItem(
+                                              hideLikeBtn: widget.ownListing,
                                               liked: liked,
                                               itemName:
                                                   product.productname ?? '',

@@ -27,6 +27,7 @@ class ChatMessageModel {
   }
 
   factory ChatMessageModel.fromJson(Map<String, dynamic> json) {
+    print(json);
     return ChatMessageModel(
       id: json['id'] as String?,
       barterId: json['barterId'] as String?,

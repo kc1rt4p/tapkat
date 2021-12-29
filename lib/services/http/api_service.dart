@@ -25,7 +25,13 @@ class ApiService {
     Map<String, dynamic>? header,
     Map<String, dynamic>? body,
   }) async {
-    return await _safeFetch(() => _dio.delete('url'));
+    return await _safeFetch(() => _dio.delete(
+          url,
+          data: body,
+          options: Options(
+            headers: header,
+          ),
+        ));
   }
 
   Future<Response> patch({

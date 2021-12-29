@@ -34,7 +34,7 @@ class _CustomButtonState extends State<CustomButton> {
         ),
         decoration: BoxDecoration(
           color: widget.bgColor,
-          borderRadius: BorderRadius.circular(12.0),
+          borderRadius: BorderRadius.circular(10.0),
           border: Border.all(
             color: widget.bgColor,
           ),

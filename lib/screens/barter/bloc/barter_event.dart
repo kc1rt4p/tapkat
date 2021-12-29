@@ -28,7 +28,7 @@ class StreamBarter extends BarterEvent {
 }
 
 class InitializeBarter extends BarterEvent {
-  final Map<String, dynamic> barterData;
+  final BarterRecordModel barterData;
 
   InitializeBarter(this.barterData);
   // final String userid1;

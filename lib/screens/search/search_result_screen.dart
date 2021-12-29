@@ -4,11 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_progress_hud/flutter_progress_hud.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:tapkat/models/product.dart';
 import 'package:tapkat/schemas/product_markers_record.dart';
 import 'package:tapkat/screens/product/product_details_screen.dart';
 import 'package:tapkat/screens/search/bloc/search_bloc.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
-import 'package:tapkat/utilities/helper.dart';
 import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/utilities/style.dart';
 import 'package:tapkat/widgets/barter_list_item.dart';
@@ -30,7 +30,7 @@ class SearchResultScreen extends StatefulWidget {
 class _SearchResultScreenState extends State<SearchResultScreen> {
   final _searchBloc = SearchBloc();
   final _keyWordTextController = TextEditingController();
-  List<dynamic> searchResults = [];
+  List<ProductModel> searchResults = [];
   List<ProductMarkersRecord?> productMarkers = [];
 
   String _selectedView = 'grid'; //grid or map
@@ -72,13 +72,6 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                 setState(() {
                   productMarkers = list;
                 });
-              });
-            }
-
-            if (state is SearchInitialized) {
-              print(state.searchResults);
-              setState(() {
-                searchResults = state.searchResults;
               });
             }
 
@@ -278,54 +271,23 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
       mainAxisSpacing: 10.0,
       crossAxisSpacing: 10.0,
       children: searchResults.map((product) {
-        final productName =
-            getJsonField(product, r'''$.productname''').toString();
-
-        final price = getPriceWithCurrency(
-                getJsonField(product, r'''$.price''').toString())
-            .maybeHandleOverflow(
-          maxChars: 12,
-          replacement: '…',
-        );
-
-        final desc = getJsonField(product, r'''$.productdesc''')
-            .toString()
-            .maybeHandleOverflow(
-              replacement: '…',
-            );
-
-        final productId = getJsonField(product, r'''$.productid''').toString();
-
-        final imgUrl = getJsonField(product, r'''$.media_primary.url''') ??
-            'https://storage.googleapis.com/map-surf-assets/noimage.jpg';
-
-        final owner = getJsonField(product, r'''$.userid''')
-            .toString()
-            .maybeHandleOverflow(
-              replacement: '…',
-            );
-        final rating = getJsonField(product, r'''$.rating''')
-            .toString()
-            .maybeHandleOverflow(
-              replacement: '…',
-            );
-        final address = (product as Map<String, dynamic>)['address'];
-        final likes = getJsonField(product, r'''$.likes''')
-            .toString()
-            .maybeHandleOverflow(
-              replacement: '…',
-            );
         return Center(
           child: BarterListItem(
-            itemName: productName,
-            itemPrice: price,
-            imageUrl: imgUrl,
+            itemName: product.productname ?? '',
+            itemPrice: (product.currency ?? '') +
+                (product.price != null
+                    ? product.price!.toStringAsFixed(2)
+                    : '0.00'),
+            imageUrl: product.mediaPrimary != null &&
+                    product.mediaPrimary!.url != null
+                ? product.mediaPrimary!.url!
+                : '',
             onTapped: () => Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (context) => ProductDetailsScreen(
                   ownItem: false,
-                  productId: productId,
+                  productId: product.productid ?? '',
                 ),
               ),
             ),

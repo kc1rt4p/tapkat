@@ -5,12 +5,27 @@ import 'package:tapkat/models/chat_message.dart';
 class BarterRepository {
   final barterRef = FirebaseFirestore.instance.collection('barter');
 
-  Future<Stream<List<ChatMessageModel>>> streamMessages(String barterId) async {
-    final barterDoc =
-        await barterRef.where('barterid', isEqualTo: barterId).limit(1).get();
-    final barterData = barterDoc.docs.first;
+  Future<bool> setBarterRecord(BarterRecordModel barterRecord) async {
+    final doc =
+        await barterRef.doc(barterRecord.barterId).set(barterRecord.toJson());
 
-    return barterRef.doc(barterData.id).collection('messages').snapshots().map(
+    final docSnapshot = await barterRef.doc(barterRecord.barterId).get();
+
+    if (!docSnapshot.exists) return false;
+
+    return true;
+  }
+
+  Future<Stream<List<ChatMessageModel>>> streamMessages(String barterId) async {
+    return barterRef
+        .doc(barterId)
+        .collection('messages')
+        .orderBy(
+          'dateCreated',
+          descending: false,
+        )
+        .snapshots()
+        .map(
           (s) => s.docs
               .map(
                 (doc) => ChatMessageModel.fromJson(
@@ -22,12 +37,7 @@ class BarterRepository {
   }
 
   Future<Stream<BarterRecordModel?>> streamBarter(String barterId) async {
-    final doc =
-        await barterRef.where('barterid', isEqualTo: barterId).limit(1).get();
-
-    final barter = doc.docs.first;
-
-    return barterRef.doc(barter.id).snapshots().map((doc) {
+    return barterRef.doc(barterId).snapshots().map((doc) {
       final data = doc.data();
 
       if (data != null) {
@@ -52,28 +62,19 @@ class BarterRepository {
   }
 
   Future<bool> addMessage(ChatMessageModel message) async {
-    final doc = await barterRef
-        .where('barterid', isEqualTo: message.barterId)
-        .limit(1)
-        .get();
-
-    print('====== DOC: $doc');
-
-    if (doc.size < 1) {
-      return false;
-    }
-
-    final barter = doc.docs.first;
-
     final messageData = message.toJson();
 
     messageData['dateCreated'] = FieldValue.serverTimestamp();
 
-    final newRecord = await barterRef
-        .doc(barter.id)
-        .collection('messages')
-        .add(message.toJson());
+    try {
+      final newRecord = await barterRef
+          .doc(message.barterId)
+          .collection('messages')
+          .add(message.toJson());
 
-    return true;
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 }

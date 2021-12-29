@@ -113,14 +113,12 @@ class _BarterScreenState extends State<BarterScreen> {
                     participantItems = state.user2Products;
                     userItems = state.userProducts;
                   });
-                  print('partItems: $participantItems');
-                  print('userItems: $userItems');
                   _barterStreamSub = state.barterStream.listen((barterRecord) {
-                    setState(() {
-                      _barterRecord = barterRecord.first;
-                    });
-
-                    print('BARTER RECORD==== ${_barterRecord!.barterid}');
+                    if (barterRecord.isNotEmpty) {
+                      setState(() {
+                        _barterRecord = barterRecord.first;
+                      });
+                    }
                   });
                 }
 
@@ -150,10 +148,10 @@ class _BarterScreenState extends State<BarterScreen> {
 
                     _barterBloc.add(
                       InitializeBarter(
-                        createBarterRecordData(
-                          barterid: _barterId,
+                        BarterRecordModel(
+                          barterId: _barterId,
                           userid1: _currentUser!.uid,
-                          userid2: _product!.userid!,
+                          userid2: _product!.userid,
                           u1P1Name: _product!.productname,
                           u1P1Price: _product!.price!.toDouble(),
                           u1P1Image: _product!.mediaPrimary!.url!,

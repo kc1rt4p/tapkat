@@ -28,21 +28,27 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
         if (_user != null) {
           if (event is InitializeBarter) {
             final userProducts = await _productRepository.getFirstProducts(
-                'user', event.barterData['userid1']);
+                'user', event.barterData.userid1);
 
             final user2Products = await _productRepository.getFirstProducts(
-                'user', event.barterData['userid2']);
+                'user', event.barterData.userid2);
 
             print("======BARTER DATA:: ${event.barterData}");
 
-            final _barterRef =
-                await BarterRecord.collection.doc().set(event.barterData);
+            // final _barterRef =
+            //     await BarterRecord.collection.doc().set(event.barterData);
+            // final barterData = BarterRecordModel.fromJson(event.barterData);
+            final newBarter =
+                await _barterRepository.setBarterRecord(event.barterData);
+
+            print('new barter data ${event.barterData.toJson()}');
+            print('success: $newBarter');
 
             emit(
               BarterInitialized(
                 barterStream: queryBarterRecord(
                   queryBuilder: (barterRecord) => barterRecord.where('barterid',
-                      isEqualTo: event.barterData['barterid']),
+                      isEqualTo: event.barterData.barterId),
                   singleRecord: true,
                 ),
                 userProducts: userProducts,
@@ -94,8 +100,10 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
           }
 
           if (event is SendMessage) {
+            event.message.userId = _user!.uid;
+            event.message.userName = _user!.displayName;
             final sent = await _barterRepository.addMessage(event.message);
-            if (sent) {
+            if (!sent) {
               emit(BarterError('Unable to send message'));
             } else {
               emit(SendMessageSuccess());
