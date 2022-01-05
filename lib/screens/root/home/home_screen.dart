@@ -79,6 +79,8 @@ class _HomeScreenState extends State<HomeScreen> {
               if (state is LoadedRecommendedList) {
                 setState(() {
                   _recommendedList = state.recommended;
+                  _recommendedList
+                      .sort((a, b) => a.productname!.compareTo(b.productname!));
                   _loadingRecoList = false;
                 });
               }
@@ -86,6 +88,8 @@ class _HomeScreenState extends State<HomeScreen> {
               if (state is LoadedTrendingList) {
                 setState(() {
                   _trendingList = state.trending;
+                  _trendingList
+                      .sort((a, b) => a.productname!.compareTo(b.productname!));
                   _loadingTrendingList = false;
                 });
               }
@@ -94,6 +98,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 setState(() {
                   _loadingUserProducts = false;
                   _myProductList = state.yourItems;
+                  _myProductList
+                      .sort((a, b) => a.productname!.compareTo(b.productname!));
                 });
               }
 
