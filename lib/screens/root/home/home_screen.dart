@@ -35,6 +35,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final _keywordTextController = TextEditingController();
 
+  bool _loadingRecoList = false;
+  bool _loadingTrendingList = false;
+  bool _loadingUserProducts = false;
+
   User? _user;
 
   @override
@@ -72,11 +76,42 @@ class _HomeScreenState extends State<HomeScreen> {
                 ProgressHUD.of(context)!.dismiss();
               }
 
-              if (state is HomeScreenInitialized) {
+              if (state is LoadedRecommendedList) {
                 setState(() {
                   _recommendedList = state.recommended;
+                  _loadingRecoList = false;
+                });
+              }
+
+              if (state is LoadedTrendingList) {
+                setState(() {
                   _trendingList = state.trending;
+                  _loadingTrendingList = false;
+                });
+              }
+
+              if (state is LoadedUserList) {
+                setState(() {
+                  _loadingUserProducts = false;
                   _myProductList = state.yourItems;
+                });
+              }
+
+              if (state is LoadingUserList) {
+                setState(() {
+                  _loadingUserProducts = true;
+                });
+              }
+
+              if (state is LoadingRecommendedList) {
+                setState(() {
+                  _loadingRecoList = true;
+                });
+              }
+
+              if (state is LoadingTrendingList) {
+                setState(() {
+                  _loadingTrendingList = true;
                 });
               }
             },
@@ -126,6 +161,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       BarterList(
+                        loading: _loadingRecoList,
                         context: context,
                         items: _recommendedList.map((product) {
                           return StreamBuilder<List<UserLikesRecord?>>(
@@ -201,6 +237,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                       BarterList(
+                        loading: _loadingTrendingList,
                         context: context,
                         items: _trendingList.map((product) {
                           return StreamBuilder<List<UserLikesRecord?>>(
@@ -246,7 +283,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ),
                                     );
 
-                                    _homeBloc.add(InitializeHomeScreen());
+                                    _homeBloc.add(LoadRecommendedList());
                                   },
                                   onLikeTapped: () {
                                     if (record != null) {
@@ -276,6 +313,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                       BarterList(
+                        loading: _loadingUserProducts,
                         context: context,
                         ownList: true,
                         items: _myProductList.map((product) {
@@ -299,7 +337,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               );
 
-                              _homeBloc.add(InitializeHomeScreen());
+                              _homeBloc.add(LoadTrendingList());
                             },
                           );
                         }).toList(),
@@ -319,7 +357,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           );
 
-                          _homeBloc.add(InitializeHomeScreen());
+                          _homeBloc.add(LoadUserList());
                         },
                       ),
                     ],

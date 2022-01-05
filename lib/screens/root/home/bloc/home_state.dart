@@ -9,16 +9,24 @@ abstract class HomeState extends Equatable {
 
 class HomeInitial extends HomeState {}
 
-class HomeScreenInitialized extends HomeState {
-  final List<ProductModel> recommended;
-  final List<ProductModel> trending;
+class HomeScreenInitialized extends HomeState {}
+
+class LoadedUserList extends HomeState {
   final List<ProductModel> yourItems;
 
-  HomeScreenInitialized({
-    required this.recommended,
-    required this.trending,
-    required this.yourItems,
-  });
+  LoadedUserList(this.yourItems);
+}
+
+class LoadedTrendingList extends HomeState {
+  final List<ProductModel> trending;
+
+  LoadedTrendingList(this.trending);
+}
+
+class LoadedRecommendedList extends HomeState {
+  final List<ProductModel> recommended;
+
+  LoadedRecommendedList(this.recommended);
 }
 
 class HomeLoading extends HomeState {}
@@ -28,3 +36,9 @@ class GetUserFavoritesSuccess extends HomeState {
 
   GetUserFavoritesSuccess(this.list);
 }
+
+class LoadingRecommendedList extends HomeState {}
+
+class LoadingTrendingList extends HomeState {}
+
+class LoadingUserList extends HomeState {}

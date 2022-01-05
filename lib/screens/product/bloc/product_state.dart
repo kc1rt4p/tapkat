@@ -31,6 +31,8 @@ class ProductError extends ProductState {
 
 class AddLikeSuccess extends ProductState {}
 
+class DislikeSuccess extends ProductState {}
+
 class AddProductImageSuccess extends ProductState {}
 
 class GetProductsSuccess extends ProductState {

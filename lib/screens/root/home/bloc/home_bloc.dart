@@ -28,22 +28,32 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
           }
         }
 
+        if (event is LoadRecommendedList) {
+          emit(LoadingRecommendedList());
+          final recommendedList =
+              await _productRepo.getFirstProducts('reco', _user!.uid);
+          emit(LoadedRecommendedList(recommendedList));
+        }
+
+        if (event is LoadUserList) {
+          emit(LoadingUserList());
+          final userItems =
+              await _productRepo.getFirstProducts('user', _user!.uid);
+          emit(LoadedUserList(userItems));
+        }
+
+        if (event is LoadTrendingList) {
+          emit(LoadingTrendingList());
+          final trendingList =
+              await _productRepo.getFirstProducts('demand', _user!.uid);
+          emit(LoadedTrendingList(trendingList));
+        }
+
         if (event is InitializeHomeScreen) {
           if (_user != null) {
-            final recommendedList =
-                await _productRepo.getFirstProducts('reco', _user!.uid);
-            final trendingList =
-                await _productRepo.getFirstProducts('demand', _user!.uid);
-            final userItems =
-                await _productRepo.getFirstProducts('user', _user!.uid);
-
-            emit(
-              HomeScreenInitialized(
-                recommended: recommendedList,
-                trending: trendingList,
-                yourItems: userItems,
-              ),
-            );
+            add(LoadRecommendedList());
+            add(LoadTrendingList());
+            add(LoadUserList());
           }
         }
       } catch (e) {

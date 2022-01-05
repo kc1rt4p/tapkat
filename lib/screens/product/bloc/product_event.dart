@@ -57,6 +57,12 @@ class AddLike extends ProductEvent {
   AddLike(this.product);
 }
 
+class DislikeProduct extends ProductEvent {
+  final ProductModel product;
+
+  DislikeProduct(this.product);
+}
+
 class DeleteProduct extends ProductEvent {
   final String productId;
 

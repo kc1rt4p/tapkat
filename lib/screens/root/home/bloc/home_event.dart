@@ -10,3 +10,9 @@ abstract class HomeEvent extends Equatable {
 class InitializeHomeScreen extends HomeEvent {}
 
 class GetUserFavorites extends HomeEvent {}
+
+class LoadRecommendedList extends HomeEvent {}
+
+class LoadTrendingList extends HomeEvent {}
+
+class LoadUserList extends HomeEvent {}

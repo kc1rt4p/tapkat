@@ -12,6 +12,7 @@ class BarterList extends StatefulWidget {
   final BuildContext context;
   final bool hideViewAll;
   final bool ownList;
+  final bool loading;
 
   const BarterList({
     Key? key,
@@ -24,6 +25,7 @@ class BarterList extends StatefulWidget {
     required this.context,
     this.hideViewAll = false,
     this.ownList = false,
+    this.loading = false,
   }) : super(key: key);
 
   @override
@@ -74,47 +76,51 @@ class _BarterListState extends State<BarterList> {
               ],
             ),
           ),
-          widget.items.isNotEmpty
-              ? Container(
-                  width: double.infinity,
-                  margin: EdgeInsets.only(top: 10.0),
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: widget.items
-                          .map(
-                            (item) => Container(
-                              margin: EdgeInsets.only(right: 8.0),
-                              padding: EdgeInsets.all(2.0),
-                              child: item,
-                            ),
-                          )
-                          .toList(),
-                    ),
-                  ),
-                  // CarouselSlider(
-                  //   options: CarouselOptions(
-                  //     viewportFraction: widget.smallItems ? 0.42 : 0.50,
-                  //     autoPlay: false,
-                  //     enableInfiniteScroll: true,
-                  //     initialPage: 0,
-                  //     disableCenter: true,
-                  //   ),
-                  //   items: widget.items,
-                  // ),
+          widget.loading
+              ? CircularProgressIndicator(
+                  color: kBackgroundColor,
                 )
-              : Container(
-                  height: 100.0,
-                  width: double.infinity,
-                  child: Center(
-                    child: Text(
-                      'No items found',
-                      style: Style.subtitle2.copyWith(
-                        color: Colors.grey,
+              : widget.items.isNotEmpty
+                  ? Container(
+                      width: double.infinity,
+                      margin: EdgeInsets.only(top: 10.0),
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: widget.items
+                              .map(
+                                (item) => Container(
+                                  margin: EdgeInsets.only(right: 8.0),
+                                  padding: EdgeInsets.all(2.0),
+                                  child: item,
+                                ),
+                              )
+                              .toList(),
+                        ),
+                      ),
+                      // CarouselSlider(
+                      //   options: CarouselOptions(
+                      //     viewportFraction: widget.smallItems ? 0.42 : 0.50,
+                      //     autoPlay: false,
+                      //     enableInfiniteScroll: true,
+                      //     initialPage: 0,
+                      //     disableCenter: true,
+                      //   ),
+                      //   items: widget.items,
+                      // ),
+                    )
+                  : Container(
+                      height: 100.0,
+                      width: double.infinity,
+                      child: Center(
+                        child: Text(
+                          'No items found',
+                          style: Style.subtitle2.copyWith(
+                            color: Colors.grey,
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                ),
         ],
       ),
     );
