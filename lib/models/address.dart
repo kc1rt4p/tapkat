@@ -21,9 +21,10 @@ class AddressModel {
       city: json['city'],
       address: json['address'],
       country: json['country'],
-      location: json['location'] != null && json['location'] != ''
-          ? LocationModel.fromJson(json['location'] as dynamic)
-          : null,
+      location:
+          json['location'] != null && json['location'] is Map<String, dynamic>
+              ? LocationModel.fromJson(json['location'] as dynamic)
+              : null,
     );
   }
 

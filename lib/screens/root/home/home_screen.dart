@@ -5,7 +5,6 @@ import 'package:flutter_progress_hud/flutter_progress_hud.dart';
 import 'package:tapkat/backend.dart';
 import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
 import 'package:tapkat/models/product.dart';
-import 'package:tapkat/models/request/add_product_request.dart';
 import 'package:tapkat/schemas/user_likes_record.dart';
 import 'package:tapkat/screens/product/bloc/product_bloc.dart';
 import 'package:tapkat/screens/product/product_details_screen.dart';
@@ -61,10 +60,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 ProgressHUD.of(context)!.show();
               } else {
                 ProgressHUD.of(context)!.dismiss();
-              }
-
-              if (state is AddLikeSuccess) {
-                _homeBloc.add(InitializeHomeScreen());
               }
             },
           ),
@@ -184,6 +179,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                         liked: !record.liked!,
                                       );
 
+                                      if (record.liked!) {
+                                        _onLikeTapped(product);
+                                      }
+
                                       record.reference!.update(newData);
                                     }
                                   },
@@ -254,6 +253,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                       final newData = createUserLikesRecordData(
                                         liked: !record.liked!,
                                       );
+
+                                      if (record.liked!) {
+                                        _onLikeTapped(product);
+                                      }
 
                                       record.reference!.update(newData);
                                     }
@@ -331,15 +334,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   _onLikeTapped(ProductModel product) {
-    final alreadyLiked =
-        _userFavourites.any((fav) => fav.productid == product.productid);
-
-    if (!alreadyLiked)
-      _productBloc.add(
-        AddLike(
-          ProductRequestModel.fromProduct(product),
-        ),
-      );
+    _productBloc.add(
+      AddLike(product),
+    );
   }
 
   _onSearchSubmitted(String? val) {

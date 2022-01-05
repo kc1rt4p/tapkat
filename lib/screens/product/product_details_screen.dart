@@ -89,6 +89,10 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                       );
                     });
                   }
+
+                  if (state is AddLikeSuccess) {
+                    _productBloc.add(GetProductDetails(widget.productId));
+                  }
                 },
               ),
               BlocListener(
@@ -476,6 +480,14 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                                           liked:
                                                                               !record.liked!,
                                                                         );
+
+                                                                        if (record
+                                                                            .liked!) {
+                                                                          _productBloc
+                                                                              .add(
+                                                                            AddLike(_product!),
+                                                                          );
+                                                                        }
 
                                                                         record
                                                                             .reference!

@@ -15,11 +15,10 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     final _authService = AuthService();
 
     on<ProductEvent>((event, emit) async {
-      emit(ProductLoading());
-
       try {
         final _user = await _authService.getCurrentUser();
         if (event is SaveProduct) {
+          emit(ProductLoading());
           final productId = await _productRepo.addProduct(event.productRequest);
 
           if (productId == null) {
@@ -42,6 +41,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
         }
 
         if (event is DeleteImages) {
+          emit(ProductLoading());
           final result = await _productRepo.deleteImages(
               event.imgUrls, _user!.uid, event.productId);
 
@@ -49,6 +49,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
         }
 
         if (event is EditProduct) {
+          emit(ProductLoading());
           event.product.userid = _user!.uid;
           final result = await _productRepo.updateProduct(event.product);
 
@@ -56,6 +57,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
         }
 
         if (event is AddProductImage) {
+          emit(ProductLoading());
           final result = await _productRepo.addProductImages(
             productId: event.productId,
             userId: _user!.uid,
@@ -65,12 +67,14 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
         }
 
         if (event is DeleteProduct) {
+          emit(ProductLoading());
           final result = await _productRepo.deleteProduct(event.productId);
 
           if (result) emit(DeleteProductSuccess());
         }
 
         if (event is GetFirstProducts) {
+          emit(ProductLoading());
           final result =
               await _productRepo.getFirstProducts(event.listType, event.userId);
 
@@ -78,6 +82,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
         }
 
         if (event is GetNextProducts) {
+          emit(ProductLoading());
           final result = await _productRepo.getNextProducts(
             listType: event.listType,
             lastProductId: event.lastProductId,
@@ -89,23 +94,38 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
         }
 
         if (event is AddLike) {
-          // if (_user != null) {
-          //   final data = createUserLikesRecordData(
-          //     userid: _user.uid,
-          //     productid: event.product.productid,
-          //     liked: true,
-          //   );
+          if (_user != null) {
+            final result = await _productRepo.addLike(
+              productRequest: ProductRequestModel(
+                productid: event.product.productid,
+                userid: event.product.userid,
+                productdesc: event.product.productdesc,
+                currency: event.product.currency,
+                specifications: event.product.specifications,
+                type: event.product.type,
+                address: event.product.address!.address,
+                city: event.product.address!.city,
+                country: event.product.address!.country,
+                postcode: event.product.address!.postCode,
+                category: event.product.category,
+                image_url: event.product.mediaPrimary!.url,
+                media_type: event.product.mediaPrimary!.type,
+                location: event.product.address!.location,
+                rating: event.product.rating,
+                price: event.product.price,
+              ),
+              userId: _user.uid,
+            );
 
-          //   if (result) {
-          //     final addToFavResult = await _productRepo.addToWishList(
-          //         event.product.productid!, _user.uid);
-          //     emit(AddLikeSuccess());
-          //   } else
-          //     emit(ProductError('unable to add like to product'));
-          // }
+            if (result) {
+              emit(AddLikeSuccess());
+            } else
+              emit(ProductError('unable to add like to product'));
+          }
         }
 
         if (event is GetProductDetails) {
+          emit(ProductLoading());
           final product = await _productRepo.getProduct(event.productId);
 
           emit(GetProductDetailsSuccess(product));

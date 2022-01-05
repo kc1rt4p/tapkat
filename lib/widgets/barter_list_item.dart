@@ -33,43 +33,43 @@ class _BarterListItemState extends State<BarterListItem> {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        Container(
-          height: widget.height,
-          width: widget.width,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20.0),
-            // boxShadow: [
-            //   BoxShadow(
-            //     offset: Offset(1, 1),
-            //     color: Colors.grey,
-            //   ),
-            // ],
-          ),
-          child: Column(
-            children: [
-              Expanded(
-                flex: 2,
-                child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(20.0),
-                      topRight: Radius.circular(20.0),
-                    ),
-                    color: Colors.grey,
-                    image: DecorationImage(
-                      image: widget.imageUrl.isNotEmpty
-                          ? NetworkImage(widget.imageUrl)
-                          : AssetImage('assets/images/image_placeholder.jpg')
-                              as ImageProvider<Object>,
-                      fit: BoxFit.cover,
+        InkWell(
+          onTap: widget.onTapped,
+          child: Container(
+            height: widget.height,
+            width: widget.width,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20.0),
+              // boxShadow: [
+              //   BoxShadow(
+              //     offset: Offset(1, 1),
+              //     color: Colors.grey,
+              //   ),
+              // ],
+            ),
+            child: Column(
+              children: [
+                Expanded(
+                  flex: 2,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(20.0),
+                        topRight: Radius.circular(20.0),
+                      ),
+                      color: Colors.grey,
+                      image: DecorationImage(
+                        image: widget.imageUrl.isNotEmpty
+                            ? NetworkImage(widget.imageUrl)
+                            : AssetImage('assets/images/image_placeholder.jpg')
+                                as ImageProvider<Object>,
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   ),
                 ),
-              ),
-              Expanded(
-                child: InkWell(
-                  onTap: widget.onTapped,
+                Expanded(
                   child: Container(
                     padding: EdgeInsets.all(10.0),
                     width: double.infinity,
@@ -86,8 +86,8 @@ class _BarterListItemState extends State<BarterListItem> {
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
         Visibility(

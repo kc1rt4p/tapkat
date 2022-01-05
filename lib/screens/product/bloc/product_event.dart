@@ -52,7 +52,7 @@ class GetProductDetails extends ProductEvent {
 }
 
 class AddLike extends ProductEvent {
-  final ProductRequestModel product;
+  final ProductModel product;
 
   AddLike(this.product);
 }

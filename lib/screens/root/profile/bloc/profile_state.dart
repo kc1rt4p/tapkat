@@ -12,8 +12,13 @@ class ProfileInitial extends ProfileState {}
 class ProfileScreenInitialized extends ProfileState {
   final User? user;
   final List<ProductModel> list;
+  final UserModel userModel;
 
-  ProfileScreenInitialized(this.user, this.list);
+  ProfileScreenInitialized({
+    required this.user,
+    required this.list,
+    required this.userModel,
+  });
 }
 
 class ProfileLoading extends ProfileState {}

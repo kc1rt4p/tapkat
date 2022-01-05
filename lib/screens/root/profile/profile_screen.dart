@@ -11,6 +11,7 @@ import 'package:google_api_headers/google_api_headers.dart';
 import 'package:google_maps_webservice/places.dart';
 import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
 import 'package:tapkat/models/product.dart';
+import 'package:tapkat/models/user.dart';
 import 'package:tapkat/screens/product/product_add_screen.dart';
 import 'package:tapkat/screens/product/product_details_screen.dart';
 import 'package:tapkat/screens/root/profile/bloc/profile_bloc.dart';
@@ -31,6 +32,7 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   User? _user;
+  UserModel? _userModel;
   SelectedMedia? _selectedMedia;
   final _profileBloc = ProfileBloc();
   late AuthBloc _authBloc;
@@ -75,6 +77,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   setState(() {
                     _user = state.user;
                     _list = state.list;
+                    _userModel = state.userModel;
                   });
 
                   _displayNameTextController.text =
