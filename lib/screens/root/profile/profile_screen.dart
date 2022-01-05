@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -15,6 +16,7 @@ import 'package:tapkat/models/user.dart';
 import 'package:tapkat/screens/product/product_add_screen.dart';
 import 'package:tapkat/screens/product/product_details_screen.dart';
 import 'package:tapkat/screens/root/profile/bloc/profile_bloc.dart';
+import 'package:tapkat/screens/settings/settings_screen.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/dialog_message.dart';
 import 'package:tapkat/utilities/size_config.dart';
@@ -82,8 +84,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                   _displayNameTextController.text =
                       _user!.displayName ?? 'Unknown';
-                  _emailTextController.text = _user!.email ?? 'Unknown';
-                  _phoneTextController.text = _user!.phoneNumber ?? 'Unknown';
+                  _emailTextController.text = _userModel!.email ?? 'Unknown';
+                  _phoneTextController.text =
+                      _userModel!.mobilenum ?? 'Unknown';
                   _locationTextController.text = 'Unknown';
                 }
               },
@@ -97,7 +100,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   label: 'Your Store',
                   hideBack: true,
                   leading: GestureDetector(
-                    onTap: () {},
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => SettingsScreen(),
+                      ),
+                    ),
                     child: Icon(
                       FontAwesomeIcons.cog,
                       color: Colors.white,
@@ -463,8 +471,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
             borderRadius: BorderRadius.circular(100.0),
             image: DecorationImage(
               image: _selectedMedia == null
-                  ? AssetImage('assets/images/profile_placeholder.png')
-                      as ImageProvider<Object>
+                  ? _userModel != null &&
+                          (_userModel!.photo_url != null &&
+                              _userModel!.photo_url != '')
+                      ? CachedNetworkImageProvider(_userModel!.photo_url!)
+                      : AssetImage('assets/images/profile_placeholder.png')
+                          as ImageProvider<Object>
                   : FileImage(
                       File(_selectedMedia!.rawPath!),
                     ),

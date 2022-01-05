@@ -34,7 +34,7 @@ class ChatMessageModel {
       userId: json['userId'] as String?,
       userName: json['userName'] as String?,
       message: json['message'] as String?,
-      dateCreated: json['dateCreated'] as DateTime?,
+      dateCreated: json['dateCreated'].toDate(),
     );
   }
 }

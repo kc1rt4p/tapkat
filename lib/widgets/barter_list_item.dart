@@ -41,12 +41,13 @@ class _BarterListItemState extends State<BarterListItem> {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(20.0),
-              // boxShadow: [
-              //   BoxShadow(
-              //     offset: Offset(1, 1),
-              //     color: Colors.grey,
-              //   ),
-              // ],
+              boxShadow: [
+                BoxShadow(
+                  offset: Offset(1, 1),
+                  color: Colors.grey.shade200,
+                  blurRadius: 1.0,
+                ),
+              ],
             ),
             child: Column(
               children: [

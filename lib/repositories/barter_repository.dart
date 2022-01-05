@@ -64,8 +64,6 @@ class BarterRepository {
   Future<bool> addMessage(ChatMessageModel message) async {
     final messageData = message.toJson();
 
-    messageData['dateCreated'] = FieldValue.serverTimestamp();
-
     try {
       final newRecord = await barterRef
           .doc(message.barterId)

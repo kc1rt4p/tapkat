@@ -209,9 +209,11 @@ class _BarterChatScreenState extends State<BarterChatScreen> {
                   : CrossAxisAlignment.end,
               children: [
                 Text(
-                  msg.userId == _user!.uid
+                  msg.userId == _user!.uid && _user!.uid.isNotEmpty
                       ? 'You'
-                      : msg.userName ?? 'Anonymous',
+                      : msg.userName != null && msg.userName!.isNotEmpty
+                          ? msg.userName!
+                          : 'Anonymous',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     color: Colors.white,

@@ -102,6 +102,7 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
           if (event is SendMessage) {
             event.message.userId = _user!.uid;
             event.message.userName = _user!.displayName;
+            event.message.dateCreated = DateTime.now();
             final sent = await _barterRepository.addMessage(event.message);
             if (!sent) {
               emit(BarterError('Unable to send message'));

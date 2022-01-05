@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_progress_hud/flutter_progress_hud.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:tapkat/backend.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/schemas/user_likes_record.dart';
@@ -14,6 +15,7 @@ import 'package:tapkat/widgets/barter_list_item.dart';
 import 'package:tapkat/widgets/custom_app_bar.dart';
 import 'package:tapkat/widgets/custom_button.dart';
 import 'package:tapkat/widgets/custom_search_bar.dart';
+import 'package:tapkat/widgets/tapkat_map.dart';
 
 class ProductListScreen extends StatefulWidget {
   final bool showAdd;
@@ -39,9 +41,14 @@ class _ProductListScreenState extends State<ProductListScreen> {
   late String _title;
   List<ProductModel> _list = [];
 
+  String _selectedView = 'grid'; //grid or map
+
   int currentPage = 0;
 
   List<ProductModel> indicators = [];
+
+  LatLng? googleMapsCenter;
+  final googleMapsController = Completer<GoogleMapController>();
 
   @override
   void initState() {
@@ -111,10 +118,47 @@ class _ProductListScreenState extends State<ProductListScreen> {
                 CustomAppBar(
                   label: _title,
                 ),
-                CustomSearchBar(
-                  margin: EdgeInsets.symmetric(horizontal: 20.0),
-                  controller: TextEditingController(),
-                  backgroundColor: Color(0xFF005F73).withOpacity(0.3),
+                Row(
+                  children: [
+                    Expanded(
+                      child: CustomSearchBar(
+                        margin: EdgeInsets.symmetric(horizontal: 20.0),
+                        controller: TextEditingController(),
+                        backgroundColor: Color(0xFF005F73).withOpacity(0.3),
+                      ),
+                    ),
+                    Visibility(
+                      visible: !widget.ownListing,
+                      child: Row(
+                        children: [
+                          InkWell(
+                            onTap: _onSelectView,
+                            child: Container(
+                              padding: EdgeInsets.all(8.0),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(10.0),
+                                boxShadow: [
+                                  BoxShadow(
+                                    offset: Offset(1, 1),
+                                    color: Colors.grey,
+                                  ),
+                                ],
+                              ),
+                              child: Icon(
+                                _selectedView != 'map'
+                                    ? FontAwesomeIcons.mapMarkedAlt
+                                    : FontAwesomeIcons.thLarge,
+                                size: 16.0,
+                                color: kBackgroundColor,
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 20.0),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
                 Container(
                   margin: EdgeInsets.symmetric(vertical: 8.0),
@@ -172,79 +216,9 @@ class _ProductListScreenState extends State<ProductListScreen> {
                 Expanded(
                   child: Container(
                     child: _list.isNotEmpty
-                        ? GridView.count(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 10.0, vertical: 10.0),
-                            crossAxisCount: 2,
-                            mainAxisSpacing: 14.0,
-                            crossAxisSpacing: 12.0,
-                            children: _list
-                                .map((product) => Center(
-                                      child: StreamBuilder<
-                                              List<UserLikesRecord?>>(
-                                          stream: queryUserLikesRecord(
-                                            queryBuilder: (userLikesRecord) =>
-                                                userLikesRecord
-                                                    .where('userid',
-                                                        isEqualTo:
-                                                            widget.userId)
-                                                    .where('productid',
-                                                        isEqualTo:
-                                                            product.productid),
-                                            singleRecord: true,
-                                          ),
-                                          builder: (context, snapshot) {
-                                            bool liked = false;
-                                            UserLikesRecord? record;
-                                            if (snapshot.hasData) {
-                                              if (snapshot.data != null &&
-                                                  snapshot.data!.isNotEmpty) {
-                                                record = snapshot.data!.first;
-                                                if (record != null) {
-                                                  liked = record.liked ?? false;
-                                                }
-                                              }
-                                            }
-
-                                            return BarterListItem(
-                                              hideLikeBtn: widget.ownListing,
-                                              liked: liked,
-                                              itemName:
-                                                  product.productname ?? '',
-                                              itemPrice: product.price != null
-                                                  ? product.price!
-                                                      .toStringAsFixed(2)
-                                                  : '0',
-                                              imageUrl: product.mediaPrimary !=
-                                                      null
-                                                  ? product.mediaPrimary!.url!
-                                                  : '',
-                                              onTapped: () => Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      ProductDetailsScreen(
-                                                    productId:
-                                                        product.productid ?? '',
-                                                  ),
-                                                ),
-                                              ),
-                                              onLikeTapped: () {
-                                                if (record != null) {
-                                                  final newData =
-                                                      createUserLikesRecordData(
-                                                    liked: !record.liked!,
-                                                  );
-
-                                                  record.reference!
-                                                      .update(newData);
-                                                }
-                                              },
-                                            );
-                                          }),
-                                    ))
-                                .toList(),
-                          )
+                        ? _selectedView == 'grid'
+                            ? _buildGridView()
+                            : _buildMapView()
                         : Container(
                             padding: EdgeInsets.symmetric(horizontal: 30.0),
                             child: Center(
@@ -331,6 +305,127 @@ class _ProductListScreenState extends State<ProductListScreen> {
     );
   }
 
+  Widget _buildGridView() {
+    return GridView.count(
+      padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
+      crossAxisCount: 2,
+      mainAxisSpacing: 14.0,
+      crossAxisSpacing: 12.0,
+      children: _list
+          .map((product) => Center(
+                child: StreamBuilder<List<UserLikesRecord?>>(
+                    stream: queryUserLikesRecord(
+                      queryBuilder: (userLikesRecord) => userLikesRecord
+                          .where('userid', isEqualTo: widget.userId)
+                          .where('productid', isEqualTo: product.productid),
+                      singleRecord: true,
+                    ),
+                    builder: (context, snapshot) {
+                      bool liked = false;
+                      UserLikesRecord? record;
+                      if (snapshot.hasData) {
+                        if (snapshot.data != null &&
+                            snapshot.data!.isNotEmpty) {
+                          record = snapshot.data!.first;
+                          if (record != null) {
+                            liked = record.liked ?? false;
+                          }
+                        }
+                      }
+
+                      return BarterListItem(
+                        hideLikeBtn: widget.ownListing,
+                        liked: liked,
+                        itemName: product.productname ?? '',
+                        itemPrice: product.price != null
+                            ? product.price!.toStringAsFixed(2)
+                            : '0',
+                        imageUrl: product.mediaPrimary != null
+                            ? product.mediaPrimary!.url!
+                            : '',
+                        onTapped: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ProductDetailsScreen(
+                              productId: product.productid ?? '',
+                            ),
+                          ),
+                        ),
+                        onLikeTapped: () {
+                          if (record != null) {
+                            final newData = createUserLikesRecordData(
+                              liked: !record.liked!,
+                            );
+
+                            record.reference!.update(newData);
+                          }
+                        },
+                      );
+                    }),
+              ))
+          .toList(),
+    );
+  }
+
+  Widget _buildMapView() {
+    return Container(
+      child: TapkatGoogleMap(
+        controller: googleMapsController,
+        onCameraIdle: (latLng) => googleMapsCenter = latLng,
+        initialLocation: googleMapsCenter ?? LatLng(1.3631246, 103.8325137),
+        markers: _list
+            .map(
+              (product) => TapkatMarker(
+                product.productid!,
+                LatLng(
+                  product.address != null && product.address!.location != null
+                      ? product.address!.location!.latitude!.toDouble()
+                      : 0.00,
+                  product.address != null && product.address!.location != null
+                      ? product.address!.location!.longitude!.toDouble()
+                      : 0.00,
+                ),
+                () async {
+                  await showModalBottomSheet(
+                    isScrollControlled: true,
+                    backgroundColor: Color(0x79FFFFFF),
+                    barrierColor: Color(0x99000000),
+                    context: context,
+                    builder: (context) {
+                      return Container(
+                        color: Colors.white,
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 20.0, vertical: 16.0),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              product.productname ?? '',
+                              style: Style.subtitle2
+                                  .copyWith(color: kBackgroundColor),
+                            ),
+                            SizedBox(height: 12.0),
+                            Text(
+                              product.price == null
+                                  ? ''
+                                  : '\$${product.price!.toStringAsFixed(2)}',
+                              style: Style.subtitle2.copyWith(
+                                  color: kBackgroundColor,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+            )
+            .toList(),
+      ),
+    );
+  }
+
   void _onNextTapped() {
     print('next tapped, current page $currentPage');
     if (_list.isEmpty) return;
@@ -363,6 +458,12 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
     setState(() {
       currentPage -= 1;
+    });
+  }
+
+  _onSelectView() {
+    setState(() {
+      _selectedView = _selectedView != 'map' ? 'map' : 'grid';
     });
   }
 
