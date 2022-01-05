@@ -93,6 +93,39 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
           emit(GetProductsSuccess(result));
         }
 
+        if (event is AddRating) {
+          print('hey');
+          if (_user != null) {
+            final result = await _productRepo.addRating(
+              rating: event.rating,
+              productRequest: ProductRequestModel(
+                productid: event.product.productid,
+                userid: event.product.userid,
+                productdesc: event.product.productdesc,
+                currency: event.product.currency,
+                specifications: event.product.specifications,
+                type: event.product.type,
+                address: event.product.address!.address,
+                city: event.product.address!.city,
+                country: event.product.address!.country,
+                postcode: event.product.address!.postCode,
+                category: event.product.category,
+                image_url: event.product.mediaPrimary!.url,
+                media_type: event.product.mediaPrimary!.type,
+                location: event.product.address!.location,
+                rating: event.product.rating,
+                price: event.product.price,
+              ),
+              userId: _user.uid,
+            );
+
+            if (result) {
+              emit(AddRatingSuccess());
+            } else
+              emit(ProductError('unable to add like to product'));
+          }
+        }
+
         if (event is AddLike) {
           if (_user != null) {
             final result = await _productRepo.addLike(

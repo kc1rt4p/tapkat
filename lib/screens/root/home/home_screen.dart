@@ -213,7 +213,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ),
                                     );
 
-                                    _homeBloc.add(InitializeHomeScreen());
+                                    _homeBloc.add(LoadRecommendedList());
                                   },
                                   onLikeTapped: () {
                                     if (record != null) {
@@ -221,11 +221,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                         liked: !record.liked!,
                                       );
 
-                                      if (record.liked!) {
+                                      if (!record.liked!) {
                                         _onLikeTapped(product);
                                       }
 
                                       record.reference!.update(newData);
+                                    } else {
+                                      _onLikeTapped(product);
                                     }
                                   },
                                 );
@@ -289,7 +291,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ),
                                     );
 
-                                    _homeBloc.add(LoadRecommendedList());
+                                    _homeBloc.add(LoadTrendingList());
                                   },
                                   onLikeTapped: () {
                                     if (record != null) {
@@ -297,11 +299,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                         liked: !record.liked!,
                                       );
 
-                                      if (record.liked!) {
+                                      if (!record.liked!) {
                                         _onLikeTapped(product);
                                       }
 
                                       record.reference!.update(newData);
+                                    } else {
+                                      _onLikeTapped(product);
                                     }
                                   },
                                 );
@@ -343,7 +347,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               );
 
-                              _homeBloc.add(LoadTrendingList());
+                              _homeBloc.add(LoadUserList());
                             },
                           );
                         }).toList(),

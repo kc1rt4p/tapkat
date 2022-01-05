@@ -162,6 +162,7 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                                               builder: (context) =>
                                                   BarterScreen(
                                                 barterRecord: barter,
+                                                fromOtherUser: true,
                                               ),
                                             ),
                                           ),

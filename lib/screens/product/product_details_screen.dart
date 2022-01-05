@@ -90,7 +90,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                     });
                   }
 
-                  if (state is AddLikeSuccess) {
+                  if (state is AddLikeSuccess || state is AddRatingSuccess) {
                     _productBloc.add(GetProductDetails(widget.productId));
                   }
                 },
@@ -390,21 +390,31 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                     padding: EdgeInsets.only(
                                                         right:
                                                             i != 5 ? 5.0 : 0.0),
-                                                    child: Icon(
-                                                      i <
-                                                              (_product !=
-                                                                          null &&
-                                                                      _product!
-                                                                              .rating !=
-                                                                          null
-                                                                  ? _product!
-                                                                      .rating!
-                                                                      .round()
-                                                                  : 0)
-                                                          ? Icons.star
-                                                          : Icons.star_border,
-                                                      color: Color(0xFFFFC107),
-                                                      size: 20.0,
+                                                    child: GestureDetector(
+                                                      onTap: () {
+                                                        print('i: $i');
+                                                        print(
+                                                            'rating product...');
+                                                        _productBloc.add(
+                                                            AddRating(_product!,
+                                                                i + 1));
+                                                      },
+                                                      child: Icon(
+                                                        i <
+                                                                (_product !=
+                                                                            null &&
+                                                                        _product!.rating !=
+                                                                            null
+                                                                    ? _product!
+                                                                        .rating!
+                                                                        .round()
+                                                                    : 0)
+                                                            ? Icons.star
+                                                            : Icons.star_border,
+                                                        color:
+                                                            Color(0xFFFFC107),
+                                                        size: 20.0,
+                                                      ),
                                                     ),
                                                   );
                                                 }),
@@ -414,7 +424,8 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                           Text(
                                             _product != null &&
                                                     _product!.rating != null
-                                                ? _product!.rating!.toString()
+                                                ? _product!.rating!
+                                                    .toStringAsFixed(1)
                                                 : '0',
                                             style: TextStyle(fontSize: 16.0),
                                           ),
@@ -481,7 +492,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                                               !record.liked!,
                                                                         );
 
-                                                                        if (record
+                                                                        if (!record
                                                                             .liked!) {
                                                                           _productBloc
                                                                               .add(
@@ -492,6 +503,12 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                                         record
                                                                             .reference!
                                                                             .update(newData);
+                                                                      } else {
+                                                                        _productBloc
+                                                                            .add(
+                                                                          AddLike(
+                                                                              _product!),
+                                                                        );
                                                                       }
                                                                     },
                                                                     child: Icon(

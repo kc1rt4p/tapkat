@@ -213,6 +213,25 @@ class ProductRepository {
     return response.data['status'] == 'SUCCESS';
   }
 
+  Future<bool> addRating({
+    required ProductRequestModel productRequest,
+    required String userId,
+    required int rating,
+  }) async {
+    final response = await _apiService.post(
+      url: 'products/update/${productRequest.productid}',
+      body: {
+        'psk': psk,
+        ...productRequest.toJson(updating: true),
+        // 'productid': productRequest.productid,
+        // 'userid': productRequest.userid,
+        'rating': rating,
+      },
+    );
+
+    return response.data['status'] == 'SUCCESS';
+  }
+
   Future<bool> addLike({
     required ProductRequestModel productRequest,
     required String userId,
@@ -222,6 +241,8 @@ class ProductRepository {
       body: {
         'psk': psk,
         ...productRequest.toJson(updating: true),
+        // 'productid': productRequest.productid,
+        // 'userid': productRequest.userid,
         'like': 1,
       },
     );

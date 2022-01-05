@@ -57,6 +57,13 @@ class AddLike extends ProductEvent {
   AddLike(this.product);
 }
 
+class AddRating extends ProductEvent {
+  final ProductModel product;
+  final int rating;
+
+  AddRating(this.product, this.rating);
+}
+
 class DislikeProduct extends ProductEvent {
   final ProductModel product;
 

@@ -23,11 +23,13 @@ import 'bloc/barter_bloc.dart';
 class BarterScreen extends StatefulWidget {
   final ProductModel? product;
   final BarterRecordModel? barterRecord;
+  final bool fromOtherUser;
 
   const BarterScreen({
     Key? key,
     this.product,
     this.barterRecord,
+    this.fromOtherUser = false,
   }) : super(key: key);
 
   @override
@@ -241,8 +243,9 @@ class _BarterScreenState extends State<BarterScreen> {
                               ),
                             ),
                             _buildBarterList(
-                              label:
-                                  'You want this item(s) from $_participantName',
+                              label: !widget.fromOtherUser
+                                  ? 'You want these item(s) from $_participantName'
+                                  : '$_participantName wants these item(s) from you',
                               items: wants.map((item) {
                                 print('item====== ${item.toJson()}');
                                 return Container(
@@ -296,7 +299,9 @@ class _BarterScreenState extends State<BarterScreen> {
                               addBtnTapped: _showParticipantItems,
                             ),
                             _buildBarterList(
-                              label: 'Your offer',
+                              label: !widget.fromOtherUser
+                                  ? 'Your offer'
+                                  : 'Offers from $_participantName',
                               labelAction: Text(
                                 '${offers.length} Item(s) Offered',
                               ),
@@ -349,7 +354,7 @@ class _BarterScreenState extends State<BarterScreen> {
                                   ),
                                 );
                               }).toList(),
-                              addBtnTapped: () => _showUserItems(),
+                              addBtnTapped: _showUserItems,
                             ),
                           ],
                         ),
@@ -366,7 +371,9 @@ class _BarterScreenState extends State<BarterScreen> {
                   child: Column(
                     children: [
                       CustomButton(
-                        label: 'Send Proposal to $_participantName',
+                        label: !widget.fromOtherUser
+                            ? 'Send Proposal to $_participantName'
+                            : 'Accept proposal from $_participantName',
                         bgColor: Color(0xFFBB3F03),
                         textColor: Colors.white,
                         onTap: () {},
@@ -627,7 +634,9 @@ class _BarterScreenState extends State<BarterScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   _buildBarterList(
-                    label: 'Select your offer(s)',
+                    label: !widget.fromOtherUser
+                        ? 'Select your offer(s)'
+                        : 'Select items from $_participantName',
                     labelAction: GestureDetector(
                       onTap: () => Navigator.pop(context),
                       child: Icon(
