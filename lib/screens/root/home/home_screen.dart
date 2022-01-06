@@ -140,7 +140,7 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Container(
               color: kBackgroundColor,
-              padding: EdgeInsets.only(top: SizeConfig.paddingTop),
+              padding: EdgeInsets.only(top: SizeConfig.paddingTop - 10),
               child: Column(
                 children: [
                   CustomSearchBar(
@@ -154,7 +154,7 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Container(
                 height: double.maxFinite,
                 width: double.infinity,
-                padding: EdgeInsets.fromLTRB(15.0, 20, 15.0, 0.0),
+                padding: EdgeInsets.fromLTRB(15.0, 15, 15.0, 0.0),
                 decoration: BoxDecoration(
                   color: Color(0xFFEBFBFF),
                   borderRadius: BorderRadius.only(

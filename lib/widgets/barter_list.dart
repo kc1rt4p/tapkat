@@ -77,8 +77,18 @@ class _BarterListState extends State<BarterList> {
             ),
           ),
           widget.loading
-              ? CircularProgressIndicator(
-                  color: kBackgroundColor,
+              ? Container(
+                  width: double.infinity,
+                  height: 180.0,
+                  child: SizedBox(
+                    height: 50.0,
+                    width: 50.0,
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        color: kBackgroundColor,
+                      ),
+                    ),
+                  ),
                 )
               : widget.items.isNotEmpty
                   ? Container(
