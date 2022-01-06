@@ -57,7 +57,7 @@ class BarterRecordModel {
       proposedBy: json['proposedBy'],
       lastProposedDate: json['lastProposedDate'],
       dealStatus: json['dealStatus'],
-      dealDate: json['dealDate'],
+      dealDate: json['dealDate'] != null ? json['dealDate'].toDate() : null,
       u1P1Image: json['u1P1Image'],
       u2P1Image: json['u2P1Image'],
       barterId: json['barterId'],

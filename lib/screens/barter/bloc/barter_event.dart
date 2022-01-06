@@ -27,6 +27,12 @@ class StreamBarter extends BarterEvent {
   StreamBarter(this.barterRecord);
 }
 
+class DeleteBarter extends BarterEvent {
+  final String id;
+
+  DeleteBarter(this.id);
+}
+
 class InitializeBarter extends BarterEvent {
   final BarterRecordModel barterData;
 

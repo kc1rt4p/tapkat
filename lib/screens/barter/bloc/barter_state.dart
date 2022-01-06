@@ -57,6 +57,8 @@ class BarterChatInitialized extends BarterState {
   });
 }
 
+class DeleteBarterSuccess extends BarterState {}
+
 class BarterError extends BarterState {
   final String message;
 

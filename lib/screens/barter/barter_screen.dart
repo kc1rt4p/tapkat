@@ -168,6 +168,7 @@ class _BarterScreenState extends State<BarterScreen> {
                           u1P1Price: _product!.price!.toDouble(),
                           u1P1Image: _product!.mediaPrimary!.url!,
                           barterNo: 0,
+                          dealDate: DateTime.now(),
                         ),
                       ),
                     );

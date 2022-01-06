@@ -75,4 +75,13 @@ class BarterRepository {
       return false;
     }
   }
+
+  Future<bool> deleteBarter(String id) async {
+    try {
+      await barterRef.doc(id).delete();
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
 }

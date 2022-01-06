@@ -110,6 +110,14 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
               emit(SendMessageSuccess());
             }
           }
+
+          if (event is DeleteBarter) {
+            final success = await _barterRepository.deleteBarter(event.id);
+            if (success)
+              emit(DeleteBarterSuccess());
+            else
+              emit(BarterError('Unable to delete barter record'));
+          }
         }
       } catch (e) {
         emit(BarterError(e.toString()));
