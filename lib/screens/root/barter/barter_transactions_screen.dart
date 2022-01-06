@@ -80,6 +80,7 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               SizedBox(height: 10.0),
                               Text(
@@ -191,11 +192,11 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
               ),
               Expanded(
                 child: Container(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+                  padding: EdgeInsets.symmetric(horizontal: 20.0),
                   width: double.infinity,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Expanded(
                         child: Column(
