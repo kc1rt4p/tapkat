@@ -5,6 +5,7 @@ import 'package:flutter_progress_hud/flutter_progress_hud.dart';
 import 'package:tapkat/backend.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/schemas/user_likes_record.dart';
+import 'package:tapkat/screens/product/bloc/product_bloc.dart';
 import 'package:tapkat/screens/product/product_details_screen.dart';
 import 'package:tapkat/screens/root/wish_list/bloc/wish_list_bloc.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
@@ -25,6 +26,7 @@ class _WishListScreenState extends State<WishListScreen> {
   List<ProductModel> _list = [];
   User? _user;
   final _wishListBloc = WishListBloc();
+  final _productBloc = ProductBloc();
 
   @override
   void initState() {
@@ -193,6 +195,15 @@ class _WishListScreenState extends State<WishListScreen> {
 
                                                   record.reference!
                                                       .update(newData);
+
+                                                  if (liked) {
+                                                    _productBloc.add(
+                                                      Unlike(product),
+                                                    );
+                                                  } else {
+                                                    _productBloc
+                                                        .add(AddLike(product));
+                                                  }
                                                 }
                                               },
                                             );

@@ -426,7 +426,7 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
                 width: double.infinity,
               ),
         Visibility(
-          visible: _media.length < 5,
+          visible: _media.length < 10,
           child: Positioned(
             bottom: 5,
             right: 10,

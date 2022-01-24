@@ -221,13 +221,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                         liked: !record.liked!,
                                       );
 
-                                      if (!record.liked!) {
-                                        _onLikeTapped(product);
-                                      }
-
                                       record.reference!.update(newData);
-                                    } else {
-                                      _onLikeTapped(product);
+                                      if (liked) {
+                                        _productBloc.add(
+                                          Unlike(product),
+                                        );
+                                      } else {
+                                        _productBloc.add(AddLike(product));
+                                      }
                                     }
                                   },
                                 );
@@ -299,13 +300,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                         liked: !record.liked!,
                                       );
 
-                                      if (!record.liked!) {
-                                        _onLikeTapped(product);
-                                      }
-
                                       record.reference!.update(newData);
-                                    } else {
-                                      _onLikeTapped(product);
+                                      if (liked) {
+                                        _productBloc.add(
+                                          Unlike(product),
+                                        );
+                                      } else {
+                                        _productBloc.add(AddLike(product));
+                                      }
                                     }
                                   },
                                 );

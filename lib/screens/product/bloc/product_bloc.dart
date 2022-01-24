@@ -126,9 +126,9 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
           }
         }
 
-        if (event is AddLike) {
+        if (event is Unlike) {
           if (_user != null) {
-            final result = await _productRepo.addLike(
+            final result = await _productRepo.likeProduct(
               productRequest: ProductRequestModel(
                 productid: event.product.productid,
                 userid: event.product.userid,
@@ -148,6 +148,39 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
                 price: event.product.price,
               ),
               userId: _user.uid,
+              like: -1,
+            );
+
+            if (result) {
+              emit(UnlikeSuccess());
+            } else
+              emit(ProductError('unable to add like to product'));
+          }
+        }
+
+        if (event is AddLike) {
+          if (_user != null) {
+            final result = await _productRepo.likeProduct(
+              productRequest: ProductRequestModel(
+                productid: event.product.productid,
+                userid: event.product.userid,
+                productdesc: event.product.productdesc,
+                currency: event.product.currency,
+                specifications: event.product.specifications,
+                type: event.product.type,
+                address: event.product.address!.address,
+                city: event.product.address!.city,
+                country: event.product.address!.country,
+                postcode: event.product.address!.postCode,
+                category: event.product.category,
+                image_url: event.product.mediaPrimary!.url,
+                media_type: event.product.mediaPrimary!.type,
+                location: event.product.address!.location,
+                rating: event.product.rating,
+                price: event.product.price,
+              ),
+              userId: _user.uid,
+              like: 1,
             );
 
             if (result) {

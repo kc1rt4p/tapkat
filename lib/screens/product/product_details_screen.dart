@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_progress_hud/flutter_progress_hud.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:photo_view/photo_view.dart';
+import 'package:photo_view/photo_view_gallery.dart';
 import 'package:tapkat/backend.dart';
 import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
 import 'package:tapkat/models/media_primary_model.dart';
@@ -90,7 +92,10 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                     });
                   }
 
-                  if (state is AddLikeSuccess || state is AddRatingSuccess) {
+                  if (state is AddLikeSuccess ||
+                      state is AddRatingSuccess ||
+                      state is UnlikeSuccess) {
+                    print('HEY!');
                     _productBloc.add(GetProductDetails(widget.productId));
                   }
                 },
@@ -123,46 +128,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                               alignment: Alignment.center,
                               children: [
                                 _product != null
-                                    ? CarouselSlider(
-                                        carouselController: _carouselController,
-                                        options: CarouselOptions(
-                                            height:
-                                                SizeConfig.screenHeight * .3,
-                                            enableInfiniteScroll: false,
-                                            aspectRatio: 1,
-                                            viewportFraction: 1,
-                                            onPageChanged: (index, _) {
-                                              setState(() {
-                                                _currentCarouselIndex = index;
-                                              });
-                                            }),
-                                        items: _product!.media!.map((img) {
-                                          return Container(
-                                            width: double.infinity,
-                                            decoration: BoxDecoration(
-                                              image: DecorationImage(
-                                                fit: BoxFit.cover,
-                                                image: mappedProductDetails !=
-                                                            null &&
-                                                        mappedProductDetails![
-                                                                'imgUrl']
-                                                            .isEmpty
-                                                    ? AssetImage(
-                                                            'assets/images/image_placeholder.jpg')
-                                                        as ImageProvider<Object>
-                                                    : CachedNetworkImageProvider(img
-                                                                    .url !=
-                                                                null &&
-                                                            img.url!.isNotEmpty
-                                                        ? img.url!
-                                                        : 'https://storage.googleapis.com/map-surf-assets/noimage.jpg'),
-                                              ),
-                                            ),
-                                          );
-                                        }).toList(),
-                                      )
+                                    ? _buildPhotos()
                                     : Container(
-                                        height: SizeConfig.screenHeight * .3,
+                                        height: SizeConfig.screenHeight * .35,
                                         width: double.infinity,
                                         decoration: BoxDecoration(
                                           image: DecorationImage(
@@ -296,44 +264,41 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                           SizedBox(width: 16.0),
                                           Visibility(
                                             visible: !widget.ownItem,
-                                            child: Expanded(
-                                              flex: 2,
-                                              child: InkWell(
-                                                onTap: () {
-                                                  Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                      builder: ((context) =>
-                                                          StoreScreen(
-                                                            userId: _product!
-                                                                .userid!,
-                                                            userName: _product!
-                                                                .userid!,
-                                                          )),
-                                                    ),
-                                                  );
-                                                },
-                                                child: Container(
-                                                  padding: EdgeInsets.symmetric(
-                                                      horizontal: 20.0,
-                                                      vertical: 10.0),
-                                                  decoration: BoxDecoration(
-                                                    color: Color(0xFFBB3F03),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            9.0),
+                                            child: InkWell(
+                                              onTap: () {
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: ((context) =>
+                                                        StoreScreen(
+                                                          userId:
+                                                              _product!.userid!,
+                                                          userName:
+                                                              _product!.userid!,
+                                                        )),
                                                   ),
-                                                  child: Center(
-                                                    child: Text(
-                                                      'View ${_product != null && _product!.userid!.isNotEmpty ? _product!.userid!.length > 10 ? '${_product!.userid!.substring(0, 12)}...' : _product!.userid! : ''}\'s Store',
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                      style: TextStyle(
-                                                        color: Colors.white,
-                                                        fontSize: 12.0,
-                                                        fontWeight:
-                                                            FontWeight.w500,
-                                                      ),
+                                                );
+                                              },
+                                              child: Container(
+                                                padding: EdgeInsets.symmetric(
+                                                    horizontal: 20.0,
+                                                    vertical: 10.0),
+                                                decoration: BoxDecoration(
+                                                  color: Color(0xFFBB3F03),
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          9.0),
+                                                ),
+                                                child: Center(
+                                                  child: Text(
+                                                    'View Store',
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                    style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: 12.0,
+                                                      fontWeight:
+                                                          FontWeight.w600,
                                                     ),
                                                   ),
                                                 ),
@@ -492,23 +457,18 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                                               !record.liked!,
                                                                         );
 
-                                                                        if (!record
-                                                                            .liked!) {
-                                                                          _productBloc
-                                                                              .add(
-                                                                            AddLike(_product!),
-                                                                          );
-                                                                        }
-
                                                                         record
                                                                             .reference!
                                                                             .update(newData);
-                                                                      } else {
-                                                                        _productBloc
-                                                                            .add(
-                                                                          AddLike(
-                                                                              _product!),
-                                                                        );
+                                                                        if (liked) {
+                                                                          _productBloc
+                                                                              .add(
+                                                                            Unlike(_product!),
+                                                                          );
+                                                                        } else {
+                                                                          _productBloc
+                                                                              .add(AddLike(_product!));
+                                                                        }
                                                                       }
                                                                     },
                                                                     child: Icon(
@@ -657,6 +617,79 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
               ),
             ),
           )),
+    );
+  }
+
+  Widget _buildPhotos() {
+    return Container(
+      height: SizeConfig.screenHeight * .35,
+      child: PhotoViewGallery.builder(
+        itemCount: _product!.media!.length,
+        scrollPhysics: const BouncingScrollPhysics(),
+        builder: (BuildContext context, int index) {
+          final img = _product!.media![index];
+
+          return PhotoViewGalleryPageOptions(
+            imageProvider: CachedNetworkImageProvider(img.url != null &&
+                    img.url!.isNotEmpty
+                ? img.url!
+                : 'https://storage.googleapis.com/map-surf-assets/noimage.jpg'),
+            initialScale: PhotoViewComputedScale.contained * 0.8,
+            heroAttributes: PhotoViewHeroAttributes(tag: _product!.productid!),
+          );
+        },
+        onPageChanged: (index) {
+          setState(() {
+            _currentCarouselIndex = index;
+          });
+        },
+        loadingBuilder: (context, event) => Center(
+          child: Container(
+            width: 20.0,
+            height: 20.0,
+            child: CircularProgressIndicator(
+              value: event == null
+                  ? 0
+                  : event.cumulativeBytesLoaded /
+                      num.parse(event.expectedTotalBytes.toString()),
+            ),
+          ),
+        ),
+        backgroundDecoration: BoxDecoration(
+          color: Colors.grey.shade900,
+        ),
+      ),
+    );
+    return CarouselSlider(
+      carouselController: _carouselController,
+      options: CarouselOptions(
+          height: SizeConfig.screenHeight * .3,
+          enableInfiniteScroll: false,
+          aspectRatio: 1,
+          viewportFraction: 1,
+          onPageChanged: (index, _) {
+            setState(() {
+              _currentCarouselIndex = index;
+            });
+          }),
+      items: _product!.media!.map((img) {
+        return Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              fit: BoxFit.cover,
+              image: mappedProductDetails != null &&
+                      mappedProductDetails!['imgUrl'].isEmpty
+                  ? AssetImage('assets/images/image_placeholder.jpg')
+                      as ImageProvider<Object>
+                  : CachedNetworkImageProvider(img.url != null &&
+                          img.url!.isNotEmpty
+                      ? img.url!
+                      : 'https://storage.googleapis.com/map-surf-assets/noimage.jpg'),
+            ),
+          ),
+        );
+      }).toList(),
     );
   }
 

@@ -54,7 +54,6 @@ class ProductRepository {
       "psk": "lcp9321p",
       'userid': userId,
       'productid': productId,
-      'primary_media': images.first.fileName,
     });
 
     print(images.first.fileName.split('.')[1]);
@@ -232,9 +231,10 @@ class ProductRepository {
     return response.data['status'] == 'SUCCESS';
   }
 
-  Future<bool> addLike({
+  Future<bool> likeProduct({
     required ProductRequestModel productRequest,
     required String userId,
+    required int like,
   }) async {
     final response = await _apiService.post(
       url: 'products/update/${productRequest.productid}',
@@ -243,7 +243,7 @@ class ProductRepository {
         ...productRequest.toJson(updating: true),
         // 'productid': productRequest.productid,
         // 'userid': productRequest.userid,
-        'like': 1,
+        'like': like,
       },
     );
 

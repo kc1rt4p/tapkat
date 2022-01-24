@@ -348,6 +348,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                           MaterialPageRoute(
                             builder: (context) => ProductDetailsScreen(
                               productId: product.productid ?? '',
+                              ownItem: widget.ownListing ? true : false,
                             ),
                           ),
                         ),
@@ -358,6 +359,13 @@ class _ProductListScreenState extends State<ProductListScreen> {
                             );
 
                             record.reference!.update(newData);
+                            if (liked) {
+                              _productBloc.add(
+                                Unlike(product),
+                              );
+                            } else {
+                              _productBloc.add(AddLike(product));
+                            }
                           }
                         },
                       );
