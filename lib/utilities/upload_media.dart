@@ -129,7 +129,11 @@ Future<SelectedMedia?> selectMedia({
   final pickedMediaFuture = isVideo
       ? picker.pickVideo(source: source)
       : picker.pickImage(
-          maxWidth: maxWidth, maxHeight: maxHeight, source: source);
+          maxWidth: maxWidth,
+          maxHeight: maxHeight,
+          source: source,
+          imageQuality: 50,
+        );
   final pickedMedia = await pickedMediaFuture;
   final mediaBytes = await pickedMedia?.readAsBytes();
   if (mediaBytes == null) {

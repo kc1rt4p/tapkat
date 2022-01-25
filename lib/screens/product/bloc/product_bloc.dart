@@ -191,7 +191,6 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
         }
 
         if (event is GetProductDetails) {
-          emit(ProductLoading());
           final product = await _productRepo.getProduct(event.productId);
 
           emit(GetProductDetailsSuccess(product));
