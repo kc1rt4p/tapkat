@@ -36,7 +36,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
   String _selectedView = 'grid'; //grid or map
 
   LatLng? googleMapsCenter;
-  final googleMapsController = Completer<GoogleMapController>();
+  late GoogleMapController googleMapsController;
 
   StreamSubscription? _productMarkerStream;
 
@@ -215,9 +215,11 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
   _buildMapView() {
     return Container(
       child: TapkatGoogleMap(
-        controller: googleMapsController,
         onCameraIdle: (latLng) => googleMapsCenter = latLng,
         initialLocation: googleMapsCenter ?? LatLng(1.3631246, 103.8325137),
+        onMapCreated: (controller) {
+          googleMapsController = controller;
+        },
         markers: productMarkers
             .map(
               (productMarker) => TapkatMarker(

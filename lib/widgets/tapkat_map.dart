@@ -45,7 +45,7 @@ class TapkatMarker {
 
 class TapkatGoogleMap extends StatefulWidget {
   const TapkatGoogleMap({
-    required this.controller,
+    // required this.controller,
     required this.onCameraIdle,
     required this.initialLocation,
     this.markers = const [],
@@ -61,10 +61,11 @@ class TapkatGoogleMap extends StatefulWidget {
     this.showMapToolbar = false,
     this.showTraffic = false,
     this.centerMapOnMarkerTap = false,
+    required this.onMapCreated,
     Key? key,
   }) : super(key: key);
 
-  final Completer<GoogleMapController> controller;
+  // final Completer<GoogleMapController> controller;
   final Function(latlng.LatLng) onCameraIdle;
   final latlng.LatLng initialLocation;
   final Iterable<TapkatMarker> markers;
@@ -80,6 +81,7 @@ class TapkatGoogleMap extends StatefulWidget {
   final bool showMapToolbar;
   final bool showTraffic;
   final bool centerMapOnMarkerTap;
+  final Function(GoogleMapController) onMapCreated;
 
   @override
   State<StatefulWidget> createState() => _TapkatGoogleMapState();
@@ -99,17 +101,14 @@ class _TapkatGoogleMapState extends State<TapkatGoogleMap> {
   void initState() {
     super.initState();
     currentMapCenter = initialPosition;
-    _controller = widget.controller;
+    // _controller = widget.controller;
   }
 
   @override
   Widget build(BuildContext context) => AbsorbPointer(
         absorbing: !widget.allowInteraction,
         child: GoogleMap(
-          onMapCreated: (controller) async {
-            _controller.complete(controller);
-            await controller.setMapStyle(googleMapStyleStrings[widget.style]);
-          },
+          onMapCreated: (controller) => widget.onMapCreated(controller),
           onCameraIdle: onCameraIdle,
           onCameraMove: (position) => currentMapCenter = position.target,
           initialCameraPosition: CameraPosition(
@@ -144,7 +143,9 @@ class _TapkatGoogleMapState extends State<TapkatGoogleMap> {
                   infoWindow: m.product != null
                       ? InfoWindow(
                           title: m.product!.productname,
-                          snippet: m.product!.productdesc,
+                          snippet: m.product!.price == null
+                              ? ''
+                              : '\$ ${m.product!.price!.toStringAsFixed(2)}',
                         )
                       : InfoWindow.noText,
                 ),

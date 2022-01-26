@@ -48,7 +48,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
   List<ProductModel> indicators = [];
 
   LatLng? googleMapsCenter;
-  final googleMapsController = Completer<GoogleMapController>();
+  late GoogleMapController googleMapsController;
 
   @override
   void initState() {
@@ -506,9 +506,15 @@ class _ProductListScreenState extends State<ProductListScreen> {
     return Container(
       child: TapkatGoogleMap(
         showLocation: true,
-        controller: googleMapsController,
         onCameraIdle: (latLng) => googleMapsCenter = latLng,
         initialLocation: googleMapsCenter ?? LatLng(1.3631246, 103.8325137),
+        onMapCreated: (controller) {
+          googleMapsController = controller;
+          _list.forEach((product) {
+            googleMapsController
+                .showMarkerInfoWindow(MarkerId(product.productid!));
+          });
+        },
         markers: _list
             .map(
               (product) => TapkatMarker(
