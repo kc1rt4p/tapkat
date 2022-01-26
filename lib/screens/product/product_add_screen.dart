@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:carousel_slider/carousel_controller.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
@@ -245,13 +244,13 @@ class _ProductAddScreenState extends State<ProductAddScreen> {
           latitude: _selectedLocation!.geometry!.location.lat,
         ),
         address: _selectedLocation!.addressComponents[0] != null
-            ? _selectedLocation!.addressComponents[0]!.longName
+            ? _selectedLocation!.addressComponents[0].longName
             : null,
         city: _selectedLocation!.addressComponents[1] != null
-            ? _selectedLocation!.addressComponents[1]!.longName
+            ? _selectedLocation!.addressComponents[1].longName
             : null,
         country: _selectedLocation!.addressComponents.last != null
-            ? _selectedLocation!.addressComponents.last!.longName
+            ? _selectedLocation!.addressComponents.last.longName
             : null,
       );
 
