@@ -28,6 +28,8 @@ class _WishListScreenState extends State<WishListScreen> {
   final _wishListBloc = WishListBloc();
   final _productBloc = ProductBloc();
 
+  bool _loading = true;
+
   @override
   void initState() {
     _wishListBloc.add(InitializeWishListScreen());
@@ -48,8 +50,14 @@ class _WishListScreenState extends State<WishListScreen> {
             print('current state: $state');
             if (state is WishListLoading) {
               ProgressHUD.of(context)!.show();
+              setState(() {
+                _loading = true;
+              });
             } else {
               ProgressHUD.of(context)!.dismiss();
+              setState(() {
+                _loading = false;
+              });
             }
 
             if (state is WishListInitialized) {
@@ -211,18 +219,21 @@ class _WishListScreenState extends State<WishListScreen> {
                                     ))
                                 .toList(),
                           )
-                        : Container(
-                            padding: EdgeInsets.symmetric(horizontal: 30.0),
-                            child: Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    'No products found',
-                                    style: Style.subtitle2
-                                        .copyWith(color: Colors.grey),
-                                  ),
-                                ],
+                        : Visibility(
+                            visible: !_loading,
+                            child: Container(
+                              padding: EdgeInsets.symmetric(horizontal: 30.0),
+                              child: Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      'No products found',
+                                      style: Style.subtitle2
+                                          .copyWith(color: Colors.grey),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           ),

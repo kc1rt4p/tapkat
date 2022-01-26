@@ -62,6 +62,8 @@ class TapkatGoogleMap extends StatefulWidget {
     this.showTraffic = false,
     this.centerMapOnMarkerTap = false,
     required this.onMapCreated,
+    this.onCameraMove,
+    this.onTap,
     Key? key,
   }) : super(key: key);
 
@@ -82,6 +84,8 @@ class TapkatGoogleMap extends StatefulWidget {
   final bool showTraffic;
   final bool centerMapOnMarkerTap;
   final Function(GoogleMapController) onMapCreated;
+  final Function(LatLng)? onTap;
+  final Function(CameraPosition)? onCameraMove;
 
   @override
   State<StatefulWidget> createState() => _TapkatGoogleMapState();
@@ -110,7 +114,13 @@ class _TapkatGoogleMapState extends State<TapkatGoogleMap> {
         child: GoogleMap(
           onMapCreated: (controller) => widget.onMapCreated(controller),
           onCameraIdle: onCameraIdle,
-          onCameraMove: (position) => currentMapCenter = position.target,
+          onCameraMove: (position) {
+            currentMapCenter = position.target;
+            if (widget.onCameraMove != null) {
+              widget.onCameraMove!(position);
+            }
+          },
+          onTap: widget.onTap,
           initialCameraPosition: CameraPosition(
             target: initialPosition,
             zoom: initialZoom,
@@ -140,14 +150,14 @@ class _TapkatGoogleMapState extends State<TapkatGoogleMap> {
                       onCameraIdle();
                     }
                   },
-                  infoWindow: m.product != null
-                      ? InfoWindow(
-                          title: m.product!.productname,
-                          snippet: m.product!.price == null
-                              ? ''
-                              : '\$ ${m.product!.price!.toStringAsFixed(2)}',
-                        )
-                      : InfoWindow.noText,
+                  // infoWindow: m.product != null
+                  //     ? InfoWindow(
+                  //         title: m.product!.productname,
+                  //         snippet: m.product!.price == null
+                  //             ? ''
+                  //             : '\$ ${m.product!.price!.toStringAsFixed(2)}',
+                  //       )
+                  //     : InfoWindow.noText,
                 ),
               )
               .toSet(),

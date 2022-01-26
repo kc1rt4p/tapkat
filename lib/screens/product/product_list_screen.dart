@@ -1,7 +1,10 @@
+import 'package:clippy_flutter/clippy_flutter.dart';
+import 'package:custom_info_window/custom_info_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_progress_hud/flutter_progress_hud.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart' as gmf;
 import 'package:tapkat/backend.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/schemas/user_likes_record.dart';
@@ -49,6 +52,8 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
   LatLng? googleMapsCenter;
   late GoogleMapController googleMapsController;
+  CustomInfoWindowController _customInfoWindowController =
+      CustomInfoWindowController();
 
   @override
   void initState() {
@@ -503,35 +508,112 @@ class _ProductListScreenState extends State<ProductListScreen> {
   }
 
   Widget _buildMapView() {
-    return Container(
-      child: TapkatGoogleMap(
-        showLocation: true,
-        onCameraIdle: (latLng) => googleMapsCenter = latLng,
-        initialLocation: googleMapsCenter ?? LatLng(1.3631246, 103.8325137),
-        onMapCreated: (controller) {
-          googleMapsController = controller;
-          _list.forEach((product) {
-            googleMapsController
-                .showMarkerInfoWindow(MarkerId(product.productid!));
-          });
-        },
-        markers: _list
-            .map(
-              (product) => TapkatMarker(
-                  product.productid!,
-                  LatLng(
-                    product.address != null && product.address!.location != null
-                        ? product.address!.location!.latitude!.toDouble()
-                        : 0.00,
-                    product.address != null && product.address!.location != null
-                        ? product.address!.location!.longitude!.toDouble()
-                        : 0.00,
-                  ),
-                  () => _onMarkerTapped(product),
-                  product),
-            )
-            .toList(),
-      ),
+    return Stack(
+      children: [
+        Container(
+          child: TapkatGoogleMap(
+            showLocation: true,
+            onCameraIdle: (latLng) => googleMapsCenter = latLng,
+            initialLocation: googleMapsCenter ?? LatLng(1.3631246, 103.8325137),
+            onCameraMove: (position) {
+              _customInfoWindowController.onCameraMove!();
+            },
+            onTap: (latLng) {
+              _customInfoWindowController.hideInfoWindow!();
+            },
+            onMapCreated: (controller) {
+              googleMapsController = controller;
+              // _list.forEach((product) {
+              //   googleMapsController
+              //       .showMarkerInfoWindow(MarkerId(product.productid!));
+              // });
+              _customInfoWindowController.googleMapController = controller;
+              _list.forEach((product) async {
+                await Future.delayed(Duration(milliseconds: 500), () {
+                  _customInfoWindowController.addInfoWindow!(
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          padding: EdgeInsets.all(8.0),
+                          decoration: BoxDecoration(
+                            color: kBackgroundColor,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text(
+                                product.productname ?? '',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                    overflow: TextOverflow.ellipsis),
+                              ),
+                              SizedBox(height: 8.0),
+                              Text(
+                                product.price == null
+                                    ? ''
+                                    : '\$ ${product.price!.toStringAsFixed(2)}',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Triangle.isosceles(
+                          edge: Edge.BOTTOM,
+                          child: Container(
+                            color: kBackgroundColor,
+                            width: 20.0,
+                            height: 10.0,
+                          ),
+                        ),
+                      ],
+                    ),
+                    gmf.LatLng(
+                      product.address != null &&
+                              product.address!.location != null
+                          ? product.address!.location!.latitude!.toDouble()
+                          : 0.00,
+                      product.address != null &&
+                              product.address!.location != null
+                          ? product.address!.location!.longitude!.toDouble()
+                          : 0.00,
+                    ),
+                  );
+                });
+              });
+            },
+            markers: _list
+                .map(
+                  (product) => TapkatMarker(
+                      product.productid!,
+                      LatLng(
+                        product.address != null &&
+                                product.address!.location != null
+                            ? product.address!.location!.latitude!.toDouble()
+                            : 0.00,
+                        product.address != null &&
+                                product.address!.location != null
+                            ? product.address!.location!.longitude!.toDouble()
+                            : 0.00,
+                      ),
+                      () => _onMarkerTapped(product),
+                      product),
+                )
+                .toList(),
+          ),
+        ),
+        CustomInfoWindow(
+          controller: _customInfoWindowController,
+          height: 70,
+          width: 150,
+          offset: 40,
+        ),
+      ],
     );
   }
 

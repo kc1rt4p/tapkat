@@ -5,6 +5,7 @@ import 'package:tapkat/models/barter_record_model.dart';
 import 'package:tapkat/screens/barter/barter_screen.dart';
 import 'package:tapkat/screens/barter/bloc/barter_bloc.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
+import 'package:tapkat/utilities/dialog_message.dart';
 import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/utilities/style.dart';
 import 'package:tapkat/widgets/barter_list_item.dart';
@@ -92,93 +93,154 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                               ),
                               SizedBox(height: 10.0),
                               Expanded(
-                                child: Container(
-                                  width: double.infinity,
-                                  padding: EdgeInsets.symmetric(vertical: 10.0),
-                                  child: SingleChildScrollView(
-                                    scrollDirection: Axis.horizontal,
-                                    child: Row(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      children: byYouList.map((barter) {
-                                        final barteringWith = barter.userid2 !=
-                                                    null &&
-                                                barter.userid2!.length > 10
-                                            ? barter.userid2!.substring(0, 10) +
-                                                '...'
-                                            : barter.userid2!;
-                                        return GestureDetector(
-                                          onLongPress: () => _barterBloc.add(
-                                              DeleteBarter(barter.barterId!)),
-                                          child: Container(
-                                            margin:
-                                                EdgeInsets.only(right: 12.0),
-                                            child: Column(
+                                child: SingleChildScrollView(
+                                  child: Container(
+                                    width: double.infinity,
+                                    child: byYouList.isNotEmpty
+                                        ? SingleChildScrollView(
+                                            scrollDirection: Axis.horizontal,
+                                            child: Row(
                                               crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                RichText(
-                                                  text: TextSpan(
-                                                    style: TextStyle(
-                                                      fontFamily: 'Poppins',
-                                                      color: Colors.black,
-                                                    ),
+                                                  CrossAxisAlignment.center,
+                                              children: byYouList.map(
+                                                (barter) {
+                                                  final barteringWith = barter
+                                                                  .userid2 !=
+                                                              null &&
+                                                          barter.userid2!
+                                                                  .length >
+                                                              10
+                                                      ? barter.userid2!
+                                                              .substring(
+                                                                  0, 10) +
+                                                          '...'
+                                                      : barter.userid2!;
+                                                  return Stack(
                                                     children: [
-                                                      TextSpan(text: 'For '),
-                                                      TextSpan(
-                                                        text: barteringWith,
-                                                        style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold,
+                                                      Container(
+                                                        margin: EdgeInsets.only(
+                                                            right: 12.0),
+                                                        child: Column(
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .start,
+                                                          children: [
+                                                            RichText(
+                                                              text: TextSpan(
+                                                                style:
+                                                                    TextStyle(
+                                                                  fontFamily:
+                                                                      'Poppins',
+                                                                  color: Colors
+                                                                      .black,
+                                                                ),
+                                                                children: [
+                                                                  TextSpan(
+                                                                      text:
+                                                                          'For '),
+                                                                  TextSpan(
+                                                                    text:
+                                                                        barteringWith,
+                                                                    style:
+                                                                        TextStyle(
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .bold,
+                                                                    ),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                            ),
+                                                            SizedBox(
+                                                                height: 8.0),
+                                                            BarterListItem(
+                                                              hideLikeBtn: true,
+                                                              itemName: barter
+                                                                      .u1P1Name ??
+                                                                  '',
+                                                              itemPrice: barter
+                                                                          .u1P1Price !=
+                                                                      null
+                                                                  ? barter
+                                                                      .u1P1Price!
+                                                                      .toStringAsFixed(
+                                                                          2)
+                                                                  : '0.00',
+                                                              imageUrl: barter
+                                                                      .u1P1Image ??
+                                                                  '',
+                                                              onTapped: () =>
+                                                                  Navigator
+                                                                      .push(
+                                                                context,
+                                                                MaterialPageRoute(
+                                                                  builder:
+                                                                      (context) =>
+                                                                          BarterScreen(
+                                                                    barterRecord:
+                                                                        barter,
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ),
+                                                            barter.dealDate !=
+                                                                    null
+                                                                ? Container(
+                                                                    width:
+                                                                        160.0,
+                                                                    child: Text(
+                                                                      timeago.format(
+                                                                          barter
+                                                                              .dealDate!),
+                                                                      style: Style
+                                                                          .subtitle2
+                                                                          .copyWith(
+                                                                              fontSize: 12.0),
+                                                                      textAlign:
+                                                                          TextAlign
+                                                                              .center,
+                                                                    ),
+                                                                  )
+                                                                : Container(),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                      Positioned(
+                                                        top: 30.0,
+                                                        right: 15.0,
+                                                        child: InkWell(
+                                                          onTap: () =>
+                                                              _onDeletebarter(
+                                                                  'Barter',
+                                                                  barter
+                                                                      .barterId!),
+                                                          child: Container(
+                                                            padding:
+                                                                EdgeInsets.all(
+                                                                    3.0),
+                                                            decoration:
+                                                                BoxDecoration(
+                                                              shape: BoxShape
+                                                                  .circle,
+                                                              color: Colors.red,
+                                                            ),
+                                                            child: Icon(
+                                                              Icons.close,
+                                                              color:
+                                                                  Colors.white,
+                                                            ),
+                                                          ),
                                                         ),
                                                       ),
                                                     ],
-                                                  ),
-                                                ),
-                                                SizedBox(height: 8.0),
-                                                BarterListItem(
-                                                  hideLikeBtn: true,
-                                                  itemName:
-                                                      barter.u1P1Name ?? '',
-                                                  itemPrice: barter.u1P1Price !=
-                                                          null
-                                                      ? barter.u1P1Price!
-                                                          .toStringAsFixed(2)
-                                                      : '0.00',
-                                                  imageUrl:
-                                                      barter.u1P1Image ?? '',
-                                                  onTapped: () =>
-                                                      Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                      builder: (context) =>
-                                                          BarterScreen(
-                                                        barterRecord: barter,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                                barter.dealDate != null
-                                                    ? Container(
-                                                        width: 160.0,
-                                                        child: Text(
-                                                          timeago.format(
-                                                              barter.dealDate!),
-                                                          style: Style.subtitle2
-                                                              .copyWith(
-                                                                  fontSize:
-                                                                      12.0),
-                                                          textAlign:
-                                                              TextAlign.center,
-                                                        ),
-                                                      )
-                                                    : Container(),
-                                              ],
+                                                  );
+                                                },
+                                              ).toList(),
                                             ),
+                                          )
+                                        : Center(
+                                            child: Text('No barters found'),
                                           ),
-                                        );
-                                      }).toList(),
-                                    ),
                                   ),
                                 ),
                               ),
@@ -209,93 +271,153 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                                 fontSize: 20.0,
                               ),
                             ),
-                            SizedBox(height: 10.0),
                             Expanded(
-                              child: Container(
-                                width: double.infinity,
-                                padding: EdgeInsets.symmetric(vertical: 10.0),
-                                child: SingleChildScrollView(
-                                  scrollDirection: Axis.horizontal,
-                                  child: Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: fromOthersList.map((barter) {
-                                      final barteringWith = barter.userid1 !=
-                                                  null &&
-                                              barter.userid1!.length > 10
-                                          ? barter.userid1!.substring(0, 10) +
-                                              '...'
-                                          : barter.userid1!;
-
-                                      return GestureDetector(
-                                        onLongPress: () => _barterBloc.add(
-                                            DeleteBarter(barter.barterId!)),
-                                        child: Container(
-                                          margin: EdgeInsets.only(right: 12.0),
-                                          child: Column(
+                              child: SingleChildScrollView(
+                                child: Container(
+                                  width: double.infinity,
+                                  padding: EdgeInsets.symmetric(vertical: 10.0),
+                                  child: fromOthersList.isNotEmpty
+                                      ? SingleChildScrollView(
+                                          scrollDirection: Axis.horizontal,
+                                          child: Row(
                                             crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              RichText(
-                                                text: TextSpan(
-                                                  style: TextStyle(
-                                                    fontFamily: 'Poppins',
-                                                    color: Colors.black,
-                                                  ),
+                                                CrossAxisAlignment.center,
+                                            children: fromOthersList.map(
+                                              (barter) {
+                                                final barteringWith = barter
+                                                                .userid1 !=
+                                                            null &&
+                                                        barter.userid1!.length >
+                                                            10
+                                                    ? barter.userid1!
+                                                            .substring(0, 10) +
+                                                        '...'
+                                                    : barter.userid1!;
+
+                                                return Stack(
                                                   children: [
-                                                    TextSpan(text: 'From '),
-                                                    TextSpan(
-                                                      text: barteringWith,
-                                                      style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.bold,
+                                                    Container(
+                                                      margin: EdgeInsets.only(
+                                                          right: 12.0),
+                                                      child: Column(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          RichText(
+                                                            text: TextSpan(
+                                                              style: TextStyle(
+                                                                fontFamily:
+                                                                    'Poppins',
+                                                                color: Colors
+                                                                    .black,
+                                                              ),
+                                                              children: [
+                                                                TextSpan(
+                                                                    text:
+                                                                        'From '),
+                                                                TextSpan(
+                                                                  text:
+                                                                      barteringWith,
+                                                                  style:
+                                                                      TextStyle(
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold,
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                          SizedBox(height: 8.0),
+                                                          BarterListItem(
+                                                            hideLikeBtn: true,
+                                                            itemName: barter
+                                                                    .u1P1Name ??
+                                                                '',
+                                                            itemPrice: barter
+                                                                        .u1P1Price !=
+                                                                    null
+                                                                ? barter
+                                                                    .u1P1Price!
+                                                                    .toStringAsFixed(
+                                                                        2)
+                                                                : '0.00',
+                                                            imageUrl: barter
+                                                                    .u1P1Image ??
+                                                                '',
+                                                            onTapped: () =>
+                                                                Navigator.push(
+                                                              context,
+                                                              MaterialPageRoute(
+                                                                builder:
+                                                                    (context) =>
+                                                                        BarterScreen(
+                                                                  barterRecord:
+                                                                      barter,
+                                                                  fromOtherUser:
+                                                                      true,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                          barter.dealDate !=
+                                                                  null
+                                                              ? Container(
+                                                                  width: 160.0,
+                                                                  child: Text(
+                                                                    timeago.format(
+                                                                        barter
+                                                                            .dealDate!),
+                                                                    style: Style
+                                                                        .subtitle2
+                                                                        .copyWith(
+                                                                            fontSize:
+                                                                                12.0),
+                                                                    textAlign:
+                                                                        TextAlign
+                                                                            .center,
+                                                                  ),
+                                                                )
+                                                              : Container(),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                    Positioned(
+                                                      top: 30.0,
+                                                      right: 15.0,
+                                                      child: InkWell(
+                                                        onTap: () =>
+                                                            _onDeletebarter(
+                                                                'Offer',
+                                                                barter
+                                                                    .barterId!),
+                                                        child: Container(
+                                                          padding:
+                                                              EdgeInsets.all(
+                                                                  3.0),
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            shape:
+                                                                BoxShape.circle,
+                                                            color: Colors.red,
+                                                          ),
+                                                          child: Icon(
+                                                            Icons.close,
+                                                            color: Colors.white,
+                                                          ),
+                                                        ),
                                                       ),
                                                     ),
                                                   ],
-                                                ),
-                                              ),
-                                              SizedBox(height: 8.0),
-                                              BarterListItem(
-                                                hideLikeBtn: true,
-                                                itemName: barter.u1P1Name ?? '',
-                                                itemPrice:
-                                                    barter.u1P1Price != null
-                                                        ? barter.u1P1Price!
-                                                            .toStringAsFixed(2)
-                                                        : '0.00',
-                                                imageUrl:
-                                                    barter.u1P1Image ?? '',
-                                                onTapped: () => Navigator.push(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                    builder: (context) =>
-                                                        BarterScreen(
-                                                      barterRecord: barter,
-                                                      fromOtherUser: true,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                              barter.dealDate != null
-                                                  ? Container(
-                                                      width: 160.0,
-                                                      child: Text(
-                                                        timeago.format(
-                                                            barter.dealDate!),
-                                                        style: Style.subtitle2
-                                                            .copyWith(
-                                                                fontSize: 12.0),
-                                                        textAlign:
-                                                            TextAlign.center,
-                                                      ),
-                                                    )
-                                                  : Container(),
-                                            ],
+                                                );
+                                              },
+                                            ).toList(),
                                           ),
+                                        )
+                                      : Center(
+                                          child: Text('No offers found'),
                                         ),
-                                      );
-                                    }).toList(),
-                                  ),
                                 ),
                               ),
                             ),
@@ -310,6 +432,18 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  _onDeletebarter(String type, String id) {
+    DialogMessage.show(
+      context,
+      title: 'Delete $type',
+      message: 'Are you sure you want to delete this $type?',
+      buttonText: 'Yes',
+      firstButtonClicked: () => _barterBloc.add(DeleteBarter(id)),
+      secondButtonText: 'No',
+      hideClose: true,
     );
   }
 }
