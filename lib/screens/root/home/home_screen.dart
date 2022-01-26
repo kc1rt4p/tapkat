@@ -31,7 +31,6 @@ class _HomeScreenState extends State<HomeScreen> {
   List<ProductModel> _recommendedList = [];
   List<ProductModel> _trendingList = [];
   List<ProductModel> _myProductList = [];
-  List<ProductModel> _userFavourites = [];
 
   final _keywordTextController = TextEditingController();
 
@@ -140,7 +139,7 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Container(
               color: kBackgroundColor,
-              padding: EdgeInsets.only(top: SizeConfig.paddingTop - 10),
+              padding: EdgeInsets.only(top: SizeConfig.paddingTop),
               child: Column(
                 children: [
                   CustomSearchBar(

@@ -505,23 +505,24 @@ class _ProductListScreenState extends State<ProductListScreen> {
   Widget _buildMapView() {
     return Container(
       child: TapkatGoogleMap(
+        showLocation: true,
         controller: googleMapsController,
         onCameraIdle: (latLng) => googleMapsCenter = latLng,
         initialLocation: googleMapsCenter ?? LatLng(1.3631246, 103.8325137),
         markers: _list
             .map(
               (product) => TapkatMarker(
-                product.productid!,
-                LatLng(
-                  product.address != null && product.address!.location != null
-                      ? product.address!.location!.latitude!.toDouble()
-                      : 0.00,
-                  product.address != null && product.address!.location != null
-                      ? product.address!.location!.longitude!.toDouble()
-                      : 0.00,
-                ),
-                () => _onMarkerTapped(product),
-              ),
+                  product.productid!,
+                  LatLng(
+                    product.address != null && product.address!.location != null
+                        ? product.address!.location!.latitude!.toDouble()
+                        : 0.00,
+                    product.address != null && product.address!.location != null
+                        ? product.address!.location!.longitude!.toDouble()
+                        : 0.00,
+                  ),
+                  () => _onMarkerTapped(product),
+                  product),
             )
             .toList(),
       ),

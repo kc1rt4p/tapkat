@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:tapkat/screens/product/product_add_screen.dart';
 import 'package:tapkat/screens/root/barter/barter_transactions_screen.dart';
 import 'package:tapkat/screens/root/home/home_screen.dart';
@@ -23,6 +24,12 @@ class _RootScreenState extends State<RootScreen> {
   ];
 
   int _currentIndex = 0;
+
+  @override
+  void initState() {
+    Permission.location.request();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {

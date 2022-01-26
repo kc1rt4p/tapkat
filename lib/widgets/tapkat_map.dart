@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:tapkat/models/product.dart';
 
 import 'lat_lng.dart' as latlng;
 
@@ -35,10 +36,11 @@ enum GoogleMarkerColor {
 }
 
 class TapkatMarker {
-  const TapkatMarker(this.markerId, this.location, [this.onTap]);
+  const TapkatMarker(this.markerId, this.location, [this.onTap, this.product]);
   final String markerId;
   final latlng.LatLng location;
   final Future Function()? onTap;
+  final ProductModel? product;
 }
 
 class TapkatGoogleMap extends StatefulWidget {
@@ -139,6 +141,12 @@ class _TapkatGoogleMapState extends State<TapkatGoogleMap> {
                       onCameraIdle();
                     }
                   },
+                  infoWindow: m.product != null
+                      ? InfoWindow(
+                          title: m.product!.productname,
+                          snippet: m.product!.productdesc,
+                        )
+                      : InfoWindow.noText,
                 ),
               )
               .toSet(),
