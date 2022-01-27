@@ -1,7 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:tapkat/backend.dart';
+import 'package:tapkat/models/barter_product.dart';
 import 'package:tapkat/models/barter_record_model.dart';
 import 'package:tapkat/models/chat_message.dart';
 import 'package:tapkat/models/product.dart';
@@ -33,28 +33,43 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
             final user2Products = await _productRepository.getFirstProducts(
                 'user', event.barterData.userid2);
 
-            print("======BARTER DATA:: ${event.barterData}");
+            print("======BARTER DATA:: ${event.barterData.toJson()}");
 
             // final _barterRef =
             //     await BarterRecord.collection.doc().set(event.barterData);
-            // final barterData = BarterRecordModel.fromJson(event.barterData);
+            // final _barterRecord = BarterRecordModel.fromJson(event.barterData);
             final newBarter =
                 await _barterRepository.setBarterRecord(event.barterData);
+
+            final barterProducts = await _barterRepository
+                .getBarterProducts(event.barterData.barterId!);
 
             print('new barter data ${event.barterData.toJson()}');
             print('success: $newBarter');
 
-            emit(
-              BarterInitialized(
-                barterStream: queryBarterRecord(
-                  queryBuilder: (barterRecord) => barterRecord.where('barterid',
-                      isEqualTo: event.barterData.barterId),
-                  singleRecord: true,
-                ),
-                userProducts: userProducts,
-                user2Products: user2Products,
-              ),
-            );
+            emit(BarterInitialized(
+              barterStream:
+                  _barterRepository.streamBarter(event.barterData.barterId!),
+              userProducts: userProducts,
+              user2Products: user2Products,
+              barterProducts: barterProducts,
+            ));
+          }
+
+          if (event is UpdateBarterProducts) {
+            final barterProducts =
+                await _barterRepository.getBarterProducts(event.barterId);
+            final _products = event.products;
+            barterProducts.forEach((bProduct) {
+              final _product = ProductModel.fromJson(bProduct.toJson());
+              if (_products.any((_p) => _p.productId == _product.productid)) {
+                _products
+                    .removeWhere((__p) => __p.productId == _product.productid);
+              }
+            });
+            final success = await _barterRepository.addBarterProducts(
+                event.barterId, _products);
+            if (success) emit(UpdateBarterProductsSuccess());
           }
 
           if (event is StreamBarter) {
@@ -63,21 +78,17 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
 
             final user2Products = await _productRepository.getFirstProducts(
                 'user', event.barterRecord.userid2);
-            final stream = await _barterRepository
-                .streamBarter(event.barterRecord.barterId!);
-            emit(
-              BarterInitialized(
-                barterStream: queryBarterRecord(
-                  queryBuilder: (barterRecord) => barterRecord.where(
-                    'barterid',
-                    isEqualTo: event.barterRecord.barterId,
-                  ),
-                  singleRecord: true,
-                ),
-                userProducts: userProducts,
-                user2Products: user2Products,
-              ),
-            );
+
+            final barterProducts = await _barterRepository
+                .getBarterProducts(event.barterRecord.barterId!);
+
+            emit(BarterInitialized(
+              barterStream:
+                  _barterRepository.streamBarter(event.barterRecord.barterId!),
+              userProducts: userProducts,
+              user2Products: user2Products,
+              barterProducts: barterProducts,
+            ));
           }
 
           if (event is InitializeBarterTransactions) {
@@ -117,6 +128,15 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
               emit(DeleteBarterSuccess());
             else
               emit(BarterError('Unable to delete barter record'));
+          }
+
+          if (event is DeleteBarterProducts) {
+            final success = await _barterRepository.removeBarterProduct(
+                event.barterId,
+                event.products.map((prod) => prod.productId!).toList());
+            if (success) {
+              emit(DeleteBarterProductsSuccess());
+            }
           }
         }
       } catch (e) {

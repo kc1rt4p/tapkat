@@ -7,6 +7,7 @@ class CustomButton extends StatefulWidget {
   final Color bgColor;
   final Color textColor;
   final bool removeMargin;
+  final bool enabled;
   const CustomButton({
     Key? key,
     required this.label,
@@ -15,6 +16,7 @@ class CustomButton extends StatefulWidget {
     this.bgColor = const Color(0xFF94D2BD),
     this.textColor = Colors.white,
     this.removeMargin = false,
+    this.enabled = true,
   }) : super(key: key);
 
   @override
@@ -25,7 +27,7 @@ class _CustomButtonState extends State<CustomButton> {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: widget.onTap,
+      onTap: widget.enabled ? widget.onTap : null,
       child: Container(
         margin: !widget.removeMargin ? EdgeInsets.only(bottom: 16.0) : null,
         width: double.infinity,
@@ -33,7 +35,7 @@ class _CustomButtonState extends State<CustomButton> {
           vertical: 10.0,
         ),
         decoration: BoxDecoration(
-          color: widget.bgColor,
+          color: widget.enabled ? widget.bgColor : Colors.grey.shade400,
           borderRadius: BorderRadius.circular(10.0),
           border: Border.all(
             color: widget.bgColor,

@@ -94,7 +94,6 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
         }
 
         if (event is AddRating) {
-          print('hey');
           if (_user != null) {
             final result = await _productRepo.addRating(
               rating: event.rating,

@@ -64,8 +64,8 @@ class ProductModel {
     );
   }
 
-  Map<String, dynamic> toJson() {
-    return {
+  Map<String, dynamic> toJson([bool withId = false]) {
+    final json = {
       'userid': this.userid,
       'productname': this.productname,
       'productdesc': this.productdesc,
@@ -77,5 +77,6 @@ class ProductModel {
       'price': this.price,
       'likes': this.likes,
     };
+    return json..addAll({'productid': this.productid});
   }
 }

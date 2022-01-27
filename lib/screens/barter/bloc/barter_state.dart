@@ -35,8 +35,9 @@ class StreambarterSuccess extends BarterState {
 }
 
 class BarterInitialized extends BarterState {
-  final Stream<List<BarterRecord?>> barterStream;
+  final Stream<BarterRecordModel> barterStream;
   final List<ProductModel> userProducts;
+  final List<BarterProductModel> barterProducts;
 
   final List<ProductModel> user2Products;
 
@@ -44,8 +45,13 @@ class BarterInitialized extends BarterState {
     required this.barterStream,
     required this.userProducts,
     required this.user2Products,
+    required this.barterProducts,
   });
 }
+
+class DeleteBarterProductsSuccess extends BarterState {}
+
+class UpdateBarterProductsSuccess extends BarterState {}
 
 class BarterChatInitialized extends BarterState {
   final Stream<List<ChatMessageModel>> barterChatStream;

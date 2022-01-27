@@ -33,6 +33,26 @@ class DeleteBarter extends BarterEvent {
   DeleteBarter(this.id);
 }
 
+class DeleteBarterProducts extends BarterEvent {
+  final String barterId;
+  final List<BarterProductModel> products;
+
+  DeleteBarterProducts({
+    required this.barterId,
+    required this.products,
+  });
+}
+
+class UpdateBarterProducts extends BarterEvent {
+  final String barterId;
+  final List<BarterProductModel> products;
+
+  UpdateBarterProducts({
+    required this.barterId,
+    required this.products,
+  });
+}
+
 class InitializeBarter extends BarterEvent {
   final BarterRecordModel barterData;
 
