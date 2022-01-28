@@ -61,10 +61,6 @@ class _BarterScreenState extends State<BarterScreen> {
       _participantName = _product!.userid ?? '';
       _participantName = _participantName[0].toUpperCase() +
           _participantName.substring(1).toLowerCase();
-
-      setState(() {
-        wants.add(BarterProductModel.fromJson(_product!.toJson()));
-      });
     } else {
       _participantName = widget.barterRecord!.userid1 ?? '';
       _participantName = _participantName[0].toUpperCase() +
@@ -195,7 +191,6 @@ class _BarterScreenState extends State<BarterScreen> {
                     });
 
                     if (widget.barterRecord == null && _product != null) {
-                      print('`````product: ${_product!.toJson()}');
                       _barterId = _currentUser!.uid +
                           _product!.userid! +
                           _product!.productid!;

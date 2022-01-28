@@ -41,6 +41,17 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
             final newBarter =
                 await _barterRepository.setBarterRecord(event.barterData);
 
+            await _barterRepository
+                .addBarterProducts(event.barterData.barterId!, [
+              BarterProductModel(
+                productId: event.barterData.u2P1Id,
+                userId: event.barterData.userid2,
+                productName: event.barterData.u2P1Name,
+                price: event.barterData.u2P1Price,
+                imgUrl: event.barterData.u2P1Image,
+              )
+            ]);
+
             final barterProducts = await _barterRepository
                 .getBarterProducts(event.barterData.barterId!);
 
