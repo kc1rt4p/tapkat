@@ -167,6 +167,8 @@ class _BarterScreenState extends State<BarterScreen> {
                           'barter record from stream: ${barterRecord.toJson()}');
                       setState(() {
                         _barterRecord = barterRecord;
+                        if (_barterId == null)
+                          _barterId = _barterRecord!.barterId;
                       });
                     });
                   }
