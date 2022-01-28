@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:collection/collection.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -464,9 +463,23 @@ class _BarterScreenState extends State<BarterScreen> {
   }
 
   bool _offersChanged() {
-    Function unOrdDeepEq = const DeepCollectionEquality().equals;
-    return !unOrdDeepEq(origOffers, offers) ||
-        !unOrdDeepEq(origWants, origOffers);
+    bool changed = false;
+    origOffers.forEach((oOffer) {
+      final stillExists =
+          offers.any((offer) => offer.productId == oOffer.productId);
+      if (!stillExists) changed = true;
+    });
+
+    origWants.forEach((oWant) {
+      final stillExists =
+          wants.any((want) => want.productId == oWant.productId);
+      if (!stillExists) changed = true;
+    });
+
+    if ((origOffers.length != offers.length) ||
+        (origWants.length != wants.length)) changed = true;
+
+    return changed;
   }
 
   _onSubmitTapped() {
