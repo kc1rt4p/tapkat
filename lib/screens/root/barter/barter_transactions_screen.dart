@@ -170,19 +170,24 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                                                                 imageUrl: barter
                                                                         .u2P1Image ??
                                                                     '',
-                                                                onTapped: () =>
-                                                                    Navigator
-                                                                        .push(
-                                                                  context,
-                                                                  MaterialPageRoute(
-                                                                    builder:
-                                                                        (context) =>
-                                                                            BarterScreen(
-                                                                      barterRecord:
-                                                                          barter,
+                                                                onTapped:
+                                                                    () async {
+                                                                  await Navigator
+                                                                      .push(
+                                                                    context,
+                                                                    MaterialPageRoute(
+                                                                      builder:
+                                                                          (context) =>
+                                                                              BarterScreen(
+                                                                        barterRecord:
+                                                                            barter,
+                                                                      ),
                                                                     ),
-                                                                  ),
-                                                                ),
+                                                                  );
+
+                                                                  _barterBloc.add(
+                                                                      InitializeBarterTransactions());
+                                                                },
                                                               ),
                                                               barter.dealDate !=
                                                                       null

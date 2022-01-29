@@ -173,6 +173,10 @@ class _BarterScreenState extends State<BarterScreen> {
                     });
                   }
 
+                  if (state is DeleteBarterSuccess) {
+                    Navigator.pop(context);
+                  }
+
                   if (state is BarterError) {
                     print('error: ${state.message}');
                   }
@@ -250,18 +254,21 @@ class _BarterScreenState extends State<BarterScreen> {
                         GestureDetector(
                           onTap: () {
                             if (_barterId != null) {
-                              Navigator.push(
+                              DialogMessage.show(
                                 context,
-                                MaterialPageRoute(
-                                  builder: (context) => BarterChatScreen(
-                                    barterId: _barterId!,
-                                  ),
-                                ),
+                                title: 'Delete Barter',
+                                message:
+                                    'Are you sure you want to delete this Barter?',
+                                buttonText: 'Yes',
+                                firstButtonClicked: () =>
+                                    _barterBloc.add(DeleteBarter(_barterId!)),
+                                secondButtonText: 'No',
+                                hideClose: true,
                               );
                             }
                           },
                           child: FaIcon(
-                            Icons.mail,
+                            Icons.delete_forever,
                             color: Colors.white,
                           ),
                         ),
@@ -428,11 +435,21 @@ class _BarterScreenState extends State<BarterScreen> {
                             SizedBox(width: 10.0),
                             Expanded(
                               child: CustomButton(
-                                label:
-                                    !widget.fromOtherUser ? 'Cancel' : 'Reject',
+                                label: 'Chat',
                                 bgColor: Color(0xFFBB3F03),
                                 textColor: Colors.white,
-                                onTap: () {},
+                                onTap: () {
+                                  if (_barterId != null) {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => BarterChatScreen(
+                                          barterId: _barterId!,
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                },
                                 removeMargin: true,
                               ),
                             ),
