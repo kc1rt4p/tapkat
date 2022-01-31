@@ -99,9 +99,9 @@ class _BarterScreenState extends State<BarterScreen> {
   }
 
   Future<bool> _onWillPop() async {
-    print(_offersChanged());
+    bool shouldExit = true;
     if (_offersChanged()) {
-      await DialogMessage.show(
+      final result = await DialogMessage.show(
         context,
         title: 'Warning',
         message: 'Changes were made, do you want to send your offers?',
@@ -110,10 +110,12 @@ class _BarterScreenState extends State<BarterScreen> {
           _onSubmitTapped();
         },
         secondButtonText: 'No',
+        secondButtonClicked: () => Navigator.pop(context, false),
         hideClose: true,
       );
+      print('result: $result');
     }
-    return true;
+    return shouldExit;
   }
 
   @override
@@ -131,7 +133,7 @@ class _BarterScreenState extends State<BarterScreen> {
             listeners: [
               BlocListener(
                 bloc: _barterBloc,
-                listener: (context, state) {
+                listener: (context, state) async {
                   if (state is BarterLoading) {
                     ProgressHUD.of(context)!.show();
                   } else {
@@ -144,6 +146,15 @@ class _BarterScreenState extends State<BarterScreen> {
                       origOffers = List.from(offers);
                       origWants = List.from(wants);
                     });
+
+                    await DialogMessage.show(
+                      context,
+                      title: 'Info',
+                      message: widget.fromOtherUser
+                          ? 'This offer has been sent'
+                          : 'This proposal has been sent to $_participantName',
+                      hideClose: true,
+                    );
                   }
 
                   if (state is BarterInitialized) {
@@ -236,8 +247,10 @@ class _BarterScreenState extends State<BarterScreen> {
                       children: [
                         GestureDetector(
                           onTap: () async {
-                            await _onWillPop();
-                            Navigator.pop(context);
+                            final exit = await _onWillPop();
+                            if (exit) {
+                              Navigator.pop(context);
+                            }
                           },
                           child: FaIcon(
                             FontAwesomeIcons.chevronLeft,
@@ -286,11 +299,21 @@ class _BarterScreenState extends State<BarterScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                              Visibility(
+                                visible: widget.fromOtherUser,
+                                child: Container(
+                                  margin: EdgeInsets.only(bottom: 16.0),
+                                  child: Text(
+                                    '$_participantName has proposed this deal',
+                                    style: Style.bodyText1,
+                                  ),
+                                ),
+                              ),
                               Container(
                                 margin: EdgeInsets.only(bottom: 16.0),
                                 child: Text(
                                   'Tap the (+) icon to add items on your barter, you can select multiple items from your gallery.',
-                                  style: Style.bodyText1,
+                                  style: Style.bodyText1.copyWith(fontSize: 12),
                                 ),
                               ),
                               _buildBarterList(
@@ -975,6 +998,43 @@ class _BarterScreenState extends State<BarterScreen> {
                 ),
               ),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCashItem() {
+    return Container(
+      height: 190.0,
+      width: 160.0,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20.0),
+        boxShadow: [
+          BoxShadow(
+            offset: Offset(1, 1),
+            color: Colors.grey.shade200,
+            blurRadius: 1.0,
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Expanded(
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(20.0),
+                  topRight: Radius.circular(20.0),
+                ),
+                color: Colors.grey,
+              ),
+              child: Icon(Icons.money),
+            ),
+          ),
+          Container(
+            width: double.infinity,
           ),
         ],
       ),
