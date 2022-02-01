@@ -91,6 +91,17 @@ class BarterRepository {
     }
   }
 
+  Future<bool> updateBarterStatus(String barterId, String status) async {
+    try {
+      await barterRef.doc(barterId).set({
+        'dealStatus': status,
+      });
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
   Stream<BarterRecordModel> streamBarter(String barterId) {
     return barterRef
         .doc(barterId)

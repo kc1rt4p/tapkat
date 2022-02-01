@@ -342,18 +342,18 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                                                             BarterListItem(
                                                               hideLikeBtn: true,
                                                               itemName: barter
-                                                                      .u1P1Name ??
+                                                                      .u2P1Name ??
                                                                   '',
                                                               itemPrice: barter
-                                                                          .u1P1Price !=
+                                                                          .u2P1Price !=
                                                                       null
                                                                   ? barter
-                                                                      .u1P1Price!
+                                                                      .u2P1Price!
                                                                       .toStringAsFixed(
                                                                           2)
                                                                   : '0.00',
                                                               imageUrl: barter
-                                                                      .u1P1Image ??
+                                                                      .u2P1Image ??
                                                                   '',
                                                               onTapped: () =>
                                                                   Navigator

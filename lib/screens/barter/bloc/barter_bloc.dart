@@ -38,6 +38,7 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
             // final _barterRef =
             //     await BarterRecord.collection.doc().set(event.barterData);
             // final _barterRecord = BarterRecordModel.fromJson(event.barterData);
+            event.barterData.dealStatus = 'new';
             final newBarter =
                 await _barterRepository.setBarterRecord(event.barterData);
 
@@ -70,6 +71,11 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
               user2Products: user2Products,
               barterProducts: barterProducts,
             ));
+          }
+
+          if (event is UpdateBarterStatus) {
+            await _barterRepository.updateBarterStatus(
+                event.barterId, event.status);
           }
 
           if (event is UpdateBarterProducts) {

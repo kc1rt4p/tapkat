@@ -183,11 +183,11 @@ class _BarterScreenState extends State<BarterScreen> {
                           }
                         } else {
                           if (_prod.userid == _currentUser!.uid) {
-                            offers.add(bProduct);
-                            origOffers.add(bProduct);
-                          } else {
                             wants.add(bProduct);
                             origWants.add(bProduct);
+                          } else {
+                            offers.add(bProduct);
+                            origOffers.add(bProduct);
                           }
                         }
                       });
@@ -468,18 +468,16 @@ class _BarterScreenState extends State<BarterScreen> {
                   ),
                   Container(
                     width: double.infinity,
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 20.0,
-                      vertical: 10.0,
-                    ),
+                    padding: EdgeInsets.fromLTRB(10.0, 0, 10.0, 8.0),
                     child: Column(
                       children: [
                         Row(
                           children: [
                             Expanded(
                               child: CustomButton(
-                                label:
-                                    !widget.fromOtherUser ? 'Send' : 'Accept',
+                                label: _barterRecord != null
+                                    ? _getGoBtnText()
+                                    : '',
                                 textColor: Colors.white,
                                 onTap: _onSubmitTapped,
                                 removeMargin: true,
@@ -489,25 +487,35 @@ class _BarterScreenState extends State<BarterScreen> {
                             SizedBox(width: 10.0),
                             Expanded(
                               child: CustomButton(
-                                label: 'Chat',
+                                label: widget.fromOtherUser
+                                    ? 'Reject'
+                                    : 'Withdraw',
                                 bgColor: Color(0xFFBB3F03),
                                 textColor: Colors.white,
-                                onTap: () {
-                                  if (_barterId != null) {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => BarterChatScreen(
-                                          barterId: _barterId!,
-                                        ),
-                                      ),
-                                    );
-                                  }
-                                },
+                                onTap: _onCancelTapped,
                                 removeMargin: true,
                               ),
                             ),
                           ],
+                        ),
+                        SizedBox(height: 10.0),
+                        CustomButton(
+                          label: 'Chat',
+                          bgColor: kBackgroundColor,
+                          textColor: Colors.white,
+                          onTap: () {
+                            if (_barterId != null) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => BarterChatScreen(
+                                    barterId: _barterId!,
+                                  ),
+                                ),
+                              );
+                            }
+                          },
+                          removeMargin: true,
                         ),
                         SizedBox(height: 8.0),
                         Text(
@@ -530,6 +538,21 @@ class _BarterScreenState extends State<BarterScreen> {
     );
   }
 
+  String _getGoBtnText() {
+    switch (_barterRecord!.dealStatus) {
+      case 'new':
+        return widget.fromOtherUser ? 'Accept' : 'Make Offer';
+      case 'submitted':
+        return widget.fromOtherUser ? 'Send Request' : 'Make Offer';
+      case 'accepted':
+        return 'Mark as Sold';
+      case 'sold':
+        return 'Leave a review';
+      default:
+        return '';
+    }
+  }
+
   bool _offersChanged() {
     bool changed = false;
     origOffers.forEach((oOffer) {
@@ -546,10 +569,6 @@ class _BarterScreenState extends State<BarterScreen> {
 
     if ((origOffers.length != offers.length) ||
         (origWants.length != wants.length)) changed = true;
-    print(_origOfferedCash);
-    print(_offeredCash);
-    print(_origRequestedCash);
-    print(_requestedCash);
     if ((_origOfferedCash != _offeredCash) ||
         (_origRequestedCash != _requestedCash)) changed = true;
 
@@ -573,8 +592,6 @@ class _BarterScreenState extends State<BarterScreen> {
         }
       });
     }
-
-    print('no. of delete items: ${_deletedProducts.length}');
 
     if (_origOfferedCash != _offeredCash) {
       if (_offeredCash != null) {
@@ -617,6 +634,22 @@ class _BarterScreenState extends State<BarterScreen> {
       barterId: _barterRecord!.barterId!,
       products: wants + offers,
     ));
+
+    switch (_barterRecord!.dealStatus) {
+      case 'new':
+        _barterBloc
+            .add(UpdateBarterStatus(_barterRecord!.barterId!, 'submitted'));
+        break;
+      case 'submitted':
+        if (widget.fromOtherUser)
+          _barterBloc
+              .add(UpdateBarterStatus(_barterRecord!.barterId!, 'accepted'));
+        break;
+      case 'accepted':
+        _barterBloc.add(UpdateBarterStatus(_barterRecord!.barterId!, 'sold'));
+        break;
+      default:
+    }
   }
 
   _onCancelTapped() {

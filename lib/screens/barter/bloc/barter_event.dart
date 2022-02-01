@@ -111,3 +111,10 @@ class InitializeBarter extends BarterEvent {
   //   required this.barterNo,
   // });
 }
+
+class UpdateBarterStatus extends BarterEvent {
+  final String barterId;
+  final String status;
+
+  UpdateBarterStatus(this.barterId, this.status);
+}
