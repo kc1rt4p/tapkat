@@ -833,7 +833,9 @@ class _BarterScreenState extends State<BarterScreen> {
                       SizedBox(width: 8.0),
                       Expanded(
                         child: CustomButton(
-                          label: 'Request Cash',
+                          label: _requestedCash != null
+                              ? 'Edit Requested Cash'
+                              : 'Request Cash',
                           bgColor: Color(0xFFBB3F03),
                           textColor: Colors.white,
                           onTap: () {
@@ -853,6 +855,13 @@ class _BarterScreenState extends State<BarterScreen> {
   }
 
   _showAddCashDialog(String from) async {
+    if (from == 'participant') {
+      amounTextController.text =
+          _requestedCash != null ? _requestedCash.toString() : '';
+    } else {
+      amounTextController.text =
+          _offeredCash != null ? _offeredCash.toString() : '';
+    }
     final _cFormKey = GlobalKey<FormState>();
     var amount = await showDialog(
       context: context,
@@ -1137,7 +1146,9 @@ class _BarterScreenState extends State<BarterScreen> {
                       SizedBox(width: 8.0),
                       Expanded(
                         child: CustomButton(
-                          label: 'Offer Cash',
+                          label: _offeredCash != null
+                              ? 'Edit Offered Cash'
+                              : 'Offer Cash',
                           bgColor: Color(0xFFBB3F03),
                           textColor: Colors.white,
                           onTap: () {
