@@ -8,6 +8,7 @@ class BarterProductModel {
   num? price;
   String? imgUrl;
   String? currency;
+  DateTime? dateAdded;
 
   BarterProductModel({
     this.id,
@@ -17,6 +18,7 @@ class BarterProductModel {
     this.price,
     this.imgUrl,
     this.currency,
+    this.dateAdded,
   });
 
   factory BarterProductModel.fromProductModel(ProductModel product) {
@@ -38,6 +40,7 @@ class BarterProductModel {
       price: json['price'],
       imgUrl: json['imgUrl'],
       currency: json['currency'],
+      dateAdded: json['dateAdded'] != null ? json['dateAdded'].toDate() : null,
     );
   }
 
@@ -49,6 +52,7 @@ class BarterProductModel {
       'price': this.price,
       'imgUrl': this.imgUrl,
       'currency': this.currency,
+      'dateAdded': this.dateAdded,
     };
 
     if (withId) {

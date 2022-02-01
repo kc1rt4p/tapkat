@@ -53,6 +53,20 @@ class UpdateBarterProducts extends BarterEvent {
   });
 }
 
+class AddCashOffer extends BarterEvent {
+  final String barterId;
+  final String userId;
+  final num amount;
+  final String currency;
+
+  AddCashOffer({
+    required this.barterId,
+    required this.userId,
+    required this.amount,
+    required this.currency,
+  });
+}
+
 class InitializeBarter extends BarterEvent {
   final BarterRecordModel barterData;
 

@@ -17,6 +17,7 @@ import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/utilities/style.dart';
 import 'package:tapkat/widgets/barter_list_item.dart';
 import 'package:tapkat/widgets/custom_button.dart';
+import 'package:tapkat/widgets/custom_textformfield.dart';
 
 import 'bloc/barter_bloc.dart';
 
@@ -51,6 +52,12 @@ class _BarterScreenState extends State<BarterScreen> {
   BarterRecordModel? _barterRecord;
   StreamSubscription<BarterRecordModel>? _barterStreamSub;
   String? _barterId;
+  num? _origRequestedCash;
+  num? _requestedCash;
+  num? _origOfferedCash;
+  num? _offeredCash;
+
+  final amounTextController = TextEditingController();
 
   @override
   void initState() {
@@ -94,7 +101,7 @@ class _BarterScreenState extends State<BarterScreen> {
   void dispose() {
     _barterStreamSub?.cancel();
     _barterStreamSub = null;
-
+    DialogMessage.dismiss();
     super.dispose();
   }
 
@@ -110,10 +117,8 @@ class _BarterScreenState extends State<BarterScreen> {
           _onSubmitTapped();
         },
         secondButtonText: 'No',
-        secondButtonClicked: () => Navigator.pop(context, false),
         hideClose: true,
       );
-      print('result: $result');
     }
     return shouldExit;
   }
@@ -141,20 +146,25 @@ class _BarterScreenState extends State<BarterScreen> {
                   }
 
                   if (state is UpdateBarterProductsSuccess ||
-                      state is DeleteBarterProductsSuccess) {
+                      state is DeleteBarterProductsSuccess ||
+                      state is AddCashOfferSuccess) {
                     setState(() {
                       origOffers = List.from(offers);
                       origWants = List.from(wants);
+                      _origOfferedCash = _offeredCash;
+                      _origRequestedCash = _requestedCash;
                     });
 
-                    await DialogMessage.show(
-                      context,
-                      title: 'Info',
-                      message: widget.fromOtherUser
-                          ? 'This offer has been sent'
-                          : 'This proposal has been sent to $_participantName',
-                      hideClose: true,
-                    );
+                    if (this.mounted) {
+                      await DialogMessage.show(
+                        context,
+                        title: 'Info',
+                        message: widget.fromOtherUser
+                            ? 'This offer has been sent'
+                            : 'This proposal has been sent to $_participantName',
+                        hideClose: true,
+                      );
+                    }
                   }
 
                   if (state is BarterInitialized) {
@@ -163,12 +173,22 @@ class _BarterScreenState extends State<BarterScreen> {
                       userItems = state.userProducts;
                       state.barterProducts.forEach((bProduct) {
                         final _prod = ProductModel.fromJson(bProduct.toJson());
-                        if (_prod.userid == _currentUser!.uid) {
-                          offers.add(bProduct);
-                          origOffers.add(bProduct);
+                        if (bProduct.productId!.contains('cash')) {
+                          if (bProduct.userId == _currentUser!.uid) {
+                            _origOfferedCash = bProduct.price;
+                            _offeredCash = bProduct.price;
+                          } else {
+                            _origRequestedCash = bProduct.price;
+                            _requestedCash = bProduct.price;
+                          }
                         } else {
-                          wants.add(bProduct);
-                          origWants.add(bProduct);
+                          if (_prod.userid == _currentUser!.uid) {
+                            offers.add(bProduct);
+                            origOffers.add(bProduct);
+                          } else {
+                            wants.add(bProduct);
+                            origWants.add(bProduct);
+                          }
                         }
                       });
                     });
@@ -320,55 +340,60 @@ class _BarterScreenState extends State<BarterScreen> {
                                 label: !widget.fromOtherUser
                                     ? 'You want these item(s) from $_participantName'
                                     : '$_participantName wants these item(s) from you',
-                                items: wants.map((item) {
-                                  return Container(
-                                    margin: EdgeInsets.only(
-                                        right: 8.0, bottom: 5.0),
-                                    child: Stack(
-                                      children: [
-                                        BarterListItem(
-                                          hideLikeBtn: true,
-                                          itemName: item.productName ?? '',
-                                          itemPrice: (item.currency ?? '\$') +
-                                              (item.price != null
-                                                  ? ' ${item.price!.toStringAsFixed(2)}'
-                                                  : '0.00'),
-                                          imageUrl: item.imgUrl != null &&
-                                                  item.imgUrl!.isNotEmpty
-                                              ? item.imgUrl!
-                                              : 'https://storage.googleapis.com/map-surf-assets/noimage.jpg',
-                                        ),
-                                        Positioned(
-                                          top: 5.0,
-                                          right: 5.0,
-                                          child: InkWell(
-                                            onTap: () {
-                                              setState(() {
-                                                wants.removeWhere((product) =>
-                                                    product.productId ==
-                                                    item.productId);
-                                              });
-                                            },
-                                            child: Container(
-                                              padding: EdgeInsets.all(5.0),
-                                              decoration: BoxDecoration(
-                                                color: kBackgroundColor,
-                                                shape: BoxShape.circle,
-                                              ),
-                                              child: Center(
-                                                child: Icon(
-                                                  FontAwesomeIcons.times,
-                                                  size: 16.0,
-                                                  color: Colors.white,
+                                items: [
+                                  _requestedCash != null
+                                      ? _buildCashItem(_requestedCash!)
+                                      : Container(),
+                                  ...wants.map((item) {
+                                    return Container(
+                                      margin: EdgeInsets.only(
+                                          right: 8.0, bottom: 5.0),
+                                      child: Stack(
+                                        children: [
+                                          BarterListItem(
+                                            hideLikeBtn: true,
+                                            itemName: item.productName ?? '',
+                                            itemPrice: (item.currency ?? '\$') +
+                                                (item.price != null
+                                                    ? ' ${item.price!.toStringAsFixed(2)}'
+                                                    : '0.00'),
+                                            imageUrl: item.imgUrl != null &&
+                                                    item.imgUrl!.isNotEmpty
+                                                ? item.imgUrl!
+                                                : 'https://storage.googleapis.com/map-surf-assets/noimage.jpg',
+                                          ),
+                                          Positioned(
+                                            top: 5.0,
+                                            right: 5.0,
+                                            child: InkWell(
+                                              onTap: () {
+                                                setState(() {
+                                                  wants.removeWhere((product) =>
+                                                      product.productId ==
+                                                      item.productId);
+                                                });
+                                              },
+                                              child: Container(
+                                                padding: EdgeInsets.all(5.0),
+                                                decoration: BoxDecoration(
+                                                  color: kBackgroundColor,
+                                                  shape: BoxShape.circle,
+                                                ),
+                                                child: Center(
+                                                  child: Icon(
+                                                    FontAwesomeIcons.times,
+                                                    size: 16.0,
+                                                    color: Colors.white,
+                                                  ),
                                                 ),
                                               ),
                                             ),
                                           ),
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                }).toList(),
+                                        ],
+                                      ),
+                                    );
+                                  }).toList()
+                                ],
                                 addBtnTapped: _showParticipantItems,
                               ),
                               _buildBarterList(
@@ -376,57 +401,63 @@ class _BarterScreenState extends State<BarterScreen> {
                                     ? 'Your offer'
                                     : 'Offers from $_participantName',
                                 labelAction: Text(
-                                  '${offers.length} Item(s) Offered',
+                                  '${offers.length} Item(s) offered',
                                 ),
-                                items: offers.map((item) {
-                                  return Container(
-                                    margin: EdgeInsets.only(
-                                        right: 8.0, bottom: 5.0),
-                                    child: Stack(
-                                      children: [
-                                        BarterListItem(
-                                          hideLikeBtn: true,
-                                          itemName: item.productName ?? '',
-                                          itemPrice: (item.currency ?? '\$') +
-                                              (item.price != null
-                                                  ? ' ${item.price!.toStringAsFixed(2)}'
-                                                  : '0.00'),
-                                          imageUrl: item.imgUrl != null &&
-                                                  item.imgUrl!.isNotEmpty
-                                              ? item.imgUrl!
-                                              : 'https://storage.googleapis.com/map-surf-assets/noimage.jpg',
-                                        ),
-                                        Positioned(
-                                          top: 5.0,
-                                          right: 5.0,
-                                          child: InkWell(
-                                            onTap: () {
-                                              setState(() {
-                                                offers.removeWhere((product) =>
-                                                    product.productId ==
-                                                    item.productId);
-                                              });
-                                            },
-                                            child: Container(
-                                              padding: EdgeInsets.all(5.0),
-                                              decoration: BoxDecoration(
-                                                color: kBackgroundColor,
-                                                shape: BoxShape.circle,
-                                              ),
-                                              child: Center(
-                                                child: Icon(
-                                                  FontAwesomeIcons.times,
-                                                  size: 16.0,
-                                                  color: Colors.white,
+                                items: [
+                                  _offeredCash != null
+                                      ? _buildCashItem(_offeredCash!)
+                                      : Container(),
+                                  ...offers.map((item) {
+                                    return Container(
+                                      margin: EdgeInsets.only(
+                                          right: 8.0, bottom: 5.0),
+                                      child: Stack(
+                                        children: [
+                                          BarterListItem(
+                                            hideLikeBtn: true,
+                                            itemName: item.productName ?? '',
+                                            itemPrice: (item.currency ?? '\$') +
+                                                (item.price != null
+                                                    ? ' ${item.price!.toStringAsFixed(2)}'
+                                                    : '0.00'),
+                                            imageUrl: item.imgUrl != null &&
+                                                    item.imgUrl!.isNotEmpty
+                                                ? item.imgUrl!
+                                                : 'https://storage.googleapis.com/map-surf-assets/noimage.jpg',
+                                          ),
+                                          Positioned(
+                                            top: 5.0,
+                                            right: 5.0,
+                                            child: InkWell(
+                                              onTap: () {
+                                                setState(() {
+                                                  offers.removeWhere(
+                                                      (product) =>
+                                                          product.productId ==
+                                                          item.productId);
+                                                });
+                                              },
+                                              child: Container(
+                                                padding: EdgeInsets.all(5.0),
+                                                decoration: BoxDecoration(
+                                                  color: kBackgroundColor,
+                                                  shape: BoxShape.circle,
+                                                ),
+                                                child: Center(
+                                                  child: Icon(
+                                                    FontAwesomeIcons.times,
+                                                    size: 16.0,
+                                                    color: Colors.white,
+                                                  ),
                                                 ),
                                               ),
                                             ),
                                           ),
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                }).toList(),
+                                        ],
+                                      ),
+                                    );
+                                  }).toList()
+                                ],
                                 addBtnTapped: _showUserItems,
                               ),
                             ],
@@ -515,6 +546,12 @@ class _BarterScreenState extends State<BarterScreen> {
 
     if ((origOffers.length != offers.length) ||
         (origWants.length != wants.length)) changed = true;
+    print(_origOfferedCash);
+    print(_offeredCash);
+    print(_origRequestedCash);
+    print(_requestedCash);
+    if ((_origOfferedCash != _offeredCash) ||
+        (_origRequestedCash != _requestedCash)) changed = true;
 
     return changed;
   }
@@ -538,6 +575,36 @@ class _BarterScreenState extends State<BarterScreen> {
     }
 
     print('no. of delete items: ${_deletedProducts.length}');
+
+    if (_origOfferedCash != _offeredCash) {
+      if (_offeredCash != null) {
+        _barterBloc.add(
+          AddCashOffer(
+            barterId: _barterRecord!.barterId!,
+            userId: _currentUser!.uid,
+            amount: _offeredCash!,
+            currency: 'PHP',
+          ),
+        );
+      } else {
+        // Delete Cash Offer
+      }
+    }
+
+    if (_origRequestedCash != _requestedCash) {
+      if (_requestedCash != null) {
+        _barterBloc.add(
+          AddCashOffer(
+            barterId: _barterRecord!.barterId!,
+            userId: _barterRecord!.userid2!,
+            amount: _requestedCash!,
+            currency: 'PHP',
+          ),
+        );
+      } else {
+        // Delete Request Cash
+      }
+    }
 
     if (_deletedProducts.length > 0) {
       _barterBloc.add(DeleteBarterProducts(
@@ -635,125 +702,148 @@ class _BarterScreenState extends State<BarterScreen> {
                         color: kBackgroundColor,
                       ),
                     ),
-                    items: participantItems.map((item) {
-                      return Stack(
-                        alignment: Alignment.topCenter,
-                        children: [
-                          Container(
-                            margin: EdgeInsets.only(right: 8.0, bottom: 5.0),
-                            child: BarterListItem(
-                              hideLikeBtn: true,
-                              itemName: item.productname ?? '',
-                              itemPrice: (item.currency != null
-                                      ? item.currency!
-                                      : '\$') +
-                                  (' ${item.price!.toStringAsFixed(2)}'),
-                              imageUrl: item.mediaPrimary != null &&
-                                      item.mediaPrimary!.url != null
-                                  ? item.mediaPrimary!.url!
-                                  : 'https://storage.googleapis.com/map-surf-assets/noimage.jpg',
-                              onTapped: () {
-                                if (wants.any((product) =>
-                                    product.productId == item.productid))
-                                  return;
+                    items: [
+                      ...participantItems.map((item) {
+                        return Stack(
+                          alignment: Alignment.topCenter,
+                          children: [
+                            Container(
+                              margin: EdgeInsets.only(right: 8.0, bottom: 5.0),
+                              child: BarterListItem(
+                                hideLikeBtn: true,
+                                itemName: item.productname ?? '',
+                                itemPrice: (item.currency != null
+                                        ? item.currency!
+                                        : '\$') +
+                                    (' ${item.price!.toStringAsFixed(2)}'),
+                                imageUrl: item.mediaPrimary != null &&
+                                        item.mediaPrimary!.url != null
+                                    ? item.mediaPrimary!.url!
+                                    : 'https://storage.googleapis.com/map-surf-assets/noimage.jpg',
+                                onTapped: () {
+                                  if (wants.any((product) =>
+                                      product.productId == item.productid))
+                                    return;
 
-                                if (!selectedItems.any((want) =>
-                                    want.productid == item.productid)) {
-                                  setState(() {
-                                    selectedItems.add(item);
-                                  });
-                                }
-                              },
-                            ),
-                          ),
-                          Visibility(
-                            visible: wants.any((product) =>
-                                product.productId == item.productid),
-                            child: Container(
-                              margin: EdgeInsets.only(right: 8.0),
-                              width: 160.0,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.only(
-                                  topLeft: Radius.circular(20.0),
-                                  topRight: Radius.circular(20.0),
-                                ),
-                                color: Color(0xFFBB3F03),
+                                  if (!selectedItems.any((want) =>
+                                      want.productid == item.productid)) {
+                                    setState(() {
+                                      selectedItems.add(item);
+                                    });
+                                  }
+                                },
                               ),
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: 12.0, vertical: 5.0),
-                              child: Center(
-                                child: Text(
-                                  'ADDED',
-                                  style: Style.bodyText2.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
+                            ),
+                            Visibility(
+                              visible: wants.any((product) =>
+                                  product.productId == item.productid),
+                              child: Container(
+                                margin: EdgeInsets.only(right: 8.0),
+                                width: 160.0,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.only(
+                                    topLeft: Radius.circular(20.0),
+                                    topRight: Radius.circular(20.0),
+                                  ),
+                                  color: Color(0xFFBB3F03),
+                                ),
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 12.0, vertical: 5.0),
+                                child: Center(
+                                  child: Text(
+                                    'ADDED',
+                                    style: Style.bodyText2.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
-                          ),
-                          Visibility(
-                            visible: selectedItems.any((product) =>
-                                product.productid == item.productid),
-                            child: Container(
-                              margin: EdgeInsets.only(right: 8.0),
-                              width: 160.0,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.only(
-                                  topLeft: Radius.circular(20.0),
-                                  topRight: Radius.circular(20.0),
+                            Visibility(
+                              visible: selectedItems.any((product) =>
+                                  product.productid == item.productid),
+                              child: Container(
+                                margin: EdgeInsets.only(right: 8.0),
+                                width: 160.0,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.only(
+                                    topLeft: Radius.circular(20.0),
+                                    topRight: Radius.circular(20.0),
+                                  ),
+                                  color: kBackgroundColor,
                                 ),
-                                color: kBackgroundColor,
-                              ),
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: 12.0, vertical: 5.0),
-                              child: Center(
-                                child: Row(
-                                  children: [
-                                    Text(
-                                      'SELECTED',
-                                      style: Style.bodyText2.copyWith(
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white,
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 12.0, vertical: 5.0),
+                                child: Center(
+                                  child: Row(
+                                    children: [
+                                      Text(
+                                        'SELECTED',
+                                        style: Style.bodyText2.copyWith(
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                        ),
                                       ),
-                                    ),
-                                    Spacer(),
-                                    GestureDetector(
-                                      onTap: () {
-                                        setState(() {
-                                          selectedItems.removeWhere((product) =>
-                                              product.productid ==
-                                              item.productid);
-                                        });
-                                      },
-                                      child: Icon(
-                                        FontAwesomeIcons.times,
-                                        color: Colors.white,
-                                        size: 16.0,
-                                      ),
-                                    )
-                                  ],
+                                      Spacer(),
+                                      GestureDetector(
+                                        onTap: () {
+                                          setState(() {
+                                            selectedItems.removeWhere(
+                                                (product) =>
+                                                    product.productid ==
+                                                    item.productid);
+                                          });
+                                        },
+                                        child: Icon(
+                                          FontAwesomeIcons.times,
+                                          color: Colors.white,
+                                          size: 16.0,
+                                        ),
+                                      )
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        ],
-                      );
-                    }).toList(),
+                          ],
+                        );
+                      }).toList(),
+                    ],
                     showAddBtn: false,
                   ),
-                  CustomButton(
-                    label: 'Add Items',
-                    bgColor: Color(0xFFBB3F03),
-                    textColor: Colors.white,
-                    onTap: () {
-                      _addWantedItems(selectedItems
-                          .map((item) =>
-                              BarterProductModel.fromProductModel(item))
-                          .toList());
-                      Navigator.pop(context);
-                    },
-                    removeMargin: true,
+                  Row(
+                    children: [
+                      Expanded(
+                        child: CustomButton(
+                          label: 'Add Selected Item(s)',
+                          enabled: selectedItems.length > 0,
+                          bgColor: kBackgroundColor,
+                          textColor: Colors.white,
+                          onTap: () {
+                            _addWantedItems(selectedItems
+                                .map((item) =>
+                                    BarterProductModel.fromProductModel(item))
+                                .toList());
+                            Navigator.pop(context);
+                          },
+                          removeMargin: true,
+                        ),
+                      ),
+                      SizedBox(width: 8.0),
+                      Expanded(
+                        child: CustomButton(
+                          label: 'Request Cash',
+                          bgColor: Color(0xFFBB3F03),
+                          textColor: Colors.white,
+                          onTap: () {
+                            Navigator.pop(context);
+                            _showAddCashDialog('participant');
+                          },
+                          removeMargin: true,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -762,13 +852,125 @@ class _BarterScreenState extends State<BarterScreen> {
         });
   }
 
+  _showAddCashDialog(String from) async {
+    final _cFormKey = GlobalKey<FormState>();
+    var amount = await showDialog(
+      context: context,
+      builder: (dContext) {
+        return Dialog(
+          child: Container(
+            padding: EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 0),
+            width: SizeConfig.screenWidth * 0.7,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  from == 'participant' ? 'Request Cash' : 'Offer Cash',
+                  style: Style.subtitle1.copyWith(color: kBackgroundColor),
+                ),
+                SizedBox(height: 10.0),
+                Form(
+                  key: _cFormKey,
+                  child: CustomTextFormField(
+                    color: kBackgroundColor,
+                    label: 'Enter Amount',
+                    hintText: '0.00',
+                    controller: amounTextController,
+                    keyboardType:
+                        TextInputType.numberWithOptions(decimal: true),
+                    validator: (val) {
+                      if (val == null || val.length < 1) return 'Required';
+                    },
+                  ),
+                ),
+                SizedBox(height: 12.0),
+                Row(
+                  children: [
+                    Expanded(
+                      child: CustomButton(
+                        bgColor: kBackgroundColor,
+                        textColor: Colors.white,
+                        label: 'Send',
+                        onTap: () {
+                          if (!_cFormKey.currentState!.validate())
+                            return null;
+                          else {
+                            final amount =
+                                num.parse(amounTextController.text.trim());
+                            amounTextController.clear();
+                            Navigator.pop(context, amount);
+                          }
+                        },
+                      ),
+                    ),
+                    SizedBox(width: 8.0),
+                    Expanded(
+                      child: CustomButton(
+                        label: 'Cancel',
+                        onTap: () => Navigator.pop(dContext),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+    // await DialogMessage.show(
+    //   context,
+    //   title: from == 'participant' ? 'Request Cash' : 'Offer Cash',
+    //   customMessage: Form(
+    //     key: _cFormKey,
+    //     child: CustomTextFormField(
+    //       color: kBackgroundColor,
+    //       label: 'Enter Amount',
+    //       hintText: '0.00',
+    //       controller: amounTextController,
+    //       keyboardType: TextInputType.numberWithOptions(decimal: true),
+    //       validator: (val) {
+    //         if (val == null || val.length < 1) return 'Required';
+    //       },
+    //     ),
+    //   ),
+    //   buttonText: 'Send',
+    //   secondButtonText: 'Cancel',
+    //   firstButtonClicked: () {
+    //     if (!_cFormKey.currentState!.validate())
+    //       return null;
+    //     else {
+    //       final amount = num.parse(amounTextController.text.trim());
+    //       amounTextController.clear();
+    //       Navigator.pop(context, amount);
+    //     }
+    //   },
+    //   secondButtonClicked: () {
+    //     DialogMessage.dismiss();
+    //   },
+    // );
+
+    if (amount != null) {
+      amount = amount as num;
+
+      setState(() {
+        if (from == 'participant') {
+          _requestedCash = amount;
+        } else {
+          _offeredCash = amount;
+        }
+      });
+    }
+  }
+
   _addWantedItems(List<BarterProductModel> items) {
     setState(() {
       wants.addAll(items);
     });
   }
 
-  _addOfferedItems(List<BarterProductModel> items) {
+  _add_offeredCashItems(List<BarterProductModel> items) {
     setState(() {
       offers.addAll(items);
     });
@@ -914,18 +1116,38 @@ class _BarterScreenState extends State<BarterScreen> {
                     }).toList(),
                     showAddBtn: false,
                   ),
-                  CustomButton(
-                    label: 'Add Items',
-                    bgColor: Color(0xFFBB3F03),
-                    textColor: Colors.white,
-                    onTap: () {
-                      _addOfferedItems(selectedItems
-                          .map((item) =>
-                              BarterProductModel.fromProductModel(item))
-                          .toList());
-                      Navigator.pop(context);
-                    },
-                    removeMargin: true,
+                  Row(
+                    children: [
+                      Expanded(
+                        child: CustomButton(
+                          label: 'Add Selected Item(s)',
+                          enabled: selectedItems.length > 0,
+                          bgColor: kBackgroundColor,
+                          textColor: Colors.white,
+                          onTap: () {
+                            _add_offeredCashItems(selectedItems
+                                .map((item) =>
+                                    BarterProductModel.fromProductModel(item))
+                                .toList());
+                            Navigator.pop(context);
+                          },
+                          removeMargin: true,
+                        ),
+                      ),
+                      SizedBox(width: 8.0),
+                      Expanded(
+                        child: CustomButton(
+                          label: 'Offer Cash',
+                          bgColor: Color(0xFFBB3F03),
+                          textColor: Colors.white,
+                          onTap: () {
+                            Navigator.pop(context);
+                            _showAddCashDialog('user');
+                          },
+                          removeMargin: true,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -1004,39 +1226,63 @@ class _BarterScreenState extends State<BarterScreen> {
     );
   }
 
-  Widget _buildCashItem() {
-    return Container(
-      height: 190.0,
-      width: 160.0,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20.0),
-        boxShadow: [
-          BoxShadow(
-            offset: Offset(1, 1),
-            color: Colors.grey.shade200,
-            blurRadius: 1.0,
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(20.0),
-                  topRight: Radius.circular(20.0),
-                ),
-                color: Colors.grey,
-              ),
-              child: Icon(Icons.money),
+  Widget _buildCashItem(num amount) {
+    return InkWell(
+      child: Container(
+        height: 190.0,
+        width: 160.0,
+        margin: EdgeInsets.only(right: 8.0),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20.0),
+          boxShadow: [
+            BoxShadow(
+              offset: Offset(1, 1),
+              color: Colors.grey.shade200,
+              blurRadius: 1.0,
             ),
-          ),
-          Container(
-            width: double.infinity,
-          ),
-        ],
+          ],
+        ),
+        child: Column(
+          children: [
+            Expanded(
+              flex: 2,
+              child: Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(20.0),
+                    topRight: Radius.circular(20.0),
+                  ),
+                  color: Colors.white,
+                  image: DecorationImage(
+                    image: AssetImage('assets/images/cash_icon.png'),
+                    fit: BoxFit.cover,
+                    colorFilter:
+                        ColorFilter.mode(kBackgroundColor, BlendMode.color),
+                  ),
+                ),
+              ),
+            ),
+            Expanded(
+              child: Container(
+                padding: EdgeInsets.all(10.0),
+                width: double.infinity,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Cash',
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Spacer(),
+                    Text(amount.toStringAsFixed(2)),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

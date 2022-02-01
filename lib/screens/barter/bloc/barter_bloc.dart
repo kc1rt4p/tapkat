@@ -88,6 +88,21 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
             if (success) emit(UpdateBarterProductsSuccess());
           }
 
+          if (event is AddCashOffer) {
+            final added = await _barterRepository.addCashOffer(
+              event.barterId,
+              BarterProductModel(
+                productId: 'cash-${DateTime.now().millisecondsSinceEpoch}',
+                productName: 'Cash',
+                price: event.amount,
+                currency: event.currency,
+                userId: event.userId,
+              ),
+            );
+
+            if (added) emit(AddCashOfferSuccess());
+          }
+
           if (event is StreamBarter) {
             final userProducts = await _productRepository.getFirstProducts(
                 'user', event.barterRecord.userid1);
