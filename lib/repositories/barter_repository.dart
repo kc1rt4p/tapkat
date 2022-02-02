@@ -93,7 +93,7 @@ class BarterRepository {
 
   Future<bool> updateBarterStatus(String barterId, String status) async {
     try {
-      await barterRef.doc(barterId).set({
+      await barterRef.doc(barterId).update({
         'dealStatus': status,
       });
       return true;

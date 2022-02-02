@@ -185,8 +185,10 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                                                                     ),
                                                                   );
 
-                                                                  _barterBloc.add(
-                                                                      InitializeBarterTransactions());
+                                                                  _barterBloc
+                                                                      .add(
+                                                                    InitializeBarterTransactions(),
+                                                                  );
                                                                 },
                                                               ),
                                                               barter.dealDate !=
