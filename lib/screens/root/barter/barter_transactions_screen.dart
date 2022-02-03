@@ -64,7 +64,9 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                     if (state is BarterTransactionsInitialized) {
                       setState(() {
                         byYouList = state.byYouList;
-                        fromOthersList = state.fromOthersList;
+                        fromOthersList = state.fromOthersList
+                            .where((barter) => barter.dealStatus != 'new')
+                            .toList();
                       });
                     }
 
