@@ -447,20 +447,47 @@ class _BarterScreenState extends State<BarterScreen> {
                 children: [
                   Visibility(
                     visible: !_panelClosed,
-                    child: Align(
-                      alignment: Alignment.centerRight,
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: InkWell(
-                          onTap: () => _panelController.close(),
-                          child: Container(
-                            child: Icon(
-                              Icons.close,
-                              size: 30.0,
-                              color: kBackgroundColor,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        boxShadow: [
+                          BoxShadow(
+                            offset: Offset(0, 1),
+                            blurRadius: 2,
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text(
+                                'Barter Chat',
+                                style: Style.subtitle2
+                                    .copyWith(color: kBackgroundColor),
+                              ),
                             ),
                           ),
-                        ),
+                          Expanded(
+                            child: Align(
+                              alignment: Alignment.centerRight,
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: InkWell(
+                                  onTap: () => _panelController.close(),
+                                  child: Container(
+                                    child: Icon(
+                                      Icons.close,
+                                      size: 30.0,
+                                      color: kBackgroundColor,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
