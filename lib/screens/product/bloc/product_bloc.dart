@@ -4,6 +4,7 @@ import 'package:tapkat/models/product.dart';
 import 'package:tapkat/models/request/add_product_request.dart';
 import 'package:tapkat/repositories/product_repository.dart';
 import 'package:tapkat/services/auth_service.dart';
+import 'package:tapkat/services/firebase.dart';
 import 'package:tapkat/utilities/upload_media.dart';
 
 part 'product_event.dart';
@@ -19,6 +20,12 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
         final _user = await _authService.getCurrentUser();
         if (event is SaveProduct) {
           emit(ProductLoading());
+
+          final downloadUrl = await uploadData(
+              event.media[0].storagePath, event.media[0].bytes);
+
+          event.productRequest.image_url = downloadUrl;
+
           final productId = await _productRepo.addProduct(event.productRequest);
 
           if (productId == null) {
@@ -26,15 +33,17 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
             return;
           }
 
-          final upload = await _productRepo.addProductImages(
-            userId: _user!.uid,
-            productId: productId,
-            images: event.media,
-          );
-
-          if (upload == null) {
-            emit(ProductError('Error while uploading product images'));
-            return;
+          if (event.media.length > 1) {
+            event.media.removeAt(0);
+            final upload = await _productRepo.addProductImages(
+              userId: _user!.uid,
+              productId: productId,
+              images: event.media,
+            );
+            if (upload == null) {
+              emit(ProductError('Error while uploading product images'));
+              return;
+            }
           }
 
           emit(SaveProductSuccess(productId));

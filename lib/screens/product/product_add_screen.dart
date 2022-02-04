@@ -252,6 +252,7 @@ class _ProductAddScreenState extends State<ProductAddScreen> {
         country: _selectedLocation!.addressComponents.last != null
             ? _selectedLocation!.addressComponents.last.longName
             : null,
+        media_type: 'image',
       );
 
       _productBloc.add(SaveProduct(
