@@ -8,6 +8,7 @@ class CustomButton extends StatefulWidget {
   final Color textColor;
   final bool removeMargin;
   final bool enabled;
+  final double? fontSize;
   const CustomButton({
     Key? key,
     required this.label,
@@ -17,6 +18,7 @@ class CustomButton extends StatefulWidget {
     this.textColor = Colors.white,
     this.removeMargin = false,
     this.enabled = true,
+    this.fontSize = 16.0,
   }) : super(key: key);
 
   @override
@@ -57,7 +59,7 @@ class _CustomButtonState extends State<CustomButton> {
                 widget.label,
                 style: TextStyle(
                   color: widget.textColor,
-                  fontSize: 16.0,
+                  fontSize: widget.fontSize,
                   fontWeight: FontWeight.bold,
                 ),
               ),

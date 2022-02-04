@@ -36,6 +36,7 @@ class _RootScreenState extends State<RootScreen> {
     final bool showFab = MediaQuery.of(context).viewInsets.bottom == 0.0;
     SizeConfig().init(context);
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       body: Container(
         color: kBackgroundColor,
         child: Column(

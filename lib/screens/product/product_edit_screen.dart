@@ -226,10 +226,11 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
     );
 
     if (_selectedLocation != null) {
-      productRequest.address = _selectedLocation!.addressComponents[0].longName;
-      productRequest.city = _selectedLocation!.addressComponents[1].longName;
+      productRequest.address =
+          _selectedLocation!.addressComponents[0]!.longName;
+      productRequest.city = _selectedLocation!.addressComponents[1]!.longName;
       productRequest.country =
-          _selectedLocation!.addressComponents.last.longName;
+          _selectedLocation!.addressComponents.last!.longName;
     }
 
     if (_selectedOfferType != null) productRequest.type = _selectedOfferType;

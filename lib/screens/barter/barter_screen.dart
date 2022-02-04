@@ -68,6 +68,8 @@ class _BarterScreenState extends State<BarterScreen> {
   StreamSubscription<List<ChatMessageModel?>>? _barterChatStreamSub;
   bool _closing = false;
 
+  final _chatFocusNode = FocusNode();
+
   @override
   void initState() {
     _authBloc = BlocProvider.of<AuthBloc>(context);
@@ -100,7 +102,7 @@ class _BarterScreenState extends State<BarterScreen> {
     }
 
     _participantName = _participantName.length > 10
-        ? _participantName.substring(0, 10) + '...'
+        ? _participantName.substring(0, 7) + '...'
         : _participantName;
 
     super.initState();
@@ -189,6 +191,7 @@ class _BarterScreenState extends State<BarterScreen> {
     return WillPopScope(
       onWillPop: _onWillPop,
       child: Scaffold(
+        resizeToAvoidBottomInset: false,
         backgroundColor: Color(0xFFEBFBFF),
         body: ProgressHUD(
           indicatorColor: kBackgroundColor,
@@ -506,11 +509,10 @@ class _BarterScreenState extends State<BarterScreen> {
             ),
           ),
           Container(
+            margin: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom),
             color: kBackgroundColor,
-            padding: EdgeInsets.symmetric(
-              horizontal: 15.0,
-              vertical: 10.0,
-            ),
+            padding: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 10.0),
             width: double.infinity,
             height: kToolbarHeight + 10,
             child: Row(
@@ -537,6 +539,7 @@ class _BarterScreenState extends State<BarterScreen> {
                       ),
                       hintText: 'Enter your message here',
                     ),
+                    focusNode: _chatFocusNode,
                   ),
                 ),
                 SizedBox(width: 10.0),
@@ -637,23 +640,16 @@ class _BarterScreenState extends State<BarterScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Visibility(
-                visible: widget.fromOtherUser,
-                child: Container(
-                  margin: EdgeInsets.only(bottom: 16.0),
-                  child: Text(
-                    '$_participantName has proposed this deal',
-                    style: Style.bodyText1,
-                  ),
-                ),
-              ),
-              Container(
-                margin: EdgeInsets.only(bottom: 16.0),
-                child: Text(
-                  'Tap the (+) icon to add items on your barter, you can select multiple items from your gallery.',
-                  style: Style.bodyText1.copyWith(fontSize: 12),
-                ),
-              ),
+              _buildBarterStatus(),
+              _barterRecord != null && _barterRecord!.dealStatus != 'sold'
+                  ? Container(
+                      margin: EdgeInsets.only(bottom: 16.0),
+                      child: Text(
+                        'Tap the (+) icon to add items on your barter, you can select multiple items from your gallery.',
+                        style: Style.bodyText1.copyWith(fontSize: 12),
+                      ),
+                    )
+                  : Container(),
               _buildBarterList(
                 label: !widget.fromOtherUser
                     ? 'You want these item(s) from $_participantName'
@@ -780,11 +776,54 @@ class _BarterScreenState extends State<BarterScreen> {
     );
   }
 
+  Widget _buildBarterStatus() {
+    if (_barterRecord == null) return Container();
+    //'$_participantName has proposed this deal'
+    var message = '';
+
+    switch (_barterRecord!.dealStatus) {
+      case 'new':
+        message = 'You initiated this barter';
+        break;
+      case 'submitted':
+        if (widget.fromOtherUser) {
+          message = '$_participantName has proposed this deal';
+        } else
+          message = 'Your offer has been submitted';
+        break;
+      case 'accepted':
+        if (widget.fromOtherUser) {
+          message = 'You accepted this offer';
+        } else
+          message = 'Your offer has been accepted';
+        break;
+      case 'sold':
+        if (widget.fromOtherUser) {
+          message =
+              'You marked this barter as sold, you may now leave a review';
+        } else
+          message =
+              '$_participantName has marked this barter as sold, you may now leave a review';
+        break;
+      default:
+    }
+
+    return Container(
+      margin: EdgeInsets.only(bottom: 16.0),
+      child: Text(
+        message,
+        style: Style.bodyText1.copyWith(
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
   Container _buildMinimizedView() {
     return Container(
-      height: SizeConfig.screenHeight * 0.2,
+      height: SizeConfig.screenHeight * 0.19,
       width: double.infinity,
-      padding: EdgeInsets.symmetric(horizontal: 10.0),
+      padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
       child: Column(
         children: [
           Row(
@@ -795,7 +834,7 @@ class _BarterScreenState extends State<BarterScreen> {
                   height: SizeConfig.screenHeight * 0.1,
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Expanded(
                         child: GridView.count(
@@ -844,43 +883,40 @@ class _BarterScreenState extends State<BarterScreen> {
               Expanded(
                 child: Container(
                   height: SizeConfig.screenHeight * 0.1,
-                  child: Directionality(
-                    textDirection: TextDirection.rtl,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: GridView.count(
-                            scrollDirection: Axis.horizontal,
-                            padding: EdgeInsets.symmetric(vertical: 2.0),
-                            mainAxisSpacing: 5.0,
-                            shrinkWrap: true,
-                            crossAxisCount: 1,
-                            children: offers.map((offer) {
-                              return Container(
-                                decoration: BoxDecoration(
-                                  border: Border.all(
-                                    color: kBackgroundColor,
-                                    width: 1.5,
-                                  ),
-                                  borderRadius: BorderRadius.circular(8.0),
-                                  image: DecorationImage(
-                                    image: offer.imgUrl!.isNotEmpty
-                                        ? NetworkImage(offer.imgUrl!)
-                                        : AssetImage(
-                                                'assets/images/image_placeholder.jpg')
-                                            as ImageProvider<Object>,
-                                    fit: BoxFit.cover,
-                                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: GridView.count(
+                          scrollDirection: Axis.horizontal,
+                          padding: EdgeInsets.symmetric(vertical: 2.0),
+                          mainAxisSpacing: 5.0,
+                          shrinkWrap: true,
+                          crossAxisCount: 1,
+                          children: offers.map((offer) {
+                            return Container(
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                  color: kBackgroundColor,
+                                  width: 1.5,
                                 ),
-                              );
-                            }).toList(),
-                          ),
+                                borderRadius: BorderRadius.circular(8.0),
+                                image: DecorationImage(
+                                  image: offer.imgUrl!.isNotEmpty
+                                      ? NetworkImage(offer.imgUrl!)
+                                      : AssetImage(
+                                              'assets/images/image_placeholder.jpg')
+                                          as ImageProvider<Object>,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            );
+                          }).toList(),
                         ),
-                        SizedBox(height: 5.0),
-                        Text('Cash: \$ ${_offeredCash ?? '0.00'}'),
-                      ],
-                    ),
+                      ),
+                      SizedBox(height: 5.0),
+                      Text('Cash: \$ ${_offeredCash ?? '0.00'}'),
+                    ],
                   ),
                 ),
               ),
@@ -904,6 +940,7 @@ class _BarterScreenState extends State<BarterScreen> {
                               widget.fromOtherUser) ||
                           (_barterRecord!.dealStatus == 'accepted' &&
                               widget.fromOtherUser),
+                      fontSize: 12.0,
                     ),
                   ),
                 ),
@@ -918,6 +955,7 @@ class _BarterScreenState extends State<BarterScreen> {
                       textColor: Colors.white,
                       onTap: _onCancelTapped,
                       removeMargin: true,
+                      fontSize: 12.0,
                     ),
                   ),
                 ),
@@ -1040,7 +1078,11 @@ class _BarterScreenState extends State<BarterScreen> {
               .add(UpdateBarterStatus(_barterRecord!.barterId!, 'accepted'));
         break;
       case 'accepted':
-        _barterBloc.add(UpdateBarterStatus(_barterRecord!.barterId!, 'sold'));
+        if (widget.fromOtherUser)
+          _barterBloc.add(UpdateBarterStatus(_barterRecord!.barterId!, 'sold'));
+        else
+          _barterBloc
+              .add(UpdateBarterStatus(_barterRecord!.barterId!, 'submitted'));
         break;
       default:
     }
@@ -1736,6 +1778,8 @@ class _BarterScreenState extends State<BarterScreen> {
         ),
       ),
     );
+
+    if (_chatFocusNode.hasFocus) _chatFocusNode.unfocus();
   }
 
   Container _buildChatItem(ChatMessageModel msg) {

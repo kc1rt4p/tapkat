@@ -7,6 +7,7 @@ import 'package:tapkat/models/chat_message.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/repositories/barter_repository.dart';
 import 'package:tapkat/repositories/product_repository.dart';
+import 'package:tapkat/repositories/user_repository.dart';
 import 'package:tapkat/schemas/barter_record.dart';
 import 'package:tapkat/services/auth_service.dart';
 
@@ -18,6 +19,7 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
     final _authService = AuthService();
     final _productRepository = ProductRepository();
     final _barterRepository = BarterRepository();
+    final _userRepo = UserRepository();
     User? _user;
     on<BarterEvent>((event, emit) async {
       emit(BarterLoading());
@@ -76,6 +78,24 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
           if (event is UpdateBarterStatus) {
             await _barterRepository.updateBarterStatus(
                 event.barterId, event.status);
+            if (event.status == 'accepted') {
+              final barterRecord =
+                  await _barterRepository.getBarterRecord(event.barterId);
+              if (barterRecord != null) {
+                final userId = barterRecord.userid2!;
+                final user = await _userRepo.getUser(userId);
+
+                _barterRepository.addMessage(ChatMessageModel(
+                  barterId: event.barterId,
+                  userId: userId,
+                  userName: user!.firstname,
+                  message: 'Offer Accepted',
+                  dateCreated: DateTime.now(),
+                ));
+              }
+            }
+
+            emit(UpdateBarterStatusSuccess());
           }
 
           if (event is UpdateBarterProducts) {
@@ -148,8 +168,9 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
           }
 
           if (event is SendMessage) {
+            final user = await _userRepo.getUser(_user!.uid);
             event.message.userId = _user!.uid;
-            event.message.userName = _user!.displayName;
+            event.message.userName = user!.firstname;
             event.message.dateCreated = DateTime.now();
             final sent = await _barterRepository.addMessage(event.message);
             if (!sent) {
