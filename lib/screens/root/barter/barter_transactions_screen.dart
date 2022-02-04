@@ -50,7 +50,6 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                 child: BlocListener(
                   bloc: _barterBloc,
                   listener: (context, state) {
-                    print('barter trans current state: $state');
                     if (state is BarterLoading) {
                       ProgressHUD.of(context)!.show();
                     } else {
@@ -211,6 +210,34 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                                                                     )
                                                                   : Container(),
                                                             ],
+                                                          ),
+                                                        ),
+                                                        Positioned(
+                                                          top: 130.0,
+                                                          child: Container(
+                                                            padding: EdgeInsets
+                                                                .symmetric(
+                                                                    vertical:
+                                                                        5.0),
+                                                            color:
+                                                                kBackgroundColor,
+                                                            width: 160.0,
+                                                            child: Text(
+                                                              (barter.dealStatus ??
+                                                                      '')
+                                                                  .toUpperCase(),
+                                                              textAlign:
+                                                                  TextAlign
+                                                                      .center,
+                                                              style: TextStyle(
+                                                                fontSize: 14.0,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                                color: Colors
+                                                                    .white,
+                                                              ),
+                                                            ),
                                                           ),
                                                         ),
                                                         Positioned(
@@ -395,6 +422,38 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                                                                   )
                                                                 : Container(),
                                                           ],
+                                                        ),
+                                                      ),
+                                                      Positioned(
+                                                        top: 130.0,
+                                                        child: Container(
+                                                          padding: EdgeInsets
+                                                              .symmetric(
+                                                                  vertical:
+                                                                      5.0),
+                                                          color:
+                                                              kBackgroundColor,
+                                                          width: 160.0,
+                                                          child: Text(
+                                                            (barter.dealStatus !=
+                                                                            null &&
+                                                                        barter.dealStatus ==
+                                                                            'submitted'
+                                                                    ? 'NEW'
+                                                                    : barter.dealStatus ??
+                                                                        '')
+                                                                .toUpperCase(),
+                                                            textAlign: TextAlign
+                                                                .center,
+                                                            style: TextStyle(
+                                                              fontSize: 14.0,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                              color:
+                                                                  Colors.white,
+                                                            ),
+                                                          ),
                                                         ),
                                                       ),
                                                       Positioned(

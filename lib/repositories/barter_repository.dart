@@ -95,6 +95,7 @@ class BarterRepository {
     try {
       await barterRef.doc(barterId).update({
         'dealStatus': status,
+        'dealDate': DateTime.now(),
       });
       return true;
     } catch (e) {
