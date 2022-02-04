@@ -39,6 +39,19 @@ class BarterRepository {
     }
   }
 
+  Future<bool> addCashOffer(
+      String barterId, BarterProductModel barterProduct) async {
+    barterProduct.dateAdded = DateTime.now();
+    final docRef = await barterRef
+        .doc(barterId)
+        .collection('products')
+        .add(barterProduct.toJson());
+
+    final newOffer = await docRef.get();
+
+    return newOffer.exists;
+  }
+
   Future<bool> addBarterProducts(
       String barterId, List<BarterProductModel> products) async {
     try {
@@ -71,6 +84,17 @@ class BarterRepository {
               .doc(prod.docs.first.id)
               .delete();
         }
+      });
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<bool> updateBarterStatus(String barterId, String status) async {
+    try {
+      await barterRef.doc(barterId).update({
+        'dealStatus': status,
       });
       return true;
     } catch (e) {

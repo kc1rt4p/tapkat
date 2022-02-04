@@ -56,8 +56,6 @@ class ProductRepository {
       'productid': productId,
     });
 
-    print(images.first.fileName.split('.')[1]);
-
     images.forEach((img) {
       final mimeType = mime(img.fileName);
       String mimee = mimeType!.split('/')[0];
@@ -68,8 +66,6 @@ class ProductRepository {
           'media',
           MultipartFile.fromFileSync(
             img.rawPath!,
-            // contentType:
-            //     MediaType('image', images.first.fileName.split('.')[1]),
             contentType: MediaType(mimee, type),
           ),
         ),
@@ -79,16 +75,7 @@ class ProductRepository {
     final response = await _apiService.post(
       url: 'products/upload',
       formData: formData,
-      onSendProgress: (sent, total) {
-        print('sent: $sent == total: $total');
-      },
     );
-
-    formData.files.forEach((element) {
-      print(element.value.filename);
-      print(element.value.contentType);
-      print(element.value.isFinalized);
-    });
 
     if (response.data['status'] != 'SUCCESS') return null;
 

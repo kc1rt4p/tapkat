@@ -49,6 +49,10 @@ class BarterInitialized extends BarterState {
   });
 }
 
+class UpdateBarterStatusSuccess extends BarterState {}
+
+class AddCashOfferSuccess extends BarterState {}
+
 class DeleteBarterProductsSuccess extends BarterState {}
 
 class UpdateBarterProductsSuccess extends BarterState {}

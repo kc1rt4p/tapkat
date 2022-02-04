@@ -38,6 +38,7 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
             // final _barterRef =
             //     await BarterRecord.collection.doc().set(event.barterData);
             // final _barterRecord = BarterRecordModel.fromJson(event.barterData);
+            event.barterData.dealStatus = 'new';
             final newBarter =
                 await _barterRepository.setBarterRecord(event.barterData);
 
@@ -72,6 +73,11 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
             ));
           }
 
+          if (event is UpdateBarterStatus) {
+            await _barterRepository.updateBarterStatus(
+                event.barterId, event.status);
+          }
+
           if (event is UpdateBarterProducts) {
             final barterProducts =
                 await _barterRepository.getBarterProducts(event.barterId);
@@ -86,6 +92,21 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
             final success = await _barterRepository.addBarterProducts(
                 event.barterId, _products);
             if (success) emit(UpdateBarterProductsSuccess());
+          }
+
+          if (event is AddCashOffer) {
+            final added = await _barterRepository.addCashOffer(
+              event.barterId,
+              BarterProductModel(
+                productId: 'cash-${DateTime.now().millisecondsSinceEpoch}',
+                productName: 'Cash',
+                price: event.amount,
+                currency: event.currency,
+                userId: event.userId,
+              ),
+            );
+
+            if (added) emit(AddCashOfferSuccess());
           }
 
           if (event is StreamBarter) {
