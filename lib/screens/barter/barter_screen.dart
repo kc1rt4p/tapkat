@@ -596,7 +596,8 @@ class _BarterScreenState extends State<BarterScreen> {
                       (_barterRecord!.dealStatus == 'submitted' &&
                           widget.fromOtherUser) ||
                       (_barterRecord!.dealStatus == 'accepted' &&
-                          widget.fromOtherUser),
+                          widget.fromOtherUser) ||
+                      _barterRecord!.dealStatus == 'sold',
                 ),
               ),
             ),
@@ -940,7 +941,8 @@ class _BarterScreenState extends State<BarterScreen> {
                           (_barterRecord!.dealStatus == 'submitted' &&
                               widget.fromOtherUser) ||
                           (_barterRecord!.dealStatus == 'accepted' &&
-                              widget.fromOtherUser),
+                              widget.fromOtherUser) ||
+                          _barterRecord!.dealStatus == 'sold',
                       fontSize: 12.0,
                     ),
                   ),
