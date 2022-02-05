@@ -2,6 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/models/request/add_product_request.dart';
+import 'package:tapkat/models/upload_product_image_response.dart';
 import 'package:tapkat/repositories/product_repository.dart';
 import 'package:tapkat/services/auth_service.dart';
 import 'package:tapkat/services/firebase.dart';
@@ -72,7 +73,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
             userId: _user!.uid,
             images: event.media,
           );
-          if (result != null) emit(AddProductImageSuccess());
+          if (result != null) emit(AddProductImageSuccess(result));
         }
 
         if (event is DeleteProduct) {

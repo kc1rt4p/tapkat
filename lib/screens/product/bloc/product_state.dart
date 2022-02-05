@@ -37,7 +37,11 @@ class AddRatingSuccess extends ProductState {}
 
 class DislikeSuccess extends ProductState {}
 
-class AddProductImageSuccess extends ProductState {}
+class AddProductImageSuccess extends ProductState {
+  final UploadProductImageResponseModel result;
+
+  AddProductImageSuccess(this.result);
+}
 
 class GetProductsSuccess extends ProductState {
   final List<ProductModel> list;

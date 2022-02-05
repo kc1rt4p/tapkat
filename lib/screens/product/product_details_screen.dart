@@ -95,7 +95,6 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   if (state is AddLikeSuccess ||
                       state is AddRatingSuccess ||
                       state is UnlikeSuccess) {
-                    print('HEY!');
                     _productBloc.add(GetProductDetails(widget.productId));
                   }
                 },
@@ -554,7 +553,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                             ),
                           ),
                           Visibility(
-                            visible: !widget.ownItem && _product != null,
+                            visible: !widget.ownItem &&
+                                _product != null &&
+                                _product!.userid != _user!.uid,
                             child: Container(
                               padding: EdgeInsets.symmetric(
                                   horizontal: 20.0, vertical: 8.0),
@@ -661,37 +662,6 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
         ),
       ),
     );
-    return CarouselSlider(
-      carouselController: _carouselController,
-      options: CarouselOptions(
-          height: SizeConfig.screenHeight * .3,
-          enableInfiniteScroll: false,
-          aspectRatio: 1,
-          viewportFraction: 1,
-          onPageChanged: (index, _) {
-            setState(() {
-              _currentCarouselIndex = index;
-            });
-          }),
-      items: _product!.media!.map((img) {
-        return Container(
-          width: double.infinity,
-          decoration: BoxDecoration(
-            image: DecorationImage(
-              fit: BoxFit.cover,
-              image: mappedProductDetails != null &&
-                      mappedProductDetails!['imgUrl'].isEmpty
-                  ? AssetImage('assets/images/image_placeholder.jpg')
-                      as ImageProvider<Object>
-                  : CachedNetworkImageProvider(img.url != null &&
-                          img.url!.isNotEmpty
-                      ? img.url!
-                      : 'https://storage.googleapis.com/map-surf-assets/noimage.jpg'),
-            ),
-          ),
-        );
-      }).toList(),
-    );
   }
 
   _onDeleteTapped() {
@@ -714,7 +684,6 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
         builder: (context) => ProductEditScreen(product: _product!),
       ),
     );
-
     _productBloc.add(GetProductDetails(widget.productId));
   }
 }

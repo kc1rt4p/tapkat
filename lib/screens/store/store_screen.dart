@@ -29,9 +29,15 @@ class _StoreScreenState extends State<StoreScreen> {
 
   List<ProductModel> indicators = [];
 
+  String storeOwnerName = '';
+
   @override
   void initState() {
     _productBloc.add(GetFirstProducts('user', userId: widget.userId));
+    storeOwnerName = widget.userId;
+    storeOwnerName = storeOwnerName.length > 10
+        ? storeOwnerName.substring(0, 7) + '...'
+        : storeOwnerName;
     super.initState();
   }
 
@@ -46,7 +52,7 @@ class _StoreScreenState extends State<StoreScreen> {
           child: Column(
             children: [
               CustomAppBar(
-                label: '${widget.userId}\'s Store',
+                label: '$storeOwnerName\'s Store',
               ),
               CustomSearchBar(
                 margin: EdgeInsets.symmetric(horizontal: 20.0),

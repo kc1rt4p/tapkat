@@ -11,6 +11,7 @@ class CustomAppBar extends StatefulWidget {
   final bool hideBack;
   final Widget? action;
   final Widget? leading;
+  final bool centerTitle;
 
   const CustomAppBar({
     Key? key,
@@ -20,6 +21,7 @@ class CustomAppBar extends StatefulWidget {
     this.hideBack = false,
     this.action,
     this.leading,
+    this.centerTitle = false,
   }) : super(key: key);
 
   @override
@@ -61,11 +63,13 @@ class _CustomAppBarState extends State<CustomAppBar> {
                             : SizedBox(
                                 width: 16.0,
                               ),
-                        Text(
-                          widget.label!,
-                          style: Style.subtitle1.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
+                        Center(
+                          child: Text(
+                            widget.label!,
+                            style: Style.subtitle1.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ],

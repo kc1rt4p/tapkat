@@ -11,6 +11,7 @@ import 'package:tapkat/screens/product/product_details_screen.dart';
 import 'package:tapkat/screens/product/product_list_screen.dart';
 import 'package:tapkat/screens/root/home/bloc/home_bloc.dart';
 import 'package:tapkat/screens/search/search_result_screen.dart';
+import 'package:tapkat/screens/store/store_screen.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/widgets/barter_list.dart';
@@ -359,11 +360,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           await Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => ProductListScreen(
-                                listType: 'user',
-                                showAdd: true,
+                              builder: (context) => StoreScreen(
                                 userId: _user!.uid,
-                                ownListing: true,
+                                userName: _user!.displayName ?? '',
                               ),
                             ),
                           );

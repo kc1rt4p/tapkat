@@ -50,7 +50,7 @@ class _RootScreenState extends State<RootScreen> {
           ],
         ),
       ),
-      floatingActionButton: showFab && _currentIndex == 0
+      floatingActionButton: showFab && _currentIndex == 0 || _currentIndex == 3
           ? Container(
               decoration: BoxDecoration(
                 color: Colors.white,
@@ -115,7 +115,7 @@ class _RootScreenState extends State<RootScreen> {
               index: 1,
             ),
             Visibility(
-              visible: _currentIndex == 0,
+              visible: _currentIndex == 0 || _currentIndex == 3,
               child: SizedBox(
                 width: 50.0,
               ),

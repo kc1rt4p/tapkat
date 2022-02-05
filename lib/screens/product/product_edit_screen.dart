@@ -108,8 +108,11 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
             if (state is AddProductImageSuccess) {
               await DialogMessage.show(context,
                   message: 'An image has been uploaded for this product.');
-
-              Navigator.pop(context);
+              setState(() {
+                _media.addAll(state.result.media!
+                    .where((media) => !_media.any((m) => m.url == media.url))
+                    .toList());
+              });
             }
           },
           child: Container(
@@ -351,7 +354,6 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
                               right: 10,
                               child: InkWell(
                                 onTap: () {
-                                  print('asdas');
                                   _productBloc.add(DeleteImages(
                                       [media.url!], _product.productid!));
                                 },

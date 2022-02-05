@@ -63,9 +63,6 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
                   .getBarterProducts(event.barterData.barterId!);
             }
 
-            print('new barter data ${event.barterData.toJson()}');
-            print('success: $newBarter');
-
             emit(BarterInitialized(
               barterStream:
                   _barterRepository.streamBarter(event.barterData.barterId!),
