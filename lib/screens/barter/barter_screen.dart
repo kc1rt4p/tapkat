@@ -446,11 +446,11 @@ class _BarterScreenState extends State<BarterScreen> {
                   print('BARTER ERROR ===== ${state.message}');
                 }
               },
-              child: Column(
-                children: [
-                  Visibility(
-                    visible: !_panelClosed,
-                    child: Container(
+              child: Visibility(
+                visible: !_panelClosed,
+                child: Column(
+                  children: [
+                    Container(
                       decoration: BoxDecoration(
                         color: Colors.white,
                         boxShadow: [
@@ -493,18 +493,18 @@ class _BarterScreenState extends State<BarterScreen> {
                         ],
                       ),
                     ),
-                  ),
-                  Expanded(
-                    child: ListView(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: 20.0, vertical: 10.0),
-                      reverse: true,
-                      children: _messages.reversed
-                          .map((msg) => _buildChatItem(msg))
-                          .toList(),
+                    Expanded(
+                      child: ListView(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 20.0, vertical: 10.0),
+                        reverse: true,
+                        children: _messages.reversed
+                            .map((msg) => _buildChatItem(msg))
+                            .toList(),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -578,6 +578,7 @@ class _BarterScreenState extends State<BarterScreen> {
   Container _buildCollapsed() {
     if (_barterRecord == null) return Container();
     return Container(
+      color: Colors.white,
       padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 25.0),
       child: Row(
         children: [
