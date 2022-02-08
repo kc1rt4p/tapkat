@@ -103,8 +103,8 @@ class ProductRepository {
     }).toList();
   }
 
-  Future<List<ProductModel>> getFirstProducts(
-      String listType, String? userid) async {
+  Future<List<ProductModel>> getFirstProducts(String listType,
+      [String? userid]) async {
     final response = await _apiService.post(
       url: 'products/$listType/searchfirst',
       body: {
@@ -114,9 +114,11 @@ class ProductRepository {
         'sortBy': 'price',
         'sortdirection': listType == 'reco' ? 'ascending' : 'descending',
       },
-      params: {
-        'userid': userid,
-      },
+      params: userid != null
+          ? {
+              'userid': userid,
+            }
+          : null,
     );
 
     if (response.data['status'] != 'SUCCESS') return [];

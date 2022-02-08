@@ -30,8 +30,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
         if (event is LoadRecommendedList) {
           emit(LoadingRecommendedList());
-          final recommendedList =
-              await _productRepo.getFirstProducts('reco', _user!.uid);
+          final recommendedList = await _productRepo.getFirstProducts('reco');
           emit(LoadedRecommendedList(recommendedList));
         }
 
@@ -44,8 +43,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
         if (event is LoadTrendingList) {
           emit(LoadingTrendingList());
-          final trendingList =
-              await _productRepo.getFirstProducts('demand', _user!.uid);
+          final trendingList = await _productRepo.getFirstProducts('demand');
           emit(LoadedTrendingList(trendingList));
         }
 

@@ -37,6 +37,15 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
   }
 
   @override
+  void dispose() {
+    _byYouStream?.cancel();
+    _byYouStream = null;
+    _fromOthersStream?.cancel();
+    _fromOthersStream = null;
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
     return Scaffold(
