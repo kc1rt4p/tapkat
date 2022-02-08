@@ -86,7 +86,9 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                       _fromOthersStream = state.fromOthersStream.listen((list) {
                         if (list.isNotEmpty) {
                           setState(() {
-                            fromOthersList = list;
+                            fromOthersList = list
+                                .where((barter) => barter.dealStatus != 'new')
+                                .toList();
                           });
                         }
                       });
