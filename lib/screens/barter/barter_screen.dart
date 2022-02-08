@@ -236,23 +236,41 @@ class _BarterScreenState extends State<BarterScreen> {
                 state.barterProducts.forEach((bProduct) {
                   final _prod = ProductModel.fromJson(bProduct.toJson());
                   if (bProduct.productId!.contains('cash')) {
-                    if (bProduct.userId == _currentUser!.uid) {
-                      if (!widget.fromOtherUser) {
-                        _requestedCash = bProduct.price;
-                        _origRequestedCash = bProduct.price;
-                      } else {
+                    print('cash details: ${bProduct.toJson()}');
+                    if (!widget.fromOtherUser) {
+                      if (bProduct.userId == _currentUser!.uid) {
                         _origOfferedCash = bProduct.price;
                         _offeredCash = bProduct.price;
+                      } else {
+                        _requestedCash = bProduct.price;
+                        _origRequestedCash = bProduct.price;
                       }
                     } else {
-                      if (widget.fromOtherUser) {
-                        _offeredCash = bProduct.price;
-                        _origOfferedCash = bProduct.price;
-                      } else {
+                      if (bProduct.userId == _currentUser!.uid) {
                         _requestedCash = bProduct.price;
                         _origRequestedCash = bProduct.price;
+                      } else {
+                        _origOfferedCash = bProduct.price;
+                        _offeredCash = bProduct.price;
                       }
                     }
+                    // if (bProduct.userId == _currentUser!.uid) {
+                    //   if (!widget.fromOtherUser) {
+                    //     _requestedCash = bProduct.price;
+                    //     _origRequestedCash = bProduct.price;
+                    //   } else {
+                    //     _origOfferedCash = bProduct.price;
+                    //     _offeredCash = bProduct.price;
+                    //   }
+                    // } else {
+                    //   if (widget.fromOtherUser) {
+                    //     _offeredCash = bProduct.price;
+                    //     _origOfferedCash = bProduct.price;
+                    //   } else {
+                    //     _requestedCash = bProduct.price;
+                    //     _origRequestedCash = bProduct.price;
+                    //   }
+                    // }
                   } else {
                     if (_prod.userid == _currentUser!.uid) {
                       if (widget.fromOtherUser) {
@@ -1142,6 +1160,8 @@ class _BarterScreenState extends State<BarterScreen> {
               .add(UpdateBarterStatus(_barterRecord!.barterId!, 'submitted'));
         break;
       default:
+        _barterBloc
+            .add(UpdateBarterStatus(_barterRecord!.barterId!, 'submitted'));
     }
   }
 
