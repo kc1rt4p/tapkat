@@ -148,6 +148,18 @@ class BarterRepository {
     return a.docs.map((doc) => BarterRecordModel.fromJson(doc.data())).toList();
   }
 
+  Future<Stream<List<BarterRecordModel>>> streamBartersByUser(
+      String userId) async {
+    return barterRef.where('userid1', isEqualTo: userId).snapshots().map((s) =>
+        s.docs.map((doc) => BarterRecordModel.fromJson(doc.data())).toList());
+  }
+
+  Future<Stream<List<BarterRecordModel>>> streamBartersFromOthers(
+      String userId) async {
+    return barterRef.where('userid2', isEqualTo: userId).snapshots().map((s) =>
+        s.docs.map((doc) => BarterRecordModel.fromJson(doc.data())).toList());
+  }
+
   Future<List<BarterRecordModel>> getBartersFromOthers(String userId) async {
     final a = await barterRef.where('userid2', isEqualTo: userId).get();
     if (a.docs.isEmpty) return [];

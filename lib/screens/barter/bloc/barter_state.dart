@@ -12,12 +12,17 @@ class BarterInitial extends BarterState {}
 class BarterLoading extends BarterState {}
 
 class BarterTransactionsInitialized extends BarterState {
-  final List<BarterRecordModel> fromOthersList;
-  final List<BarterRecordModel> byYouList;
+  // final List<BarterRecordModel> fromOthersList;
+  // final List<BarterRecordModel> byYouList;
+
+  final Stream<List<BarterRecordModel>> fromOthersStream;
+  final Stream<List<BarterRecordModel>> byYouStream;
 
   BarterTransactionsInitialized({
-    required this.fromOthersList,
-    required this.byYouList,
+    // required this.fromOthersList,
+    // required this.byYouList,
+    required this.fromOthersStream,
+    required this.byYouStream,
   });
 }
 

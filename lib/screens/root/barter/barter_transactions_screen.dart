@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_progress_hud/flutter_progress_hud.dart';
@@ -24,6 +26,9 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
   final _barterBloc = BarterBloc();
   List<BarterRecordModel> byYouList = [];
   List<BarterRecordModel> fromOthersList = [];
+
+  StreamSubscription<List<BarterRecordModel>>? _byYouStream;
+  StreamSubscription<List<BarterRecordModel>>? _fromOthersStream;
 
   @override
   void initState() {
@@ -61,11 +66,20 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                     }
 
                     if (state is BarterTransactionsInitialized) {
-                      setState(() {
-                        byYouList = state.byYouList;
-                        fromOthersList = state.fromOthersList
-                            .where((barter) => barter.dealStatus != 'new')
-                            .toList();
+                      _byYouStream = state.byYouStream.listen((list) {
+                        if (list.isNotEmpty) {
+                          setState(() {
+                            byYouList = list;
+                          });
+                        }
+                      });
+
+                      _fromOthersStream = state.fromOthersStream.listen((list) {
+                        if (list.isNotEmpty) {
+                          setState(() {
+                            fromOthersList = list;
+                          });
+                        }
                       });
                     }
 

@@ -154,14 +154,16 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
           }
 
           if (event is InitializeBarterTransactions) {
-            final byYouList =
-                await _barterRepository.getBartersByUser(_user!.uid);
-            final fromOthersList =
-                await _barterRepository.getBartersFromOthers(_user!.uid);
+            // final byYouList =
+            //     await _barterRepository.getBartersByUser(_user!.uid);
+            // final fromOthersList =
+            //     await _barterRepository.getBartersFromOthers(_user!.uid);
 
             emit(BarterTransactionsInitialized(
-              fromOthersList: fromOthersList,
-              byYouList: byYouList,
+              byYouStream:
+                  await _barterRepository.streamBartersByUser(_user!.uid),
+              fromOthersStream:
+                  await _barterRepository.streamBartersFromOthers(_user!.uid),
             ));
           }
 
