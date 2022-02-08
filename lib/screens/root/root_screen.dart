@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:tapkat/screens/product/product_add_screen.dart';
 import 'package:tapkat/screens/root/barter/barter_transactions_screen.dart';
@@ -7,6 +8,8 @@ import 'package:tapkat/screens/root/profile/profile_screen.dart';
 import 'package:tapkat/screens/root/wish_list/wish_list_screen.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/size_config.dart';
+
+import 'bloc/root_bloc.dart';
 
 class RootScreen extends StatefulWidget {
   const RootScreen({Key? key}) : super(key: key);
@@ -25,6 +28,8 @@ class _RootScreenState extends State<RootScreen> {
 
   int _currentIndex = 0;
 
+  final _rootBloc = RootBloc();
+
   @override
   void initState() {
     Permission.location.request();
@@ -37,17 +42,30 @@ class _RootScreenState extends State<RootScreen> {
     SizeConfig().init(context);
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      body: Container(
-        color: kBackgroundColor,
-        child: Column(
-          children: [
-            Expanded(
-              child: Container(
-                color: kBackgroundColor,
-                child: _screens[_currentIndex],
-              ),
+      body: BlocProvider(
+        create: (context) => _rootBloc,
+        child: BlocListener(
+          bloc: _rootBloc,
+          listener: (context, state) {
+            if (state is MoveToTab) {
+              setState(() {
+                _currentIndex = state.index;
+              });
+            }
+          },
+          child: Container(
+            color: kBackgroundColor,
+            child: Column(
+              children: [
+                Expanded(
+                  child: Container(
+                    color: kBackgroundColor,
+                    child: _screens[_currentIndex],
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
       floatingActionButton: showFab && _currentIndex == 0 || _currentIndex == 3

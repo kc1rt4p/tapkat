@@ -9,9 +9,9 @@ import 'package:tapkat/schemas/user_likes_record.dart';
 import 'package:tapkat/screens/product/bloc/product_bloc.dart';
 import 'package:tapkat/screens/product/product_details_screen.dart';
 import 'package:tapkat/screens/product/product_list_screen.dart';
+import 'package:tapkat/screens/root/bloc/root_bloc.dart';
 import 'package:tapkat/screens/root/home/bloc/home_bloc.dart';
 import 'package:tapkat/screens/search/search_result_screen.dart';
-import 'package:tapkat/screens/store/store_screen.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/widgets/barter_list.dart';
@@ -356,19 +356,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         label: 'Your Items',
                         smallItems: true,
                         removeMargin: true,
-                        onViewAllTapped: () async {
-                          await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => StoreScreen(
-                                userId: _user!.uid,
-                                userName: _user!.displayName ?? '',
-                              ),
-                            ),
-                          );
-
-                          _homeBloc.add(LoadUserList());
-                        },
+                        onViewAllTapped: () =>
+                            BlocProvider.of<RootBloc>(context).add(MoveTab(3)),
                       ),
                       SizedBox(height: 10.0),
                     ],
