@@ -29,6 +29,8 @@ class DialogMessage {
     bool dismissible = false,
     bool forceDialog = false,
     bool hideClose = false,
+    dynamic result1,
+    dynamic result2,
   }) {
     if (forceDialog) {
       DialogMessage.dismiss();
@@ -98,7 +100,7 @@ class DialogMessage {
                       CustomButton(
                           label: buttonText ?? "Ok",
                           onTap: () async {
-                            await DialogMessage.dismiss();
+                            await DialogMessage.dismiss(result1);
                             if (firstButtonClicked != null) {
                               firstButtonClicked();
                             }
@@ -109,7 +111,7 @@ class DialogMessage {
                       secondButtonText != null || secondButtonClicked != null
                           ? GestureDetector(
                               onTap: () async {
-                                await DialogMessage.dismiss();
+                                await DialogMessage.dismiss(result2);
                                 if (secondButtonClicked != null) {
                                   secondButtonClicked();
                                 }
@@ -186,9 +188,9 @@ class DialogMessage {
     }
   }
 
-  static Future<void> dismiss() async {
+  static Future<void> dismiss([dynamic result]) async {
     if (instance.mContext != null) {
-      Navigator.pop(instance.mContext!);
+      Navigator.pop(instance.mContext!, result);
       instance.mContext = null;
       return;
     }

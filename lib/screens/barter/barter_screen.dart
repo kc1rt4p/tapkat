@@ -47,7 +47,7 @@ class _BarterScreenState extends State<BarterScreen> {
   List<BarterProductModel> offers = [];
   List<BarterProductModel> origWants = [];
   List<BarterProductModel> wants = [];
-  late String _participantName;
+  String _participantName = '';
   List<ProductModel> participantItems = [];
   List<ProductModel> userItems = [];
   User? _currentUser;
@@ -74,36 +74,10 @@ class _BarterScreenState extends State<BarterScreen> {
   void initState() {
     _authBloc = BlocProvider.of<AuthBloc>(context);
     _authBloc.add(GetCurrentuser());
+
     if (widget.product != null) {
       _product = widget.product!;
-      _participantName = _product!.userid ?? '';
-      _participantName = _participantName[0].toUpperCase() +
-          _participantName.substring(1).toLowerCase();
-    } else {
-      _participantName = widget.barterRecord!.userid1 ?? '';
-      _participantName = _participantName[0].toUpperCase() +
-          _participantName.substring(1).toLowerCase();
     }
-
-    if (widget.barterRecord != null) {
-      // print('barter record: ${widget.barterRecord!.toJson()}');
-      // setState(() {
-      //   _barterId = widget.barterRecord!.barterId;
-      //   wants.add(ProductModel(
-      //     productid: widget.barterRecord!.u1P1Id,
-      //     productname: widget.barterRecord!.u1P1Name,
-      //     price: widget.barterRecord!.u1P1Price,
-      //     mediaPrimary: MediaPrimaryModel(
-      //       type: 'image',
-      //       url: widget.barterRecord!.u1P1Image,
-      //     ),
-      //   ));
-      // });
-    }
-
-    _participantName = _participantName.length > 10
-        ? _participantName.substring(0, 7) + '...'
-        : _participantName;
 
     super.initState();
   }
@@ -226,6 +200,7 @@ class _BarterScreenState extends State<BarterScreen> {
         BlocListener(
           bloc: _barterBloc,
           listener: (context, state) async {
+            print('current barterBloc state: $state');
             if (state is BarterLoading) {
               ProgressHUD.of(context)!.show();
             } else {
@@ -305,8 +280,18 @@ class _BarterScreenState extends State<BarterScreen> {
                   _barterRecord = barterRecord;
                   if (_barterId == null) {
                     _barterId = _barterRecord!.barterId;
-                    _barterBloc.add(InitializeBarterChat(_barterId!));
                   }
+
+                  _barterBloc.add(InitializeBarterChat(_barterId!));
+
+                  if (widget.fromOtherUser) {
+                    _participantName = _barterRecord!.userid1!;
+                  } else {
+                    _participantName = _barterRecord!.userid2!;
+                  }
+                  _participantName = _participantName.length > 10
+                      ? _participantName.substring(0, 7) + '...'
+                      : _participantName;
                 });
               });
             }
@@ -335,9 +320,11 @@ class _BarterScreenState extends State<BarterScreen> {
               });
 
               if (widget.barterRecord == null && _product != null) {
-                _barterId = _currentUser!.uid +
-                    _product!.userid! +
-                    _product!.productid!;
+                setState(() {
+                  _barterId = _currentUser!.uid +
+                      _product!.userid! +
+                      _product!.productid!;
+                });
 
                 _barterBloc.add(
                   InitializeBarter(
@@ -613,7 +600,9 @@ class _BarterScreenState extends State<BarterScreen> {
             ),
           ),
           Visibility(
-            visible: _barterRecord!.dealStatus != 'sold',
+            visible: _barterRecord!.dealStatus != 'sold' &&
+                _barterRecord!.dealStatus != 'withdrawn' &&
+                _barterRecord!.dealStatus != 'rejected',
             child: Expanded(
               child: Container(
                 margin: EdgeInsets.only(right: 10.0),
@@ -810,7 +799,10 @@ class _BarterScreenState extends State<BarterScreen> {
         message = 'You initiated this barter';
         break;
       case 'withdrawn':
-        message = 'You have withdrawn this barter';
+        if (widget.fromOtherUser) {
+          message = '$_participantName has withdrawn this deal';
+        } else
+          message = 'You have withdrawn this barter';
         break;
       case 'rejected':
         if (widget.fromOtherUser) {
@@ -870,106 +862,113 @@ class _BarterScreenState extends State<BarterScreen> {
       child: SingleChildScrollView(
         child: Column(
           children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Expanded(
-                  child: Container(
-                    height: SizeConfig.screenHeight * 0.1,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Expanded(
-                          child: wants.length > 0
-                              ? GridView.count(
-                                  scrollDirection: Axis.horizontal,
-                                  padding: EdgeInsets.symmetric(vertical: 2.0),
-                                  mainAxisSpacing: 5.0,
-                                  shrinkWrap: true,
-                                  crossAxisCount: 1,
-                                  children: wants.map((want) {
-                                    return Container(
-                                      decoration: BoxDecoration(
-                                        border: Border.all(
-                                          color: kBackgroundColor,
-                                          width: 1.5,
-                                        ),
-                                        borderRadius:
-                                            BorderRadius.circular(8.0),
-                                        image: DecorationImage(
-                                          image: want.imgUrl!.isNotEmpty
-                                              ? NetworkImage(want.imgUrl!)
-                                              : AssetImage(
-                                                      'assets/images/image_placeholder.jpg')
-                                                  as ImageProvider<Object>,
-                                          fit: BoxFit.cover,
-                                        ),
-                                      ),
-                                    );
-                                  }).toList(),
-                                )
-                              : Container(),
+            InkWell(
+              onTap: () => _panelController.close(),
+              child: Container(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: Container(
+                        height: SizeConfig.screenHeight * 0.1,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Expanded(
+                              child: wants.length > 0
+                                  ? GridView.count(
+                                      scrollDirection: Axis.horizontal,
+                                      padding:
+                                          EdgeInsets.symmetric(vertical: 2.0),
+                                      mainAxisSpacing: 5.0,
+                                      shrinkWrap: true,
+                                      crossAxisCount: 1,
+                                      children: wants.map((want) {
+                                        return Container(
+                                          decoration: BoxDecoration(
+                                            border: Border.all(
+                                              color: kBackgroundColor,
+                                              width: 1.5,
+                                            ),
+                                            borderRadius:
+                                                BorderRadius.circular(8.0),
+                                            image: DecorationImage(
+                                              image: want.imgUrl!.isNotEmpty
+                                                  ? NetworkImage(want.imgUrl!)
+                                                  : AssetImage(
+                                                          'assets/images/image_placeholder.jpg')
+                                                      as ImageProvider<Object>,
+                                              fit: BoxFit.cover,
+                                            ),
+                                          ),
+                                        );
+                                      }).toList(),
+                                    )
+                                  : Container(),
+                            ),
+                            SizedBox(height: 5.0),
+                            Text('Cash: \$ ${_requestedCash ?? '0.00'}'),
+                          ],
                         ),
-                        SizedBox(height: 5.0),
-                        Text('Cash: \$ ${_requestedCash ?? '0.00'}'),
-                      ],
+                      ),
                     ),
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.fromLTRB(10.0, 0.0, 10.0, 17.0),
-                  child: Icon(
-                    Icons.sync_alt_outlined,
-                    size: 25.0,
-                    color: kBackgroundColor,
-                  ),
-                ),
-                Expanded(
-                  child: Container(
-                    height: SizeConfig.screenHeight * 0.1,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: offers.length > 0
-                              ? GridView.count(
-                                  scrollDirection: Axis.horizontal,
-                                  padding: EdgeInsets.symmetric(vertical: 2.0),
-                                  mainAxisSpacing: 5.0,
-                                  shrinkWrap: true,
-                                  crossAxisCount: 1,
-                                  children: offers.map((offer) {
-                                    return Container(
-                                      decoration: BoxDecoration(
-                                        border: Border.all(
-                                          color: kBackgroundColor,
-                                          width: 1.5,
-                                        ),
-                                        borderRadius:
-                                            BorderRadius.circular(8.0),
-                                        image: DecorationImage(
-                                          image: offer.imgUrl!.isNotEmpty
-                                              ? NetworkImage(offer.imgUrl!)
-                                              : AssetImage(
-                                                      'assets/images/image_placeholder.jpg')
-                                                  as ImageProvider<Object>,
-                                          fit: BoxFit.cover,
-                                        ),
-                                      ),
-                                    );
-                                  }).toList(),
-                                )
-                              : Container(),
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(10.0, 0.0, 10.0, 17.0),
+                      child: Icon(
+                        Icons.sync_alt_outlined,
+                        size: 25.0,
+                        color: kBackgroundColor,
+                      ),
+                    ),
+                    Expanded(
+                      child: Container(
+                        height: SizeConfig.screenHeight * 0.1,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: offers.length > 0
+                                  ? GridView.count(
+                                      scrollDirection: Axis.horizontal,
+                                      padding:
+                                          EdgeInsets.symmetric(vertical: 2.0),
+                                      mainAxisSpacing: 5.0,
+                                      shrinkWrap: true,
+                                      crossAxisCount: 1,
+                                      children: offers.map((offer) {
+                                        return Container(
+                                          decoration: BoxDecoration(
+                                            border: Border.all(
+                                              color: kBackgroundColor,
+                                              width: 1.5,
+                                            ),
+                                            borderRadius:
+                                                BorderRadius.circular(8.0),
+                                            image: DecorationImage(
+                                              image: offer.imgUrl!.isNotEmpty
+                                                  ? NetworkImage(offer.imgUrl!)
+                                                  : AssetImage(
+                                                          'assets/images/image_placeholder.jpg')
+                                                      as ImageProvider<Object>,
+                                              fit: BoxFit.cover,
+                                            ),
+                                          ),
+                                        );
+                                      }).toList(),
+                                    )
+                                  : Container(),
+                            ),
+                            SizedBox(height: 5.0),
+                            Text('Cash: \$ ${_offeredCash ?? '0.00'}'),
+                          ],
                         ),
-                        SizedBox(height: 5.0),
-                        Text('Cash: \$ ${_offeredCash ?? '0.00'}'),
-                      ],
+                      ),
                     ),
-                  ),
+                  ],
                 ),
-              ],
+              ),
             ),
             SizedBox(height: 8.0),
             Row(
@@ -996,7 +995,8 @@ class _BarterScreenState extends State<BarterScreen> {
                   ),
                 ),
                 Visibility(
-                  visible: _barterRecord!.dealStatus != 'sold',
+                  visible: _barterRecord!.dealStatus != 'sold' &&
+                      _barterRecord!.dealStatus != 'withdrawn',
                   child: Expanded(
                     child: Container(
                       child: CustomButton(
@@ -1145,7 +1145,23 @@ class _BarterScreenState extends State<BarterScreen> {
     }
   }
 
-  _onCancelTapped() {
+  _onCancelTapped() async {
+    final shouldContinue = await DialogMessage.show(
+      context,
+      message: widget.fromOtherUser
+          ? 'You are about to reject this offer, do you want to continue?'
+          : 'You are about to withdraw this barter, do you want to continue?',
+      title: 'Warning',
+      buttonText: 'Yes',
+      secondButtonText: 'No',
+      result1: true,
+      result2: false,
+    );
+
+    print('should continue: $shouldContinue');
+
+    if (!shouldContinue) return;
+
     switch (_barterRecord!.dealStatus) {
       case 'submitted':
         if (widget.fromOtherUser)
@@ -1156,6 +1172,10 @@ class _BarterScreenState extends State<BarterScreen> {
               .add(UpdateBarterStatus(_barterRecord!.barterId!, 'withdrawn'));
         break;
       case 'accepted':
+        _barterBloc
+            .add(UpdateBarterStatus(_barterRecord!.barterId!, 'withdrawn'));
+        break;
+      case 'new':
         _barterBloc
             .add(UpdateBarterStatus(_barterRecord!.barterId!, 'withdrawn'));
         break;

@@ -22,6 +22,7 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
     final _userRepo = UserRepository();
     User? _user;
     on<BarterEvent>((event, emit) async {
+      print('current event: $event');
       emit(BarterLoading());
 
       try {
@@ -35,58 +36,65 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
             final user2Products = await _productRepository.getFirstProducts(
                 'user', event.barterData.userid2);
 
-            print("======BARTER DATA:: ${event.barterData.toJson()}");
+            print('=== barter id: ${event.barterData.barterId}');
+            final _barterRecord = await _barterRepository
+                .getBarterRecord(event.barterData.barterId!);
+            print('=== _barterRecord: $_barterRecord');
 
-            // final _barterRef =
-            //     await BarterRecord.collection.doc().set(event.barterData);
-            // final _barterRecord = BarterRecordModel.fromJson(event.barterData);
-            event.barterData.dealStatus = 'new';
-            final newBarter =
-                await _barterRepository.setBarterRecord(event.barterData);
+            if (_barterRecord == null) {
+              event.barterData.dealStatus = 'new';
+              final newBarter =
+                  await _barterRepository.setBarterRecord(event.barterData);
 
-            var barterProducts = await _barterRepository
-                .getBarterProducts(event.barterData.barterId!);
-
-            if (!barterProducts
-                .any((bProd) => bProd.productId == event.barterData.u2P1Id)) {
-              await _barterRepository
-                  .addBarterProducts(event.barterData.barterId!, [
-                BarterProductModel(
-                  productId: event.barterData.u2P1Id,
-                  userId: event.barterData.userid2,
-                  productName: event.barterData.u2P1Name,
-                  price: event.barterData.u2P1Price,
-                  imgUrl: event.barterData.u2P1Image,
-                )
-              ]);
-              barterProducts = await _barterRepository
+              var barterProducts = await _barterRepository
                   .getBarterProducts(event.barterData.barterId!);
-            }
 
-            emit(BarterInitialized(
-              barterStream:
-                  _barterRepository.streamBarter(event.barterData.barterId!),
-              userProducts: userProducts,
-              user2Products: user2Products,
-              barterProducts: barterProducts,
-            ));
+              if (!barterProducts
+                  .any((bProd) => bProd.productId == event.barterData.u2P1Id)) {
+                await _barterRepository
+                    .addBarterProducts(event.barterData.barterId!, [
+                  BarterProductModel(
+                    productId: event.barterData.u2P1Id,
+                    userId: event.barterData.userid2,
+                    productName: event.barterData.u2P1Name,
+                    price: event.barterData.u2P1Price,
+                    imgUrl: event.barterData.u2P1Image,
+                  )
+                ]);
+                barterProducts = await _barterRepository
+                    .getBarterProducts(event.barterData.barterId!);
+              }
+
+              emit(BarterInitialized(
+                barterStream:
+                    _barterRepository.streamBarter(event.barterData.barterId!),
+                userProducts: userProducts,
+                user2Products: user2Products,
+                barterProducts: barterProducts,
+              ));
+            } else {
+              print('EXISTING BARTER');
+              add(StreamBarter(_barterRecord));
+            }
           }
 
           if (event is UpdateBarterStatus) {
             await _barterRepository.updateBarterStatus(
                 event.barterId, event.status);
-            if (event.status == 'accepted') {
+            if (event.status != 'new') {
               final barterRecord =
                   await _barterRepository.getBarterRecord(event.barterId);
               if (barterRecord != null) {
-                final userId = barterRecord.userid2!;
+                final userId = ['accepted', 'rejected'].contains(event.status)
+                    ? barterRecord.userid2!
+                    : barterRecord.userid1!;
                 final user = await _userRepo.getUser(userId);
 
                 _barterRepository.addMessage(ChatMessageModel(
                   barterId: event.barterId,
                   userId: userId,
                   userName: user!.firstname,
-                  message: 'Offer Accepted',
+                  message: 'Offer ${event.status.toUpperCase()}',
                   dateCreated: DateTime.now(),
                 ));
               }
