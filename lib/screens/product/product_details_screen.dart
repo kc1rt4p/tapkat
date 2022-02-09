@@ -468,6 +468,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                                           _productBloc
                                                                               .add(AddLike(_product!));
                                                                         }
+                                                                      } else {
+                                                                        _productBloc
+                                                                            .add(AddLike(_product!));
                                                                       }
                                                                     },
                                                                     child: Icon(

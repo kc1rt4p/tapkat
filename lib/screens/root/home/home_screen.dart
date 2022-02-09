@@ -229,6 +229,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                       } else {
                                         _productBloc.add(AddLike(product));
                                       }
+                                    } else {
+                                      _productBloc.add(AddLike(product));
                                     }
                                   },
                                 );
@@ -308,6 +310,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                       } else {
                                         _productBloc.add(AddLike(product));
                                       }
+                                    } else {
+                                      _productBloc.add(AddLike(product));
                                     }
                                   },
                                 );
