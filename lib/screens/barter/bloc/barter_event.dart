@@ -67,6 +67,16 @@ class AddCashOffer extends BarterEvent {
   });
 }
 
+class DeleteCashOffer extends BarterEvent {
+  final String barterId;
+  final String productId;
+
+  DeleteCashOffer({
+    required this.barterId,
+    required this.productId,
+  });
+}
+
 class InitializeBarter extends BarterEvent {
   final BarterRecordModel barterData;
 

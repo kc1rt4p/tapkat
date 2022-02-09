@@ -12,14 +12,18 @@ class SizeConfig {
   static late double _safeAreaVertical;
   static late double safeBlockHorizontal;
   static late double safeBlockVertical;
+  static late double textScaleFactor;
+  static late double bottomInset;
 
   void init(BuildContext context) {
     _mediaQueryData = MediaQuery.of(context);
+    textScaleFactor = _mediaQueryData.textScaleFactor;
     screenWidth = _mediaQueryData.size.width;
     screenHeight = _mediaQueryData.size.height;
     paddingTop = _mediaQueryData.padding.top;
     blockSizeHorizontal = screenWidth / 100;
     blockSizeVertical = screenWidth / 100;
+    bottomInset = _mediaQueryData.viewInsets.bottom;
 
     _safeAreaHorizontal =
         _mediaQueryData.padding.left + _mediaQueryData.padding.right;

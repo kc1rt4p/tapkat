@@ -238,7 +238,10 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                                                           ),
                                                         ),
                                                         Positioned(
-                                                          top: 130.0,
+                                                          top: (SizeConfig
+                                                                      .screenHeight *
+                                                                  0.26) *
+                                                              0.61,
                                                           child: Container(
                                                             padding: EdgeInsets
                                                                 .symmetric(
@@ -246,7 +249,9 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                                                                         5.0),
                                                             color:
                                                                 kBackgroundColor,
-                                                            width: 160.0,
+                                                            width: SizeConfig
+                                                                    .screenWidth *
+                                                                0.44,
                                                             child: Text(
                                                               (barter.dealStatus ??
                                                                       '')
@@ -450,7 +455,10 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                                                         ),
                                                       ),
                                                       Positioned(
-                                                        top: 130.0,
+                                                        top: (SizeConfig
+                                                                    .screenHeight *
+                                                                0.26) *
+                                                            0.61,
                                                         child: Container(
                                                           padding: EdgeInsets
                                                               .symmetric(
@@ -458,7 +466,9 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                                                                       5.0),
                                                           color:
                                                               kBackgroundColor,
-                                                          width: 160.0,
+                                                          width: SizeConfig
+                                                                  .screenWidth *
+                                                              0.44,
                                                           child: Text(
                                                             (barter.dealStatus !=
                                                                             null &&

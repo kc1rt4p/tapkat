@@ -85,9 +85,10 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
               final barterRecord =
                   await _barterRepository.getBarterRecord(event.barterId);
               if (barterRecord != null) {
-                final userId = ['accepted', 'rejected'].contains(event.status)
-                    ? barterRecord.userid2!
-                    : barterRecord.userid1!;
+                final userId =
+                    ['accepted', 'rejected', 'sold'].contains(event.status)
+                        ? barterRecord.userid2!
+                        : barterRecord.userid1!;
                 final user = await _userRepo.getUser(userId);
 
                 _barterRepository.addMessage(ChatMessageModel(
@@ -134,6 +135,18 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
             if (added) emit(AddCashOfferSuccess());
           }
 
+          if (event is DeleteCashOffer) {
+            print('deleting cash with prodId: ${event.productId}');
+            final deleted = await _barterRepository.deleteCashOffer(
+              event.barterId,
+              BarterProductModel(
+                productId: event.productId,
+              ),
+            );
+
+            if (deleted) emit(DeleteCashOfferSuccess());
+          }
+
           if (event is StreamBarter) {
             final userProducts = await _productRepository.getFirstProducts(
                 'user', event.barterRecord.userid1);
@@ -154,11 +167,6 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
           }
 
           if (event is InitializeBarterTransactions) {
-            // final byYouList =
-            //     await _barterRepository.getBartersByUser(_user!.uid);
-            // final fromOthersList =
-            //     await _barterRepository.getBartersFromOthers(_user!.uid);
-
             emit(BarterTransactionsInitialized(
               byYouStream:
                   await _barterRepository.streamBartersByUser(_user!.uid),

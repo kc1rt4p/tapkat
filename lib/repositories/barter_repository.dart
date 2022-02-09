@@ -41,6 +41,25 @@ class BarterRepository {
 
   Future<bool> addCashOffer(
       String barterId, BarterProductModel barterProduct) async {
+    final existingProducts = await barterRef
+        .doc(barterId)
+        .collection('products')
+        .where('userid', isEqualTo: barterProduct.userId)
+        .get();
+
+    if (existingProducts.docs.isNotEmpty) {
+      existingProducts.docs.forEach((doc) async {
+        final product = BarterProductModel.fromJson(doc.data());
+        if (product.productId!.contains('cash')) {
+          await barterRef
+              .doc(barterId)
+              .collection('products')
+              .doc(doc.id)
+              .delete();
+        }
+      });
+    }
+
     barterProduct.dateAdded = DateTime.now();
     final docRef = await barterRef
         .doc(barterId)
@@ -50,6 +69,27 @@ class BarterRepository {
     final newOffer = await docRef.get();
 
     return newOffer.exists;
+  }
+
+  Future<bool> deleteCashOffer(
+      String barterId, BarterProductModel barterProduct) async {
+    final snapshot = await barterRef
+        .doc(barterId)
+        .collection('products')
+        .where('productid', isEqualTo: barterProduct.productId)
+        .limit(1)
+        .get();
+
+    if (snapshot.docs.isEmpty) return false;
+
+    final doc = snapshot.docs.first;
+
+    try {
+      await barterRef.doc(barterId).collection('products').doc(doc.id).delete();
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 
   Future<bool> addBarterProducts(

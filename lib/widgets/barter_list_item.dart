@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tapkat/utilities/size_config.dart';
 
 class BarterListItem extends StatefulWidget {
   final String itemName;
@@ -31,13 +32,14 @@ class BarterListItem extends StatefulWidget {
 class _BarterListItemState extends State<BarterListItem> {
   @override
   Widget build(BuildContext context) {
+    SizeConfig().init(context);
     return Stack(
       children: [
         InkWell(
           onTap: widget.onTapped,
           child: Container(
-            height: widget.height,
-            width: widget.width,
+            height: SizeConfig.screenHeight * 0.24,
+            width: SizeConfig.screenWidth * 0.44,
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(20.0),
@@ -80,9 +82,19 @@ class _BarterListItemState extends State<BarterListItem> {
                         Text(
                           widget.itemName,
                           overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: SizeConfig.textScaleFactor * 12.5,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                         Spacer(),
-                        Text(widget.itemPrice),
+                        Text(
+                          widget.itemPrice,
+                          style: TextStyle(
+                            fontSize: SizeConfig.textScaleFactor * 12.4,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ],
                     ),
                   ),
