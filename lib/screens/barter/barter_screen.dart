@@ -719,7 +719,13 @@ class _BarterScreenState extends State<BarterScreen> {
                 _requestedCash != null
                     ? Stack(
                         children: [
-                          _buildCashItem(_requestedCash!),
+                          InkWell(
+                              onTap: () {
+                                if (_barterRecord!.dealStatus != 'sold') {
+                                  _showAddCashDialog('participant');
+                                }
+                              },
+                              child: _buildCashItem(_requestedCash!)),
                           Visibility(
                             child: Positioned(
                               top: 8.0,
@@ -817,7 +823,13 @@ class _BarterScreenState extends State<BarterScreen> {
                 _offeredCash != null
                     ? Stack(
                         children: [
-                          _buildCashItem(_offeredCash!),
+                          InkWell(
+                              onTap: () {
+                                if (_barterRecord!.dealStatus != 'sold') {
+                                  _showAddCashDialog('user');
+                                }
+                              },
+                              child: _buildCashItem(_offeredCash!)),
                           Visibility(
                             child: Positioned(
                               top: 8.0,
@@ -1007,8 +1019,12 @@ class _BarterScreenState extends State<BarterScreen> {
                                   Visibility(
                                     visible: _requestedCash != null,
                                     child: InkWell(
-                                      onTap: () =>
-                                          _showAddCashDialog('participant'),
+                                      onTap: () {
+                                        if (_barterRecord!.dealStatus !=
+                                            'sold') {
+                                          _showAddCashDialog('participant');
+                                        }
+                                      },
                                       child: Container(
                                         decoration: BoxDecoration(
                                           border: Border.all(
@@ -1242,7 +1258,7 @@ class _BarterScreenState extends State<BarterScreen> {
             ? widget.fromOtherUser
                 ? 'You are about to accept this offer\nDo you want to continue?'
                 : 'You are about to submit this barter\nDo you want to continue?'
-            : 'You are about to mark this item as sold\nDo you want to continue?',
+            : 'You are about to mark this item as sold.\nThis closes the transaction and cannot be reversed.\nIf there are any disputes after the transaction is closed, there is \'Dispute\' button at the barter screen.\nDo you want to continue?',
         title: 'Warning',
         buttonText: 'Yes',
         secondButtonText: 'No',

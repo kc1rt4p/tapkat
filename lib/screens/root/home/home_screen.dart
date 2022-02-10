@@ -375,12 +375,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  _onLikeTapped(ProductModel product) {
-    _productBloc.add(
-      AddLike(product),
-    );
-  }
-
   _onSearchSubmitted(String? val) {
     if (val == null || val.isEmpty) return;
 
