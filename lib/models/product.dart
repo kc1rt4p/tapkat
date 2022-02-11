@@ -17,6 +17,7 @@ class ProductModel {
   AddressModel? address;
   num? rating;
   String? imgUrl;
+  String? status;
 
   ProductModel({
     this.productid,
@@ -34,6 +35,7 @@ class ProductModel {
     this.rating,
     this.media,
     this.imgUrl,
+    this.status,
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
@@ -61,6 +63,7 @@ class ProductModel {
               .toList()
           : [],
       imgUrl: json['image_url'] as String?,
+      status: json['status'] as String?,
     );
   }
 

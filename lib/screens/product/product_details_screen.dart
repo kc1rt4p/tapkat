@@ -120,6 +120,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   Expanded(
                     child: Container(
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Container(
                             color: Colors.grey,
@@ -201,16 +202,42 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                   children: [
                                     Container(
                                       margin: EdgeInsets.only(bottom: 16.0),
-                                      child: Text(
-                                        _product != null &&
-                                                _product!
-                                                    .productname!.isNotEmpty
-                                            ? _product!.productname!
-                                            : '',
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: Style.subtitle1
-                                            .copyWith(color: Colors.black),
+                                      child: Row(
+                                        children: [
+                                          Expanded(
+                                            child: Text(
+                                              _product != null &&
+                                                      _product!.productname!
+                                                          .isNotEmpty
+                                                  ? _product!.productname!
+                                                  : '',
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: Style.subtitle1.copyWith(
+                                                  color: Colors.black,
+                                                  fontSize: SizeConfig
+                                                          .textScaleFactor *
+                                                      18),
+                                            ),
+                                          ),
+                                          Text(
+                                            '(${_product != null && _product!.status != null ? _product!.status!.toUpperCase() : 'AVAILABLE'})',
+                                            style: Style.fieldText.copyWith(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize:
+                                                  SizeConfig.textScaleFactor *
+                                                      15,
+                                              color: _product != null &&
+                                                      _product!.status !=
+                                                          null &&
+                                                      _product!.status!
+                                                              .toLowerCase() ==
+                                                          'available'
+                                                  ? Colors.green.shade400
+                                                  : Colors.red.shade400,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ), // Item Description
                                     Container(
@@ -227,7 +254,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                               style: TextStyle(
                                                 color: kBackgroundColor,
                                                 fontFamily: 'Poppins',
-                                                fontSize: 20.0,
+                                                fontSize:
+                                                    SizeConfig.textScaleFactor *
+                                                        18,
                                                 fontWeight: FontWeight.w500,
                                               ),
                                             ),

@@ -231,7 +231,6 @@ class _ProductAddScreenState extends State<ProductAddScreen> {
   }
 
   _loadUserLocation() async {
-    bool serviceEnabled = false;
     if (await Permission.location.isDenied) return;
     if (!(await geoLocator.GeolocatorPlatform.instance
         .isLocationServiceEnabled())) return;
