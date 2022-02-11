@@ -30,46 +30,59 @@ class _CustomSearchBarState extends State<CustomSearchBar> {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(vertical: 10.0),
-      child: Container(
-        margin: widget.margin ??
-            EdgeInsets.symmetric(vertical: 8.0, horizontal: 20.0),
-        padding: EdgeInsets.symmetric(horizontal: 16.0),
-        width: double.infinity,
-        decoration: BoxDecoration(
-          color: widget.backgroundColor ?? Colors.white,
-          borderRadius: BorderRadius.circular(15.0),
-        ),
-        child: Row(
-          children: [
-            Icon(
-              Icons.search,
-              color: kBackgroundColor,
-            ),
-            SizedBox(width: 10.0),
-            Expanded(
-              child: TextFormField(
-                controller: widget.controller,
-                onEditingComplete: widget.onCompleted,
-                onFieldSubmitted: widget.onSubmitted,
-                decoration: InputDecoration(
-                  border: InputBorder.none,
-                  hintText: 'What are you looking for?',
-                ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Container(
+              margin: widget.margin ??
+                  EdgeInsets.symmetric(vertical: 8.0, horizontal: 20.0),
+              padding: EdgeInsets.symmetric(horizontal: 16.0),
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: widget.backgroundColor ?? Colors.white,
+                borderRadius: BorderRadius.circular(15.0),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: widget.controller,
+                      onEditingComplete: widget.onCompleted,
+                      onFieldSubmitted: widget.onSubmitted,
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                        hintText: 'What are you looking for?',
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 10.0),
+                  GestureDetector(
+                    onTap: widget.onSubmitted != null
+                        ? () {
+                            widget.onSubmitted!(widget.controller.text.trim());
+                            widget.controller.clearComposing();
+                          }
+                        : null,
+                    child: Icon(
+                      Icons.search,
+                      color: kBackgroundColor,
+                    ),
+                  ),
+                  Visibility(
+                    visible: widget.onPinTapped != null,
+                    child: GestureDetector(
+                      onTap: widget.onPinTapped,
+                      child: Icon(
+                        Icons.location_pin,
+                        color: kBackgroundColor,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-            SizedBox(width: 10.0),
-            Visibility(
-              visible: widget.onPinTapped != null,
-              child: GestureDetector(
-                onTap: widget.onPinTapped,
-                child: Icon(
-                  Icons.location_pin,
-                  color: kBackgroundColor,
-                ),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
