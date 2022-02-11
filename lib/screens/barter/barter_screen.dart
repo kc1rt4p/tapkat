@@ -254,6 +254,10 @@ class _BarterScreenState extends State<BarterScreen> {
 
               _barterProductsStream = state.barterProductsStream.listen((list) {
                 if (list.isNotEmpty) {
+                  wants.clear();
+                  offers.clear();
+                  origOffers.clear();
+                  origWants.clear();
                   list.forEach((bProduct) {
                     final _prod = ProductModel.fromJson(bProduct.toJson());
                     if (bProduct.productId!.contains('cash')) {
@@ -306,7 +310,6 @@ class _BarterScreenState extends State<BarterScreen> {
               });
 
               _barterStreamSub = state.barterStream.listen((barterRecord) {
-                print('barter record from stream: ${barterRecord.toJson()}');
                 setState(() {
                   _barterRecord = barterRecord;
                   if (_barterId == null) {
@@ -1337,6 +1340,9 @@ class _BarterScreenState extends State<BarterScreen> {
         if (widget.fromOtherUser)
           _barterBloc
               .add(UpdateBarterStatus(_barterRecord!.barterId!, 'accepted'));
+        else
+          _barterBloc
+              .add(UpdateBarterStatus(_barterRecord!.barterId!, 'submitted'));
         break;
       case 'accepted':
         if (widget.fromOtherUser)
