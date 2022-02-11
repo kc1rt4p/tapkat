@@ -493,30 +493,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
           height: 115.0,
           width: 115.0,
         ),
-        Positioned(
-          bottom: 0,
-          right: 10,
-          child: InkWell(
-            onTap: _onPhotoTapped,
-            child: Container(
-              decoration: BoxDecoration(
-                color: kBackgroundColor,
-                borderRadius: BorderRadius.circular(50.0),
-                // border: Border.all(color: Colors.black45),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black,
-                    offset: Offset(0, 0),
-                    blurRadius: 3.0,
-                  ),
-                ],
-              ),
-              height: 30.0,
-              width: 30.0,
-              child: Icon(
-                Icons.photo_camera,
-                color: Colors.white,
-                size: 20.0,
+        Visibility(
+          visible: editProfile,
+          child: Positioned(
+            bottom: 0,
+            right: 10,
+            child: InkWell(
+              onTap: _onPhotoTapped,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: kBackgroundColor,
+                  borderRadius: BorderRadius.circular(50.0),
+                  // border: Border.all(color: Colors.black45),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black,
+                      offset: Offset(0, 0),
+                      blurRadius: 3.0,
+                    ),
+                  ],
+                ),
+                height: 30.0,
+                width: 30.0,
+                child: Icon(
+                  Icons.photo_camera,
+                  color: Colors.white,
+                  size: 20.0,
+                ),
               ),
             ),
           ),
@@ -575,7 +578,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (p != null && p.placeId != null) displayPrediction(p);
   }
 
-  _onPhotoTapped() {
-    //
+  _onPhotoTapped() async {
+    final selectedMedia = await selectMediaWithSourceBottomSheet(
+      context: context,
+      allowPhoto: true,
+    );
+
+    if (selectedMedia != null &&
+        validateFileFormat(selectedMedia.storagePath, context)) {
+      setState(() {
+        _selectedMedia = selectedMedia;
+      });
+    }
   }
 }

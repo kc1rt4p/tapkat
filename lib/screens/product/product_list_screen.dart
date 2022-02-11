@@ -11,6 +11,7 @@ import 'package:tapkat/schemas/user_likes_record.dart';
 import 'package:tapkat/screens/product/bloc/product_bloc.dart';
 import 'package:tapkat/screens/product/product_add_screen.dart';
 import 'package:tapkat/screens/product/product_details_screen.dart';
+import 'package:tapkat/screens/search/search_result_screen.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/utilities/style.dart';
@@ -49,6 +50,8 @@ class _ProductListScreenState extends State<ProductListScreen> {
   int currentPage = 0;
 
   List<ProductModel> indicators = [];
+
+  final _keywordTextController = TextEditingController();
 
   LatLng? googleMapsCenter;
   late GoogleMapController googleMapsController;
@@ -128,8 +131,9 @@ class _ProductListScreenState extends State<ProductListScreen> {
                     Expanded(
                       child: CustomSearchBar(
                         margin: EdgeInsets.symmetric(horizontal: 20.0),
-                        controller: TextEditingController(),
+                        controller: _keywordTextController,
                         backgroundColor: Color(0xFF005F73).withOpacity(0.3),
+                        onSubmitted: (val) => _onSearchSubmitted(val),
                       ),
                     ),
                     Visibility(
@@ -305,6 +309,21 @@ class _ProductListScreenState extends State<ProductListScreen> {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  _onSearchSubmitted(String? val) {
+    if (val == null || val.isEmpty) return;
+
+    _keywordTextController.clear();
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SearchResultScreen(
+          keyword: val,
         ),
       ),
     );

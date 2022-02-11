@@ -8,6 +8,7 @@ import 'package:tapkat/schemas/user_likes_record.dart';
 import 'package:tapkat/screens/product/bloc/product_bloc.dart';
 import 'package:tapkat/screens/product/product_details_screen.dart';
 import 'package:tapkat/screens/root/wish_list/bloc/wish_list_bloc.dart';
+import 'package:tapkat/screens/search/search_result_screen.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/utilities/style.dart';
@@ -27,6 +28,7 @@ class _WishListScreenState extends State<WishListScreen> {
   User? _user;
   final _wishListBloc = WishListBloc();
   final _productBloc = ProductBloc();
+  final _keywordTextController = TextEditingController();
 
   bool _loading = true;
 
@@ -81,8 +83,9 @@ class _WishListScreenState extends State<WishListScreen> {
                 ),
                 CustomSearchBar(
                   margin: EdgeInsets.symmetric(horizontal: 20.0),
-                  controller: TextEditingController(),
+                  controller: _keywordTextController,
                   backgroundColor: Color(0xFF005F73).withOpacity(0.3),
+                  onSubmitted: (val) => _onSearchSubmitted(val),
                 ),
                 Container(
                   margin: EdgeInsets.symmetric(vertical: 8.0),
@@ -242,6 +245,21 @@ class _WishListScreenState extends State<WishListScreen> {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  _onSearchSubmitted(String? val) {
+    if (val == null || val.isEmpty) return;
+
+    _keywordTextController.clear();
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SearchResultScreen(
+          keyword: val,
         ),
       ),
     );
