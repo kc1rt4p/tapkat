@@ -8,8 +8,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_google_places/flutter_google_places.dart';
 import 'package:flutter_progress_hud/flutter_progress_hud.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:geocoding/geocoding.dart' as geoCoding;
+import 'package:geolocator/geolocator.dart' as geoLocator;
 import 'package:google_api_headers/google_api_headers.dart';
 import 'package:google_maps_webservice/places.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
 import 'package:tapkat/models/location.dart';
 import 'package:tapkat/models/request/add_product_request.dart';
@@ -54,11 +57,14 @@ class _ProductAddScreenState extends State<ProductAddScreen> {
   User? _user;
   int _currentCarouselIndex = 0;
   final _carouselController = CarouselController();
+  geoCoding.Placemark? _currentUserLoc;
+  geoLocator.Position? _currentUserPosition;
 
   @override
   void initState() {
     _authBloc = BlocProvider.of<AuthBloc>(context);
     _authBloc.add(GetCurrentuser());
+    _loadUserLocation();
     super.initState();
   }
 
@@ -224,6 +230,25 @@ class _ProductAddScreenState extends State<ProductAddScreen> {
     );
   }
 
+  _loadUserLocation() async {
+    bool serviceEnabled = false;
+    if (await Permission.location.isDenied) return;
+    if (!(await geoLocator.GeolocatorPlatform.instance
+        .isLocationServiceEnabled())) return;
+    final userLoc = await geoLocator.Geolocator.getCurrentPosition();
+    List<geoCoding.Placemark> placemarks = await geoCoding
+        .placemarkFromCoordinates(userLoc.latitude, userLoc.longitude);
+    if (placemarks.isNotEmpty) {
+      placemarks.forEach((placemark) => print(placemark.toJson()));
+      setState(() {
+        _currentUserLoc = placemarks.first;
+        _currentUserPosition = userLoc;
+        _locationTextController.text =
+            '${_currentUserLoc!.street ?? ''}, ${_currentUserLoc!.locality ?? ''}, ${_currentUserLoc!.subAdministrativeArea ?? ''}, ${_currentUserLoc!.country ?? ''}';
+      });
+    }
+  }
+
   _onSaveTapped() {
     if (_selectedMedia.length < 1) {
       setState(() {
@@ -233,7 +258,7 @@ class _ProductAddScreenState extends State<ProductAddScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     if (_selectedLocation!.addressComponents.isNotEmpty) {
-      final newProduct = ProductRequestModel(
+      var newProduct = ProductRequestModel(
         userid: _user!.uid,
         productname: _nameTextController.text.trim(),
         productdesc: _descTextController.text.trim(),
@@ -254,6 +279,32 @@ class _ProductAddScreenState extends State<ProductAddScreen> {
             : null,
         media_type: 'image',
       );
+
+      if (_selectedLocation != null) {
+        newProduct.address = _selectedLocation!.addressComponents[0] != null
+            ? _selectedLocation!.addressComponents[0]!.longName
+            : null;
+        newProduct.city = _selectedLocation!.addressComponents[1] != null
+            ? _selectedLocation!.addressComponents[1]!.longName
+            : null;
+        newProduct.country = _selectedLocation!.addressComponents.last != null
+            ? _selectedLocation!.addressComponents.last!.longName
+            : null;
+        newProduct.location = LocationModel(
+          longitude: _selectedLocation!.geometry!.location.lng,
+          latitude: _selectedLocation!.geometry!.location.lat,
+        );
+      } else {
+        if (_currentUserLoc != null && _currentUserPosition != null) {
+          newProduct.address = _currentUserLoc!.street ?? '';
+          newProduct.city = _currentUserLoc!.locality ?? '';
+          newProduct.country = _currentUserLoc!.country ?? '';
+          newProduct.location = LocationModel(
+            longitude: _currentUserPosition!.longitude,
+            latitude: _currentUserPosition!.latitude,
+          );
+        }
+      }
 
       _productBloc.add(SaveProduct(
         media: _selectedMedia,
