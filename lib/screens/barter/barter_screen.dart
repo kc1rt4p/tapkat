@@ -53,6 +53,7 @@ class _BarterScreenState extends State<BarterScreen> {
   User? _currentUser;
   BarterRecordModel? _barterRecord;
   StreamSubscription<BarterRecordModel>? _barterStreamSub;
+  StreamSubscription<List<BarterProductModel>>? _barterProductsStream;
   String? _barterId;
   num? _origRequestedCash;
   num? _requestedCash;
@@ -249,72 +250,61 @@ class _BarterScreenState extends State<BarterScreen> {
               setState(() {
                 participantItems = state.user2Products;
                 userItems = state.userProducts;
-                state.barterProducts.forEach((bProduct) {
-                  final _prod = ProductModel.fromJson(bProduct.toJson());
-                  if (bProduct.productId!.contains('cash')) {
-                    if (!widget.fromOtherUser) {
-                      if (bProduct.userId == _currentUser!.uid) {
-                        _origOfferedCash = bProduct.price;
-                        _offeredCash = bProduct.price;
-                        setState(() {
-                          _offeredCashModel = bProduct;
-                        });
-                      } else {
-                        setState(() {
-                          _requestedCashModel = bProduct;
-                        });
-                        _requestedCash = bProduct.price;
-                        _origRequestedCash = bProduct.price;
-                      }
-                    } else {
-                      if (bProduct.userId == _currentUser!.uid) {
-                        _requestedCash = bProduct.price;
-                        _origRequestedCash = bProduct.price;
-                        _requestedCashModel = bProduct;
-                      } else {
-                        _offeredCashModel = bProduct;
-                        _origOfferedCash = bProduct.price;
-                        _offeredCash = bProduct.price;
-                      }
-                    }
-                    // if (bProduct.userId == _currentUser!.uid) {
-                    //   if (!widget.fromOtherUser) {
-                    //     _requestedCash = bProduct.price;
-                    //     _origRequestedCash = bProduct.price;
-                    //   } else {
-                    //     _origOfferedCash = bProduct.price;
-                    //     _offeredCash = bProduct.price;
-                    //   }
-                    // } else {
-                    //   if (widget.fromOtherUser) {
-                    //     _offeredCash = bProduct.price;
-                    //     _origOfferedCash = bProduct.price;
-                    //   } else {
-                    //     _requestedCash = bProduct.price;
-                    //     _origRequestedCash = bProduct.price;
-                    //   }
-                    // }
-                  } else {
-                    if (_prod.userid == _currentUser!.uid) {
-                      if (widget.fromOtherUser) {
-                        wants.add(bProduct);
-                        origWants.add(bProduct);
-                      } else {
-                        offers.add(bProduct);
-                        origOffers.add(bProduct);
-                      }
-                    } else {
-                      if (widget.fromOtherUser) {
-                        offers.add(bProduct);
-                        origOffers.add(bProduct);
-                      } else {
-                        wants.add(bProduct);
-                        origWants.add(bProduct);
-                      }
-                    }
-                  }
-                });
               });
+
+              _barterProductsStream = state.barterProductsStream.listen((list) {
+                if (list.isNotEmpty) {
+                  list.forEach((bProduct) {
+                    final _prod = ProductModel.fromJson(bProduct.toJson());
+                    if (bProduct.productId!.contains('cash')) {
+                      if (!widget.fromOtherUser) {
+                        if (bProduct.userId == _currentUser!.uid) {
+                          _origOfferedCash = bProduct.price;
+                          _offeredCash = bProduct.price;
+                          setState(() {
+                            _offeredCashModel = bProduct;
+                          });
+                        } else {
+                          setState(() {
+                            _requestedCashModel = bProduct;
+                          });
+                          _requestedCash = bProduct.price;
+                          _origRequestedCash = bProduct.price;
+                        }
+                      } else {
+                        if (bProduct.userId == _currentUser!.uid) {
+                          _requestedCash = bProduct.price;
+                          _origRequestedCash = bProduct.price;
+                          _requestedCashModel = bProduct;
+                        } else {
+                          _offeredCashModel = bProduct;
+                          _origOfferedCash = bProduct.price;
+                          _offeredCash = bProduct.price;
+                        }
+                      }
+                    } else {
+                      if (_prod.userid == _currentUser!.uid) {
+                        if (widget.fromOtherUser) {
+                          wants.add(bProduct);
+                          origWants.add(bProduct);
+                        } else {
+                          offers.add(bProduct);
+                          origOffers.add(bProduct);
+                        }
+                      } else {
+                        if (widget.fromOtherUser) {
+                          offers.add(bProduct);
+                          origOffers.add(bProduct);
+                        } else {
+                          wants.add(bProduct);
+                          origWants.add(bProduct);
+                        }
+                      }
+                    }
+                  });
+                }
+              });
+
               _barterStreamSub = state.barterStream.listen((barterRecord) {
                 print('barter record from stream: ${barterRecord.toJson()}');
                 setState(() {

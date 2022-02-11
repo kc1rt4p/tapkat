@@ -356,9 +356,6 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                             i != 5 ? 5.0 : 0.0),
                                                     child: GestureDetector(
                                                       onTap: () {
-                                                        print('i: $i');
-                                                        print(
-                                                            'rating product...');
                                                         _productBloc.add(
                                                             AddRating(_product!,
                                                                 i + 1));
@@ -424,6 +421,8 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                                 ),
                                                                 builder: (context,
                                                                     snapshot) {
+                                                                  print(
+                                                                      '=== snapshot= ${snapshot.data}');
                                                                   bool liked =
                                                                       false;
                                                                   UserLikesRecord?
@@ -442,6 +441,8 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                                           null) {
                                                                         liked = record.liked ??
                                                                             false;
+                                                                        print(
+                                                                            '==== $record');
                                                                       }
                                                                     }
                                                                   }

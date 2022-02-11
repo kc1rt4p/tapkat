@@ -225,13 +225,13 @@ class ProductRepository {
     required String userId,
     required int like,
   }) async {
+    // final _productRef = FirebaseFirestore.instance.collection('user_likes');
     final response = await _apiService.post(
       url: 'products/update/${productRequest.productid}',
       body: {
         'psk': psk,
-        ...productRequest.toJson(updating: true),
-        // 'productid': productRequest.productid,
-        // 'userid': productRequest.userid,
+        'productid': productRequest.productid,
+        'userid': productRequest.userid,
         'like': like,
       },
     );

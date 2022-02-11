@@ -17,16 +17,19 @@ class BarterRepository {
   }
 
   Future<List<BarterProductModel>> getBarterProducts(String barterId) async {
-    final docSnapshot = await barterRef.doc(barterId).get();
-    final barterRecord = BarterRecordModel.fromJson(docSnapshot.data()!);
-    final user1id = barterRecord.userid1!;
-
     final q = await barterRef.doc(barterId).collection('products').get();
     if (q.docs.isEmpty) return [];
 
     return q.docs
         .map((snapshot) => BarterProductModel.fromJson(snapshot.data()))
         .toList();
+  }
+
+  Stream<List<BarterProductModel>> streamBarterProducts(String barterId) {
+    return barterRef.doc(barterId).collection('products').snapshots().map(
+        (query) => query.docs
+            .map((doc) => BarterProductModel.fromJson(doc.data()))
+            .toList());
   }
 
   Future<BarterRecordModel?> getBarterRecord(String barterId) async {

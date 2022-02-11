@@ -324,20 +324,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                                     .mediaPrimary!
                                                                     .url!
                                                                 : '',
-                                                            onTapped: () =>
-                                                                Navigator.push(
-                                                              context,
-                                                              MaterialPageRoute(
-                                                                builder:
-                                                                    (context) =>
-                                                                        ProductDetailsScreen(
-                                                                  ownItem: true,
-                                                                  productId:
-                                                                      product.productid ??
-                                                                          '',
+                                                            onTapped: () async {
+                                                              await Navigator
+                                                                  .push(
+                                                                context,
+                                                                MaterialPageRoute(
+                                                                  builder:
+                                                                      (context) =>
+                                                                          ProductDetailsScreen(
+                                                                    ownItem:
+                                                                        true,
+                                                                    productId:
+                                                                        product.productid ??
+                                                                            '',
+                                                                  ),
                                                                 ),
-                                                              ),
-                                                            ),
+                                                              );
+
+                                                              _profileBloc.add(
+                                                                  InitializeProfileScreen());
+                                                            },
                                                           ),
                                                         ),
                                                       )

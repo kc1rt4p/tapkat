@@ -81,45 +81,6 @@ class InitializeBarter extends BarterEvent {
   final BarterRecordModel barterData;
 
   InitializeBarter(this.barterData);
-  // final String userid1;
-  // final String userid2;
-  // final bool user1Accepted;
-  // final bool user2Accepted;
-  // final String u1P1Id;
-  // final String u1P1Name;
-  // final double u1P1Price;
-  // final String u2P1Id;
-  // final String u2P1Name;
-  // final double u2P1Price;
-  // final String proposedBy;
-  // final DateTime lastProposedDate;
-  // final String dealStatus;
-  // final DateTime dealDate;
-  // final String u1P1Image;
-  // final String u2P1Image;
-  // final String barterid;
-  // final int barterNo;
-
-  // InitializeBarter({
-  //   required this.userid1,
-  //   required this.userid2,
-  //   required this.user1Accepted,
-  //   required this.user2Accepted,
-  //   required this.u1P1Id,
-  //   required this.u1P1Name,
-  //   required this.u1P1Price,
-  //   required this.u2P1Id,
-  //   required this.u2P1Name,
-  //   required this.u2P1Price,
-  //   required this.proposedBy,
-  //   required this.lastProposedDate,
-  //   required this.dealStatus,
-  //   required this.dealDate,
-  //   required this.u1P1Image,
-  //   required this.u2P1Image,
-  //   required this.barterid,
-  //   required this.barterNo,
-  // });
 }
 
 class UpdateBarterStatus extends BarterEvent {

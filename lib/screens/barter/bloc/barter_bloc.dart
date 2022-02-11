@@ -70,7 +70,8 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
                     _barterRepository.streamBarter(event.barterData.barterId!),
                 userProducts: userProducts,
                 user2Products: user2Products,
-                barterProducts: barterProducts,
+                barterProductsStream: _barterRepository
+                    .streamBarterProducts(event.barterData.barterId!),
               ));
             } else {
               print('EXISTING BARTER');
@@ -162,7 +163,8 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
                   _barterRepository.streamBarter(event.barterRecord.barterId!),
               userProducts: userProducts,
               user2Products: user2Products,
-              barterProducts: barterProducts,
+              barterProductsStream: _barterRepository
+                  .streamBarterProducts(event.barterRecord.barterId!),
             ));
           }
 
