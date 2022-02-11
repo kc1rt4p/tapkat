@@ -1,9 +1,13 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_progress_hud/flutter_progress_hud.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:tapkat/models/product.dart';
+import 'package:tapkat/models/user.dart';
 import 'package:tapkat/screens/product/bloc/product_bloc.dart';
 import 'package:tapkat/screens/product/product_details_screen.dart';
+import 'package:tapkat/screens/store/bloc/store_bloc.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/utilities/style.dart';
@@ -23,6 +27,7 @@ class StoreScreen extends StatefulWidget {
 
 class _StoreScreenState extends State<StoreScreen> {
   final _productBloc = ProductBloc();
+  final _storeBloc = StoreBloc();
   List<ProductModel> _list = [];
 
   int currentPage = 0;
@@ -30,10 +35,13 @@ class _StoreScreenState extends State<StoreScreen> {
   List<ProductModel> indicators = [];
 
   String storeOwnerName = '';
+  UserModel? _storeOwner;
+
+  bool _isLoading = false;
 
   @override
   void initState() {
-    _productBloc.add(GetFirstProducts('user', userId: widget.userId));
+    _storeBloc.add(InitializeStoreScreen(widget.userId));
     storeOwnerName = widget.userId;
     storeOwnerName = storeOwnerName.length > 10
         ? storeOwnerName.substring(0, 7) + '...'
@@ -54,42 +62,125 @@ class _StoreScreenState extends State<StoreScreen> {
               CustomAppBar(
                 label: '$storeOwnerName\'s Store',
               ),
+              _storeOwner != null
+                  ? Container(
+                      padding: EdgeInsets.symmetric(
+                        vertical: 8.0,
+                        horizontal: 10.0,
+                      ),
+                      child: Row(
+                        children: [
+                          _buildPhoto(),
+                          SizedBox(width: 10.0),
+                          Expanded(
+                            child: Container(
+                              margin: EdgeInsets.symmetric(
+                                vertical: 10.0,
+                              ),
+                              width: double.infinity,
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  _buildInfoItem(
+                                    label: 'Store Owner',
+                                    controller: TextEditingController(
+                                        text: _storeOwner!.userid ?? ''),
+                                  ),
+                                  _buildInfoItem(
+                                    label: 'Email',
+                                    controller: TextEditingController(
+                                        text: _storeOwner!.email ?? ''),
+                                  ),
+                                  _buildInfoItem(
+                                    label: 'Phone number',
+                                    controller: TextEditingController(
+                                        text: _storeOwner!.mobilenum ?? ''),
+                                  ),
+                                  _buildInfoItem(
+                                    label: 'Location',
+                                    controller: TextEditingController(
+                                        text:
+                                            _storeOwner!.address ?? 'Unknown'),
+                                    suffix: Icon(
+                                      FontAwesomeIcons.mapMarked,
+                                      color: kBackgroundColor,
+                                      size: 12.0,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : Container(),
               CustomSearchBar(
                 margin: EdgeInsets.symmetric(horizontal: 20.0),
                 controller: TextEditingController(),
                 backgroundColor: Color(0xFF005F73).withOpacity(0.3),
               ),
               Expanded(
-                child: BlocListener(
-                  bloc: _productBloc,
-                  listener: (context, state) {
-                    if (state is ProductLoading) {
-                      ProgressHUD.of(context)!.show();
-                    } else {
-                      ProgressHUD.of(context)!.dismiss();
-                    }
+                child: MultiBlocListener(
+                  listeners: [
+                    BlocListener(
+                      bloc: _productBloc,
+                      listener: (context, state) {
+                        if (state is ProductLoading) {
+                          ProgressHUD.of(context)!.show();
+                        } else {
+                          ProgressHUD.of(context)!.dismiss();
+                        }
 
-                    if (state is GetFirstProductsSuccess) {
-                      setState(() {
-                        currentPage = 0;
-                        _list = state.list;
-                        indicators.clear();
-                        indicators.add(_list.last);
-                      });
-                    }
+                        if (state is GetFirstProductsSuccess) {
+                          setState(() {
+                            currentPage = 0;
+                            _list = state.list;
+                            indicators.clear();
+                            if (_list.isNotEmpty) {
+                              indicators.add(_list.last);
+                            }
+                          });
+                        }
 
-                    if (state is GetProductsSuccess) {
-                      setState(() {
-                        _list = state.list;
+                        if (state is GetProductsSuccess) {
+                          setState(() {
+                            _list = state.list;
 
-                        indicators.add(_list.last);
-                      });
-                      print('==== CURRENT PAGE: $currentPage');
+                            indicators.add(_list.last);
+                          });
 
-                      indicators.asMap().forEach((key, value) =>
-                          print('==== page $key: ${value.productid}'));
-                    }
-                  },
+                          indicators.asMap().forEach((key, value) =>
+                              print('==== page : ${value.productid}'));
+                        }
+                      },
+                    ),
+                    BlocListener(
+                      bloc: _storeBloc,
+                      listener: (context, state) {
+                        if (state is LoadingStore) {
+                          setState(() {
+                            _isLoading = true;
+                          });
+                        } else {
+                          setState(() {
+                            _isLoading = false;
+                          });
+                        }
+
+                        if (state is InitializedStoreScreen) {
+                          print(state.user.toJson());
+                          setState(() {
+                            _storeOwner = state.user;
+                            storeOwnerName = _storeOwner!.userid!;
+                          });
+                          _productBloc.add(
+                              GetFirstProducts('user', userId: widget.userId));
+                        }
+                      },
+                    ),
+                  ],
                   child: Container(
                     child: _list.isNotEmpty
                         ? GridView.count(
@@ -148,6 +239,46 @@ class _StoreScreenState extends State<StoreScreen> {
                   ),
                 ),
               ),
+              Container(
+                width: double.infinity,
+                padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 5.0),
+                height: SizeConfig.screenHeight * .06,
+                color: kBackgroundColor,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: InkWell(
+                        onTap: _onPrevTapped,
+                        child: Container(
+                          child: Center(
+                              child: Icon(
+                            Icons.arrow_left,
+                            size: 40.0,
+                            color:
+                                currentPage == 0 ? Colors.grey : Colors.white,
+                          )),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: InkWell(
+                        onTap: _onNextTapped,
+                        child: Container(
+                          child: Center(
+                            child: Icon(
+                              Icons.arrow_right,
+                              size: 40.0,
+                              color: _list.isEmpty ? Colors.grey : Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
@@ -189,5 +320,63 @@ class _StoreScreenState extends State<StoreScreen> {
     setState(() {
       currentPage -= 1;
     });
+  }
+
+  Container _buildInfoItem({
+    required String label,
+    required TextEditingController controller,
+    Widget? suffix,
+    Function()? onTap,
+  }) {
+    return Container(
+      margin: EdgeInsets.only(bottom: 3.0),
+      padding: EdgeInsets.symmetric(horizontal: 10.0),
+      child: Row(
+        children: [
+          Text(
+            label,
+            style: Style.fieldTitle.copyWith(
+                color: kBackgroundColor,
+                fontSize: SizeConfig.textScaleFactor * 11),
+          ),
+          Expanded(
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: Text(
+                controller.text,
+                style: Style.fieldText
+                    .copyWith(fontSize: SizeConfig.textScaleFactor * 12),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Stack _buildPhoto() {
+    return Stack(
+      children: [
+        Container(
+          padding: EdgeInsets.all(5.0),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(100.0),
+            image: DecorationImage(
+              image: _storeOwner != null &&
+                      (_storeOwner!.photo_url != null &&
+                          _storeOwner!.photo_url != '')
+                  ? CachedNetworkImageProvider(_storeOwner!.photo_url!)
+                  : AssetImage('assets/images/profile_placeholder.png')
+                      as ImageProvider<Object>,
+              scale: 1.0,
+              fit: BoxFit.cover,
+            ),
+          ),
+          height: SizeConfig.screenWidth * .24,
+          width: SizeConfig.screenWidth * .24,
+        ),
+      ],
+    );
   }
 }

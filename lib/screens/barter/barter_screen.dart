@@ -638,9 +638,11 @@ class _BarterScreenState extends State<BarterScreen> {
                 ),
               ),
               Visibility(
-                visible: _barterRecord!.dealStatus != 'sold' &&
-                    _barterRecord!.dealStatus != 'withdrawn' &&
-                    _barterRecord!.dealStatus != 'rejected',
+                visible: (_barterRecord!.dealStatus != 'sold' &&
+                        _barterRecord!.dealStatus != 'withdrawn' &&
+                        _barterRecord!.dealStatus != 'rejected') &&
+                    (_barterRecord!.dealStatus != 'accepted' &&
+                        !widget.fromOtherUser),
                 child: Expanded(
                   child: Container(
                     margin: EdgeInsets.only(right: 10.0),
@@ -1002,23 +1004,45 @@ class _BarterScreenState extends State<BarterScreen> {
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
                             Expanded(
-                              child: GridView.count(
-                                scrollDirection: Axis.horizontal,
-                                padding: EdgeInsets.symmetric(vertical: 2.0),
-                                mainAxisSpacing: 5.0,
-                                shrinkWrap: true,
-                                crossAxisCount: 1,
-                                children: [
-                                  Visibility(
-                                    visible: _requestedCash != null,
-                                    child: InkWell(
-                                      onTap: () {
-                                        if (_barterRecord!.dealStatus !=
-                                            'sold') {
-                                          _showAddCashDialog('participant');
-                                        }
-                                      },
-                                      child: Container(
+                              child: Directionality(
+                                textDirection: TextDirection.ltr,
+                                child: GridView.count(
+                                  scrollDirection: Axis.horizontal,
+                                  padding: EdgeInsets.symmetric(vertical: 2.0),
+                                  shrinkWrap: true,
+                                  crossAxisCount: 1,
+                                  children: [
+                                    Visibility(
+                                      visible: _requestedCash != null,
+                                      child: InkWell(
+                                        onTap: () {
+                                          if (_barterRecord!.dealStatus !=
+                                              'sold') {
+                                            _showAddCashDialog('participant');
+                                          }
+                                        },
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            border: Border.all(
+                                              color: kBackgroundColor,
+                                              width: 1.5,
+                                            ),
+                                            borderRadius:
+                                                BorderRadius.circular(8.0),
+                                            image: DecorationImage(
+                                              image: AssetImage(
+                                                  'assets/images/cash_icon.png'),
+                                              fit: BoxFit.cover,
+                                              colorFilter: ColorFilter.mode(
+                                                  kBackgroundColor,
+                                                  BlendMode.color),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    ...wants.map((want) {
+                                      return Container(
                                         decoration: BoxDecoration(
                                           border: Border.all(
                                             color: kBackgroundColor,
@@ -1027,38 +1051,18 @@ class _BarterScreenState extends State<BarterScreen> {
                                           borderRadius:
                                               BorderRadius.circular(8.0),
                                           image: DecorationImage(
-                                            image: AssetImage(
-                                                'assets/images/cash_icon.png'),
+                                            image: want.imgUrl!.isNotEmpty
+                                                ? NetworkImage(want.imgUrl!)
+                                                : AssetImage(
+                                                        'assets/images/image_placeholder.jpg')
+                                                    as ImageProvider<Object>,
                                             fit: BoxFit.cover,
-                                            colorFilter: ColorFilter.mode(
-                                                kBackgroundColor,
-                                                BlendMode.color),
                                           ),
                                         ),
-                                      ),
-                                    ),
-                                  ),
-                                  ...wants.map((want) {
-                                    return Container(
-                                      decoration: BoxDecoration(
-                                        border: Border.all(
-                                          color: kBackgroundColor,
-                                          width: 1.5,
-                                        ),
-                                        borderRadius:
-                                            BorderRadius.circular(8.0),
-                                        image: DecorationImage(
-                                          image: want.imgUrl!.isNotEmpty
-                                              ? NetworkImage(want.imgUrl!)
-                                              : AssetImage(
-                                                      'assets/images/image_placeholder.jpg')
-                                                  as ImageProvider<Object>,
-                                          fit: BoxFit.cover,
-                                        ),
-                                      ),
-                                    );
-                                  }).toList(),
-                                ],
+                                      );
+                                    }).toList(),
+                                  ],
+                                ),
                               ),
                             ),
                             SizedBox(height: 5.0),
@@ -1083,18 +1087,41 @@ class _BarterScreenState extends State<BarterScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Expanded(
-                              child: GridView.count(
-                                scrollDirection: Axis.horizontal,
-                                padding: EdgeInsets.symmetric(vertical: 2.0),
-                                mainAxisSpacing: 5.0,
-                                shrinkWrap: true,
-                                crossAxisCount: 1,
-                                children: [
-                                  Visibility(
-                                    visible: _offeredCash != null,
-                                    child: InkWell(
-                                      onTap: () => _showAddCashDialog('user'),
-                                      child: Container(
+                              child: Directionality(
+                                textDirection: TextDirection.rtl,
+                                child: GridView.count(
+                                  scrollDirection: Axis.horizontal,
+                                  padding: EdgeInsets.symmetric(vertical: 2.0),
+                                  mainAxisSpacing: 5.0,
+                                  shrinkWrap: true,
+                                  crossAxisCount: 1,
+                                  children: [
+                                    Visibility(
+                                      visible: _offeredCash != null,
+                                      child: InkWell(
+                                        onTap: () => _showAddCashDialog('user'),
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            border: Border.all(
+                                              color: kBackgroundColor,
+                                              width: 1.5,
+                                            ),
+                                            borderRadius:
+                                                BorderRadius.circular(8.0),
+                                            image: DecorationImage(
+                                              image: AssetImage(
+                                                  'assets/images/cash_icon.png'),
+                                              fit: BoxFit.cover,
+                                              colorFilter: ColorFilter.mode(
+                                                  kBackgroundColor,
+                                                  BlendMode.color),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    ...offers.map((offer) {
+                                      return Container(
                                         decoration: BoxDecoration(
                                           border: Border.all(
                                             color: kBackgroundColor,
@@ -1103,38 +1130,18 @@ class _BarterScreenState extends State<BarterScreen> {
                                           borderRadius:
                                               BorderRadius.circular(8.0),
                                           image: DecorationImage(
-                                            image: AssetImage(
-                                                'assets/images/cash_icon.png'),
+                                            image: offer.imgUrl!.isNotEmpty
+                                                ? NetworkImage(offer.imgUrl!)
+                                                : AssetImage(
+                                                        'assets/images/image_placeholder.jpg')
+                                                    as ImageProvider<Object>,
                                             fit: BoxFit.cover,
-                                            colorFilter: ColorFilter.mode(
-                                                kBackgroundColor,
-                                                BlendMode.color),
                                           ),
                                         ),
-                                      ),
-                                    ),
-                                  ),
-                                  ...offers.map((offer) {
-                                    return Container(
-                                      decoration: BoxDecoration(
-                                        border: Border.all(
-                                          color: kBackgroundColor,
-                                          width: 1.5,
-                                        ),
-                                        borderRadius:
-                                            BorderRadius.circular(8.0),
-                                        image: DecorationImage(
-                                          image: offer.imgUrl!.isNotEmpty
-                                              ? NetworkImage(offer.imgUrl!)
-                                              : AssetImage(
-                                                      'assets/images/image_placeholder.jpg')
-                                                  as ImageProvider<Object>,
-                                          fit: BoxFit.cover,
-                                        ),
-                                      ),
-                                    );
-                                  }).toList(),
-                                ],
+                                      );
+                                    }).toList(),
+                                  ],
+                                ),
                               ),
                             ),
                             SizedBox(height: 5.0),
