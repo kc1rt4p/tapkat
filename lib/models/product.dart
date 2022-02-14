@@ -18,6 +18,7 @@ class ProductModel {
   num? rating;
   String? imgUrl;
   String? status;
+  DateTime? updated_time;
 
   ProductModel({
     this.productid,
@@ -36,6 +37,7 @@ class ProductModel {
     this.media,
     this.imgUrl,
     this.status,
+    this.updated_time,
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
@@ -64,6 +66,8 @@ class ProductModel {
           : [],
       imgUrl: json['image_url'] as String?,
       status: json['status'] as String?,
+      updated_time:
+          json['updated_time'] != null ? json['updated_time'].toDate() : null,
     );
   }
 

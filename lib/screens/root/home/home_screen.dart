@@ -201,6 +201,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   imageUrl: product.mediaPrimary != null
                                       ? product.mediaPrimary!.url!
                                       : '',
+                                  datePosted: product.updated_time ?? null,
                                   onTapped: () async {
                                     await Navigator.push(
                                       context,
@@ -282,6 +283,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   imageUrl: product.mediaPrimary != null
                                       ? product.mediaPrimary!.url!
                                       : '',
+                                  datePosted: product.updated_time ?? null,
                                   onTapped: () async {
                                     await Navigator.push(
                                       context,
@@ -328,40 +330,48 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                       ),
-                      BarterList(
-                        loading: _loadingUserProducts,
-                        context: context,
-                        ownList: true,
-                        items: _myProductList.map((product) {
-                          return BarterListItem(
-                            hideLikeBtn: true,
-                            itemName: product.productname ?? '',
-                            itemPrice: product.price != null
-                                ? product.price!.toStringAsFixed(2)
-                                : '0',
-                            imageUrl: product.mediaPrimary != null
-                                ? product.mediaPrimary!.url!
-                                : '',
-                            onTapped: () async {
-                              await Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => ProductDetailsScreen(
-                                    productId: product.productid ?? '',
-                                    ownItem: true,
+                      Visibility(
+                        visible: _myProductList.isNotEmpty,
+                        child: BarterList(
+                          loading: _loadingUserProducts,
+                          context: context,
+                          ownList: true,
+                          items: _myProductList.map((product) {
+                            return BarterListItem(
+                              height: SizeConfig.screenHeight * 0.18,
+                              width: SizeConfig.screenWidth * 0.34,
+                              fontSize: SizeConfig.textScaleFactor * 10,
+                              hideLikeBtn: true,
+                              itemName: product.productname ?? '',
+                              datePosted: product.updated_time ?? null,
+                              itemPrice: product.price != null
+                                  ? product.price!.toStringAsFixed(2)
+                                  : '0',
+                              imageUrl: product.mediaPrimary != null
+                                  ? product.mediaPrimary!.url!
+                                  : '',
+                              onTapped: () async {
+                                await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => ProductDetailsScreen(
+                                      productId: product.productid ?? '',
+                                      ownItem: true,
+                                    ),
                                   ),
-                                ),
-                              );
+                                );
 
-                              _homeBloc.add(LoadUserList());
-                            },
-                          );
-                        }).toList(),
-                        label: 'Your Items',
-                        smallItems: true,
-                        removeMargin: true,
-                        onViewAllTapped: () =>
-                            BlocProvider.of<RootBloc>(context).add(MoveTab(3)),
+                                _homeBloc.add(LoadUserList());
+                              },
+                            );
+                          }).toList(),
+                          label: 'Your Items',
+                          smallItems: true,
+                          removeMargin: true,
+                          onViewAllTapped: () =>
+                              BlocProvider.of<RootBloc>(context)
+                                  .add(MoveTab(3)),
+                        ),
                       ),
                       SizedBox(height: 10.0),
                     ],

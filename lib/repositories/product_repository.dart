@@ -114,11 +114,11 @@ class ProductRepository {
         'sortBy': 'price',
         'sortdirection': listType == 'reco' ? 'ascending' : 'descending',
       },
-      params: userid != null
-          ? {
-              'userid': userid,
-            }
-          : null,
+      // params: userid != null
+      //     ? {
+      //         'userid': userid,
+      //       }
+      //     : null,
     );
 
     if (response.data['status'] != 'SUCCESS') return [];
