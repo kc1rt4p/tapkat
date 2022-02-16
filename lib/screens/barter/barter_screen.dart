@@ -1956,7 +1956,7 @@ class _BarterScreenState extends State<BarterScreen> {
       onTap: onTap,
       child: Container(
         height: SizeConfig.screenHeight * 0.235,
-        width: SizeConfig.screenWidth * 0.43,
+        width: SizeConfig.screenWidth * 0.40,
         decoration: BoxDecoration(
           color: kBackgroundColor,
           borderRadius: BorderRadius.circular(20.0),
@@ -1985,7 +1985,11 @@ class _BarterScreenState extends State<BarterScreen> {
     Function()? onTap,
   }) {
     return Padding(
-      padding: const EdgeInsets.only(top: 2, bottom: 2, right: 16.0),
+      padding: const EdgeInsets.only(
+        top: 2,
+        bottom: 2,
+        right: 16.0,
+      ),
       child: Stack(
         children: [
           BarterListItem(

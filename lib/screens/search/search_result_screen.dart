@@ -276,6 +276,8 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
       children: searchResults.map((product) {
         return Center(
           child: BarterListItem(
+            height: SizeConfig.screenHeight * 0.23,
+            width: SizeConfig.screenWidth * 0.42,
             itemName: product.productname ?? '',
             itemPrice: (product.currency ?? '') +
                 (product.price != null

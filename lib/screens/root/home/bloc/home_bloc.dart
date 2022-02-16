@@ -33,6 +33,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
           final recommendedList =
               await _productRepo.getFirstProducts('reco', _user!.uid);
           emit(LoadedRecommendedList(recommendedList));
+          add(LoadTrendingList());
         }
 
         if (event is LoadUserList) {
@@ -47,13 +48,12 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
           final trendingList =
               await _productRepo.getFirstProducts('demand', _user!.uid);
           emit(LoadedTrendingList(trendingList));
+          add(LoadUserList());
         }
 
         if (event is InitializeHomeScreen) {
           if (_user != null) {
             add(LoadRecommendedList());
-            add(LoadTrendingList());
-            add(LoadUserList());
           }
         }
       } catch (e) {

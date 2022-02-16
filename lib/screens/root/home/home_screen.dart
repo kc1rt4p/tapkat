@@ -338,7 +338,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ownList: true,
                           items: _myProductList.map((product) {
                             return BarterListItem(
-                              height: SizeConfig.screenHeight * 0.18,
+                              height: SizeConfig.screenHeight * 0.215,
                               width: SizeConfig.screenWidth * 0.34,
                               fontSize: SizeConfig.textScaleFactor * 10,
                               hideLikeBtn: true,
