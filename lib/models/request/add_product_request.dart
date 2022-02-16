@@ -16,6 +16,7 @@ class ProductRequestModel {
   String? category;
   String? image_url;
   String? media_type;
+  String? display_name;
   LocationModel? location;
   num? price;
   num? rating;
@@ -38,6 +39,7 @@ class ProductRequestModel {
     this.location,
     this.rating,
     this.price,
+    this.display_name,
   });
 
   factory ProductRequestModel.fromProduct(ProductModel product) {
@@ -59,6 +61,7 @@ class ProductRequestModel {
       location: product.address!.location ?? null,
       price: product.price ?? 0,
       rating: product.rating ?? 0,
+      display_name: product.display_name,
     );
   }
 
@@ -80,6 +83,7 @@ class ProductRequestModel {
       'location': this.location != null ? this.location!.toJson() : {},
       'rating': this.rating ?? 0,
       'price': this.price ?? 0,
+      'display_name': this.display_name ?? '',
     };
 
     if (updating) {

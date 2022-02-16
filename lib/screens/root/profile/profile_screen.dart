@@ -293,12 +293,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                       horizontal: 10.0,
                                                       vertical: 10.0),
                                                   crossAxisCount: 2,
-                                                  mainAxisSpacing: 14.0,
-                                                  crossAxisSpacing: 12.0,
+                                                  mainAxisSpacing: 10.0,
+                                                  crossAxisSpacing: 10.0,
                                                   children: _list
                                                       .map(
                                                         (product) => Center(
                                                           child: BarterListItem(
+                                                            height: SizeConfig
+                                                                    .screenHeight *
+                                                                0.2,
+                                                            width: SizeConfig
+                                                                    .screenWidth *
+                                                                0.42,
                                                             hideLikeBtn: true,
                                                             itemName: product
                                                                     .productname ??

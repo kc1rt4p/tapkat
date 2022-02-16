@@ -5,13 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:tapkat/models/product.dart';
 
-import 'lat_lng.dart' as latlng;
-
 export 'dart:async' show Completer;
 
 export 'package:google_maps_flutter/google_maps_flutter.dart' hide LatLng;
-
-export 'lat_lng.dart' show LatLng;
 
 enum GoogleMapStyle {
   standard,
@@ -38,7 +34,7 @@ enum GoogleMarkerColor {
 class TapkatMarker {
   const TapkatMarker(this.markerId, this.location, [this.onTap, this.product]);
   final String markerId;
-  final latlng.LatLng location;
+  final LatLng location;
   final Future Function()? onTap;
   final ProductModel? product;
 }
@@ -68,8 +64,8 @@ class TapkatGoogleMap extends StatefulWidget {
   }) : super(key: key);
 
   // final Completer<GoogleMapController> controller;
-  final Function(latlng.LatLng) onCameraIdle;
-  final latlng.LatLng initialLocation;
+  final Function(LatLng) onCameraIdle;
+  final LatLng initialLocation;
   final Iterable<TapkatMarker> markers;
   final GoogleMarkerColor markerColor;
   final MapType mapType;
@@ -165,12 +161,12 @@ class _TapkatGoogleMapState extends State<TapkatGoogleMap> {
       );
 }
 
-extension ToGoogleMapsLatLng on latlng.LatLng {
+extension ToGoogleMapsLatLng on LatLng {
   LatLng toGoogleMaps() => LatLng(latitude, longitude);
 }
 
 extension GoogleMapsToLatLng on LatLng {
-  latlng.LatLng toLatLng() => latlng.LatLng(latitude, longitude);
+  LatLng toLatLng() => LatLng(latitude, longitude);
 }
 
 Map<GoogleMapStyle, String> googleMapStyleStrings = {

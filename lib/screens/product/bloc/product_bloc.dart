@@ -26,6 +26,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
               event.media[0].storagePath, event.media[0].bytes);
 
           event.productRequest.image_url = downloadUrl;
+          event.productRequest.display_name = _user!.displayName;
 
           final productId = await _productRepo.addProduct(event.productRequest);
 
@@ -37,7 +38,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
           if (event.media.length > 1) {
             event.media.removeAt(0);
             final upload = await _productRepo.addProductImages(
-              userId: _user!.uid,
+              userId: _user.uid,
               productId: productId,
               images: event.media,
             );

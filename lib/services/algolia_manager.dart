@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:algolia/algolia.dart';
 import 'package:equatable/equatable.dart';
-import 'package:tapkat/widgets/lat_lng.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 export 'package:algolia/algolia.dart';
 

@@ -1,5 +1,5 @@
 import 'package:built_value/standard_json_plugin.dart';
-import 'package:tapkat/widgets/lat_lng.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import 'barter_items_record.dart';
 import 'barter_record.dart';

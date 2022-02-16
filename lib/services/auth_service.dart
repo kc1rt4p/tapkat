@@ -30,7 +30,7 @@ class AuthService {
       .map<TapkatFirebaseUser>(
           (user) => currentUser = TapkatFirebaseUser(user));
 
-  Future<User?> signInOrCreateAccount(BuildContext context,
+  Future<User?> signInOrCreateAccount(
       Future<UserCredential?> Function() signInFunc) async {
     try {
       final userCredential = await signInFunc();
@@ -41,10 +41,7 @@ class AuthService {
 
       return null;
     } on FirebaseAuthException catch (e) {
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: ${e.message}')),
-      );
+      print('error creating user: ${e.toString()}');
       return null;
     }
   }
@@ -53,9 +50,9 @@ class AuthService {
     return FirebaseAuth.instance.currentUser;
   }
 
-  Future<User?> signInAnonymously(BuildContext context) async {
+  Future<User?> signInAnonymously() async {
     final signInFunc = () => FirebaseAuth.instance.signInAnonymously();
-    return signInOrCreateAccount(context, signInFunc);
+    return signInOrCreateAccount(signInFunc);
   }
 
   Future maybeCreateUser(User user) async {
@@ -128,14 +125,13 @@ class AuthService {
     return await FirebaseAuth.instance.signInWithCredential(oauthCredential);
   }
 
-  Future<User?> signInWithApple(BuildContext context) =>
-      signInOrCreateAccount(context, appleSignIn);
+  Future<User?> signInWithApple() => signInOrCreateAccount(appleSignIn);
 
   Future<User?> signInWithEmail(
       BuildContext context, String email, String password) async {
     final signInFunc = () => FirebaseAuth.instance
         .signInWithEmailAndPassword(email: email.trim(), password: password);
-    return signInOrCreateAccount(context, signInFunc);
+    return signInOrCreateAccount(signInFunc);
   }
 
   Future<User?> createAccountWithEmail(
@@ -143,10 +139,39 @@ class AuthService {
     final createAccountFunc = () => FirebaseAuth.instance
         .createUserWithEmailAndPassword(
             email: email.trim(), password: password);
-    return signInOrCreateAccount(context, createAccountFunc);
+    return signInOrCreateAccount(createAccountFunc);
   }
 
-  Future<User?> signInWithGoogle(BuildContext context) async {
+//   Future<UserCredential> signInWithFacebook() async {
+//   // Trigger the sign-in flow
+//   final LoginResult loginResult = await FacebookAuth.instance.login();
+
+//   // Create a credential from the access token
+//   final OAuthCredential facebookAuthCredential = FacebookAuthProvider.credential(loginResult.accessToken.token);
+
+//   // Once signed in, return the UserCredential
+//   return FirebaseAuth.instance.signInWithCredential(facebookAuthCredential);
+// }
+
+  // Future<UserCredential> signInWithGoogle() async {
+  //   // Trigger the authentication flow
+  //   final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+
+  //   // Obtain the auth details from the request
+  //   final GoogleSignInAuthentication? googleAuth =
+  //       await googleUser?.authentication;
+
+  //   // Create a new credential
+  //   final credential = GoogleAuthProvider.credential(
+  //     accessToken: googleAuth?.accessToken,
+  //     idToken: googleAuth?.idToken,
+  //   );
+
+  //   // Once signed in, return the UserCredential
+  //   return await FirebaseAuth.instance.signInWithCredential(credential);
+  // }
+
+  Future<User?> signInWithGoogle() async {
     final signInFunc = () async {
       if (kIsWeb) {
         GoogleAuthProvider googleProvider = GoogleAuthProvider();
@@ -165,7 +190,7 @@ class AuthService {
           idToken: auth.idToken, accessToken: auth.accessToken);
       return FirebaseAuth.instance.signInWithCredential(credential);
     };
-    return signInOrCreateAccount(context, signInFunc);
+    return signInOrCreateAccount(signInFunc);
   }
 
   Future signOutWithGoogle() => _googleSignIn.signOut();

@@ -15,6 +15,12 @@ class AuthInitialized extends AuthState {
   AuthInitialized(this.stream);
 }
 
+class SignInGoogleSuccess extends AuthState {
+  final User user;
+
+  SignInGoogleSuccess(this.user);
+}
+
 class AuthSignedOut extends AuthState {}
 
 class AuthSignedIn extends AuthState {

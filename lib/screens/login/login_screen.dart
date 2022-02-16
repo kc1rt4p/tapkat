@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -48,6 +50,10 @@ class _LoginScreenState extends State<LoginScreen> {
               ProgressHUD.of(context)!.show();
             } else {
               ProgressHUD.of(context)!.dismiss();
+            }
+
+            if (state is AuthError) {
+              print('error in login: ${state.message}');
             }
           },
           child: Container(
@@ -161,7 +167,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                       textColor: Colors.black,
                                     ),
                                     CustomButton(
-                                      onTap: () {},
+                                      onTap: () =>
+                                          _authBloc.add(SignInGoogle()),
                                       label: 'Sign in with Google',
                                       icon: SvgPicture.asset(
                                         'assets/icons/google_icon.svg',
@@ -171,7 +178,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                       textColor: Colors.black,
                                     ),
                                     CustomButton(
-                                      onTap: () {},
+                                      onTap: () => _authBloc.add(SignInApple()),
                                       label: 'Sign in with Apple',
                                       icon: SvgPicture.asset(
                                         'assets/icons/apple_icon.svg',
@@ -179,6 +186,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                       ),
                                       bgColor: Colors.white,
                                       textColor: Colors.black,
+                                      enabled: Platform.isIOS,
                                     ),
                                     Container(
                                       margin: EdgeInsets.only(bottom: 10.0),

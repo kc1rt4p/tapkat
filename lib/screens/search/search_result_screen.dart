@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_progress_hud/flutter_progress_hud.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/schemas/product_markers_record.dart';
 import 'package:tapkat/screens/product/product_details_screen.dart';

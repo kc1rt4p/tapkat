@@ -47,8 +47,8 @@ class _BarterListItemState extends State<BarterListItem> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                height: widget.height ?? SizeConfig.screenHeight * 0.22,
-                width: widget.width ?? SizeConfig.screenWidth * 0.4,
+                height: widget.height ?? SizeConfig.screenHeight * 0.23,
+                width: widget.width ?? SizeConfig.screenWidth * 0.42,
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(20.0),

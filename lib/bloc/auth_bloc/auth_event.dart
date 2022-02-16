@@ -23,6 +23,12 @@ class SignInWithEmail extends AuthEvent {
   });
 }
 
+class SignInGoogle extends AuthEvent {}
+
+class SignInFacebook extends AuthEvent {}
+
+class SignInApple extends AuthEvent {}
+
 class SignOut extends AuthEvent {}
 
 class SignInWithFB extends AuthEvent {}

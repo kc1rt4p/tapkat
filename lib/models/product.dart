@@ -10,6 +10,7 @@ class ProductModel {
   String? specifications;
   String? type;
   String? category;
+  String? display_name;
   MediaPrimaryModel? mediaPrimary;
   List<MediaPrimaryModel>? media;
   num? price;
@@ -38,6 +39,7 @@ class ProductModel {
     this.imgUrl,
     this.status,
     this.updated_time,
+    this.display_name,
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
@@ -68,6 +70,7 @@ class ProductModel {
       status: json['status'] as String?,
       updated_time:
           json['updated_time'] != null ? json['updated_time'].toDate() : null,
+      display_name: json['image_url'] as String?,
     );
   }
 
@@ -83,6 +86,8 @@ class ProductModel {
       'media_primary': this.mediaPrimary,
       'price': this.price,
       'likes': this.likes,
+      'display_name': this.display_name,
+      'updated_time': this.updated_time,
     };
     return json..addAll({'productid': this.productid});
   }

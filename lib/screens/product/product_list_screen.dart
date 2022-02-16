@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_progress_hud/flutter_progress_hud.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart' as gmf;
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:tapkat/backend.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/schemas/user_likes_record.dart';

@@ -32,6 +32,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     _authBloc.add(InitializeAuth());
+
     super.initState();
   }
 

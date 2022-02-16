@@ -102,12 +102,11 @@ Future verifySmsCode({
 }) async {
   if (kIsWeb) {
     return AuthService().signInOrCreateAccount(
-        context, () => _webPhoneAuthConfirmationResult!.confirm(smsCode));
+        () => _webPhoneAuthConfirmationResult!.confirm(smsCode));
   } else {
     final authCredential = PhoneAuthProvider.credential(
         verificationId: _phoneAuthVerificationCode!, smsCode: smsCode);
     return AuthService().signInOrCreateAccount(
-      context,
       () => FirebaseAuth.instance.signInWithCredential(authCredential),
     );
   }

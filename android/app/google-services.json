@@ -9,7 +9,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:317757606033:android:5e0e632052a524a0f99730",
         "android_client_info": {
-          "package_name": "com.flutterflow.tapkat"
+          "package_name": "com.flutterflow.mapsurf"
         }
       },
       "oauth_client": [
@@ -17,7 +17,7 @@
           "client_id": "317757606033-1u5unb3ore1vhu8veibr9933qb8abffi.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.flutterflow.tapkat",
+            "package_name": "com.flutterflow.mapsurf",
             "certificate_hash": "9bbb3186b2189ef16d8f272bdab59362c395cbb4"
           }
         },
@@ -25,15 +25,23 @@
           "client_id": "317757606033-3ag78sror7ppqu0mqhub6l3uavlvtfdl.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.flutterflow.tapkat",
+            "package_name": "com.flutterflow.mapsurf",
             "certificate_hash": "580a6047c93dc4d69993167566e31a2483f4c627"
+          }
+        },
+        {
+          "client_id": "317757606033-ifh9clhd9skpl8qdc4df1l98tgutvl1i.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.flutterflow.mapsurf",
+            "certificate_hash": "5604a6b8ae28f52d8287b0224f706f00f14369d0"
           }
         },
         {
           "client_id": "317757606033-vj2ktonav8r8fp3t36rfn1n34ocf0sro.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.flutterflow.tapkat",
+            "package_name": "com.flutterflow.mapsurf",
             "certificate_hash": "118d60006481e2587959a83ac9bcc9c4e2c5f665"
           }
         },
@@ -73,6 +81,14 @@
         }
       },
       "oauth_client": [
+        {
+          "client_id": "317757606033-j4h8jn65ioac94ekmpkrpevan0p0m06f.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.flutterflow.tapkat",
+            "certificate_hash": "5604a6b8ae28f52d8287b0224f706f00f14369d0"
+          }
+        },
         {
           "client_id": "317757606033-mtep21o5vhbk34nt2ltnt8ol4m0ijvbi.apps.googleusercontent.com",
           "client_type": 1,

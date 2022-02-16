@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_webservice/places.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:tapkat/schemas/users_record.dart';
 import 'package:tapkat/services/auth_service.dart';
 import 'package:tapkat/services/firebase.dart';
@@ -15,6 +16,13 @@ part 'auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final authService = AuthService();
+
+  final _googleSignIn = GoogleSignIn(
+    scopes: [
+      'email',
+      'https://www.googleapis.com/auth/contacts.readonly',
+    ],
+  );
   User? currentUser;
   AuthBloc() : super(AuthInitial()) {
     on<AuthEvent>((event, emit) async {
@@ -54,26 +62,40 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         }
       }
 
-      if (event is SaveUserPhoto) {
-        final downloadUrl = await uploadData(
-            event.selectedMedia.storagePath, event.selectedMedia.bytes);
-
-        ScaffoldMessenger.of(event.context).hideCurrentSnackBar();
-
-        if (downloadUrl != null) {
-          final usersUpdateData = createUsersRecordData(
-            photoUrl: downloadUrl,
-          );
-
-          final userRef =
-              UsersRecord.collection.doc(authService.currentUser!.user!.uid);
-
-          await userRef.update(usersUpdateData);
-
-          emit(AuthSignedIn(authService.currentUser!.user!));
-        } else {
-          emit(AuthError('error saving user photo'));
+      try {
+        if (event is SignInGoogle) {
+          final user = await authService.signInWithGoogle();
+          if (user != null) emit(AuthSignedIn(user));
         }
+
+        if (event is SignInApple) {
+          final user = await authService.signInWithApple();
+          if (user != null) emit(AuthSignedIn(user));
+        }
+
+        if (event is SaveUserPhoto) {
+          final downloadUrl = await uploadData(
+              event.selectedMedia.storagePath, event.selectedMedia.bytes);
+
+          ScaffoldMessenger.of(event.context).hideCurrentSnackBar();
+
+          if (downloadUrl != null) {
+            final usersUpdateData = createUsersRecordData(
+              photoUrl: downloadUrl,
+            );
+
+            final userRef =
+                UsersRecord.collection.doc(authService.currentUser!.user!.uid);
+
+            await userRef.update(usersUpdateData);
+
+            emit(AuthSignedIn(authService.currentUser!.user!));
+          } else {
+            emit(AuthError('error saving user photo'));
+          }
+        }
+      } catch (e) {
+        emit(AuthError('auth error: ${e.toString()}'));
       }
 
       if (event is SkipSignUpPhoto && event is SignUpPhotoSuccess) {

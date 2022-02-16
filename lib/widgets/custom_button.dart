@@ -40,7 +40,7 @@ class _CustomButtonState extends State<CustomButton> {
           color: widget.enabled ? widget.bgColor : Colors.grey.shade400,
           borderRadius: BorderRadius.circular(10.0),
           border: Border.all(
-            color: widget.bgColor,
+            color: widget.enabled ? widget.bgColor : Colors.grey.shade400,
           ),
         ),
         child: Center(

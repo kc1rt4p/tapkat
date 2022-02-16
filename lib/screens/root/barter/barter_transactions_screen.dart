@@ -251,7 +251,7 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                                                                 kBackgroundColor,
                                                             width: SizeConfig
                                                                     .screenWidth *
-                                                                0.44,
+                                                                0.42,
                                                             child: Text(
                                                               (barter.dealStatus ??
                                                                       '')
@@ -468,7 +468,7 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                                                               kBackgroundColor,
                                                           width: SizeConfig
                                                                   .screenWidth *
-                                                              0.44,
+                                                              0.42,
                                                           child: Text(
                                                             (barter.dealStatus !=
                                                                             null &&
