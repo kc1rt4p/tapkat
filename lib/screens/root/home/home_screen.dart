@@ -193,6 +193,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 }
 
                                 return BarterListItem(
+                                  likeLeftMargin: SizeConfig.screenWidth * 0.3,
                                   liked: liked,
                                   itemName: product.productname ?? '',
                                   itemPrice: product.price != null
@@ -275,6 +276,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 }
 
                                 return BarterListItem(
+                                  likeLeftMargin: SizeConfig.screenWidth * 0.3,
                                   liked: liked,
                                   itemName: product.productname ?? '',
                                   itemPrice: product.price != null

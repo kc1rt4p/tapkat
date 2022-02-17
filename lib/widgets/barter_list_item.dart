@@ -15,6 +15,7 @@ class BarterListItem extends StatefulWidget {
   final bool hideLikeBtn;
   final DateTime? datePosted;
   final Function()? onLikeTapped;
+  final double? likeLeftMargin;
 
   const BarterListItem({
     Key? key,
@@ -29,6 +30,7 @@ class BarterListItem extends StatefulWidget {
     this.onLikeTapped,
     this.fontSize,
     this.datePosted,
+    this.likeLeftMargin,
   }) : super(key: key);
 
   @override
@@ -128,7 +130,7 @@ class _BarterListItemState extends State<BarterListItem> {
           visible: !widget.hideLikeBtn,
           child: Positioned(
             top: 5,
-            right: 5,
+            left: widget.likeLeftMargin ?? SizeConfig.screenWidth * 0.35,
             child: Stack(
               alignment: Alignment.center,
               children: [

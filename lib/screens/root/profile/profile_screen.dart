@@ -289,22 +289,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         child: Container(
                                           child: _list.isNotEmpty
                                               ? GridView.count(
+                                                  shrinkWrap: true,
                                                   padding: EdgeInsets.symmetric(
-                                                      horizontal: 10.0,
                                                       vertical: 10.0),
                                                   crossAxisCount: 2,
                                                   mainAxisSpacing: 10.0,
-                                                  crossAxisSpacing: 10.0,
                                                   children: _list
                                                       .map(
                                                         (product) => Center(
                                                           child: BarterListItem(
                                                             height: SizeConfig
                                                                     .screenHeight *
-                                                                0.2,
+                                                                0.215,
                                                             width: SizeConfig
                                                                     .screenWidth *
-                                                                0.42,
+                                                                0.4,
                                                             hideLikeBtn: true,
                                                             itemName: product
                                                                     .productname ??

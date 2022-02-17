@@ -332,10 +332,9 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
   Widget _buildGridView() {
     return GridView.count(
-      padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
+      padding: EdgeInsets.symmetric(vertical: 10.0),
       crossAxisCount: 2,
-      mainAxisSpacing: 14.0,
-      crossAxisSpacing: 12.0,
+      mainAxisSpacing: 10.0,
       children: _list
           .map((product) => Center(
                 child: StreamBuilder<List<UserLikesRecord?>>(

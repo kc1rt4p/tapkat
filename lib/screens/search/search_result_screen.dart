@@ -77,7 +77,6 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
             }
 
             if (state is SearchSuccess) {
-              print(state.searchResults);
               setState(() {
                 searchResults = state.searchResults;
               });
@@ -269,31 +268,27 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
 
   GridView _buildGridView() {
     return GridView.count(
-      padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
+      shrinkWrap: true,
+      padding: EdgeInsets.zero,
       crossAxisCount: 2,
       mainAxisSpacing: 10.0,
-      crossAxisSpacing: 10.0,
       children: searchResults.map((product) {
-        return Center(
-          child: BarterListItem(
-            height: SizeConfig.screenHeight * 0.23,
-            width: SizeConfig.screenWidth * 0.42,
-            itemName: product.productname ?? '',
-            itemPrice: (product.currency ?? '') +
-                (product.price != null
-                    ? product.price!.toStringAsFixed(2)
-                    : '0.00'),
-            imageUrl: product.mediaPrimary != null &&
-                    product.mediaPrimary!.url != null
-                ? product.mediaPrimary!.url!
-                : '',
-            onTapped: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ProductDetailsScreen(
-                  ownItem: false,
-                  productId: product.productid ?? '',
-                ),
+        return BarterListItem(
+          itemName: product.productname ?? '',
+          itemPrice: (product.currency ?? '') +
+              (product.price != null
+                  ? product.price!.toStringAsFixed(2)
+                  : '0.00'),
+          imageUrl:
+              product.mediaPrimary != null && product.mediaPrimary!.url != null
+                  ? product.mediaPrimary!.url!
+                  : '',
+          onTapped: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ProductDetailsScreen(
+                ownItem: false,
+                productId: product.productid ?? '',
               ),
             ),
           ),

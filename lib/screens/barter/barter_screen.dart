@@ -254,10 +254,16 @@ class _BarterScreenState extends State<BarterScreen> {
 
               _barterProductsStream = state.barterProductsStream.listen((list) {
                 if (list.isNotEmpty) {
-                  wants.clear();
-                  offers.clear();
-                  origOffers.clear();
-                  origWants.clear();
+                  setState(() {
+                    wants.clear();
+                    offers.clear();
+                    origOffers.clear();
+                    origWants.clear();
+                    _offeredCash = null;
+                    _requestedCash = null;
+                    _origOfferedCash = null;
+                    _origRequestedCash = null;
+                  });
                   list.forEach((bProduct) {
                     final _prod = ProductModel.fromJson(bProduct.toJson());
                     if (bProduct.productId!.contains('cash')) {
@@ -639,9 +645,15 @@ class _BarterScreenState extends State<BarterScreen> {
               ),
               Visibility(
                 visible: (_barterRecord!.dealStatus != 'sold' &&
-                        _barterRecord!.dealStatus != 'withdrawn' &&
-                        _barterRecord!.dealStatus != 'rejected') &&
-                    (_barterRecord!.dealStatus != 'accepted' &&
+                            _barterRecord!.dealStatus != 'withdrawn' &&
+                            _barterRecord!.dealStatus != 'rejected') &&
+                        // accepted by user
+                        (_barterRecord!.dealStatus != 'accepted' &&
+                            !widget.fromOtherUser) ||
+                    // submitted by other user
+                    (_barterRecord!.dealStatus == 'submitted' &&
+                        widget.fromOtherUser) ||
+                    (_barterRecord!.dealStatus == 'accepted' &&
                         !widget.fromOtherUser),
                 child: Expanded(
                   child: Container(
@@ -1258,7 +1270,9 @@ class _BarterScreenState extends State<BarterScreen> {
             ? widget.fromOtherUser
                 ? 'You are about to accept this offer\nDo you want to continue?'
                 : 'You are about to submit this barter\nDo you want to continue?'
-            : 'You are about to mark this item as sold.\nThis closes the transaction and cannot be reversed.\nIf there are any disputes after the transaction is closed, there is \'Dispute\' button at the barter screen.\nDo you want to continue?',
+            : _barterRecord!.dealStatus != 'withdrawn'
+                ? 'You are about to mark this item as sold.\nThis closes the transaction and cannot be reversed.\nIf there are any disputes after the transaction is closed, there is \'Dispute\' button at the barter screen.\nDo you want to continue?'
+                : 'You are about to submit this barter\nDo you want to continue?',
         title: 'Warning',
         buttonText: 'Yes',
         secondButtonText: 'No',
