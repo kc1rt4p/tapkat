@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_progress_hud/flutter_progress_hud.dart';
 import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
+import 'package:tapkat/screens/signup/social_media_screen.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/utilities/style.dart';
@@ -48,6 +49,15 @@ class _SignUpPhotoSelectionScreenState
 
             if (state is AuthSignedIn) {
               Navigator.of(context).popUntil((route) => route.isFirst);
+            }
+
+            if (state is ShowSignUpSocialMedia) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => SignUpSocialMediaAccounts(),
+                ),
+              );
             }
           },
           child: Stack(

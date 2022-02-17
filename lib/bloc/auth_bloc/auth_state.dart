@@ -41,6 +41,8 @@ class AuthShowSignUpScreen extends AuthState {}
 
 class ShowSignUpPhoto extends AuthState {}
 
+class ShowSignUpSocialMedia extends AuthState {}
+
 class SaveUserPhotoSuccess extends AuthState {}
 
 class SignUpSuccess extends AuthState {}

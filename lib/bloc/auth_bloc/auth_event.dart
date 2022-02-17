@@ -64,6 +64,8 @@ class SaveUserPhoto extends AuthEvent {
 
 class SkipSignUpPhoto extends AuthEvent {}
 
+class SkipSignUpSocialMedia extends AuthEvent {}
+
 class SignUpPhotoSuccess extends AuthEvent {}
 
 class GetCurrentuser extends AuthEvent {}

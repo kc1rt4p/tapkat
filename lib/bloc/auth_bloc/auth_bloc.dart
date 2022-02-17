@@ -98,10 +98,20 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         emit(AuthError('auth error: ${e.toString()}'));
       }
 
-      if (event is SkipSignUpPhoto && event is SignUpPhotoSuccess) {
+      if (event is SkipSignUpPhoto) {
+        print('asd');
         print('user: ${authService.currentUser!.user!.uid}');
         if (authService.currentUser != null) {
+          // emit(AuthSignedIn(authService.currentUser!.user!));
+          emit(ShowSignUpSocialMedia());
+        }
+      }
+
+      if (event is SkipSignUpSocialMedia) {
+        print('haha');
+        if (authService.currentUser != null) {
           emit(AuthSignedIn(authService.currentUser!.user!));
+          // emit(ShowSignUpSocialMedia());
         }
       }
 

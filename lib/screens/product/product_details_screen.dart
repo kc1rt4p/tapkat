@@ -220,21 +220,21 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                       18),
                                             ),
                                           ),
-                                          Text(
-                                            '(${_product != null && _product!.status != null ? _product!.status!.toUpperCase() : 'AVAILABLE'})',
-                                            style: Style.fieldText.copyWith(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize:
-                                                  SizeConfig.textScaleFactor *
-                                                      15,
-                                              color: _product != null &&
-                                                      _product!.status !=
-                                                          null &&
-                                                      _product!.status!
-                                                              .toLowerCase() ==
-                                                          'available'
-                                                  ? Colors.green.shade400
-                                                  : Colors.red.shade400,
+                                          Visibility(
+                                            visible: _product != null &&
+                                                _product!.status != null &&
+                                                _product!.status!
+                                                        .toLowerCase() !=
+                                                    'available',
+                                            child: Text(
+                                              '(${_product != null && _product!.status != null && _product!.status!.toLowerCase() == 'available' ? _product!.status!.toUpperCase() : 'AVAILABLE'})',
+                                              style: Style.fieldText.copyWith(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize:
+                                                    SizeConfig.textScaleFactor *
+                                                        15,
+                                                color: Colors.red.shade400,
+                                              ),
                                             ),
                                           ),
                                         ],
