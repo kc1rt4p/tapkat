@@ -63,6 +63,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       }
 
       try {
+        if (event is SignInFacebook) {
+          final user = await authService.signInWithFacebook();
+          if (user != null) emit(AuthSignedIn(user));
+        }
+
         if (event is SignInGoogle) {
           final user = await authService.signInWithGoogle();
           if (user != null) emit(AuthSignedIn(user));

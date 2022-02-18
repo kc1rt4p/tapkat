@@ -5,6 +5,7 @@ import 'package:crypto/crypto.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
@@ -142,16 +143,18 @@ class AuthService {
     return signInOrCreateAccount(createAccountFunc);
   }
 
-//   Future<UserCredential> signInWithFacebook() async {
-//   // Trigger the sign-in flow
-//   final LoginResult loginResult = await FacebookAuth.instance.login();
+  Future<User?> signInWithFacebook() async {
+    // Trigger the sign-in flow
+    final LoginResult loginResult = await FacebookAuth.instance.login();
 
-//   // Create a credential from the access token
-//   final OAuthCredential facebookAuthCredential = FacebookAuthProvider.credential(loginResult.accessToken.token);
+    // Create a credential from the access token
+    final OAuthCredential facebookAuthCredential =
+        FacebookAuthProvider.credential(loginResult.accessToken!.token);
 
-//   // Once signed in, return the UserCredential
-//   return FirebaseAuth.instance.signInWithCredential(facebookAuthCredential);
-// }
+    // Once signed in, return the UserCredential
+    return signInOrCreateAccount(() =>
+        FirebaseAuth.instance.signInWithCredential(facebookAuthCredential));
+  }
 
   // Future<UserCredential> signInWithGoogle() async {
   //   // Trigger the authentication flow
