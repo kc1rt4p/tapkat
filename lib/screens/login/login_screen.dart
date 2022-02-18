@@ -157,7 +157,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                     ),
                                     SizedBox(height: 20.0),
                                     CustomButton(
-                                      onTap: () {},
+                                      onTap: () =>
+                                          _authBloc.add(SignInFacebook()),
                                       label: 'Sign in with Facebook',
                                       icon: SvgPicture.asset(
                                         'assets/icons/fb_icon.svg',
