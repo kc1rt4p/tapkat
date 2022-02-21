@@ -838,6 +838,8 @@ class _BarterScreenState extends State<BarterScreen> {
                               },
                               child: _buildCashItem(_offeredCash!)),
                           Visibility(
+                            visible: _barterRecord != null &&
+                                _barterRecord!.dealStatus != 'sold',
                             child: Positioned(
                               top: 8.0,
                               right: 14.0,
@@ -1179,9 +1181,9 @@ class _BarterScreenState extends State<BarterScreen> {
                         textColor: Colors.white,
                         onTap: _onSubmitTapped,
                         removeMargin: true,
-                        enabled: _offersChanged() ||
-                            (_barterRecord!.dealStatus == 'submitted' &&
-                                widget.fromOtherUser) ||
+                        enabled: _offersChanged() &&
+                                (_barterRecord!.dealStatus == 'submitted' &&
+                                    widget.fromOtherUser) ||
                             (_barterRecord!.dealStatus == 'accepted' &&
                                 widget.fromOtherUser) ||
                             _barterRecord!.dealStatus == 'sold',
@@ -1225,10 +1227,27 @@ class _BarterScreenState extends State<BarterScreen> {
       case 'withdrawn':
         return 'Make Offer';
       case 'submitted':
+        if (!widget.fromOtherUser) {
+          return 'Change Offer';
+        } else {
+          if (_offersChanged()) {
+            return 'Counter Offer';
+          } else {
+            return 'Accept';
+          }
+        }
       case 'rejected':
-        return widget.fromOtherUser ? 'Accept' : 'Make Offer';
+        if (widget.fromOtherUser) {
+          if (_offersChanged()) {
+            return 'Counter Offer';
+          } else {
+            return 'Accept';
+          }
+        } else {
+          return 'Make Offer';
+        }
       case 'accepted':
-        return widget.fromOtherUser ? 'Mark as Sold' : 'Make Offer';
+        return widget.fromOtherUser ? 'Mark as Sold' : 'Change Offer';
       case 'sold':
         return 'Leave a review';
       default:
@@ -1243,17 +1262,22 @@ class _BarterScreenState extends State<BarterScreen> {
           offers.any((offer) => offer.productId == oOffer.productId);
       if (!stillExists) changed = true;
     });
+    print('1 changed: $changed');
 
     origWants.forEach((oWant) {
       final stillExists =
           wants.any((want) => want.productId == oWant.productId);
       if (!stillExists) changed = true;
     });
+    print('2 changed: $changed');
 
     if ((origOffers.length != offers.length) ||
         (origWants.length != wants.length)) changed = true;
+    print('3 changed: $changed');
+
     if ((_origOfferedCash != _offeredCash) ||
         (_origRequestedCash != _requestedCash)) changed = true;
+    print('4 changed: $changed');
 
     return changed;
   }
@@ -1264,15 +1288,61 @@ class _BarterScreenState extends State<BarterScreen> {
     }
 
     if (!_closing) {
+      String message = '';
+
+      if (_barterRecord!.dealStatus == 'accepted') {
+        if (widget.fromOtherUser) {
+          if (_offersChanged()) {
+            message =
+                'You are about to submit a counter offer\n\nDo you want to continue?';
+          } else {
+            message =
+                'You are about to mark this item as sold.\n\nThis closes the transaction and cannot be reversed.\n\nIf there are any disputes after the transaction is closed, there is a \'Dispute\' button at the barter screen.\n\n\nDo you want to continue?';
+          }
+        } else {
+          message = 'Do you want to change your offer?';
+        }
+      }
+
+      if (_barterRecord!.dealStatus == 'new') {
+        message =
+            'You are about to submit this offer\n\nDo you want to continue?';
+      }
+
+      if (_barterRecord!.dealStatus == 'submitted') {
+        if (widget.fromOtherUser) {
+          message = 'You are about to accept this offer';
+          if (_offersChanged()) {
+            message = '\nand offer a counter proposal';
+          }
+          message += '\n\nDp you want to continue?';
+        } else {
+          message =
+              'You are about to change your offer\n\nDo you want to continue?';
+        }
+      }
+
+      if (_barterRecord!.dealStatus == 'withdrawn') {
+        if (widget.fromOtherUser) {
+          message =
+              'You are about to make a counter offer\n\nDo you want to continue?';
+        } else {
+          message =
+              'You are about to make a new offer\n\nDo you want to continue?';
+        }
+      }
+
       final shouldContinue = await DialogMessage.show(
         context,
-        message: _barterRecord!.dealStatus != 'accepted'
-            ? widget.fromOtherUser
-                ? 'You are about to accept this offer\nDo you want to continue?'
-                : 'You are about to submit this barter\nDo you want to continue?'
-            : _barterRecord!.dealStatus != 'withdrawn'
-                ? 'You are about to mark this item as sold.\nThis closes the transaction and cannot be reversed.\nIf there are any disputes after the transaction is closed, there is \'Dispute\' button at the barter screen.\nDo you want to continue?'
-                : 'You are about to submit this barter\nDo you want to continue?',
+        message: message
+        // _barterRecord!.dealStatus != 'accepted'
+        //     ? widget.fromOtherUser
+        //         ? 'You are about to accept this offer\nDo you want to continue?'
+        //         : 'You are about to submit this barter\nDo you want to continue?'
+        //     : _barterRecord!.dealStatus != 'withdrawn'
+        //         ? 'You are about to mark this item as sold.\nThis closes the transaction and cannot be reversed.\nIf there are any disputes after the transaction is closed, there is \'Dispute\' button at the barter screen.\nDo you want to continue?'
+        //         : 'You are about to submit this barter\nDo you want to continue?'
+        ,
         title: 'Warning',
         buttonText: 'Yes',
         secondButtonText: 'No',
@@ -1280,7 +1350,7 @@ class _BarterScreenState extends State<BarterScreen> {
         result2: false,
       );
 
-      if (!shouldContinue) return;
+      if (shouldContinue == null || !shouldContinue) return;
     }
 
     List<BarterProductModel> _deletedProducts = [];
@@ -1533,7 +1603,7 @@ class _BarterScreenState extends State<BarterScreen> {
                                   product.productId == item.productid),
                               child: Container(
                                 margin: EdgeInsets.only(right: 8.0),
-                                width: 160.0,
+                                width: SizeConfig.screenWidth * 0.40,
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.only(
                                     topLeft: Radius.circular(20.0),
@@ -1559,7 +1629,7 @@ class _BarterScreenState extends State<BarterScreen> {
                                   product.productid == item.productid),
                               child: Container(
                                 margin: EdgeInsets.only(right: 8.0),
-                                width: 160.0,
+                                width: SizeConfig.screenWidth * 0.40,
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.only(
                                     topLeft: Radius.circular(20.0),
@@ -1846,7 +1916,7 @@ class _BarterScreenState extends State<BarterScreen> {
                                 product.productId == item.productid),
                             child: Container(
                               margin: EdgeInsets.only(right: 8.0),
-                              width: 160.0,
+                              width: SizeConfig.screenWidth * 0.40,
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.only(
                                   topLeft: Radius.circular(20.0),
@@ -1876,7 +1946,7 @@ class _BarterScreenState extends State<BarterScreen> {
                                 product.productid == item.productid),
                             child: Container(
                               margin: EdgeInsets.only(right: 8.0),
-                              width: 160.0,
+                              width: SizeConfig.screenWidth * 0.40,
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.only(
                                   topLeft: Radius.circular(20.0),
@@ -2040,8 +2110,8 @@ class _BarterScreenState extends State<BarterScreen> {
   Widget _buildCashItem(num amount) {
     return InkWell(
       child: Container(
-        height: SizeConfig.screenHeight * 0.24,
-        width: SizeConfig.screenWidth * 0.44,
+        height: SizeConfig.screenHeight * 0.231,
+        width: SizeConfig.screenWidth * 0.40,
         margin: EdgeInsets.only(right: 8.0),
         decoration: BoxDecoration(
           color: Colors.white,
