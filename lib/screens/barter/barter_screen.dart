@@ -188,7 +188,7 @@ class _BarterScreenState extends State<BarterScreen> {
           backgroundColor: Colors.white,
           barrierEnabled: false,
           child: SlidingUpPanel(
-            maxHeight: SizeConfig.screenHeight * 0.75,
+            maxHeight: SizeConfig.screenHeight * 0.74,
             controller: _panelController,
             isDraggable: false,
             onPanelClosed: () {
@@ -319,6 +319,7 @@ class _BarterScreenState extends State<BarterScreen> {
                 setState(() {
                   _barterRecord = barterRecord;
                   if (_barterId == null) {
+                    print('-===== ${_barterRecord!.toJson()}');
                     _barterId = _barterRecord!.barterId;
                   }
 
@@ -702,7 +703,7 @@ class _BarterScreenState extends State<BarterScreen> {
 
   Widget _buildExpandedView() {
     return Container(
-      height: SizeConfig.screenHeight * 0.79,
+      height: SizeConfig.screenHeight * 0.78,
       padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
       child: SingleChildScrollView(
         child: Column(
@@ -936,43 +937,48 @@ class _BarterScreenState extends State<BarterScreen> {
     //'$_participantName has proposed this deal'
     var message = '';
 
-    switch (_barterRecord!.dealStatus) {
-      case 'new':
-        message = 'You initiated this barter';
-        break;
-      case 'withdrawn':
-        if (widget.fromOtherUser) {
-          message = '$_participantName has withdrawn this deal';
-        } else
-          message = 'You have withdrawn this barter';
-        break;
-      case 'rejected':
-        if (widget.fromOtherUser) {
-          message = '$_participantName has rejected this deal';
-        } else
-          message = 'Your offer has been rejected';
-        break;
-      case 'submitted':
-        if (widget.fromOtherUser) {
-          message = '$_participantName has proposed this deal';
-        } else
-          message = 'Your offer has been submitted';
-        break;
-      case 'accepted':
-        if (widget.fromOtherUser) {
-          message = 'You accepted this offer';
-        } else
-          message = 'Your offer has been accepted';
-        break;
-      case 'sold':
-        if (widget.fromOtherUser) {
-          message =
-              'You marked this barter as sold, you may now leave a review';
-        } else
-          message =
-              '$_participantName has marked this barter as sold, you may now leave a review';
-        break;
-      default:
+    if (_barterRecord!.dealStatus == 'accepted') {
+      if (widget.fromOtherUser) {
+        message = 'You accepted this offer';
+      } else {
+        message = '$_participantName has accepted your offer';
+      }
+    }
+
+    if (_barterRecord!.dealStatus == 'rejected') {
+      if (widget.fromOtherUser) {
+        message = 'You have rejected this offer';
+      } else {
+        message = '$_participantName rejected this offer';
+      }
+    }
+
+    if (_barterRecord!.dealStatus == 'new') {
+      message = 'You initiated this barter';
+    }
+
+    if (_barterRecord!.dealStatus == 'submitted') {
+      if (widget.fromOtherUser) {
+        message = '$_participantName submitted this offer';
+      } else {
+        message = 'Your offer has been submitted';
+      }
+    }
+
+    if (_barterRecord!.dealStatus == 'withdrawn') {
+      if (widget.fromOtherUser) {
+        message = '$_participantName withdrawn this offer';
+      } else {
+        message = 'You withdrawn this offer';
+      }
+    }
+
+    if (_barterRecord!.dealStatus == 'sold') {
+      if (widget.fromOtherUser) {
+        message = '$_participantName has marked this barter as sold';
+      } else {
+        message = 'You marked this barter as sold';
+      }
     }
 
     return Container(
@@ -1181,21 +1187,28 @@ class _BarterScreenState extends State<BarterScreen> {
                         textColor: Colors.white,
                         onTap: _onSubmitTapped,
                         removeMargin: true,
-                        enabled: _offersChanged() &&
-                                (_barterRecord!.dealStatus == 'submitted' &&
-                                    widget.fromOtherUser) ||
+                        enabled: _offersChanged() ||
+                            (_barterRecord!.dealStatus == 'submitted' &&
+                                widget.fromOtherUser) ||
                             (_barterRecord!.dealStatus == 'accepted' &&
                                 widget.fromOtherUser) ||
                             _barterRecord!.dealStatus == 'sold',
-                        fontSize: 12.0,
                       ),
                     ),
                   ),
                 ),
                 Visibility(
-                  visible: _barterRecord!.dealStatus != 'sold' &&
-                      _barterRecord!.dealStatus != 'withdrawn' &&
-                      _barterRecord!.dealStatus != 'rejected',
+                  visible: (_barterRecord!.dealStatus != 'sold' &&
+                              _barterRecord!.dealStatus != 'withdrawn' &&
+                              _barterRecord!.dealStatus != 'rejected') &&
+                          // accepted by user
+                          (_barterRecord!.dealStatus != 'accepted' &&
+                              !widget.fromOtherUser) ||
+                      // submitted by other user
+                      (_barterRecord!.dealStatus == 'submitted' &&
+                          widget.fromOtherUser) ||
+                      (_barterRecord!.dealStatus == 'accepted' &&
+                          !widget.fromOtherUser),
                   child: Expanded(
                     child: Container(
                       margin: EdgeInsets.only(right: 10.0),
@@ -1206,6 +1219,21 @@ class _BarterScreenState extends State<BarterScreen> {
                         onTap: _onCancelTapped,
                         removeMargin: true,
                         enabled: _barterRecord!.dealStatus != 'new',
+                      ),
+                    ),
+                  ),
+                ),
+                Visibility(
+                  visible: _barterRecord!.dealStatus == 'sold',
+                  child: Expanded(
+                    child: Container(
+                      margin: EdgeInsets.only(left: 10.0),
+                      child: CustomButton(
+                        label: 'Dispute',
+                        bgColor: kDangerColor,
+                        textColor: Colors.white,
+                        onTap: () {},
+                        removeMargin: true,
                       ),
                     ),
                   ),
@@ -1222,37 +1250,52 @@ class _BarterScreenState extends State<BarterScreen> {
     if (_barterRecord == null) {
       return '';
     }
-    switch (_barterRecord!.dealStatus) {
-      case 'new':
-      case 'withdrawn':
-        return 'Make Offer';
-      case 'submitted':
-        if (!widget.fromOtherUser) {
-          return 'Change Offer';
+
+    if (_barterRecord!.dealStatus == 'accepted') {
+      if (widget.fromOtherUser) {
+        if (_offersChanged()) {
+          return 'Counter Offer';
         } else {
-          if (_offersChanged()) {
-            return 'Counter Offer';
-          } else {
-            return 'Accept';
-          }
+          return 'Mark as Sold';
         }
-      case 'rejected':
-        if (widget.fromOtherUser) {
-          if (_offersChanged()) {
-            return 'Counter Offer';
-          } else {
-            return 'Accept';
-          }
-        } else {
-          return 'Make Offer';
-        }
-      case 'accepted':
-        return widget.fromOtherUser ? 'Mark as Sold' : 'Change Offer';
-      case 'sold':
-        return 'Leave a review';
-      default:
-        return '';
+      } else {
+        return 'Change Offer';
+      }
     }
+
+    if (_barterRecord!.dealStatus == 'rejected') {
+      if (widget.fromOtherUser) {
+        return 'Counter Offer';
+      } else {
+        return ('Make Offer');
+      }
+    }
+
+    if (_barterRecord!.dealStatus == 'new') {
+      return 'Submit';
+    }
+
+    if (_barterRecord!.dealStatus == 'submitted') {
+      if (widget.fromOtherUser) {
+        if (_offersChanged()) {
+          return 'Counter Offer';
+        } else {
+          return 'Accept';
+        }
+      } else {
+        return 'Change Offer';
+      }
+    }
+
+    if (_barterRecord!.dealStatus == 'withdrawn') {
+      if (widget.fromOtherUser) {
+        return 'Counter Offer';
+      } else {
+        return 'Change Offer';
+      }
+    }
+
+    return 'Leave a Review';
   }
 
   bool _offersChanged() {
@@ -1301,6 +1344,16 @@ class _BarterScreenState extends State<BarterScreen> {
           }
         } else {
           message = 'Do you want to change your offer?';
+        }
+      }
+
+      if (_barterRecord!.dealStatus == 'rejected') {
+        if (widget.fromOtherUser) {
+          message =
+              'You are about to make a new offer\n\nDo you want to continue?';
+        } else {
+          message =
+              'You are about to counter offer\n\nDo you want to continue?';
         }
       }
 
@@ -2039,7 +2092,7 @@ class _BarterScreenState extends State<BarterScreen> {
     return InkWell(
       onTap: onTap,
       child: Container(
-        height: SizeConfig.screenHeight * 0.235,
+        height: SizeConfig.screenHeight * 0.23,
         width: SizeConfig.screenWidth * 0.40,
         decoration: BoxDecoration(
           color: kBackgroundColor,
@@ -2147,7 +2200,7 @@ class _BarterScreenState extends State<BarterScreen> {
             ),
             Expanded(
               child: Container(
-                padding: EdgeInsets.all(10.0),
+                padding: EdgeInsets.symmetric(vertical: 5.0, horizontal: 10.0),
                 width: double.infinity,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

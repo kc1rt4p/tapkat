@@ -146,7 +146,7 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                                                         Container(
                                                           margin:
                                                               EdgeInsets.only(
-                                                                  right: 12.0),
+                                                                  right: 10.0),
                                                           child: Column(
                                                             crossAxisAlignment:
                                                                 CrossAxisAlignment
@@ -272,7 +272,7 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                                                         ),
                                                         Positioned(
                                                           top: 30.0,
-                                                          right: 15.0,
+                                                          right: 20,
                                                           child: InkWell(
                                                             onTap: () =>
                                                                 _onDeletebarter(
@@ -366,7 +366,7 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                                                     children: [
                                                       Container(
                                                         margin: EdgeInsets.only(
-                                                            right: 12.0),
+                                                            right: 10.0),
                                                         child: Column(
                                                           crossAxisAlignment:
                                                               CrossAxisAlignment
@@ -493,7 +493,7 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                                                       ),
                                                       Positioned(
                                                         top: 30.0,
-                                                        right: 15.0,
+                                                        right: 20,
                                                         child: InkWell(
                                                           onTap: () =>
                                                               _onDeletebarter(
