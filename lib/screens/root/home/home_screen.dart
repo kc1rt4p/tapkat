@@ -70,12 +70,6 @@ class _HomeScreenState extends State<HomeScreen> {
           BlocListener(
             bloc: _homeBloc,
             listener: (context, state) {
-              if (state is HomeLoading) {
-                ProgressHUD.of(context)!.show();
-              } else {
-                ProgressHUD.of(context)!.dismiss();
-              }
-
               if (state is LoadedRecommendedList) {
                 setState(() {
                   _recommendedList = state.recommended;
@@ -333,7 +327,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                       Visibility(
-                        visible: _myProductList.isNotEmpty,
+                        visible:
+                            _myProductList.isNotEmpty || _loadingUserProducts,
                         child: BarterList(
                           loading: _loadingUserProducts,
                           context: context,

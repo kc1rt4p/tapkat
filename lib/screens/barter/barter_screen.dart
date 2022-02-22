@@ -12,6 +12,9 @@ import 'package:tapkat/models/barter_product.dart';
 import 'package:tapkat/models/barter_record_model.dart';
 import 'package:tapkat/models/chat_message.dart';
 import 'package:tapkat/models/product.dart';
+import 'package:tapkat/screens/barter/widgets/add_item_btn.dart';
+import 'package:tapkat/screens/barter/widgets/cash_item.dart';
+import 'package:tapkat/screens/barter/widgets/chat_item.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/dialog_message.dart';
 import 'package:tapkat/utilities/size_config.dart';
@@ -19,7 +22,6 @@ import 'package:tapkat/utilities/style.dart';
 import 'package:tapkat/widgets/barter_list_item.dart';
 import 'package:tapkat/widgets/custom_button.dart';
 import 'package:tapkat/widgets/custom_textformfield.dart';
-import 'package:timeago/timeago.dart' as timeago;
 
 import 'bloc/barter_bloc.dart';
 
@@ -539,7 +541,7 @@ class _BarterScreenState extends State<BarterScreen> {
                             horizontal: 20.0, vertical: 10.0),
                         reverse: true,
                         children: _messages.reversed
-                            .map((msg) => _buildChatItem(msg))
+                            .map((msg) => buildChatItem(msg, _currentUser))
                             .toList(),
                       ),
                     ),
@@ -735,7 +737,7 @@ class _BarterScreenState extends State<BarterScreen> {
                                   _showAddCashDialog('participant');
                                 }
                               },
-                              child: _buildCashItem(_requestedCash!)),
+                              child: buildCashItem(_requestedCash!)),
                           Visibility(
                             child: Positioned(
                               top: 8.0,
@@ -839,7 +841,7 @@ class _BarterScreenState extends State<BarterScreen> {
                                   _showAddCashDialog('user');
                                 }
                               },
-                              child: _buildCashItem(_offeredCash!)),
+                              child: buildCashItem(_offeredCash!)),
                           Visibility(
                             visible: _barterRecord != null &&
                                 _barterRecord!.dealStatus != 'sold',
@@ -1389,15 +1391,7 @@ class _BarterScreenState extends State<BarterScreen> {
 
       final shouldContinue = await DialogMessage.show(
         context,
-        message: message
-        // _barterRecord!.dealStatus != 'accepted'
-        //     ? widget.fromOtherUser
-        //         ? 'You are about to accept this offer\nDo you want to continue?'
-        //         : 'You are about to submit this barter\nDo you want to continue?'
-        //     : _barterRecord!.dealStatus != 'withdrawn'
-        //         ? 'You are about to mark this item as sold.\nThis closes the transaction and cannot be reversed.\nIf there are any disputes after the transaction is closed, there is \'Dispute\' button at the barter screen.\nDo you want to continue?'
-        //         : 'You are about to submit this barter\nDo you want to continue?'
-        ,
+        message: message,
         title: 'Warning',
         buttonText: 'Yes',
         secondButtonText: 'No',
@@ -1576,7 +1570,7 @@ class _BarterScreenState extends State<BarterScreen> {
                   ...items,
                   Visibility(
                     visible: showAddBtn,
-                    child: _buildAddItemBtn(
+                    child: buildAddItemBtn(
                       onTap: addBtnTapped ?? () {},
                     ),
                   ),
@@ -1613,7 +1607,9 @@ class _BarterScreenState extends State<BarterScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   _buildBarterList(
-                    label: 'Select item(s) from $_participantName',
+                    label: widget.fromOtherUser
+                        ? 'Select your offer(s)'
+                        : 'Select item(s) from $_participantName',
                     labelAction: GestureDetector(
                       onTap: () => Navigator.pop(context),
                       child: Icon(
@@ -1753,13 +1749,14 @@ class _BarterScreenState extends State<BarterScreen> {
                       Expanded(
                         child: CustomButton(
                           label: _requestedCash != null
-                              ? 'Edit Requested Cash'
-                              : 'Request Cash',
+                              ? 'Edit ${!widget.fromOtherUser ? 'Requested' : 'Offered'} Cash'
+                              : '${!widget.fromOtherUser ? 'Request' : 'Offer'} Cash',
                           bgColor: Color(0xFFBB3F03),
                           textColor: Colors.white,
                           onTap: () {
                             Navigator.pop(context);
-                            _showAddCashDialog('participant');
+                            _showAddCashDialog(
+                                !widget.fromOtherUser ? 'participant' : 'user');
                           },
                           removeMargin: true,
                         ),
@@ -1777,16 +1774,40 @@ class _BarterScreenState extends State<BarterScreen> {
 
   _showAddCashDialog(String from) async {
     if (from == 'participant') {
-      amounTextController.text =
-          _requestedCash != null ? _requestedCash.toString() : '';
+      if (widget.fromOtherUser) {
+        amounTextController.text =
+            _offeredCash != null ? _offeredCash.toString() : '';
+      } else {
+        amounTextController.text =
+            _requestedCash != null ? _requestedCash.toString() : '';
+      }
     } else {
-      amounTextController.text =
-          _offeredCash != null ? _offeredCash.toString() : '';
+      if (widget.fromOtherUser) {
+        amounTextController.text =
+            _requestedCash != null ? _requestedCash.toString() : '';
+      } else {
+        amounTextController.text =
+            _offeredCash != null ? _offeredCash.toString() : '';
+      }
     }
     final _cFormKey = GlobalKey<FormState>();
     var amount = await showDialog(
       context: context,
       builder: (dContext) {
+        // String title = '';
+        // if (from == 'participant') {
+        //   if (widget.fromOtherUser) {
+        //     title = 'Offer Cash';
+        //   } else {
+        //     title = 'Request Cash';
+        //   }
+        // } else {
+        //   if (widget.fromOtherUser) {
+        //     title = 'Request Cash';
+        //   } else {
+        //     title = 'Offer Cash'
+        //   }
+        // }
         return Dialog(
           child: Container(
             padding: EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 0),
@@ -1849,46 +1870,23 @@ class _BarterScreenState extends State<BarterScreen> {
         );
       },
     );
-    // await DialogMessage.show(
-    //   context,
-    //   title: from == 'participant' ? 'Request Cash' : 'Offer Cash',
-    //   customMessage: Form(
-    //     key: _cFormKey,
-    //     child: CustomTextFormField(
-    //       color: kBackgroundColor,
-    //       label: 'Enter Amount',
-    //       hintText: '0.00',
-    //       controller: amounTextController,
-    //       keyboardType: TextInputType.numberWithOptions(decimal: true),
-    //       validator: (val) {
-    //         if (val == null || val.length < 1) return 'Required';
-    //       },
-    //     ),
-    //   ),
-    //   buttonText: 'Send',
-    //   secondButtonText: 'Cancel',
-    //   firstButtonClicked: () {
-    //     if (!_cFormKey.currentState!.validate())
-    //       return null;
-    //     else {
-    //       final amount = num.parse(amounTextController.text.trim());
-    //       amounTextController.clear();
-    //       Navigator.pop(context, amount);
-    //     }
-    //   },
-    //   secondButtonClicked: () {
-    //     DialogMessage.dismiss();
-    //   },
-    // );
 
     if (amount != null) {
       amount = amount as num;
 
       setState(() {
         if (from == 'participant') {
-          _requestedCash = amount;
+          if (widget.fromOtherUser) {
+            _offeredCash = amount;
+          } else {
+            _requestedCash = amount;
+          }
         } else {
-          _offeredCash = amount;
+          if (widget.fromOtherUser) {
+            _requestedCash = amount;
+          } else {
+            _offeredCash = amount;
+          }
         }
       });
     }
@@ -1930,7 +1928,7 @@ class _BarterScreenState extends State<BarterScreen> {
                   _buildBarterList(
                     label: !widget.fromOtherUser
                         ? 'Select your offer(s)'
-                        : 'Select items from $_participantName',
+                        : 'Request items from $_participantName',
                     labelAction: GestureDetector(
                       onTap: () => Navigator.pop(context),
                       child: Icon(
@@ -2067,14 +2065,15 @@ class _BarterScreenState extends State<BarterScreen> {
                       SizedBox(width: 8.0),
                       Expanded(
                         child: CustomButton(
-                          label: _offeredCash != null
-                              ? 'Edit Offered Cash'
-                              : 'Offer Cash',
+                          label: _requestedCash != null
+                              ? 'Edit ${widget.fromOtherUser ? 'Requested' : 'Offered'} Cash'
+                              : '${widget.fromOtherUser ? 'Request' : 'Offer'} Cash',
                           bgColor: Color(0xFFBB3F03),
                           textColor: Colors.white,
                           onTap: () {
                             Navigator.pop(context);
-                            _showAddCashDialog('user');
+                            _showAddCashDialog(
+                                widget.fromOtherUser ? 'participant' : 'user');
                           },
                           removeMargin: true,
                         ),
@@ -2086,151 +2085,6 @@ class _BarterScreenState extends State<BarterScreen> {
             );
           });
         });
-  }
-
-  InkWell _buildAddItemBtn({
-    required Function() onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        height: SizeConfig.screenHeight * 0.23,
-        width: SizeConfig.screenWidth * 0.40,
-        decoration: BoxDecoration(
-          color: kBackgroundColor,
-          borderRadius: BorderRadius.circular(20.0),
-          boxShadow: [
-            BoxShadow(
-              offset: Offset(1, 1),
-              color: Colors.grey,
-            ),
-          ],
-        ),
-        child: Center(
-          child: Icon(
-            FontAwesomeIcons.plus,
-            color: Colors.white,
-            size: 40.0,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBarterListItem({
-    required String itemName,
-    required String itemPrice,
-    required String imgUrl,
-    Function()? onTap,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.only(
-        top: 2,
-        bottom: 2,
-        right: 16.0,
-      ),
-      child: Stack(
-        children: [
-          BarterListItem(
-            itemName: itemName,
-            itemPrice: itemPrice,
-            imageUrl: imgUrl,
-            hideLikeBtn: true,
-          ),
-          Positioned(
-            top: 0.0,
-            right: 0.0,
-            child: InkWell(
-              onTap: onTap,
-              child: Container(
-                height: 30.0,
-                width: 30.0,
-                decoration: BoxDecoration(
-                  color: kBackgroundColor,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  FontAwesomeIcons.times,
-                  color: Colors.white,
-                  size: 20.0,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCashItem(num amount) {
-    return InkWell(
-      child: Container(
-        height: SizeConfig.screenHeight * 0.231,
-        width: SizeConfig.screenWidth * 0.40,
-        margin: EdgeInsets.only(right: 8.0),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20.0),
-          boxShadow: [
-            BoxShadow(
-              offset: Offset(1, 1),
-              color: Colors.grey.shade200,
-              blurRadius: 1.0,
-            ),
-          ],
-        ),
-        child: Column(
-          children: [
-            Expanded(
-              flex: 2,
-              child: Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(20.0),
-                    topRight: Radius.circular(20.0),
-                  ),
-                  color: Colors.white,
-                  image: DecorationImage(
-                    image: AssetImage('assets/images/cash_icon.png'),
-                    fit: BoxFit.cover,
-                    colorFilter:
-                        ColorFilter.mode(kBackgroundColor, BlendMode.color),
-                  ),
-                ),
-              ),
-            ),
-            Expanded(
-              child: Container(
-                padding: EdgeInsets.symmetric(vertical: 5.0, horizontal: 10.0),
-                width: double.infinity,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Cash',
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: SizeConfig.textScaleFactor * 12.5,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    Spacer(),
-                    Text(
-                      amount.toStringAsFixed(2),
-                      style: TextStyle(
-                        fontSize: SizeConfig.textScaleFactor * 12.5,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 
   _onChatTapped() {
@@ -2246,70 +2100,5 @@ class _BarterScreenState extends State<BarterScreen> {
     );
 
     if (_chatFocusNode.hasFocus) _chatFocusNode.unfocus();
-  }
-
-  Container _buildChatItem(ChatMessageModel msg) {
-    return Container(
-      margin: EdgeInsets.only(top: 8.0),
-      child: Column(
-        crossAxisAlignment: msg.userId != _currentUser!.uid
-            ? CrossAxisAlignment.start
-            : CrossAxisAlignment.end,
-        children: [
-          Container(
-            padding: EdgeInsets.all(10.0),
-            decoration: BoxDecoration(
-              color: msg.userId != _currentUser!.uid
-                  ? kBackgroundColor
-                  : Color(0xFFBB3F03),
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(10.0),
-                topRight: Radius.circular(10.0),
-                bottomLeft: msg.userId == _currentUser!.uid
-                    ? Radius.circular(10.0)
-                    : Radius.zero,
-                bottomRight: msg.userId != _currentUser!.uid
-                    ? Radius.circular(10.0)
-                    : Radius.zero,
-              ),
-            ),
-            child: Column(
-              crossAxisAlignment: msg.userId != _currentUser!.uid
-                  ? CrossAxisAlignment.start
-                  : CrossAxisAlignment.end,
-              children: [
-                Text(
-                  msg.userId == _currentUser!.uid &&
-                          _currentUser!.uid.isNotEmpty
-                      ? 'You'
-                      : msg.userName != null && msg.userName!.isNotEmpty
-                          ? msg.userName!
-                          : 'Anonymous',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    fontSize: 12.0,
-                  ),
-                ),
-                SizedBox(height: 2.0),
-                Text(
-                  msg.message ?? '',
-                  style: TextStyle(
-                    color: Colors.white,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Text(
-            timeago.format(msg.dateCreated ?? DateTime.now()),
-            style: TextStyle(
-              fontFamily: 'Poppins',
-              fontSize: 10.0,
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }
