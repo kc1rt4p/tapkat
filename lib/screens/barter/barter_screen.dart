@@ -379,6 +379,8 @@ class _BarterScreenState extends State<BarterScreen> {
                       u2P1Image: _product!.mediaPrimary!.url!,
                       barterNo: 0,
                       dealDate: DateTime.now(),
+                      userid1Role: 'sender',
+                      userid2Role: 'recepient',
                     ),
                   ),
                 );
@@ -974,7 +976,7 @@ class _BarterScreenState extends State<BarterScreen> {
     }
 
     if (_barterRecord!.dealStatus == 'sold') {
-      if (widget.fromOtherUser) {
+      if (!widget.fromOtherUser) {
         message = '$_participantName has marked this barter as sold';
       } else {
         message = 'You marked this barter as sold';
