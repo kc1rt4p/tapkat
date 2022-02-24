@@ -405,6 +405,10 @@ class _BarterScreenState extends State<BarterScreen> {
                 children: [
                   GestureDetector(
                     onTap: () async {
+                      if (!_panelClosed) {
+                        _panelController.close();
+                        return;
+                      }
                       final exit = await _onWillPop();
                       if (exit) {
                         Navigator.pop(context);
@@ -641,7 +645,9 @@ class _BarterScreenState extends State<BarterScreen> {
                               widget.fromOtherUser) ||
                           (_barterRecord!.dealStatus == 'accepted' &&
                               widget.fromOtherUser) ||
-                          _barterRecord!.dealStatus == 'sold',
+                          _barterRecord!.dealStatus == 'sold' ||
+                          (_barterRecord!.dealStatus == 'withdrawn' &&
+                              !widget.fromOtherUser),
                     ),
                   ),
                 ),
@@ -1005,6 +1011,99 @@ class _BarterScreenState extends State<BarterScreen> {
   }
 
   Container _buildMinimizedView() {
+    List<Widget> wantWidgets = [];
+    List<Widget> offerWidgets = [];
+
+    if (_requestedCash != null) {
+      wantWidgets.add(
+        InkWell(
+          onTap: () {
+            if (_barterRecord!.dealStatus != 'sold') {
+              _showAddCashDialog('participant');
+            }
+          },
+          child: Container(
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: kBackgroundColor,
+                width: 1.5,
+              ),
+              borderRadius: BorderRadius.circular(8.0),
+              image: DecorationImage(
+                image: AssetImage('assets/images/cash_icon.png'),
+                fit: BoxFit.cover,
+                colorFilter:
+                    ColorFilter.mode(kBackgroundColor, BlendMode.color),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    wantWidgets.addAll(wants.reversed.map((want) {
+      return Container(
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: kBackgroundColor,
+            width: 1.5,
+          ),
+          borderRadius: BorderRadius.circular(8.0),
+          image: DecorationImage(
+            image: want.imgUrl!.isNotEmpty
+                ? NetworkImage(want.imgUrl!)
+                : AssetImage('assets/images/image_placeholder.jpg')
+                    as ImageProvider<Object>,
+            fit: BoxFit.cover,
+          ),
+        ),
+      );
+    }).toList());
+
+    if (_offeredCash != null) {
+      offerWidgets.add(
+        InkWell(
+          onTap: () => _showAddCashDialog('user'),
+          child: Container(
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: kBackgroundColor,
+                width: 1.5,
+              ),
+              borderRadius: BorderRadius.circular(8.0),
+              image: DecorationImage(
+                image: AssetImage('assets/images/cash_icon.png'),
+                fit: BoxFit.cover,
+                colorFilter:
+                    ColorFilter.mode(kBackgroundColor, BlendMode.color),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    offerWidgets.addAll(
+      offers.reversed.map((offer) {
+        return Container(
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: kBackgroundColor,
+              width: 1.5,
+            ),
+            borderRadius: BorderRadius.circular(8.0),
+            image: DecorationImage(
+              image: offer.imgUrl!.isNotEmpty
+                  ? NetworkImage(offer.imgUrl!)
+                  : AssetImage('assets/images/image_placeholder.jpg')
+                      as ImageProvider<Object>,
+              fit: BoxFit.cover,
+            ),
+          ),
+        );
+      }).toList(),
+    );
+
     return Container(
       height: SizeConfig.screenHeight * 0.2,
       width: double.infinity,
@@ -1031,59 +1130,10 @@ class _BarterScreenState extends State<BarterScreen> {
                                 child: GridView.count(
                                   scrollDirection: Axis.horizontal,
                                   padding: EdgeInsets.symmetric(vertical: 2.0),
-                                  shrinkWrap: true,
+                                  mainAxisSpacing: 5.0,
                                   crossAxisCount: 1,
-                                  children: [
-                                    Visibility(
-                                      visible: _requestedCash != null,
-                                      child: InkWell(
-                                        onTap: () {
-                                          if (_barterRecord!.dealStatus !=
-                                              'sold') {
-                                            _showAddCashDialog('participant');
-                                          }
-                                        },
-                                        child: Container(
-                                          decoration: BoxDecoration(
-                                            border: Border.all(
-                                              color: kBackgroundColor,
-                                              width: 1.5,
-                                            ),
-                                            borderRadius:
-                                                BorderRadius.circular(8.0),
-                                            image: DecorationImage(
-                                              image: AssetImage(
-                                                  'assets/images/cash_icon.png'),
-                                              fit: BoxFit.cover,
-                                              colorFilter: ColorFilter.mode(
-                                                  kBackgroundColor,
-                                                  BlendMode.color),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    ...wants.map((want) {
-                                      return Container(
-                                        decoration: BoxDecoration(
-                                          border: Border.all(
-                                            color: kBackgroundColor,
-                                            width: 1.5,
-                                          ),
-                                          borderRadius:
-                                              BorderRadius.circular(8.0),
-                                          image: DecorationImage(
-                                            image: want.imgUrl!.isNotEmpty
-                                                ? NetworkImage(want.imgUrl!)
-                                                : AssetImage(
-                                                        'assets/images/image_placeholder.jpg')
-                                                    as ImageProvider<Object>,
-                                            fit: BoxFit.cover,
-                                          ),
-                                        ),
-                                      );
-                                    }).toList(),
-                                  ],
+                                  reverse: true,
+                                  children: wantWidgets,
                                 ),
                               ),
                             ),
@@ -1115,54 +1165,9 @@ class _BarterScreenState extends State<BarterScreen> {
                                   scrollDirection: Axis.horizontal,
                                   padding: EdgeInsets.symmetric(vertical: 2.0),
                                   mainAxisSpacing: 5.0,
-                                  shrinkWrap: true,
                                   crossAxisCount: 1,
-                                  children: [
-                                    Visibility(
-                                      visible: _offeredCash != null,
-                                      child: InkWell(
-                                        onTap: () => _showAddCashDialog('user'),
-                                        child: Container(
-                                          decoration: BoxDecoration(
-                                            border: Border.all(
-                                              color: kBackgroundColor,
-                                              width: 1.5,
-                                            ),
-                                            borderRadius:
-                                                BorderRadius.circular(8.0),
-                                            image: DecorationImage(
-                                              image: AssetImage(
-                                                  'assets/images/cash_icon.png'),
-                                              fit: BoxFit.cover,
-                                              colorFilter: ColorFilter.mode(
-                                                  kBackgroundColor,
-                                                  BlendMode.color),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    ...offers.map((offer) {
-                                      return Container(
-                                        decoration: BoxDecoration(
-                                          border: Border.all(
-                                            color: kBackgroundColor,
-                                            width: 1.5,
-                                          ),
-                                          borderRadius:
-                                              BorderRadius.circular(8.0),
-                                          image: DecorationImage(
-                                            image: offer.imgUrl!.isNotEmpty
-                                                ? NetworkImage(offer.imgUrl!)
-                                                : AssetImage(
-                                                        'assets/images/image_placeholder.jpg')
-                                                    as ImageProvider<Object>,
-                                            fit: BoxFit.cover,
-                                          ),
-                                        ),
-                                      );
-                                    }).toList(),
-                                  ],
+                                  reverse: true,
+                                  children: offerWidgets,
                                 ),
                               ),
                             ),
@@ -1256,21 +1261,24 @@ class _BarterScreenState extends State<BarterScreen> {
     if (_barterRecord!.dealStatus == 'accepted') {
       if (widget.fromOtherUser) {
         if (_offersChanged()) {
-          return 'Counter Offer';
+          return 'Make Offer';
+          // return 'Counter Offer';
         } else {
           return 'Mark as Sold';
         }
       } else {
-        return 'Change Offer';
+        return 'Make Offer';
+        // return 'Change Offer';
       }
     }
 
     if (_barterRecord!.dealStatus == 'rejected') {
-      if (widget.fromOtherUser) {
-        return 'Counter Offer';
-      } else {
-        return ('Make Offer');
-      }
+      return 'Make Offer';
+      // if (widget.fromOtherUser) {
+      //   return 'Counter Offer';
+      // } else {
+      //   return ('Make Offer');
+      // }
     }
 
     if (_barterRecord!.dealStatus == 'new') {
@@ -1280,21 +1288,18 @@ class _BarterScreenState extends State<BarterScreen> {
     if (_barterRecord!.dealStatus == 'submitted') {
       if (widget.fromOtherUser) {
         if (_offersChanged()) {
-          return 'Counter Offer';
+          return 'Make Offer';
         } else {
           return 'Accept';
         }
       } else {
-        return 'Change Offer';
+        return 'Make Offer';
+        // return 'Change Offer';
       }
     }
 
     if (_barterRecord!.dealStatus == 'withdrawn') {
-      if (widget.fromOtherUser) {
-        return 'Counter Offer';
-      } else {
-        return 'Change Offer';
-      }
+      return 'Make Offer';
     }
 
     return 'Leave a Review';
@@ -1307,22 +1312,18 @@ class _BarterScreenState extends State<BarterScreen> {
           offers.any((offer) => offer.productId == oOffer.productId);
       if (!stillExists) changed = true;
     });
-    print('1 changed: $changed');
 
     origWants.forEach((oWant) {
       final stillExists =
           wants.any((want) => want.productId == oWant.productId);
       if (!stillExists) changed = true;
     });
-    print('2 changed: $changed');
 
     if ((origOffers.length != offers.length) ||
         (origWants.length != wants.length)) changed = true;
-    print('3 changed: $changed');
 
     if ((_origOfferedCash != _offeredCash) ||
         (_origRequestedCash != _requestedCash)) changed = true;
-    print('4 changed: $changed');
 
     return changed;
   }
@@ -1368,7 +1369,7 @@ class _BarterScreenState extends State<BarterScreen> {
         if (widget.fromOtherUser) {
           message = 'You are about to accept this offer';
           if (_offersChanged()) {
-            message = '\nand offer a counter proposal';
+            message += ' and offer a counter proposal';
           }
           message += '\n\nDp you want to continue?';
         } else {
@@ -1475,17 +1476,26 @@ class _BarterScreenState extends State<BarterScreen> {
             .add(UpdateBarterStatus(_barterRecord!.barterId!, 'submitted'));
         break;
       case 'submitted':
-        if (widget.fromOtherUser)
-          _barterBloc
-              .add(UpdateBarterStatus(_barterRecord!.barterId!, 'accepted'));
-        else
+        if (widget.fromOtherUser) {
+          if (_offersChanged()) {
+            // counter offer
+          } else {
+            _barterBloc
+                .add(UpdateBarterStatus(_barterRecord!.barterId!, 'accepted'));
+          }
+        } else
           _barterBloc
               .add(UpdateBarterStatus(_barterRecord!.barterId!, 'submitted'));
         break;
       case 'accepted':
-        if (widget.fromOtherUser)
-          _barterBloc.add(UpdateBarterStatus(_barterRecord!.barterId!, 'sold'));
-        else
+        if (widget.fromOtherUser) {
+          if (_offersChanged()) {
+            // counter offer
+          } else {
+            _barterBloc
+                .add(UpdateBarterStatus(_barterRecord!.barterId!, 'sold'));
+          }
+        } else
           _barterBloc
               .add(UpdateBarterStatus(_barterRecord!.barterId!, 'submitted'));
         break;
@@ -1507,8 +1517,6 @@ class _BarterScreenState extends State<BarterScreen> {
       result1: true,
       result2: false,
     );
-
-    print('should continue: $shouldContinue');
 
     if (!shouldContinue) return;
 
@@ -1792,20 +1800,6 @@ class _BarterScreenState extends State<BarterScreen> {
     var amount = await showDialog(
       context: context,
       builder: (dContext) {
-        // String title = '';
-        // if (from == 'participant') {
-        //   if (widget.fromOtherUser) {
-        //     title = 'Offer Cash';
-        //   } else {
-        //     title = 'Request Cash';
-        //   }
-        // } else {
-        //   if (widget.fromOtherUser) {
-        //     title = 'Request Cash';
-        //   } else {
-        //     title = 'Offer Cash'
-        //   }
-        // }
         return Dialog(
           child: Container(
             padding: EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 0),
@@ -2063,7 +2057,7 @@ class _BarterScreenState extends State<BarterScreen> {
                       SizedBox(width: 8.0),
                       Expanded(
                         child: CustomButton(
-                          label: _requestedCash != null
+                          label: _offeredCash != null
                               ? 'Edit ${widget.fromOtherUser ? 'Requested' : 'Offered'} Cash'
                               : '${widget.fromOtherUser ? 'Request' : 'Offer'} Cash',
                           bgColor: Color(0xFFBB3F03),
