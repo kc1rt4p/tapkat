@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 
 class CustomTextFormField extends StatefulWidget {
@@ -14,6 +15,7 @@ class CustomTextFormField extends StatefulWidget {
   final Color? color;
   final int maxLines;
   final TextInputType? keyboardType;
+  final List<TextInputFormatter>? inputFormatters;
 
   const CustomTextFormField({
     Key? key,
@@ -29,6 +31,7 @@ class CustomTextFormField extends StatefulWidget {
     this.color,
     this.maxLines = 1,
     this.keyboardType,
+    this.inputFormatters,
   }) : super(key: key);
 
   @override
@@ -56,6 +59,7 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
             ),
           ),
           child: TextFormField(
+            inputFormatters: widget.inputFormatters,
             maxLines: widget.maxLines,
             readOnly: widget.isReadOnly,
             onTap: widget.onTap,

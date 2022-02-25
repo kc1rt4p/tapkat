@@ -86,7 +86,7 @@ class _BarterListItemState extends State<BarterListItem> {
                     ),
                     Expanded(
                       child: Container(
-                        padding: EdgeInsets.all(10.0),
+                        padding: EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 5.0),
                         width: double.infinity,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -100,7 +100,7 @@ class _BarterListItemState extends State<BarterListItem> {
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
-                            Spacer(),
+                            SizedBox(height: SizeConfig.screenHeight * 0.007),
                             Text(
                               widget.itemPrice,
                               style: TextStyle(
