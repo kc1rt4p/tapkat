@@ -407,7 +407,8 @@ class _BarterScreenState extends State<BarterScreen> {
                   if (unsavedOfferedProducts != null &&
                       unsavedOfferedProducts.isNotEmpty) {
                     final list = unsavedOfferedProducts
-                        .map((data) => BarterProductModel.fromJson(data))
+                        .map((data) =>
+                            BarterProductModel.fromJson(data.toJson()))
                         .toList();
                     list.forEach((prod) {
                       if (!offers
@@ -420,7 +421,8 @@ class _BarterScreenState extends State<BarterScreen> {
                   if (unsavedWantedProducts != null &&
                       unsavedWantedProducts.isNotEmpty) {
                     final list = unsavedWantedProducts
-                        .map((data) => BarterProductModel.fromJson(data))
+                        .map((data) =>
+                            BarterProductModel.fromJson(data.toJson()))
                         .toList();
                     list.forEach((prod) {
                       if (!wants
