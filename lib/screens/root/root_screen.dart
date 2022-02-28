@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:tapkat/screens/product/product_add_screen.dart';
 import 'package:tapkat/screens/root/barter/barter_transactions_screen.dart';
@@ -57,6 +58,17 @@ class _RootScreenState extends State<RootScreen> {
             color: kBackgroundColor,
             child: Column(
               children: [
+                Container(
+                  padding: EdgeInsets.symmetric(vertical: 3.0),
+                  width: double.infinity,
+                  color: Colors.white,
+                  child: Center(
+                    child: Text(
+                      'Version 1.0.${DateFormat('yyMMdd').format(DateTime.now())}_D',
+                      style: TextStyle(fontSize: 10.0),
+                    ),
+                  ),
+                ),
                 Expanded(
                   child: Container(
                     color: kBackgroundColor,

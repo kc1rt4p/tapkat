@@ -42,6 +42,17 @@ class BarterRepository {
     }
   }
 
+  Future<bool> counterOffer(BarterRecordModel barterRecord) async {
+    try {
+      final _doc = barterRef.doc(barterRecord.barterId);
+      await _doc.update(barterRecord.toJson());
+      return true;
+    } catch (e) {
+      print('ERROR COUNTERING OFFER: ${e.toString()}');
+      return false;
+    }
+  }
+
   Future<bool> addCashOffer(
       String barterId, BarterProductModel barterProduct) async {
     final existingProducts = await barterRef
@@ -146,11 +157,11 @@ class BarterRepository {
     }
   }
 
-  Stream<BarterRecordModel> streamBarter(String barterId) {
-    return barterRef
-        .doc(barterId)
-        .snapshots()
-        .map((docSnapshot) => BarterRecordModel.fromJson(docSnapshot.data()!));
+  Stream<BarterRecordModel?> streamBarter(String barterId) {
+    return barterRef.doc(barterId).snapshots().map((docSnapshot) =>
+        docSnapshot.data() != null
+            ? BarterRecordModel.fromJson(docSnapshot.data()!)
+            : null);
   }
 
   Future<Stream<List<ChatMessageModel>>> streamMessages(String barterId) async {

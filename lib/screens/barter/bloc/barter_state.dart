@@ -40,7 +40,7 @@ class StreambarterSuccess extends BarterState {
 }
 
 class BarterInitialized extends BarterState {
-  final Stream<BarterRecordModel> barterStream;
+  final Stream<BarterRecordModel?> barterStream;
   final List<ProductModel> userProducts;
   final Stream<List<BarterProductModel>> barterProductsStream;
 

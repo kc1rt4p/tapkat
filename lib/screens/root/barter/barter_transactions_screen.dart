@@ -76,21 +76,25 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
 
                     if (state is BarterTransactionsInitialized) {
                       _byYouStream = state.byYouStream.listen((list) {
-                        if (list.isNotEmpty) {
-                          setState(() {
+                        setState(() {
+                          if (list.isNotEmpty) {
                             byYouList = list;
-                          });
-                        }
+                          } else {
+                            byYouList.clear();
+                          }
+                        });
                       });
 
                       _fromOthersStream = state.fromOthersStream.listen((list) {
-                        if (list.isNotEmpty) {
-                          setState(() {
+                        setState(() {
+                          if (list.isNotEmpty) {
                             fromOthersList = list
                                 .where((barter) => barter.dealStatus != 'new')
                                 .toList();
-                          });
-                        }
+                          } else {
+                            fromOthersList.clear();
+                          }
+                        });
                       });
                     }
 
@@ -426,8 +430,8 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                                                                           BarterScreen(
                                                                     barterRecord:
                                                                         barter,
-                                                                    fromOtherUser:
-                                                                        true,
+                                                                    // fromOtherUser:
+                                                                    //     true,
                                                                   ),
                                                                 ),
                                                               ),

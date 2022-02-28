@@ -79,6 +79,33 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
             }
           }
 
+          if (event is CounterOffer) {
+            final _barterRecord =
+                await _barterRepository.getBarterRecord(event.barterId);
+
+            if (_barterRecord != null) {
+              var _newBarterRecord = _barterRecord;
+              _newBarterRecord.userid1Role = _barterRecord.userid2Role;
+              _newBarterRecord.userid2Role = _barterRecord.userid1Role;
+              _newBarterRecord.dealDate = DateTime.now();
+              _newBarterRecord.dealStatus = 'submitted';
+              _newBarterRecord.u2P1Id = event.product.productId;
+              _newBarterRecord.u2P1Name = event.product.productName;
+              _newBarterRecord.u2P1Price = event.product.price != null
+                  ? double.parse(event.product.price.toString())
+                  : 0;
+              _newBarterRecord.u2P1Image = event.product.imgUrl;
+
+              final updated =
+                  await _barterRepository.counterOffer(_newBarterRecord);
+
+              if (updated)
+                emit(UpdateBarterStatusSuccess());
+              else
+                emit(BarterError('unable to counter offer'));
+            }
+          }
+
           if (event is UpdateBarterStatus) {
             await _barterRepository.updateBarterStatus(
                 event.barterId, event.status);

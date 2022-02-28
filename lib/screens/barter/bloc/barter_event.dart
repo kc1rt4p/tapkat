@@ -89,3 +89,10 @@ class UpdateBarterStatus extends BarterEvent {
 
   UpdateBarterStatus(this.barterId, this.status);
 }
+
+class CounterOffer extends BarterEvent {
+  final String barterId;
+  final BarterProductModel product;
+
+  CounterOffer(this.barterId, this.product);
+}
