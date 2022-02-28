@@ -862,15 +862,6 @@ class _BarterScreenState extends State<BarterScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildBarterStatus(),
-            _barterRecord != null && _barterRecord!.dealStatus != 'sold'
-                ? Container(
-                    margin: EdgeInsets.only(bottom: 16.0),
-                    child: Text(
-                      'Tap the (+) icon to add items on your barter, you can select multiple items from your gallery.',
-                      style: Style.bodyText1.copyWith(fontSize: 12),
-                    ),
-                  )
-                : Container(),
             _buildBarterList(
               label: _currentUser!.uid == _senderUserId
                   ? 'You want these item(s) from $_recipientName'
@@ -1083,6 +1074,19 @@ class _BarterScreenState extends State<BarterScreen> {
               showAddBtn:
                   _barterRecord != null && _barterRecord!.dealStatus != 'sold',
             ),
+            _barterRecord != null && _barterRecord!.dealStatus != 'sold'
+                ? Container(
+                    width: double.infinity,
+                    margin: EdgeInsets.only(bottom: 16.0),
+                    child: Center(
+                      child: Text(
+                        'Tap the (+) icon to add items on your barter, you can select multiple items from your gallery.',
+                        style: Style.bodyText1.copyWith(fontSize: 12),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  )
+                : Container(),
           ],
         ),
       ),
