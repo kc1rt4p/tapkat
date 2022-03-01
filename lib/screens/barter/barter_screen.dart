@@ -295,8 +295,8 @@ class _BarterScreenState extends State<BarterScreen> {
 
             if (state is BarterInitialized) {
               setState(() {
-                participantItems = state.user2Products;
-                userItems = state.userProducts;
+                participantItems = state.recipientProducts;
+                userItems = state.senderProducts;
               });
 
               final unsavedOfferedProducts = await unsaveProductsStorage
@@ -1747,11 +1747,8 @@ class _BarterScreenState extends State<BarterScreen> {
                               ),
                             ),
                             Visibility(
-                              visible: _currentUserRole == 'sender'
-                                  ? offers.any((product) =>
-                                      product.productId == item.productid)
-                                  : wants.any((product) =>
-                                      product.productId == item.productid),
+                              visible: wants.any((product) =>
+                                  product.productId == item.productid),
                               child: Container(
                                 margin: EdgeInsets.only(right: 8.0),
                                 width: SizeConfig.screenWidth * 0.40,
@@ -2059,11 +2056,8 @@ class _BarterScreenState extends State<BarterScreen> {
                             ),
                           ),
                           Visibility(
-                            visible: _currentUserRole == 'recipient'
-                                ? offers.any((product) =>
-                                    product.productId == item.productid)
-                                : wants.any((product) =>
-                                    product.productId == item.productid),
+                            visible: offers.any((product) =>
+                                product.productId == item.productid),
                             child: Container(
                               margin: EdgeInsets.only(right: 8.0),
                               width: SizeConfig.screenWidth * 0.40,

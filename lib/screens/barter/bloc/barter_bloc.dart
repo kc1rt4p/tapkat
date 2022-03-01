@@ -30,12 +30,6 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
 
         if (_user != null) {
           if (event is InitializeBarter) {
-            final userProducts = await _productRepository.getFirstProducts(
-                'user', event.barterData.userid1);
-
-            final user2Products = await _productRepository.getFirstProducts(
-                'user', event.barterData.userid2);
-
             print('=== barter id: ${event.barterData.barterId}');
             final _barterRecord = await _barterRepository
                 .getBarterRecord(event.barterData.barterId!);
@@ -65,11 +59,25 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
                     .getBarterProducts(event.barterData.barterId!);
               }
 
+              final senderUserId = _barterRecord!.userid1Role == 'sender'
+                  ? _barterRecord.userid1
+                  : _barterRecord.userid2;
+
+              final recipientUserId = _barterRecord.userid1Role == 'recipient'
+                  ? _barterRecord.userid1
+                  : _barterRecord.userid2;
+
+              final senderProducts = await _productRepository.getFirstProducts(
+                  'user', senderUserId);
+
+              final recipientProducts = await _productRepository
+                  .getFirstProducts('user', recipientUserId);
+
               emit(BarterInitialized(
                 barterStream:
                     _barterRepository.streamBarter(event.barterData.barterId!),
-                userProducts: userProducts,
-                user2Products: user2Products,
+                senderProducts: senderProducts,
+                recipientProducts: recipientProducts,
                 barterProductsStream: _barterRepository
                     .streamBarterProducts(event.barterData.barterId!),
               ));
@@ -85,8 +93,14 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
 
             if (_barterRecord != null) {
               var _newBarterRecord = _barterRecord;
-              _newBarterRecord.userid1Role = _barterRecord.userid2Role;
-              _newBarterRecord.userid2Role = _barterRecord.userid1Role;
+              _newBarterRecord.userid1Role =
+                  _newBarterRecord.userid1Role == 'sender'
+                      ? 'recipient'
+                      : 'sender';
+              _newBarterRecord.userid2Role =
+                  _newBarterRecord.userid2Role == 'sender'
+                      ? 'recipient'
+                      : 'sender';
               _newBarterRecord.dealDate = DateTime.now();
               _newBarterRecord.dealStatus = 'submitted';
               _newBarterRecord.u2P1Id = event.product.productId;
@@ -176,20 +190,26 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
           }
 
           if (event is StreamBarter) {
-            final userProducts = await _productRepository.getFirstProducts(
-                'user', event.barterRecord.userid1);
+            final senderUserId = event.barterRecord.userid1Role == 'sender'
+                ? event.barterRecord.userid1
+                : event.barterRecord.userid2;
 
-            final user2Products = await _productRepository.getFirstProducts(
-                'user', event.barterRecord.userid2);
+            final recipientUserId =
+                event.barterRecord.userid1Role == 'recipient'
+                    ? event.barterRecord.userid1
+                    : event.barterRecord.userid2;
 
-            final barterProducts = await _barterRepository
-                .getBarterProducts(event.barterRecord.barterId!);
+            final senderProducts =
+                await _productRepository.getFirstProducts('user', senderUserId);
+
+            final recipientProducts = await _productRepository.getFirstProducts(
+                'user', recipientUserId);
 
             emit(BarterInitialized(
               barterStream:
                   _barterRepository.streamBarter(event.barterRecord.barterId!),
-              userProducts: userProducts,
-              user2Products: user2Products,
+              senderProducts: senderProducts,
+              recipientProducts: recipientProducts,
               barterProductsStream: _barterRepository
                   .streamBarterProducts(event.barterRecord.barterId!),
             ));
