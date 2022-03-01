@@ -231,10 +231,11 @@ class ProductRepository {
       body: {
         'psk': psk,
         'productid': productRequest.productid,
-        'userid': productRequest.userid,
+        'userid': userId,
         'like': like,
       },
     );
+    print(response.data['status']);
 
     return response.data['status'] == 'SUCCESS';
   }

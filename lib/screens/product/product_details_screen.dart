@@ -605,7 +605,8 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                             ),
                           ),
                           Visibility(
-                            visible: widget.ownItem,
+                            visible: widget.ownItem ||
+                                _user!.uid == _product!.userid,
                             child: Container(
                               padding: EdgeInsets.symmetric(
                                   horizontal: 20.0, vertical: 8.0),

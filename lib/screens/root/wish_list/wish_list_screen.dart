@@ -46,33 +46,46 @@ class _WishListScreenState extends State<WishListScreen> {
         barrierEnabled: false,
         indicatorColor: kBackgroundColor,
         backgroundColor: Colors.white,
-        child: BlocListener(
-          bloc: _wishListBloc,
-          listener: (context, state) {
-            print('current state: $state');
-            if (state is WishListLoading) {
-              ProgressHUD.of(context)!.show();
-              setState(() {
-                _loading = true;
-              });
-            } else {
-              ProgressHUD.of(context)!.dismiss();
-              setState(() {
-                _loading = false;
-              });
-            }
+        child: MultiBlocListener(
+          listeners: [
+            BlocListener(
+              bloc: _wishListBloc,
+              listener: (context, state) {
+                print('current state: $state');
+                if (state is WishListLoading) {
+                  ProgressHUD.of(context)!.show();
+                  setState(() {
+                    _loading = true;
+                  });
+                } else {
+                  ProgressHUD.of(context)!.dismiss();
+                  setState(() {
+                    _loading = false;
+                  });
+                }
 
-            if (state is WishListInitialized) {
-              setState(() {
-                _list = state.list;
-                _user = state.user;
-              });
-            }
+                if (state is WishListInitialized) {
+                  setState(() {
+                    _list = state.list;
+                    _user = state.user;
+                  });
+                }
 
-            if (state is WishListError) {
-              print('wish list error: ${state.message}');
-            }
-          },
+                if (state is WishListError) {
+                  print('wish list error: ${state.message}');
+                }
+              },
+            ),
+            BlocListener(
+              bloc: _productBloc,
+              listener: (context, state) {
+                print('current wish list state: $state');
+                if (state is UnlikeSuccess) {
+                  _wishListBloc.add(InitializeWishListScreen());
+                }
+              },
+            ),
+          ],
           child: Container(
             color: Color(0xFFEBFBFF),
             child: Column(
@@ -177,6 +190,10 @@ class _WishListScreenState extends State<WishListScreen> {
                                             }
 
                                             return BarterListItem(
+                                              height: SizeConfig.screenHeight *
+                                                  0.23,
+                                              width:
+                                                  SizeConfig.screenWidth * 0.40,
                                               liked: liked,
                                               itemName:
                                                   product.productname ?? '',

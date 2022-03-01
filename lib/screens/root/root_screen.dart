@@ -48,6 +48,7 @@ class _RootScreenState extends State<RootScreen> {
         child: BlocListener(
           bloc: _rootBloc,
           listener: (context, state) {
+            print('current root bloc state: $state');
             if (state is MoveToTab) {
               setState(() {
                 _currentIndex = state.index;

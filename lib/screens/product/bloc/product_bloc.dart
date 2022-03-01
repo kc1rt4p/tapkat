@@ -141,21 +141,6 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
             final result = await _productRepo.likeProduct(
               productRequest: ProductRequestModel(
                 productid: event.product.productid,
-                userid: event.product.userid,
-                productdesc: event.product.productdesc,
-                currency: event.product.currency,
-                specifications: event.product.specifications,
-                type: event.product.type,
-                address: event.product.address!.address,
-                city: event.product.address!.city,
-                country: event.product.address!.country,
-                postcode: event.product.address!.postCode,
-                category: event.product.category,
-                image_url: event.product.mediaPrimary!.url,
-                media_type: event.product.mediaPrimary!.type,
-                location: event.product.address!.location,
-                rating: event.product.rating,
-                price: event.product.price,
               ),
               userId: _user.uid,
               like: -1,
@@ -164,7 +149,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
             if (result) {
               emit(UnlikeSuccess());
             } else
-              emit(ProductError('unable to add like to product'));
+              emit(ProductError('unable to unlike to product'));
           }
         }
 
@@ -173,21 +158,6 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
             final result = await _productRepo.likeProduct(
               productRequest: ProductRequestModel(
                 productid: event.product.productid,
-                userid: event.product.userid,
-                productdesc: event.product.productdesc,
-                currency: event.product.currency,
-                specifications: event.product.specifications,
-                type: event.product.type,
-                address: event.product.address!.address,
-                city: event.product.address!.city,
-                country: event.product.address!.country,
-                postcode: event.product.address!.postCode,
-                category: event.product.category,
-                image_url: event.product.mediaPrimary!.url,
-                media_type: event.product.mediaPrimary!.type,
-                location: event.product.address!.location,
-                rating: event.product.rating,
-                price: event.product.price,
               ),
               userId: _user.uid,
               like: 1,
