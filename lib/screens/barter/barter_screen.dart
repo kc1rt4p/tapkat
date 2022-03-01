@@ -290,6 +290,7 @@ class _BarterScreenState extends State<BarterScreen> {
                   hideClose: true,
                 );
               }
+              await unsaveProductsStorage.clear();
             }
 
             if (state is BarterInitialized) {
@@ -407,8 +408,7 @@ class _BarterScreenState extends State<BarterScreen> {
                   if (unsavedOfferedProducts != null &&
                       unsavedOfferedProducts.isNotEmpty) {
                     final list = unsavedOfferedProducts
-                        .map((data) =>
-                            BarterProductModel.fromJson(data.toJson()))
+                        .map((data) => data as BarterProductModel)
                         .toList();
                     list.forEach((prod) {
                       if (!offers
@@ -421,8 +421,7 @@ class _BarterScreenState extends State<BarterScreen> {
                   if (unsavedWantedProducts != null &&
                       unsavedWantedProducts.isNotEmpty) {
                     final list = unsavedWantedProducts
-                        .map((data) =>
-                            BarterProductModel.fromJson(data.toJson()))
+                        .map((data) => data as BarterProductModel)
                         .toList();
                     list.forEach((prod) {
                       if (!wants
@@ -959,9 +958,7 @@ class _BarterScreenState extends State<BarterScreen> {
                   );
                 }).toList()
               ],
-              addBtnTapped: _currentUserRole == 'recipient'
-                  ? _showParticipantItems
-                  : _showUserItems,
+              addBtnTapped: _showParticipantItems,
               showAddBtn:
                   _barterRecord != null && _barterRecord!.dealStatus != 'sold',
             ),
@@ -1067,9 +1064,7 @@ class _BarterScreenState extends State<BarterScreen> {
                   );
                 }).toList()
               ],
-              addBtnTapped: _currentUserRole == 'sender'
-                  ? _showParticipantItems
-                  : _showUserItems,
+              addBtnTapped: _showUserItems,
               // _showUserItems,
               showAddBtn:
                   _barterRecord != null && _barterRecord!.dealStatus != 'sold',
@@ -1841,16 +1836,17 @@ class _BarterScreenState extends State<BarterScreen> {
                           bgColor: kBackgroundColor,
                           textColor: Colors.white,
                           onTap: () {
-                            if (_currentUserRole == 'sender')
-                              _add_offeredCashItems(selectedItems
-                                  .map((item) =>
-                                      BarterProductModel.fromProductModel(item))
-                                  .toList());
-                            else
-                              _addWantedItems(selectedItems
-                                  .map((item) =>
-                                      BarterProductModel.fromProductModel(item))
-                                  .toList());
+                            _addWantedItems(selectedItems
+                                .map((item) =>
+                                    BarterProductModel.fromProductModel(item))
+                                .toList());
+                            // if (_currentUserRole == 'sender')
+                            //   _add_offeredCashItems(selectedItems
+                            //       .map((item) =>
+                            //           BarterProductModel.fromProductModel(item))
+                            //       .toList());
+                            // else
+
                             Navigator.pop(context);
                           },
                           removeMargin: true,
@@ -2154,16 +2150,20 @@ class _BarterScreenState extends State<BarterScreen> {
                           bgColor: kBackgroundColor,
                           textColor: Colors.white,
                           onTap: () {
-                            if (_currentUserRole == 'recipient')
-                              _add_offeredCashItems(selectedItems
-                                  .map((item) =>
-                                      BarterProductModel.fromProductModel(item))
-                                  .toList());
-                            else
-                              _addWantedItems(selectedItems
-                                  .map((item) =>
-                                      BarterProductModel.fromProductModel(item))
-                                  .toList());
+                            _add_offeredCashItems(selectedItems
+                                .map((item) =>
+                                    BarterProductModel.fromProductModel(item))
+                                .toList());
+                            // if (_currentUserRole == 'recipient')
+                            //   _add_offeredCashItems(selectedItems
+                            //       .map((item) =>
+                            //           BarterProductModel.fromProductModel(item))
+                            //       .toList());
+                            // else
+                            //   _addWantedItems(selectedItems
+                            //       .map((item) =>
+                            //           BarterProductModel.fromProductModel(item))
+                            //       .toList());
                             Navigator.pop(context);
                           },
                           removeMargin: true,

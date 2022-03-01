@@ -77,23 +77,15 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                     if (state is BarterTransactionsInitialized) {
                       _byYouStream = state.byYouStream.listen((list) {
                         setState(() {
-                          if (list.isNotEmpty) {
-                            byYouList = list;
-                          } else {
-                            byYouList.clear();
-                          }
+                          byYouList = list;
                         });
                       });
 
                       _fromOthersStream = state.fromOthersStream.listen((list) {
                         setState(() {
-                          if (list.isNotEmpty) {
-                            fromOthersList = list
-                                .where((barter) => barter.dealStatus != 'new')
-                                .toList();
-                          } else {
-                            fromOthersList.clear();
-                          }
+                          fromOthersList = list
+                              .where((barter) => barter.dealStatus != 'new')
+                              .toList();
                         });
                       });
                     }
