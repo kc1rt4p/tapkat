@@ -49,6 +49,7 @@ class SignUpSuccess extends AuthState {}
 
 class GetCurrentUsersuccess extends AuthState {
   final User user;
+  final UserModel? userModel;
 
-  GetCurrentUsersuccess(this.user);
+  GetCurrentUsersuccess(this.user, this.userModel);
 }

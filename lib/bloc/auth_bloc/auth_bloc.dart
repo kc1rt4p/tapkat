@@ -4,7 +4,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_webservice/places.dart';
-import 'package:google_sign_in/google_sign_in.dart';
+import 'package:tapkat/models/user.dart';
+import 'package:tapkat/repositories/user_repository.dart';
 import 'package:tapkat/schemas/users_record.dart';
 import 'package:tapkat/services/auth_service.dart';
 import 'package:tapkat/services/firebase.dart';
@@ -16,14 +17,10 @@ part 'auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final authService = AuthService();
+  final userRepo = UserRepository();
 
-  final _googleSignIn = GoogleSignIn(
-    scopes: [
-      'email',
-      'https://www.googleapis.com/auth/contacts.readonly',
-    ],
-  );
   User? currentUser;
+  UserModel? currentUserModel;
   AuthBloc() : super(AuthInitial()) {
     on<AuthEvent>((event, emit) async {
       emit(AuthLoading());
@@ -33,7 +30,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       }
 
       if (event is GetCurrentuser) {
-        emit(GetCurrentUsersuccess(authService.currentUser!.user!));
+        emit(GetCurrentUsersuccess(
+            authService.currentUser!.user!, authService.currentUserModel));
       }
 
       if (event is SignUp) {
@@ -56,6 +54,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           authService.currentUser = TapkatFirebaseUser(user);
           currentUser = user;
 
+          final userModel = await userRepo.getUser(user.uid);
+          if (userModel != null) {
+            currentUserModel = userModel;
+            authService.currentUserModel = userModel;
+          }
+
           emit(ShowSignUpPhoto());
         } else {
           emit(AuthError('Error signing up'));
@@ -70,7 +74,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
         if (event is SignInGoogle) {
           final user = await authService.signInWithGoogle();
-          if (user != null) emit(AuthSignedIn(user));
+          if (user != null) {
+            emit(AuthSignedIn(user));
+            final userModel = await userRepo.getUser(user.uid);
+            if (userModel != null) {
+              currentUserModel = userModel;
+              authService.currentUserModel = userModel;
+            }
+          }
         }
 
         if (event is SignInApple) {
@@ -127,6 +138,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           print('success sign in');
           currentUser = user;
           authService.currentUser = TapkatFirebaseUser(user);
+          final userModel = await userRepo.getUser(user.uid);
+          if (userModel != null) {
+            currentUserModel = userModel;
+            authService.currentUserModel = userModel;
+          }
           emit(AuthSignedIn(user));
         } else {
           emit(AuthError(''));
