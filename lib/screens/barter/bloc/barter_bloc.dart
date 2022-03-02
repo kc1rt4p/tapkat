@@ -31,7 +31,7 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
         if (_user != null) {
           if (event is InitializeBarter) {
             print('=== barter id: ${event.barterData.barterId}');
-            final _barterRecord = await _barterRepository
+            var _barterRecord = await _barterRepository
                 .getBarterRecord(event.barterData.barterId!);
             print('=== _barterRecord: $_barterRecord');
 
@@ -39,6 +39,7 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
               event.barterData.dealStatus = 'new';
               final newBarter =
                   await _barterRepository.setBarterRecord(event.barterData);
+              print('=== new barter added: $newBarter');
 
               var barterProducts = await _barterRepository
                   .getBarterProducts(event.barterData.barterId!);
@@ -58,6 +59,9 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
                 barterProducts = await _barterRepository
                     .getBarterProducts(event.barterData.barterId!);
               }
+
+              _barterRecord = await _barterRepository
+                  .getBarterRecord(event.barterData.barterId!);
 
               final senderUserId = _barterRecord!.userid1Role == 'sender'
                   ? _barterRecord.userid1
@@ -102,20 +106,28 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
                       ? 'recipient'
                       : 'sender';
               _newBarterRecord.dealDate = DateTime.now();
-              _newBarterRecord.dealStatus = 'submitted';
               _newBarterRecord.u2P1Id = event.product.productId;
               _newBarterRecord.u2P1Name = event.product.productName;
               _newBarterRecord.u2P1Price = event.product.price != null
                   ? double.parse(event.product.price.toString())
                   : 0;
               _newBarterRecord.u2P1Image = event.product.imgUrl;
+              _newBarterRecord.dealStatus = 'submitted';
 
               final updated =
                   await _barterRepository.counterOffer(_newBarterRecord);
 
-              if (updated)
+              if (updated) {
+                _barterRepository.addMessage(ChatMessageModel(
+                  barterId: event.barterId,
+                  userId: _user!.uid,
+                  userName: _user!.displayName,
+                  message: 'Offer SUBMITTED (Counter Offer)',
+                  dateCreated: DateTime.now(),
+                ));
+
                 emit(UpdateBarterStatusSuccess());
-              else
+              } else
                 emit(BarterError('unable to counter offer'));
             }
           }
@@ -127,10 +139,18 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
               final barterRecord =
                   await _barterRepository.getBarterRecord(event.barterId);
               if (barterRecord != null) {
-                final userId =
+                final senderUserId = barterRecord.userid1Role == 'sender'
+                    ? barterRecord.userid1
+                    : barterRecord.userid2;
+                final recipientUserId = barterRecord.userid1Role == 'recipient'
+                    ? barterRecord.userid1
+                    : barterRecord.userid2;
+
+                String userId =
                     ['accepted', 'rejected', 'sold'].contains(event.status)
-                        ? barterRecord.userid2!
-                        : barterRecord.userid1!;
+                        ? recipientUserId!
+                        : senderUserId!;
+
                 final user = await _userRepo.getUser(userId);
 
                 _barterRepository.addMessage(ChatMessageModel(

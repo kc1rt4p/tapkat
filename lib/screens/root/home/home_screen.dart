@@ -189,7 +189,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                 }
 
                                 return BarterListItem(
-                                  likeLeftMargin: SizeConfig.screenWidth * 0.3,
+                                  likeLeftMargin:
+                                      SizeConfig.safeBlockHorizontal * 3,
                                   liked: liked,
                                   itemName: product.productname ?? '',
                                   itemPrice: product.price != null
@@ -272,7 +273,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                 }
 
                                 return BarterListItem(
-                                  likeLeftMargin: SizeConfig.screenWidth * 0.3,
+                                  likeLeftMargin:
+                                      SizeConfig.safeBlockHorizontal * 3,
                                   liked: liked,
                                   itemName: product.productname ?? '',
                                   itemPrice: product.price != null
@@ -337,7 +339,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ownList: true,
                           items: _myProductList.map((product) {
                             return BarterListItem(
-                              height: SizeConfig.screenHeight * 0.2,
+                              height: SizeConfig.screenHeight * 0.165,
                               width: SizeConfig.screenWidth * 0.27,
                               fontSize: SizeConfig.textScaleFactor * 9,
                               hideLikeBtn: true,

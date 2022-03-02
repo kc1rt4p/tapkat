@@ -85,6 +85,13 @@ class _BarterScreenState extends State<BarterScreen> {
   String? _currentUserRole;
 
   @override
+  void setState(fn) {
+    if (mounted) {
+      super.setState(fn);
+    }
+  }
+
+  @override
   void initState() {
     _authBloc = BlocProvider.of<AuthBloc>(context);
     _authBloc.add(GetCurrentuser());
@@ -308,36 +315,37 @@ class _BarterScreenState extends State<BarterScreen> {
                 if (barterRecord == null) {
                   Navigator.pop(context);
                   return;
+                } else {
+                  setState(() {
+                    _barterRecord = barterRecord;
+                    if (_barterId == null) {
+                      print('-===== ${_barterRecord!.toJson()}');
+                      _barterId = _barterRecord!.barterId;
+                    }
+
+                    _barterBloc.add(InitializeBarterChat(_barterId!));
+
+                    if (_barterRecord!.userid1Role == 'sender') {
+                      _senderUserId = _barterRecord!.userid1;
+                      _recipientUserId = _barterRecord!.userid2;
+                      _recipientName = _barterRecord!.userid2!;
+                    } else {
+                      _senderUserId = _barterRecord!.userid2;
+                      _recipientUserId = _barterRecord!.userid1;
+                      _recipientName = _barterRecord!.userid1!;
+                    }
+
+                    if (_senderUserId == _currentUser!.uid) {
+                      _currentUserRole = 'sender';
+                    } else {
+                      _currentUserRole = 'recipient';
+                    }
+
+                    _recipientName = _recipientName.length > 10
+                        ? _recipientName.substring(0, 7) + '...'
+                        : _recipientName;
+                  });
                 }
-                setState(() {
-                  _barterRecord = barterRecord;
-                  if (_barterId == null) {
-                    print('-===== ${_barterRecord!.toJson()}');
-                    _barterId = _barterRecord!.barterId;
-                  }
-
-                  _barterBloc.add(InitializeBarterChat(_barterId!));
-
-                  if (_barterRecord!.userid1Role == 'sender') {
-                    _senderUserId = _barterRecord!.userid1;
-                    _recipientUserId = _barterRecord!.userid2;
-                    _recipientName = _barterRecord!.userid2!;
-                  } else {
-                    _senderUserId = _barterRecord!.userid2;
-                    _recipientUserId = _barterRecord!.userid1;
-                    _recipientName = _barterRecord!.userid1!;
-                  }
-
-                  if (_senderUserId == _currentUser!.uid) {
-                    _currentUserRole = 'sender';
-                  } else {
-                    _currentUserRole = 'recipient';
-                  }
-
-                  _recipientName = _recipientName.length > 10
-                      ? _recipientName.substring(0, 7) + '...'
-                      : _recipientName;
-                });
               });
 
               _barterProductsStream = state.barterProductsStream.listen((list) {
@@ -798,8 +806,8 @@ class _BarterScreenState extends State<BarterScreen> {
           ),
         ),
         Visibility(
-          visible: !['rejected', 'accepted', 'withdrawn']
-              .contains(_barterRecord!.dealStatus),
+          visible:
+              !['rejected', 'withdrawn'].contains(_barterRecord!.dealStatus),
           child: Expanded(
             child: Container(
               margin: EdgeInsets.only(right: 8.0),
@@ -807,7 +815,9 @@ class _BarterScreenState extends State<BarterScreen> {
                 enabled: _barterRecord!.dealStatus == 'submitted',
                 removeMargin: true,
                 bgColor: Color(0xFFBB3F03),
-                label: 'Reject',
+                label: _barterRecord!.dealStatus == 'accepted'
+                    ? 'Withdraw'
+                    : 'Reject',
                 onTap: _onCancelTapped,
               ),
             ),
@@ -928,7 +938,7 @@ class _BarterScreenState extends State<BarterScreen> {
                               _barterRecord!.dealStatus != 'sold',
                           child: Positioned(
                             top: 5.0,
-                            right: 5.0,
+                            right: 10.0,
                             child: InkWell(
                               onTap: () {
                                 setState(() {
@@ -1034,7 +1044,7 @@ class _BarterScreenState extends State<BarterScreen> {
                               _barterRecord!.dealStatus != 'sold',
                           child: Positioned(
                             top: 5.0,
-                            right: 5.0,
+                            right: 10.0,
                             child: InkWell(
                               onTap: () {
                                 setState(() {
@@ -1273,17 +1283,20 @@ class _BarterScreenState extends State<BarterScreen> {
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
                             Expanded(
-                              child: Directionality(
-                                textDirection: TextDirection.ltr,
-                                child: GridView.count(
-                                  scrollDirection: Axis.horizontal,
-                                  padding: EdgeInsets.symmetric(vertical: 2.0),
-                                  mainAxisSpacing: 5.0,
-                                  crossAxisCount: 1,
-                                  reverse: true,
-                                  children: wantWidgets,
-                                ),
-                              ),
+                              child: wantWidgets.isNotEmpty
+                                  ? Directionality(
+                                      textDirection: TextDirection.ltr,
+                                      child: GridView.count(
+                                        scrollDirection: Axis.horizontal,
+                                        padding:
+                                            EdgeInsets.symmetric(vertical: 2.0),
+                                        mainAxisSpacing: 5.0,
+                                        crossAxisCount: 1,
+                                        reverse: true,
+                                        children: wantWidgets,
+                                      ),
+                                    )
+                                  : Container(),
                             ),
                             SizedBox(height: 5.0),
                             Text('Cash: \$ ${_requestedCash ?? '0.00'}'),
@@ -1307,17 +1320,20 @@ class _BarterScreenState extends State<BarterScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Expanded(
-                              child: Directionality(
-                                textDirection: TextDirection.rtl,
-                                child: GridView.count(
-                                  scrollDirection: Axis.horizontal,
-                                  padding: EdgeInsets.symmetric(vertical: 2.0),
-                                  mainAxisSpacing: 5.0,
-                                  crossAxisCount: 1,
-                                  reverse: true,
-                                  children: offerWidgets,
-                                ),
-                              ),
+                              child: offerWidgets.isNotEmpty
+                                  ? Directionality(
+                                      textDirection: TextDirection.rtl,
+                                      child: GridView.count(
+                                        scrollDirection: Axis.horizontal,
+                                        padding:
+                                            EdgeInsets.symmetric(vertical: 2.0),
+                                        mainAxisSpacing: 5.0,
+                                        crossAxisCount: 1,
+                                        reverse: true,
+                                        children: offerWidgets,
+                                      ),
+                                    )
+                                  : Container(),
                             ),
                             SizedBox(height: 5.0),
                             Text('Cash: \$ ${_offeredCash ?? '0.00'}'),
