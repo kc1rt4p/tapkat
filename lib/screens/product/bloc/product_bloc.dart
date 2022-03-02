@@ -4,6 +4,7 @@ import 'package:tapkat/models/product.dart';
 import 'package:tapkat/models/request/add_product_request.dart';
 import 'package:tapkat/models/upload_product_image_response.dart';
 import 'package:tapkat/repositories/product_repository.dart';
+import 'package:tapkat/repositories/user_repository.dart';
 import 'package:tapkat/services/auth_service.dart';
 import 'package:tapkat/services/firebase.dart';
 import 'package:tapkat/utilities/upload_media.dart';
@@ -15,6 +16,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
   ProductBloc() : super(ProductInitial()) {
     final _productRepo = ProductRepository();
     final _authService = AuthService();
+    final _userRepo = UserRepository();
 
     on<ProductEvent>((event, emit) async {
       try {
@@ -25,8 +27,10 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
           final downloadUrl = await uploadData(
               event.media[0].storagePath, event.media[0].bytes);
 
+          final userModel = await _userRepo.getUser(_user!.uid);
+
           event.productRequest.image_url = downloadUrl;
-          event.productRequest.display_name = _user!.displayName;
+          event.productRequest.display_name = userModel!.display_name;
 
           final productId = await _productRepo.addProduct(event.productRequest);
 

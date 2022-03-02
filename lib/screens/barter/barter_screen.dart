@@ -13,6 +13,7 @@ import 'package:tapkat/models/barter_product.dart';
 import 'package:tapkat/models/barter_record_model.dart';
 import 'package:tapkat/models/chat_message.dart';
 import 'package:tapkat/models/product.dart';
+import 'package:tapkat/models/user.dart';
 import 'package:tapkat/screens/barter/widgets/add_item_btn.dart';
 import 'package:tapkat/screens/barter/widgets/cash_item.dart';
 import 'package:tapkat/screens/barter/widgets/chat_item.dart';
@@ -83,6 +84,7 @@ class _BarterScreenState extends State<BarterScreen> {
   String? _senderUserId;
   String? _recipientUserId;
   String? _currentUserRole;
+  UserModel? _currentUserModel;
 
   @override
   void setState(fn) {
@@ -486,6 +488,8 @@ class _BarterScreenState extends State<BarterScreen> {
                       dealDate: DateTime.now(),
                       userid1Role: 'sender',
                       userid2Role: 'recipient',
+                      userid1Name: _currentUserModel!.display_name,
+                      userid2Name: _product!.display_name,
                     ),
                   ),
                 );

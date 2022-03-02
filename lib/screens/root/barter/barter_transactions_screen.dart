@@ -85,28 +85,70 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                       _byYouStream = state.byYouStream.listen((list) {
                         setState(() {
                           if (list.isNotEmpty) {
-                            list.forEach((barterRecord) {
-                              if (barterRecord.userid1Role == 'sender') {
-                                byYouList.add(barterRecord);
-                              } else {
-                                fromOthersList.add(barterRecord);
-                              }
-                            });
+                            byYouList.addAll(list);
+                          } else {
+                            byYouList.clear();
                           }
                         });
+                        // List<BarterRecordModel> _byYou = [];
+                        // List<BarterRecordModel> _fromOthers = [];
+
+                        // list.forEach((barterRecord) {
+                        //   if (barterRecord.userid1Role == 'sender') {
+                        //     _byYou.add(barterRecord);
+                        //   } else {
+                        //     _fromOthers.add(barterRecord);
+                        //   }
+                        // });
+
+                        // setState(() {
+                        //   if (_byYou.isNotEmpty)
+                        //     byYouList.addAll(_byYou);
+                        //   else
+                        //     byYouList.clear();
+
+                        //   if (_fromOthers.isNotEmpty)
+                        //     fromOthersList.addAll(_fromOthers);
+                        //   else
+                        //     fromOthersList.clear();
+                        // });
                       });
 
                       _fromOthersStream = state.fromOthersStream.listen((list) {
                         setState(() {
                           if (list.isNotEmpty) {
-                            list.forEach((barterRecord) {
-                              if (barterRecord.userid2Role == 'sender' &&
-                                  barterRecord.dealStatus != 'new') {
-                                byYouList.add(barterRecord);
-                              }
-                            });
+                            fromOthersList = list
+                                .where((barterRecord) =>
+                                    barterRecord.dealStatus != 'new')
+                                .toList();
+                          } else {
+                            fromOthersList.clear();
                           }
                         });
+                        // List<BarterRecordModel> _byYou = [];
+                        // List<BarterRecordModel> _fromOthers = [];
+
+                        // list.forEach((barterRecord) {
+                        //   if (barterRecord.dealStatus != 'new') {
+                        //     if (barterRecord.userid1Role == 'sender') {
+                        //       _byYou.add(barterRecord);
+                        //     } else {
+                        //       _fromOthers.add(barterRecord);
+                        //     }
+                        //   }
+                        // });
+
+                        // setState(() {
+                        //   if (_byYou.isNotEmpty)
+                        //     byYouList.addAll(_byYou);
+                        //   else
+                        //     byYouList.clear();
+
+                        //   if (_fromOthers.isNotEmpty)
+                        //     fromOthersList.addAll(_fromOthers);
+                        //   else
+                        //     fromOthersList.clear();
+                        // });
                       });
                     }
 

@@ -83,11 +83,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   });
 
                   _displayNameTextController.text =
-                      _user!.displayName ?? 'Unknown';
+                      _userModel!.display_name ?? 'Unknown';
                   _emailTextController.text = _userModel!.email ?? 'Unknown';
                   _phoneTextController.text =
                       _userModel!.mobilenum ?? 'Unknown';
-                  _locationTextController.text = 'Unknown';
+                  _locationTextController.text =
+                      _userModel!.address ?? 'Unknown';
                 }
               },
             ),

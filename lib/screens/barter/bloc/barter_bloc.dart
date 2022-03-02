@@ -156,7 +156,7 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
                 _barterRepository.addMessage(ChatMessageModel(
                   barterId: event.barterId,
                   userId: userId,
-                  userName: user!.firstname,
+                  userName: user!.display_name,
                   message: 'Offer ${event.status.toUpperCase()}',
                   dateCreated: DateTime.now(),
                 ));
@@ -254,7 +254,7 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
           if (event is SendMessage) {
             final user = await _userRepo.getUser(_user!.uid);
             event.message.userId = _user!.uid;
-            event.message.userName = user!.firstname;
+            event.message.userName = user!.display_name;
             event.message.dateCreated = DateTime.now();
             final sent = await _barterRepository.addMessage(event.message);
             if (!sent) {
