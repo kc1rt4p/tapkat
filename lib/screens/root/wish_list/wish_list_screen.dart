@@ -160,8 +160,8 @@ class _WishListScreenState extends State<WishListScreen> {
                             padding: EdgeInsets.symmetric(
                                 horizontal: 10.0, vertical: 10.0),
                             crossAxisCount: 2,
-                            mainAxisSpacing: 14.0,
-                            crossAxisSpacing: 12.0,
+                            shrinkWrap: true,
+                            mainAxisSpacing: 8.0,
                             children: _list
                                 .map((product) => Center(
                                       child: StreamBuilder<

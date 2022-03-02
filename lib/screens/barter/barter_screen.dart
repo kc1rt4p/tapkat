@@ -444,9 +444,9 @@ class _BarterScreenState extends State<BarterScreen> {
               });
             }
 
-            if (state is DeleteBarterSuccess) {
-              Navigator.pop(context);
-            }
+            // if (state is DeleteBarterSuccess) {
+            //   Navigator.pop(context);
+            // }
 
             if (state is BarterError) {
               print('error: ${state.message}');
@@ -465,6 +465,7 @@ class _BarterScreenState extends State<BarterScreen> {
             if (state is GetCurrentUsersuccess) {
               setState(() {
                 _currentUser = state.user;
+                _currentUserModel = state.userModel;
               });
 
               if (widget.barterRecord == null && _product != null) {
@@ -488,7 +489,9 @@ class _BarterScreenState extends State<BarterScreen> {
                       dealDate: DateTime.now(),
                       userid1Role: 'sender',
                       userid2Role: 'recipient',
-                      userid1Name: _currentUserModel!.display_name,
+                      userid1Name: _currentUserModel != null
+                          ? _currentUserModel!.display_name
+                          : '',
                       userid2Name: _product!.display_name,
                     ),
                   ),
