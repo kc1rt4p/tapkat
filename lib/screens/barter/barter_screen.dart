@@ -478,8 +478,6 @@ class _BarterScreenState extends State<BarterScreen> {
                 _currentUserModel = state.userModel;
               });
 
-              print('CURRENT USER MODEL: ${_currentUserModel!.toJson()}');
-
               if (widget.barterRecord == null && _product != null) {
                 setState(() {
                   _barterId = _currentUser!.uid +
