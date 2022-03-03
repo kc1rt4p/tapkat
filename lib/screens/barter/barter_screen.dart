@@ -330,23 +330,27 @@ class _BarterScreenState extends State<BarterScreen> {
                     if (_barterRecord!.userid1Role == 'sender') {
                       _senderUserId = _barterRecord!.userid1;
                       _recipientUserId = _barterRecord!.userid2;
-                      _recipientName = _barterRecord!.userid2Name != null &&
-                              _barterRecord!.userid2Name!.isNotEmpty
-                          ? _barterRecord!.userid2Name!
-                          : _barterRecord!.userid2!;
                     } else {
                       _senderUserId = _barterRecord!.userid2;
                       _recipientUserId = _barterRecord!.userid1;
-                      _recipientName = _barterRecord!.userid1Name != null &&
-                              _barterRecord!.userid1Name!.isNotEmpty
-                          ? _barterRecord!.userid1Name!
-                          : _barterRecord!.userid1!;
                     }
 
                     if (_senderUserId == _currentUser!.uid) {
                       _currentUserRole = 'sender';
                     } else {
                       _currentUserRole = 'recipient';
+                    }
+
+                    if (_currentUser!.uid == _senderUserId) {
+                      _recipientName = _barterRecord!.userid2Name != null &&
+                              _barterRecord!.userid2Name!.isNotEmpty
+                          ? _barterRecord!.userid2Name!
+                          : _barterRecord!.userid2!;
+                    } else {
+                      _recipientName = _barterRecord!.userid1Name != null &&
+                              _barterRecord!.userid1Name!.isNotEmpty
+                          ? _barterRecord!.userid1Name!
+                          : _barterRecord!.userid1!;
                     }
 
                     _recipientName = _recipientName.length > 10
