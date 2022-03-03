@@ -93,7 +93,7 @@ class ProductRepository {
       'psk': psk,
       'userid': userId,
       'productcount': productCount,
-      'sortBy': 'price',
+      'sortby': 'price',
       'startafterval': startAfterVal,
       'productid': lastProductId,
     });
@@ -113,7 +113,7 @@ class ProductRepository {
         'psk': psk,
         'userid': userid,
         'productcount': productCount,
-        'sortBy': 'price',
+        'sortby': 'price',
         'sortdirection': listType == 'reco' ? 'ascending' : 'descending',
       },
       // params: userid != null
@@ -183,7 +183,7 @@ class ProductRepository {
       'psk': psk,
       'keywords': keyword,
       'sortby': 'price',
-      'sortDirection': 'ascending',
+      'sortdirection': 'ascending',
       'productcount': productCount,
     };
     if (lastProductId != null && startAfterVal != null) {
