@@ -89,12 +89,12 @@ class ProductRepository {
     required String startAfterVal,
   }) async {
     final response =
-        await _apiService.post(url: 'products/$listType/searchSet', body: {
+        await _apiService.post(url: 'products/$listType/searchset', body: {
       'psk': psk,
       'userid': userId,
       'productcount': productCount,
       'sortby': 'price',
-      'startafterval': startAfterVal,
+      'startafterval': double.parse(startAfterVal),
       'productid': lastProductId,
     });
 
@@ -184,17 +184,17 @@ class ProductRepository {
       'keywords': keyword,
       'sortby': 'price',
       'sortdirection': 'ascending',
-      'productcount': productCount,
+      'productcount': 10,
     };
     if (lastProductId != null && startAfterVal != null) {
       _body.addAll({
-        'startafterval': startAfterVal,
+        'startafterval': double.parse(startAfterVal),
         'productid': lastProductId,
       });
     }
     final response = await _apiService.post(
       url:
-          'products/${(lastProductId != null && startAfterVal != null) ? 'searchSet' : 'searchfirst'}',
+          'products/${(lastProductId != null && startAfterVal != null) ? 'searchset' : 'searchfirst'}',
       body: _body,
     );
 
