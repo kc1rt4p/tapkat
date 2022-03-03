@@ -10,9 +10,11 @@ import 'package:flutter_progress_hud/flutter_progress_hud.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_api_headers/google_api_headers.dart';
 import 'package:google_maps_webservice/places.dart';
+import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/models/user.dart';
+import 'package:tapkat/screens/product/bloc/product_bloc.dart';
 import 'package:tapkat/screens/product/product_add_screen.dart';
 import 'package:tapkat/screens/product/product_details_screen.dart';
 import 'package:tapkat/screens/root/profile/bloc/profile_bloc.dart';
@@ -37,6 +39,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   UserModel? _userModel;
   SelectedMedia? _selectedMedia;
   final _profileBloc = ProfileBloc();
+  final _productBloc = ProductBloc();
   late AuthBloc _authBloc;
   List<ProductModel> _list = [];
   bool editProfile = false;
@@ -48,6 +51,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final iOSGoogleMapsApiKey = 'AIzaSyBCyNgeJDA8_nwdGrPf5ecuIsVFRXSF0mQ';
   final androidGoogleMapsApiKey = 'AIzaSyAH4fWM5IbEO0X-Txkm6HNsFAQ3KOfW20I';
   final webGoogleMapsApiKey = 'AIzaSyAzPjfTTLzdfp-56tarHguvLXgdw7QAGkg';
+  int currentPage = 0;
+
+  ProductModel? lastProduct;
+
+  final _pagingController =
+      PagingController<int, ProductModel>(firstPageKey: 0);
 
   @override
   void initState() {
@@ -89,6 +98,53 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       _userModel!.mobilenum ?? 'Unknown';
                   _locationTextController.text =
                       _userModel!.address ?? 'Unknown';
+
+                  if (state.list.isNotEmpty) {
+                    lastProduct = state.list.last;
+                    _pagingController.appendPage(state.list, currentPage + 1);
+                    print('lastrProduct name: ${lastProduct!.productname}');
+                    _pagingController.addPageRequestListener((pageKey) {
+                      if (lastProduct != null) {
+                        _productBloc.add(
+                          GetNextProducts(
+                            listType: 'user',
+                            lastProductId: lastProduct!.productid!,
+                            startAfterVal: lastProduct!.toString(),
+                            userId: _user!.uid,
+                          ),
+                        );
+                      }
+                    });
+                  }
+                }
+              },
+            ),
+            BlocListener(
+              bloc: _productBloc,
+              listener: (context, state) {
+                if (state is ProductLoading) {
+                  ProgressHUD.of(context)!.show();
+                } else {
+                  ProgressHUD.of(context)!.dismiss();
+                }
+
+                if (state is GetProductsSuccess) {
+                  // setState(() {
+                  //   _list = state.list;
+
+                  //   indicators.add(_list.last);
+                  // });
+
+                  // indicators.asMap().forEach((key, value) =>
+                  //     print('==== page : ${value.productid}'));
+
+                  print('HEYYYY');
+                  if (state.list.isNotEmpty) {
+                    lastProduct = state.list.last;
+                    _pagingController.appendPage(state.list, currentPage + 1);
+                  } else {
+                    _pagingController.appendLastPage([]);
+                  }
                 }
               },
             ),
@@ -288,93 +344,93 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       ),
                                       Expanded(
                                         child: Container(
-                                          child: _list.isNotEmpty
-                                              ? GridView.count(
-                                                  shrinkWrap: true,
-                                                  padding: EdgeInsets.symmetric(
-                                                      vertical: 10.0),
-                                                  crossAxisCount: 2,
-                                                  mainAxisSpacing: 10.0,
-                                                  children: _list
-                                                      .map(
-                                                        (product) => Center(
-                                                          child: BarterListItem(
-                                                            height: SizeConfig
-                                                                    .screenHeight *
-                                                                0.215,
-                                                            width: SizeConfig
-                                                                    .screenWidth *
-                                                                0.4,
-                                                            hideLikeBtn: true,
-                                                            itemName: product
-                                                                    .productname ??
-                                                                '',
-                                                            itemPrice: product
-                                                                        .price !=
-                                                                    null
-                                                                ? product.price!
-                                                                    .toStringAsFixed(
-                                                                        2)
-                                                                : '0',
-                                                            imageUrl: product
-                                                                            .mediaPrimary !=
-                                                                        null &&
-                                                                    product.mediaPrimary!
-                                                                            .url !=
-                                                                        null &&
-                                                                    product
-                                                                        .mediaPrimary!
-                                                                        .url!
-                                                                        .isNotEmpty
-                                                                ? product
-                                                                    .mediaPrimary!
-                                                                    .url!
-                                                                : '',
-                                                            onTapped: () async {
-                                                              await Navigator
-                                                                  .push(
-                                                                context,
-                                                                MaterialPageRoute(
-                                                                  builder:
-                                                                      (context) =>
-                                                                          ProductDetailsScreen(
-                                                                    ownItem:
-                                                                        true,
-                                                                    productId:
-                                                                        product.productid ??
-                                                                            '',
-                                                                  ),
-                                                                ),
-                                                              );
+                                          child: _buildGridView(),
+                                          // ? GridView.count(
+                                          //     shrinkWrap: true,
+                                          //     padding: EdgeInsets.symmetric(
+                                          //         vertical: 10.0),
+                                          //     crossAxisCount: 2,
+                                          //     mainAxisSpacing: 10.0,
+                                          //     children: _list
+                                          //         .map(
+                                          //           (product) => Center(
+                                          //             child: BarterListItem(
+                                          //               height: SizeConfig
+                                          //                       .screenHeight *
+                                          //                   0.215,
+                                          //               width: SizeConfig
+                                          //                       .screenWidth *
+                                          //                   0.4,
+                                          //               hideLikeBtn: true,
+                                          //               itemName: product
+                                          //                       .productname ??
+                                          //                   '',
+                                          //               itemPrice: product
+                                          //                           .price !=
+                                          //                       null
+                                          //                   ? product.price!
+                                          //                       .toStringAsFixed(
+                                          //                           2)
+                                          //                   : '0',
+                                          //               imageUrl: product
+                                          //                               .mediaPrimary !=
+                                          //                           null &&
+                                          //                       product.mediaPrimary!
+                                          //                               .url !=
+                                          //                           null &&
+                                          //                       product
+                                          //                           .mediaPrimary!
+                                          //                           .url!
+                                          //                           .isNotEmpty
+                                          //                   ? product
+                                          //                       .mediaPrimary!
+                                          //                       .url!
+                                          //                   : '',
+                                          //               onTapped: () async {
+                                          //                 await Navigator
+                                          //                     .push(
+                                          //                   context,
+                                          //                   MaterialPageRoute(
+                                          //                     builder:
+                                          //                         (context) =>
+                                          //                             ProductDetailsScreen(
+                                          //                       ownItem:
+                                          //                           true,
+                                          //                       productId:
+                                          //                           product.productid ??
+                                          //                               '',
+                                          //                     ),
+                                          //                   ),
+                                          //                 );
 
-                                                              _profileBloc.add(
-                                                                  InitializeProfileScreen());
-                                                            },
-                                                          ),
-                                                        ),
-                                                      )
-                                                      .toList(),
-                                                )
-                                              : Container(
-                                                  padding: EdgeInsets.symmetric(
-                                                      horizontal: 30.0),
-                                                  child: Center(
-                                                    child: Column(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .center,
-                                                      children: [
-                                                        Text(
-                                                          'No products found',
-                                                          style: Style.subtitle2
-                                                              .copyWith(
-                                                                  color: Colors
-                                                                      .grey),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ),
+                                          //                 _profileBloc.add(
+                                          //                     InitializeProfileScreen());
+                                          //               },
+                                          //             ),
+                                          //           ),
+                                          //         )
+                                          //         .toList(),
+                                          //   )
+                                          // : Container(
+                                          //     padding: EdgeInsets.symmetric(
+                                          //         horizontal: 30.0),
+                                          //     child: Center(
+                                          //       child: Column(
+                                          //         mainAxisAlignment:
+                                          //             MainAxisAlignment
+                                          //                 .center,
+                                          //         children: [
+                                          //           Text(
+                                          //             'No products found',
+                                          //             style: Style.subtitle2
+                                          //                 .copyWith(
+                                          //                     color: Colors
+                                          //                         .grey),
+                                          //           ),
+                                          //         ],
+                                          //       ),
+                                          //     ),
+                                          //   ),
                                         ),
                                       ),
                                     ],
@@ -390,6 +446,56 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildGridView() {
+    return PagedGridView<int, ProductModel>(
+      pagingController: _pagingController,
+      showNewPageProgressIndicatorAsGridChild: false,
+      showNewPageErrorIndicatorAsGridChild: false,
+      showNoMoreItemsIndicatorAsGridChild: false,
+      padding: EdgeInsets.symmetric(
+        vertical: 10.0,
+      ),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        mainAxisSpacing: 10.0,
+        crossAxisSpacing: 10.0,
+      ),
+      builderDelegate: PagedChildBuilderDelegate<ProductModel>(
+        itemBuilder: (context, product, index) {
+          return Center(
+            child: BarterListItem(
+              height: SizeConfig.screenHeight * 0.215,
+              width: SizeConfig.screenWidth * 0.4,
+              hideLikeBtn: true,
+              itemName: product.productname ?? '',
+              itemPrice: product.price != null
+                  ? product.price!.toStringAsFixed(2)
+                  : '0',
+              imageUrl: product.mediaPrimary != null &&
+                      product.mediaPrimary!.url != null &&
+                      product.mediaPrimary!.url!.isNotEmpty
+                  ? product.mediaPrimary!.url!
+                  : '',
+              onTapped: () async {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ProductDetailsScreen(
+                      ownItem: true,
+                      productId: product.productid ?? '',
+                    ),
+                  ),
+                );
+
+                _profileBloc.add(InitializeProfileScreen());
+              },
+            ),
+          );
+        },
       ),
     );
   }

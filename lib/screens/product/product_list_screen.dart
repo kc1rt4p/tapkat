@@ -6,11 +6,11 @@ import 'package:flutter_progress_hud/flutter_progress_hud.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart' as gmf;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:tapkat/backend.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/schemas/user_likes_record.dart';
 import 'package:tapkat/screens/product/bloc/product_bloc.dart';
-import 'package:tapkat/screens/product/product_add_screen.dart';
 import 'package:tapkat/screens/product/product_details_screen.dart';
 import 'package:tapkat/screens/search/search_result_screen.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
@@ -18,7 +18,6 @@ import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/utilities/style.dart';
 import 'package:tapkat/widgets/barter_list_item.dart';
 import 'package:tapkat/widgets/custom_app_bar.dart';
-import 'package:tapkat/widgets/custom_button.dart';
 import 'package:tapkat/widgets/custom_search_bar.dart';
 import 'package:tapkat/widgets/tapkat_map.dart';
 
@@ -59,11 +58,23 @@ class _ProductListScreenState extends State<ProductListScreen> {
   CustomInfoWindowController _customInfoWindowController =
       CustomInfoWindowController();
 
+  final _pagingController =
+      PagingController<int, ProductModel>(firstPageKey: 0);
+
+  ProductModel? lastProduct;
+
   @override
   void initState() {
     _setTitle();
     _productBloc.add(GetFirstProducts(widget.listType, userId: widget.userId));
+
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _pagingController.dispose();
+    super.dispose();
   }
 
   void _setTitle() {
@@ -72,7 +83,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
         _title = 'Recommended For You';
         break;
       case 'demand':
-        _title = 'People are Looking For';
+        _title = 'What\'s Hot?';
         break;
       default:
         _title = 'Your items';
@@ -92,33 +103,58 @@ class _ProductListScreenState extends State<ProductListScreen> {
         child: BlocListener(
           bloc: _productBloc,
           listener: (context, state) {
-            if (state is ProductLoading) {
-              ProgressHUD.of(context)!.show();
-            } else {
-              ProgressHUD.of(context)!.dismiss();
-            }
+            print('CURRENT STATE');
+            // if (state is ProductLoading) {
+            //   ProgressHUD.of(context)!.show();
+            // } else {
+            //   ProgressHUD.of(context)!.dismiss();
+            // }
 
             if (state is GetFirstProductsSuccess) {
-              setState(() {
-                currentPage = 0;
-                _list = state.list;
-                indicators.clear();
-                if (_list.isNotEmpty) {
-                  indicators.add(_list.last);
-                }
-              });
+              // setState(() {
+              //   currentPage = 0;
+              //   _list = state.list;
+              //   indicators.clear();
+              //   if (_list.isNotEmpty) {
+              //     indicators.add(_list.last);
+              //   }
+              // });
+              if (state.list.isNotEmpty) {
+                lastProduct = state.list.last;
+                _pagingController.appendPage(state.list, currentPage + 1);
+                print('lastrProduct name: ${lastProduct!.productname}');
+                _pagingController.addPageRequestListener((pageKey) {
+                  if (lastProduct != null) {
+                    _productBloc.add(
+                      GetNextProducts(
+                        listType: widget.listType,
+                        lastProductId: lastProduct!.productid!,
+                        startAfterVal: lastProduct!.price!.toString(),
+                        userId: widget.listType == 'user' ? widget.userId : '',
+                      ),
+                    );
+                  }
+                });
+              }
             }
 
             if (state is GetProductsSuccess) {
-              setState(() {
-                _list = state.list;
+              // setState(() {
+              //   _list = state.list;
 
-                indicators.add(_list.last);
-              });
-              print('==== CURRENT PAGE: $currentPage');
+              //   indicators.add(_list.last);
+              // });
+              // print('==== CURRENT PAGE: $currentPage');
 
-              indicators.asMap().forEach(
-                  (key, value) => print('==== page $key: ${value.productid}'));
+              // indicators.asMap().forEach(
+              //     (key, value) => print('==== page $key: ${value.productid}'));
+              print('HEYYYY');
+              if (state.list.isNotEmpty) {
+                lastProduct = state.list.last;
+                _pagingController.appendPage(state.list, currentPage + 1);
+              } else {
+                _pagingController.appendLastPage([]);
+              }
             }
           },
           child: Container(
@@ -225,88 +261,89 @@ class _ProductListScreenState extends State<ProductListScreen> {
                 ),
                 Expanded(
                   child: Container(
-                    child: _list.isNotEmpty
-                        ? _selectedView == 'grid'
-                            ? _buildGridView()
-                            : _buildMapView()
-                        : Container(
-                            padding: EdgeInsets.symmetric(horizontal: 30.0),
-                            child: Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    'No products found',
-                                    style: Style.subtitle2
-                                        .copyWith(color: Colors.grey),
-                                  ),
-                                  SizedBox(height: 16.0),
-                                  Visibility(
-                                    visible:
-                                        widget.showAdd && widget.ownListing,
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 30.0),
-                                      child: CustomButton(
-                                        label: 'Add Product',
-                                        onTap: () => Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                ProductAddScreen(),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                  ),
-                ),
-                Container(
-                  width: double.infinity,
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 20.0, vertical: 5.0),
-                  height: SizeConfig.screenHeight * .06,
-                  color: kBackgroundColor,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Expanded(
-                        child: InkWell(
-                          onTap: _onPrevTapped,
-                          child: Container(
-                            child: Center(
-                                child: Icon(
-                              Icons.arrow_left,
-                              size: 40.0,
-                              color:
-                                  currentPage == 0 ? Colors.grey : Colors.white,
-                            )),
-                          ),
-                        ),
+                      child: _selectedView == 'grid'
+                          ? _buildGridView2()
+                          : _buildMapView()
+                      // _list.isNotEmpty
+                      //     ?
+                      //     : Container(
+                      //         padding: EdgeInsets.symmetric(horizontal: 30.0),
+                      //         child: Center(
+                      //           child: Column(
+                      //             mainAxisAlignment: MainAxisAlignment.center,
+                      //             children: [
+                      //               Text(
+                      //                 'No products found',
+                      //                 style: Style.subtitle2
+                      //                     .copyWith(color: Colors.grey),
+                      //               ),
+                      //               SizedBox(height: 16.0),
+                      //               Visibility(
+                      //                 visible:
+                      //                     widget.showAdd && widget.ownListing,
+                      //                 child: Padding(
+                      //                   padding: const EdgeInsets.symmetric(
+                      //                       horizontal: 30.0),
+                      //                   child: CustomButton(
+                      //                     label: 'Add Product',
+                      //                     onTap: () => Navigator.push(
+                      //                       context,
+                      //                       MaterialPageRoute(
+                      //                         builder: (context) =>
+                      //                             ProductAddScreen(),
+                      //                       ),
+                      //                     ),
+                      //                   ),
+                      //                 ),
+                      //               ),
+                      //             ],
+                      //           ),
+                      //         ),
+                      //       ),
                       ),
-                      Expanded(
-                        child: InkWell(
-                          onTap: _onNextTapped,
-                          child: Container(
-                            child: Center(
-                              child: Icon(
-                                Icons.arrow_right,
-                                size: 40.0,
-                                color:
-                                    _list.isEmpty ? Colors.grey : Colors.white,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
                 ),
+                // Container(
+                //   width: double.infinity,
+                //   padding:
+                //       EdgeInsets.symmetric(horizontal: 20.0, vertical: 5.0),
+                //   height: SizeConfig.screenHeight * .06,
+                //   color: kBackgroundColor,
+                //   child: Row(
+                //     mainAxisAlignment: MainAxisAlignment.center,
+                //     crossAxisAlignment: CrossAxisAlignment.center,
+                //     children: [
+                //       Expanded(
+                //         child: InkWell(
+                //           onTap: _onPrevTapped,
+                //           child: Container(
+                //             child: Center(
+                //                 child: Icon(
+                //               Icons.arrow_left,
+                //               size: 40.0,
+                //               color:
+                //                   currentPage == 0 ? Colors.grey : Colors.white,
+                //             )),
+                //           ),
+                //         ),
+                //       ),
+                //       Expanded(
+                //         child: InkWell(
+                //           onTap: _onNextTapped,
+                //           child: Container(
+                //             child: Center(
+                //               child: Icon(
+                //                 Icons.arrow_right,
+                //                 size: 40.0,
+                //                 color:
+                //                     _list.isEmpty ? Colors.grey : Colors.white,
+                //               ),
+                //             ),
+                //           ),
+                //         ),
+                //       ),
+                //     ],
+                //   ),
+                // ),
               ],
             ),
           ),
@@ -330,71 +367,153 @@ class _ProductListScreenState extends State<ProductListScreen> {
     );
   }
 
+  Widget _buildGridView2() {
+    return PagedGridView<int, ProductModel>(
+      pagingController: _pagingController,
+      showNewPageProgressIndicatorAsGridChild: false,
+      showNewPageErrorIndicatorAsGridChild: false,
+      showNoMoreItemsIndicatorAsGridChild: false,
+      padding: EdgeInsets.symmetric(
+        horizontal: 16.0,
+        vertical: 10.0,
+      ),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        mainAxisSpacing: 16,
+        crossAxisCount: 2,
+      ),
+      builderDelegate: PagedChildBuilderDelegate<ProductModel>(
+        itemBuilder: (context, product, index) {
+          return Center(
+            child: StreamBuilder<List<UserLikesRecord?>>(
+                stream: queryUserLikesRecord(
+                  queryBuilder: (userLikesRecord) => userLikesRecord
+                      .where('userid', isEqualTo: widget.userId)
+                      .where('productid', isEqualTo: product.productid),
+                  singleRecord: true,
+                ),
+                builder: (context, snapshot) {
+                  bool liked = false;
+                  UserLikesRecord? record;
+                  if (snapshot.hasData) {
+                    if (snapshot.data != null && snapshot.data!.isNotEmpty) {
+                      record = snapshot.data!.first;
+                      if (record != null) {
+                        liked = record.liked ?? false;
+                      }
+                    }
+                  }
+
+                  return BarterListItem(
+                    height: SizeConfig.screenHeight * 0.23,
+                    width: SizeConfig.screenWidth * 0.40,
+                    hideLikeBtn: widget.ownListing,
+                    liked: liked,
+                    itemName: product.productname ?? '',
+                    itemPrice: product.price != null
+                        ? product.price!.toStringAsFixed(2)
+                        : '0',
+                    imageUrl: product.mediaPrimary != null
+                        ? product.mediaPrimary!.url!
+                        : '',
+                    onTapped: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ProductDetailsScreen(
+                          productId: product.productid ?? '',
+                          ownItem: widget.ownListing ? true : false,
+                        ),
+                      ),
+                    ),
+                    onLikeTapped: () {
+                      if (record != null) {
+                        final newData = createUserLikesRecordData(
+                          liked: !record.liked!,
+                        );
+
+                        record.reference!.update(newData);
+                        if (liked) {
+                          _productBloc.add(
+                            Unlike(product),
+                          );
+                        } else {
+                          _productBloc.add(AddLike(product));
+                        }
+                      }
+                    },
+                  );
+                }),
+          );
+        },
+      ),
+    );
+  }
+
   Widget _buildGridView() {
     return GridView.count(
       padding: EdgeInsets.symmetric(vertical: 10.0),
       crossAxisCount: 2,
       mainAxisSpacing: 10.0,
       children: _list
-          .map((product) => Center(
-                child: StreamBuilder<List<UserLikesRecord?>>(
-                    stream: queryUserLikesRecord(
-                      queryBuilder: (userLikesRecord) => userLikesRecord
-                          .where('userid', isEqualTo: widget.userId)
-                          .where('productid', isEqualTo: product.productid),
-                      singleRecord: true,
-                    ),
-                    builder: (context, snapshot) {
-                      bool liked = false;
-                      UserLikesRecord? record;
-                      if (snapshot.hasData) {
-                        if (snapshot.data != null &&
-                            snapshot.data!.isNotEmpty) {
-                          record = snapshot.data!.first;
-                          if (record != null) {
-                            liked = record.liked ?? false;
-                          }
+          .map(
+            (product) => Center(
+              child: StreamBuilder<List<UserLikesRecord?>>(
+                  stream: queryUserLikesRecord(
+                    queryBuilder: (userLikesRecord) => userLikesRecord
+                        .where('userid', isEqualTo: widget.userId)
+                        .where('productid', isEqualTo: product.productid),
+                    singleRecord: true,
+                  ),
+                  builder: (context, snapshot) {
+                    bool liked = false;
+                    UserLikesRecord? record;
+                    if (snapshot.hasData) {
+                      if (snapshot.data != null && snapshot.data!.isNotEmpty) {
+                        record = snapshot.data!.first;
+                        if (record != null) {
+                          liked = record.liked ?? false;
                         }
                       }
+                    }
 
-                      return BarterListItem(
-                        hideLikeBtn: widget.ownListing,
-                        liked: liked,
-                        itemName: product.productname ?? '',
-                        itemPrice: product.price != null
-                            ? product.price!.toStringAsFixed(2)
-                            : '0',
-                        imageUrl: product.mediaPrimary != null
-                            ? product.mediaPrimary!.url!
-                            : '',
-                        onTapped: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ProductDetailsScreen(
-                              productId: product.productid ?? '',
-                              ownItem: widget.ownListing ? true : false,
-                            ),
+                    return BarterListItem(
+                      hideLikeBtn: widget.ownListing,
+                      liked: liked,
+                      itemName: product.productname ?? '',
+                      itemPrice: product.price != null
+                          ? product.price!.toStringAsFixed(2)
+                          : '0',
+                      imageUrl: product.mediaPrimary != null
+                          ? product.mediaPrimary!.url!
+                          : '',
+                      onTapped: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ProductDetailsScreen(
+                            productId: product.productid ?? '',
+                            ownItem: widget.ownListing ? true : false,
                           ),
                         ),
-                        onLikeTapped: () {
-                          if (record != null) {
-                            final newData = createUserLikesRecordData(
-                              liked: !record.liked!,
-                            );
+                      ),
+                      onLikeTapped: () {
+                        if (record != null) {
+                          final newData = createUserLikesRecordData(
+                            liked: !record.liked!,
+                          );
 
-                            record.reference!.update(newData);
-                            if (liked) {
-                              _productBloc.add(
-                                Unlike(product),
-                              );
-                            } else {
-                              _productBloc.add(AddLike(product));
-                            }
+                          record.reference!.update(newData);
+                          if (liked) {
+                            _productBloc.add(
+                              Unlike(product),
+                            );
+                          } else {
+                            _productBloc.add(AddLike(product));
                           }
-                        },
-                      );
-                    }),
-              ))
+                        }
+                      },
+                    );
+                  }),
+            ),
+          )
           .toList(),
     );
   }

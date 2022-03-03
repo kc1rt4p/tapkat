@@ -98,6 +98,8 @@ class ProductRepository {
       'productid': lastProductId,
     });
 
+    if (response.data['status'] == 'FAIL') return [];
+
     return (response.data['products'] as List<dynamic>).map((json) {
       return ProductModel.fromJson(json);
     }).toList();
@@ -172,16 +174,28 @@ class ProductRepository {
     return true;
   }
 
-  Future<List<ProductModel>> searchProducts(List<String> keyword) async {
+  Future<List<ProductModel>> searchProducts(
+    List<String> keyword, {
+    String? lastProductId,
+    String? startAfterVal,
+  }) async {
+    var _body = {
+      'psk': psk,
+      'keywords': keyword,
+      'sortby': 'price',
+      'sortDirection': 'ascending',
+      'productcount': 15,
+    };
+    if (lastProductId != null && startAfterVal != null) {
+      _body.addAll({
+        'startafterval': startAfterVal,
+        'productid': lastProductId,
+      });
+    }
     final response = await _apiService.post(
-      url: 'products/searchfirst',
-      body: {
-        'psk': psk,
-        'keywords': keyword,
-        'sortby': 'price',
-        'sortDirection': 'ascending',
-        'productcount': productCount,
-      },
+      url:
+          'products/${(lastProductId != null && startAfterVal != null) ? 'searchSet' : 'searchfirst'}',
+      body: _body,
     );
 
     if (response.data['status'] != 'SUCCESS') return [];
