@@ -45,7 +45,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
 
   int currentPage = 0;
 
-  String lastProductId = '';
+  ProductModel? lastProduct;
 
   final _pagingController =
       PagingController<int, ProductModel>(firstPageKey: 0);
@@ -55,15 +55,6 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
     _searchBloc.add(InitializeSearch(widget.keyword));
     _keyWordTextController.text = widget.keyword;
 
-    _pagingController.addPageRequestListener((pageKey) {
-      _searchBloc.add(
-        GetNextProducts(
-          keyword: widget.keyword,
-          lastProductId: lastProductId,
-          startAfterVal: searchResults.last.price!.toString(),
-        ),
-      );
-    });
     super.initState();
   }
 
@@ -101,19 +92,11 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
 
             if (state is GetNextProductsSuccess) {
               print('hey ${state.list.length}');
-              if (state.list.isNotEmpty) {
-                lastProductId = state.list.last.productid!;
-                setState(() {
-                  currentPage += 1;
-                });
 
-                if (state.list.length == productCount) {
-                  _pagingController.appendPage(state.list, currentPage + 1);
-                } else {
-                  _pagingController.appendLastPage(state.list);
-                }
+              if (state.list.length == productCount) {
+                _pagingController.appendPage(state.list, currentPage + 1);
               } else {
-                _pagingController.appendLastPage([]);
+                _pagingController.appendLastPage(state.list);
               }
             }
 
@@ -121,13 +104,23 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
               setState(() {
                 searchResults = state.searchResults;
               });
-              lastProductId = searchResults.last.productid!;
+              lastProduct = searchResults.last;
               if (state.searchResults.length == productCount) {
                 _pagingController.appendPage(
                     state.searchResults, currentPage + 1);
               } else {
                 _pagingController.appendLastPage(state.searchResults);
               }
+
+              _pagingController.addPageRequestListener((pageKey) {
+                _searchBloc.add(
+                  GetNextProducts(
+                    keyword: widget.keyword,
+                    lastProductId: lastProduct!.productid!,
+                    startAfterVal: lastProduct!.price!.toString(),
+                  ),
+                );
+              });
             }
           },
           child: Container(
@@ -397,7 +390,8 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
 
   _onSearchSubmitted(String? val) {
     if (val == null || val.isEmpty) return;
-    lastProductId = '';
+    lastProduct = null;
+    _pagingController.refresh();
     _searchBloc.add(InitializeSearch(val));
   }
 }
