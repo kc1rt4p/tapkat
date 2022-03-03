@@ -11,6 +11,7 @@ import 'package:tapkat/schemas/product_markers_record.dart';
 import 'package:tapkat/screens/product/product_details_screen.dart';
 import 'package:tapkat/screens/search/bloc/search_bloc.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
+import 'package:tapkat/utilities/constants.dart';
 import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/utilities/style.dart';
 import 'package:tapkat/widgets/barter_list_item.dart';
@@ -105,7 +106,12 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                 setState(() {
                   currentPage += 1;
                 });
-                _pagingController.appendPage(state.list, currentPage);
+
+                if (state.list.length == productCount) {
+                  _pagingController.appendPage(state.list, currentPage + 1);
+                } else {
+                  _pagingController.appendLastPage(state.list);
+                }
               } else {
                 _pagingController.appendLastPage([]);
               }
@@ -116,8 +122,12 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                 searchResults = state.searchResults;
               });
               lastProductId = searchResults.last.productid!;
-              _pagingController.appendPage(
-                  state.searchResults, currentPage + 1);
+              if (state.searchResults.length == productCount) {
+                _pagingController.appendPage(
+                    state.searchResults, currentPage + 1);
+              } else {
+                _pagingController.appendLastPage(state.searchResults);
+              }
             }
           },
           child: Container(

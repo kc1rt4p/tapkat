@@ -11,6 +11,7 @@ import 'package:tapkat/screens/product/bloc/product_bloc.dart';
 import 'package:tapkat/screens/product/product_details_screen.dart';
 import 'package:tapkat/screens/store/bloc/store_bloc.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
+import 'package:tapkat/utilities/constants.dart';
 import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/utilities/style.dart';
 import 'package:tapkat/widgets/barter_list_item.dart';
@@ -153,8 +154,12 @@ class _StoreScreenState extends State<StoreScreen> {
                           // });
                           if (state.list.isNotEmpty) {
                             lastProduct = state.list.last;
-                            _pagingController.appendPage(
-                                state.list, currentPage + 1);
+                            if (state.list.length == productCount) {
+                              _pagingController.appendPage(
+                                  state.list, currentPage + 1);
+                            } else {
+                              _pagingController.appendLastPage(state.list);
+                            }
                             print(
                                 'lastrProduct name: ${lastProduct!.productname}');
                             _pagingController.addPageRequestListener((pageKey) {
@@ -185,8 +190,12 @@ class _StoreScreenState extends State<StoreScreen> {
                           print('HEYYYY');
                           if (state.list.isNotEmpty) {
                             lastProduct = state.list.last;
-                            _pagingController.appendPage(
-                                state.list, currentPage + 1);
+                            if (state.list.length == productCount) {
+                              _pagingController.appendPage(
+                                  state.list, currentPage + 1);
+                            } else {
+                              _pagingController.appendLastPage(state.list);
+                            }
                           } else {
                             _pagingController.appendLastPage([]);
                           }

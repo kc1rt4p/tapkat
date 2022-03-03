@@ -20,6 +20,7 @@ import 'package:tapkat/screens/product/product_details_screen.dart';
 import 'package:tapkat/screens/root/profile/bloc/profile_bloc.dart';
 import 'package:tapkat/screens/settings/settings_screen.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
+import 'package:tapkat/utilities/constants.dart';
 import 'package:tapkat/utilities/dialog_message.dart';
 import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/utilities/style.dart';
@@ -101,7 +102,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                   if (state.list.isNotEmpty) {
                     lastProduct = state.list.last;
-                    _pagingController.appendPage(state.list, currentPage + 1);
+                    if (state.list.length == productCount) {
+                      _pagingController.appendPage(state.list, currentPage + 1);
+                    } else {
+                      _pagingController.appendLastPage(state.list);
+                    }
                     print('lastrProduct name: ${lastProduct!.productname}');
                     _pagingController.addPageRequestListener((pageKey) {
                       if (lastProduct != null) {
@@ -122,26 +127,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
             BlocListener(
               bloc: _productBloc,
               listener: (context, state) {
-                if (state is ProductLoading) {
-                  ProgressHUD.of(context)!.show();
-                } else {
-                  ProgressHUD.of(context)!.dismiss();
-                }
-
                 if (state is GetProductsSuccess) {
-                  // setState(() {
-                  //   _list = state.list;
-
-                  //   indicators.add(_list.last);
-                  // });
-
-                  // indicators.asMap().forEach((key, value) =>
-                  //     print('==== page : ${value.productid}'));
-
-                  print('HEYYYY');
                   if (state.list.isNotEmpty) {
                     lastProduct = state.list.last;
-                    _pagingController.appendPage(state.list, currentPage + 1);
+                    if (state.list.length == productCount) {
+                      _pagingController.appendPage(state.list, currentPage + 1);
+                    } else {
+                      _pagingController.appendLastPage(state.list);
+                    }
                   } else {
                     _pagingController.appendLastPage([]);
                   }
