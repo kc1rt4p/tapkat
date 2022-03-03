@@ -188,17 +188,20 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                                                     CrossAxisAlignment.center,
                                                 children: byYouList.map(
                                                   (barter) {
-                                                    final barteringWith = barter
-                                                                    .userid2 !=
-                                                                null &&
-                                                            barter.userid2!
-                                                                    .length >
-                                                                10
-                                                        ? barter.userid2!
-                                                                .substring(
-                                                                    0, 10) +
-                                                            '...'
-                                                        : barter.userid2!;
+                                                    var name =
+                                                        barter.userid2Name !=
+                                                                    null &&
+                                                                barter
+                                                                    .userid2Name!
+                                                                    .isNotEmpty
+                                                            ? barter
+                                                                .userid2Name!
+                                                            : barter.userid2!;
+                                                    if (name.length > 10) {
+                                                      name = name.substring(
+                                                              0, 10) +
+                                                          '...';
+                                                    }
                                                     return Stack(
                                                       children: [
                                                         Container(
@@ -225,7 +228,7 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                                                                             'For '),
                                                                     TextSpan(
                                                                       text:
-                                                                          barteringWith,
+                                                                          name,
                                                                       style:
                                                                           TextStyle(
                                                                         fontWeight:
@@ -408,18 +411,20 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                                                   CrossAxisAlignment.center,
                                               children: fromOthersList.map(
                                                 (barter) {
-                                                  final barteringWith = barter
-                                                                  .userid1 !=
-                                                              null &&
-                                                          barter.userid1!
-                                                                  .length >
-                                                              10
-                                                      ? barter.userid1!
-                                                              .substring(
-                                                                  0, 10) +
-                                                          '...'
-                                                      : barter.userid1!;
+                                                  var name =
+                                                      barter.userid1Name !=
+                                                                  null &&
+                                                              barter
+                                                                  .userid1Name!
+                                                                  .isNotEmpty
+                                                          ? barter.userid1Name!
+                                                          : barter.userid1!;
 
+                                                  if (name.length > 10) {
+                                                    name =
+                                                        name.substring(0, 10) +
+                                                            '...';
+                                                  }
                                                   return Stack(
                                                     children: [
                                                       Container(
@@ -444,8 +449,7 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                                                                       text:
                                                                           'From '),
                                                                   TextSpan(
-                                                                    text:
-                                                                        barteringWith,
+                                                                    text: name,
                                                                     style:
                                                                         TextStyle(
                                                                       fontWeight:

@@ -285,46 +285,46 @@ class _StoreScreenState extends State<StoreScreen> {
                       ),
                 ),
               ),
-              Container(
-                width: double.infinity,
-                padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 5.0),
-                height: SizeConfig.screenHeight * .06,
-                color: kBackgroundColor,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Expanded(
-                      child: InkWell(
-                        onTap: _onPrevTapped,
-                        child: Container(
-                          child: Center(
-                              child: Icon(
-                            Icons.arrow_left,
-                            size: 40.0,
-                            color:
-                                currentPage == 0 ? Colors.grey : Colors.white,
-                          )),
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      child: InkWell(
-                        onTap: _onNextTapped,
-                        child: Container(
-                          child: Center(
-                            child: Icon(
-                              Icons.arrow_right,
-                              size: 40.0,
-                              color: _list.isEmpty ? Colors.grey : Colors.white,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              // Container(
+              //   width: double.infinity,
+              //   padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 5.0),
+              //   height: SizeConfig.screenHeight * .06,
+              //   color: kBackgroundColor,
+              //   child: Row(
+              //     mainAxisAlignment: MainAxisAlignment.center,
+              //     crossAxisAlignment: CrossAxisAlignment.center,
+              //     children: [
+              //       Expanded(
+              //         child: InkWell(
+              //           onTap: _onPrevTapped,
+              //           child: Container(
+              //             child: Center(
+              //                 child: Icon(
+              //               Icons.arrow_left,
+              //               size: 40.0,
+              //               color:
+              //                   currentPage == 0 ? Colors.grey : Colors.white,
+              //             )),
+              //           ),
+              //         ),
+              //       ),
+              //       Expanded(
+              //         child: InkWell(
+              //           onTap: _onNextTapped,
+              //           child: Container(
+              //             child: Center(
+              //               child: Icon(
+              //                 Icons.arrow_right,
+              //                 size: 40.0,
+              //                 color: _list.isEmpty ? Colors.grey : Colors.white,
+              //               ),
+              //             ),
+              //           ),
+              //         ),
+              //       ),
+              //     ],
+              //   ),
+              // ),
             ],
           ),
         ),

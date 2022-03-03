@@ -330,13 +330,15 @@ class _BarterScreenState extends State<BarterScreen> {
                     if (_barterRecord!.userid1Role == 'sender') {
                       _senderUserId = _barterRecord!.userid1;
                       _recipientUserId = _barterRecord!.userid2;
-                      _recipientName = _barterRecord!.userid2Name != null
+                      _recipientName = _barterRecord!.userid2Name != null &&
+                              _barterRecord!.userid2Name!.isNotEmpty
                           ? _barterRecord!.userid2Name!
                           : _barterRecord!.userid2!;
                     } else {
                       _senderUserId = _barterRecord!.userid2;
                       _recipientUserId = _barterRecord!.userid1;
-                      _recipientName = _barterRecord!.userid1Name != null
+                      _recipientName = _barterRecord!.userid1Name != null &&
+                              _barterRecord!.userid1Name!.isNotEmpty
                           ? _barterRecord!.userid1Name!
                           : _barterRecord!.userid1!;
                     }
@@ -471,6 +473,8 @@ class _BarterScreenState extends State<BarterScreen> {
                 _currentUser = state.user;
                 _currentUserModel = state.userModel;
               });
+
+              print('CURRENT USER MODEL: ${_currentUserModel!.toJson()}');
 
               if (widget.barterRecord == null && _product != null) {
                 setState(() {
