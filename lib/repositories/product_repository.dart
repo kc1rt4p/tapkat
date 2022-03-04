@@ -184,7 +184,7 @@ class ProductRepository {
       'keywords': keyword,
       'sortby': 'price',
       'sortdirection': 'ascending',
-      'productcount': 10,
+      'productcount': productCount,
     };
     if (lastProductId != null && startAfterVal != null) {
       _body.addAll({

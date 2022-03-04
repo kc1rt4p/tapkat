@@ -114,7 +114,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           GetNextProducts(
                             listType: 'user',
                             lastProductId: lastProduct!.productid!,
-                            startAfterVal: lastProduct!.toString(),
+                            startAfterVal: lastProduct!.price.toString(),
                             userId: _user!.uid,
                           ),
                         );

@@ -52,9 +52,9 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
 
   @override
   void initState() {
-    _searchBloc.add(InitializeSearch(widget.keyword));
     _keyWordTextController.text = widget.keyword;
 
+    _searchBloc.add(InitializeSearch(_keyWordTextController.text.trim()));
     super.initState();
   }
 
@@ -92,11 +92,15 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
 
             if (state is GetNextProductsSuccess) {
               print('hey ${state.list.length}');
-
-              if (state.list.length == productCount) {
-                _pagingController.appendPage(state.list, currentPage + 1);
+              if (state.list.isNotEmpty) {
+                lastProduct = state.list.last;
+                if (state.list.length == productCount) {
+                  _pagingController.appendPage(state.list, currentPage + 1);
+                } else {
+                  _pagingController.appendLastPage(state.list);
+                }
               } else {
-                _pagingController.appendLastPage(state.list);
+                _pagingController.appendLastPage([]);
               }
             }
 
@@ -113,13 +117,15 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
               }
 
               _pagingController.addPageRequestListener((pageKey) {
-                _searchBloc.add(
-                  GetNextProducts(
-                    keyword: widget.keyword,
-                    lastProductId: lastProduct!.productid!,
-                    startAfterVal: lastProduct!.price!.toString(),
-                  ),
-                );
+                if (lastProduct != null) {
+                  _searchBloc.add(
+                    GetNextProducts(
+                      keyword: _keyWordTextController.text.trim(),
+                      lastProductId: lastProduct!.productid!,
+                      startAfterVal: lastProduct!.price!.toString(),
+                    ),
+                  );
+                }
               });
             }
           },
@@ -392,6 +398,6 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
     if (val == null || val.isEmpty) return;
     lastProduct = null;
     _pagingController.refresh();
-    _searchBloc.add(InitializeSearch(val));
+    _searchBloc.add(InitializeSearch(_keyWordTextController.text.trim()));
   }
 }

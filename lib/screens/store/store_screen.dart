@@ -168,7 +168,8 @@ class _StoreScreenState extends State<StoreScreen> {
                                   GetNextProducts(
                                     listType: 'user',
                                     lastProductId: lastProduct!.productid!,
-                                    startAfterVal: lastProduct!.toString(),
+                                    startAfterVal:
+                                        lastProduct!.price.toString(),
                                     userId: widget.userId,
                                   ),
                                 );
