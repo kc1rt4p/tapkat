@@ -28,6 +28,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final _homeBloc = HomeBloc();
   final _productBloc = ProductBloc();
+  late RootBloc _rootBloc;
   late AuthBloc _authBloc;
   List<ProductModel> _recommendedList = [];
   List<ProductModel> _trendingList = [];
@@ -44,6 +45,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     _authBloc = BlocProvider.of<AuthBloc>(context);
+    _rootBloc = BlocProvider.of<RootBloc>(context);
     _authBloc.add(GetCurrentuser());
     super.initState();
   }
@@ -187,7 +189,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                 }
 
                                 return BarterListItem(
-                                  likeLeftMargin: SizeConfig.screenWidth * 0.3,
+                                  likeLeftMargin:
+                                      SizeConfig.safeBlockHorizontal * 3,
                                   liked: liked,
                                   itemName: product.productname ?? '',
                                   itemPrice: product.price != null
@@ -270,7 +273,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                 }
 
                                 return BarterListItem(
-                                  likeLeftMargin: SizeConfig.screenWidth * 0.3,
+                                  likeLeftMargin:
+                                      SizeConfig.safeBlockHorizontal * 3,
                                   liked: liked,
                                   itemName: product.productname ?? '',
                                   itemPrice: product.price != null
@@ -315,7 +319,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 );
                               });
                         }).toList(),
-                        label: 'People are Looking For',
+                        label: 'What\'s Hot',
                         onViewAllTapped: () => Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -335,7 +339,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ownList: true,
                           items: _myProductList.map((product) {
                             return BarterListItem(
-                              height: SizeConfig.screenHeight * 0.2,
+                              height: SizeConfig.screenHeight * 0.165,
                               width: SizeConfig.screenWidth * 0.27,
                               fontSize: SizeConfig.textScaleFactor * 9,
                               hideLikeBtn: true,
@@ -365,9 +369,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           label: 'Your Items',
                           smallItems: true,
                           removeMargin: true,
-                          onViewAllTapped: () =>
-                              BlocProvider.of<RootBloc>(context)
-                                  .add(MoveTab(3)),
+                          onViewAllTapped: () => _rootBloc.add(MoveTab(3)),
                         ),
                       ),
                       SizedBox(height: 10.0),

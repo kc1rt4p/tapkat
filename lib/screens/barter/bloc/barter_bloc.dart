@@ -30,14 +30,8 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
 
         if (_user != null) {
           if (event is InitializeBarter) {
-            final userProducts = await _productRepository.getFirstProducts(
-                'user', event.barterData.userid1);
-
-            final user2Products = await _productRepository.getFirstProducts(
-                'user', event.barterData.userid2);
-
             print('=== barter id: ${event.barterData.barterId}');
-            final _barterRecord = await _barterRepository
+            var _barterRecord = await _barterRepository
                 .getBarterRecord(event.barterData.barterId!);
             print('=== _barterRecord: $_barterRecord');
 
@@ -45,6 +39,7 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
               event.barterData.dealStatus = 'new';
               final newBarter =
                   await _barterRepository.setBarterRecord(event.barterData);
+              print('=== new barter added: $newBarter');
 
               var barterProducts = await _barterRepository
                   .getBarterProducts(event.barterData.barterId!);
@@ -65,17 +60,75 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
                     .getBarterProducts(event.barterData.barterId!);
               }
 
+              _barterRecord = await _barterRepository
+                  .getBarterRecord(event.barterData.barterId!);
+
+              final senderUserId = _barterRecord!.userid1Role == 'sender'
+                  ? _barterRecord.userid1
+                  : _barterRecord.userid2;
+
+              final recipientUserId = _barterRecord.userid1Role == 'recipient'
+                  ? _barterRecord.userid1
+                  : _barterRecord.userid2;
+
+              final senderProducts = await _productRepository.getFirstProducts(
+                  'user', senderUserId);
+
+              final recipientProducts = await _productRepository
+                  .getFirstProducts('user', recipientUserId);
+
               emit(BarterInitialized(
                 barterStream:
                     _barterRepository.streamBarter(event.barterData.barterId!),
-                userProducts: userProducts,
-                user2Products: user2Products,
+                senderProducts: senderProducts,
+                recipientProducts: recipientProducts,
                 barterProductsStream: _barterRepository
                     .streamBarterProducts(event.barterData.barterId!),
               ));
             } else {
               print('EXISTING BARTER');
               add(StreamBarter(_barterRecord));
+            }
+          }
+
+          if (event is CounterOffer) {
+            final _barterRecord =
+                await _barterRepository.getBarterRecord(event.barterId);
+
+            if (_barterRecord != null) {
+              var _newBarterRecord = _barterRecord;
+              _newBarterRecord.userid1Role =
+                  _newBarterRecord.userid1Role == 'sender'
+                      ? 'recipient'
+                      : 'sender';
+              _newBarterRecord.userid2Role =
+                  _newBarterRecord.userid2Role == 'sender'
+                      ? 'recipient'
+                      : 'sender';
+              _newBarterRecord.dealDate = DateTime.now();
+              _newBarterRecord.u2P1Id = event.product.productId;
+              _newBarterRecord.u2P1Name = event.product.productName;
+              _newBarterRecord.u2P1Price = event.product.price != null
+                  ? double.parse(event.product.price.toString())
+                  : 0;
+              _newBarterRecord.u2P1Image = event.product.imgUrl;
+              _newBarterRecord.dealStatus = 'submitted';
+
+              final updated =
+                  await _barterRepository.counterOffer(_newBarterRecord);
+
+              if (updated) {
+                _barterRepository.addMessage(ChatMessageModel(
+                  barterId: event.barterId,
+                  userId: _user!.uid,
+                  userName: _user!.displayName,
+                  message: 'Offer SUBMITTED (Counter Offer)',
+                  dateCreated: DateTime.now(),
+                ));
+
+                emit(UpdateBarterStatusSuccess());
+              } else
+                emit(BarterError('unable to counter offer'));
             }
           }
 
@@ -86,16 +139,24 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
               final barterRecord =
                   await _barterRepository.getBarterRecord(event.barterId);
               if (barterRecord != null) {
-                final userId =
+                final senderUserId = barterRecord.userid1Role == 'sender'
+                    ? barterRecord.userid1
+                    : barterRecord.userid2;
+                final recipientUserId = barterRecord.userid1Role == 'recipient'
+                    ? barterRecord.userid1
+                    : barterRecord.userid2;
+
+                String userId =
                     ['accepted', 'rejected', 'sold'].contains(event.status)
-                        ? barterRecord.userid2!
-                        : barterRecord.userid1!;
+                        ? recipientUserId!
+                        : senderUserId!;
+
                 final user = await _userRepo.getUser(userId);
 
                 _barterRepository.addMessage(ChatMessageModel(
                   barterId: event.barterId,
                   userId: userId,
-                  userName: user!.firstname,
+                  userName: user!.display_name,
                   message: 'Offer ${event.status.toUpperCase()}',
                   dateCreated: DateTime.now(),
                 ));
@@ -149,20 +210,26 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
           }
 
           if (event is StreamBarter) {
-            final userProducts = await _productRepository.getFirstProducts(
-                'user', event.barterRecord.userid1);
+            final senderUserId = event.barterRecord.userid1Role == 'sender'
+                ? event.barterRecord.userid1
+                : event.barterRecord.userid2;
 
-            final user2Products = await _productRepository.getFirstProducts(
-                'user', event.barterRecord.userid2);
+            final recipientUserId =
+                event.barterRecord.userid1Role == 'recipient'
+                    ? event.barterRecord.userid1
+                    : event.barterRecord.userid2;
 
-            final barterProducts = await _barterRepository
-                .getBarterProducts(event.barterRecord.barterId!);
+            final senderProducts =
+                await _productRepository.getFirstProducts('user', senderUserId);
+
+            final recipientProducts = await _productRepository.getFirstProducts(
+                'user', recipientUserId);
 
             emit(BarterInitialized(
               barterStream:
                   _barterRepository.streamBarter(event.barterRecord.barterId!),
-              userProducts: userProducts,
-              user2Products: user2Products,
+              senderProducts: senderProducts,
+              recipientProducts: recipientProducts,
               barterProductsStream: _barterRepository
                   .streamBarterProducts(event.barterRecord.barterId!),
             ));
@@ -187,7 +254,7 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
           if (event is SendMessage) {
             final user = await _userRepo.getUser(_user!.uid);
             event.message.userId = _user!.uid;
-            event.message.userName = user!.firstname;
+            event.message.userName = user!.display_name;
             event.message.dateCreated = DateTime.now();
             final sent = await _barterRepository.addMessage(event.message);
             if (!sent) {

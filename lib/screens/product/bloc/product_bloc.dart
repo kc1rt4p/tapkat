@@ -4,6 +4,7 @@ import 'package:tapkat/models/product.dart';
 import 'package:tapkat/models/request/add_product_request.dart';
 import 'package:tapkat/models/upload_product_image_response.dart';
 import 'package:tapkat/repositories/product_repository.dart';
+import 'package:tapkat/repositories/user_repository.dart';
 import 'package:tapkat/services/auth_service.dart';
 import 'package:tapkat/services/firebase.dart';
 import 'package:tapkat/utilities/upload_media.dart';
@@ -15,6 +16,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
   ProductBloc() : super(ProductInitial()) {
     final _productRepo = ProductRepository();
     final _authService = AuthService();
+    final _userRepo = UserRepository();
 
     on<ProductEvent>((event, emit) async {
       try {
@@ -25,8 +27,10 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
           final downloadUrl = await uploadData(
               event.media[0].storagePath, event.media[0].bytes);
 
+          final userModel = await _userRepo.getUser(_user!.uid);
+
           event.productRequest.image_url = downloadUrl;
-          event.productRequest.display_name = _user!.displayName;
+          event.productRequest.display_name = userModel!.display_name;
 
           final productId = await _productRepo.addProduct(event.productRequest);
 
@@ -141,21 +145,6 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
             final result = await _productRepo.likeProduct(
               productRequest: ProductRequestModel(
                 productid: event.product.productid,
-                userid: event.product.userid,
-                productdesc: event.product.productdesc,
-                currency: event.product.currency,
-                specifications: event.product.specifications,
-                type: event.product.type,
-                address: event.product.address!.address,
-                city: event.product.address!.city,
-                country: event.product.address!.country,
-                postcode: event.product.address!.postCode,
-                category: event.product.category,
-                image_url: event.product.mediaPrimary!.url,
-                media_type: event.product.mediaPrimary!.type,
-                location: event.product.address!.location,
-                rating: event.product.rating,
-                price: event.product.price,
               ),
               userId: _user.uid,
               like: -1,
@@ -164,7 +153,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
             if (result) {
               emit(UnlikeSuccess());
             } else
-              emit(ProductError('unable to add like to product'));
+              emit(ProductError('unable to unlike to product'));
           }
         }
 
@@ -173,21 +162,6 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
             final result = await _productRepo.likeProduct(
               productRequest: ProductRequestModel(
                 productid: event.product.productid,
-                userid: event.product.userid,
-                productdesc: event.product.productdesc,
-                currency: event.product.currency,
-                specifications: event.product.specifications,
-                type: event.product.type,
-                address: event.product.address!.address,
-                city: event.product.address!.city,
-                country: event.product.address!.country,
-                postcode: event.product.address!.postCode,
-                category: event.product.category,
-                image_url: event.product.mediaPrimary!.url,
-                media_type: event.product.mediaPrimary!.type,
-                location: event.product.address!.location,
-                rating: event.product.rating,
-                price: event.product.price,
               ),
               userId: _user.uid,
               like: 1,

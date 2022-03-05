@@ -5,11 +5,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_progress_hud/flutter_progress_hud.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/schemas/product_markers_record.dart';
 import 'package:tapkat/screens/product/product_details_screen.dart';
 import 'package:tapkat/screens/search/bloc/search_bloc.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
+import 'package:tapkat/utilities/constants.dart';
 import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/utilities/style.dart';
 import 'package:tapkat/widgets/barter_list_item.dart';
@@ -43,11 +45,23 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
 
   int currentPage = 0;
 
+  ProductModel? lastProduct;
+
+  final _pagingController =
+      PagingController<int, ProductModel>(firstPageKey: 0);
+
   @override
   void initState() {
-    _searchBloc.add(InitializeSearch(widget.keyword));
     _keyWordTextController.text = widget.keyword;
+
+    _searchBloc.add(InitializeSearch(_keyWordTextController.text.trim()));
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _pagingController.dispose();
+    super.dispose();
   }
 
   @override
@@ -76,9 +90,42 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
               });
             }
 
+            if (state is GetNextProductsSuccess) {
+              print('hey ${state.list.length}');
+              if (state.list.isNotEmpty) {
+                lastProduct = state.list.last;
+                if (state.list.length == productCount) {
+                  _pagingController.appendPage(state.list, currentPage + 1);
+                } else {
+                  _pagingController.appendLastPage(state.list);
+                }
+              } else {
+                _pagingController.appendLastPage([]);
+              }
+            }
+
             if (state is SearchSuccess) {
               setState(() {
                 searchResults = state.searchResults;
+              });
+              lastProduct = searchResults.last;
+              if (state.searchResults.length == productCount) {
+                _pagingController.appendPage(
+                    state.searchResults, currentPage + 1);
+              } else {
+                _pagingController.appendLastPage(state.searchResults);
+              }
+
+              _pagingController.addPageRequestListener((pageKey) {
+                if (lastProduct != null) {
+                  _searchBloc.add(
+                    GetNextProducts(
+                      keyword: _keyWordTextController.text.trim(),
+                      lastProductId: lastProduct!.productid!,
+                      startAfterVal: lastProduct!.price!.toString(),
+                    ),
+                  );
+                }
               });
             }
           },
@@ -137,7 +184,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                           child: Container(
                             child: searchResults.isNotEmpty
                                 ? _selectedView == 'grid'
-                                    ? _buildGridView()
+                                    ? _buildGridView2()
                                     : _buildMapView()
                                 : Container(
                                     padding:
@@ -156,60 +203,52 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                     ),
                   ),
                 ),
-                Container(
-                  width: double.infinity,
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 20.0, vertical: 5.0),
-                  height: SizeConfig.screenHeight * .06,
-                  color: kBackgroundColor,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Expanded(
-                        child: InkWell(
-                          onTap: _onPrevTapped,
-                          child: Container(
-                            child: Center(
-                                child: Icon(
-                              Icons.arrow_left,
-                              size: 40.0,
-                              color:
-                                  currentPage == 0 ? Colors.grey : Colors.white,
-                            )),
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: InkWell(
-                          onTap: _onNextTapped,
-                          child: Container(
-                            child: Center(
-                                child: Icon(
-                              Icons.arrow_right,
-                              size: 40.0,
-                              color: Colors.white,
-                            )),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                // Container(
+                //   width: double.infinity,
+                //   padding:
+                //       EdgeInsets.symmetric(horizontal: 20.0, vertical: 5.0),
+                //   height: SizeConfig.screenHeight * .06,
+                //   color: kBackgroundColor,
+                //   child: Row(
+                //     mainAxisAlignment: MainAxisAlignment.center,
+                //     crossAxisAlignment: CrossAxisAlignment.center,
+                //     children: [
+                //       Expanded(
+                //         child: InkWell(
+                //           onTap: _onPrevTapped,
+                //           child: Container(
+                //             child: Center(
+                //                 child: Icon(
+                //               Icons.arrow_left,
+                //               size: 40.0,
+                //               color:
+                //                   currentPage == 0 ? Colors.grey : Colors.white,
+                //             )),
+                //           ),
+                //         ),
+                //       ),
+                //       Expanded(
+                //         child: InkWell(
+                //           onTap: _onNextTapped,
+                //           child: Container(
+                //             child: Center(
+                //                 child: Icon(
+                //               Icons.arrow_right,
+                //               size: 40.0,
+                //               color: Colors.white,
+                //             )),
+                //           ),
+                //         ),
+                //       ),
+                //     ],
+                //   ),
+                // ),
               ],
             ),
           ),
         ),
       ),
     );
-  }
-
-  _onNextTapped() {
-    //
-  }
-
-  _onPrevTapped() {
-    //
   }
 
   _buildMapView() {
@@ -266,6 +305,49 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
     );
   }
 
+  Widget _buildGridView2() {
+    return PagedGridView<int, ProductModel>(
+      pagingController: _pagingController,
+      showNewPageProgressIndicatorAsGridChild: false,
+      showNewPageErrorIndicatorAsGridChild: false,
+      showNoMoreItemsIndicatorAsGridChild: false,
+      padding: EdgeInsets.symmetric(
+        horizontal: 16.0,
+        vertical: 10.0,
+      ),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        mainAxisSpacing: 16,
+        crossAxisCount: 2,
+      ),
+      builderDelegate: PagedChildBuilderDelegate<ProductModel>(
+        itemBuilder: (context, product, index) {
+          return BarterListItem(
+            height: SizeConfig.screenHeight * 0.23,
+            width: SizeConfig.screenWidth * 0.40,
+            itemName: product.productname ?? '',
+            itemPrice: (product.currency ?? '') +
+                (product.price != null
+                    ? product.price!.toStringAsFixed(2)
+                    : '0.00'),
+            imageUrl: product.mediaPrimary != null &&
+                    product.mediaPrimary!.url != null
+                ? product.mediaPrimary!.url!
+                : '',
+            onTapped: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ProductDetailsScreen(
+                  ownItem: false,
+                  productId: product.productid ?? '',
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   GridView _buildGridView() {
     return GridView.count(
       shrinkWrap: true,
@@ -314,6 +396,8 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
 
   _onSearchSubmitted(String? val) {
     if (val == null || val.isEmpty) return;
-    _searchBloc.add(InitializeSearch(val));
+    lastProduct = null;
+    _pagingController.refresh();
+    _searchBloc.add(InitializeSearch(_keyWordTextController.text.trim()));
   }
 }

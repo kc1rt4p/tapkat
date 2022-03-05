@@ -20,6 +20,8 @@ class BarterRecordModel {
   int? barterNo;
   String? userid1Role;
   String? userid2Role;
+  String? userid1Name;
+  String? userid2Name;
 
   BarterRecordModel({
     this.id,
@@ -43,6 +45,8 @@ class BarterRecordModel {
     this.barterNo,
     this.userid1Role,
     this.userid2Role,
+    this.userid1Name,
+    this.userid2Name,
   });
 
   factory BarterRecordModel.fromJson(Map<String, dynamic> json) {
@@ -68,6 +72,8 @@ class BarterRecordModel {
       barterNo: json['barterNo'],
       userid1Role: json['userid1Role'],
       userid2Role: json['userid2Role'],
+      userid1Name: json['userid1Name'],
+      userid2Name: json['userid2Name'],
     );
   }
 
@@ -93,6 +99,8 @@ class BarterRecordModel {
       'barterNo': this.barterNo,
       'userid1Role': this.userid1Role,
       'userid2Role': this.userid2Role,
+      'userid1Name': this.userid1Name,
+      'userid2Name': this.userid2Name,
     };
   }
 }

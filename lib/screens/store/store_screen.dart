@@ -3,17 +3,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_progress_hud/flutter_progress_hud.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/models/user.dart';
+import 'package:tapkat/schemas/user_likes_record.dart';
 import 'package:tapkat/screens/product/bloc/product_bloc.dart';
 import 'package:tapkat/screens/product/product_details_screen.dart';
 import 'package:tapkat/screens/store/bloc/store_bloc.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
+import 'package:tapkat/utilities/constants.dart';
 import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/utilities/style.dart';
 import 'package:tapkat/widgets/barter_list_item.dart';
 import 'package:tapkat/widgets/custom_app_bar.dart';
 import 'package:tapkat/widgets/custom_search_bar.dart';
+
+import '../../backend.dart';
 
 class StoreScreen extends StatefulWidget {
   final String userId;
@@ -38,6 +43,11 @@ class _StoreScreenState extends State<StoreScreen> {
   UserModel? _storeOwner;
 
   bool _isLoading = false;
+
+  ProductModel? lastProduct;
+
+  final _pagingController =
+      PagingController<int, ProductModel>(firstPageKey: 0);
 
   @override
   void initState() {
@@ -134,25 +144,62 @@ class _StoreScreenState extends State<StoreScreen> {
                         }
 
                         if (state is GetFirstProductsSuccess) {
-                          setState(() {
-                            currentPage = 0;
-                            _list = state.list;
-                            indicators.clear();
-                            if (_list.isNotEmpty) {
-                              indicators.add(_list.last);
+                          // setState(() {
+                          //   currentPage = 0;
+                          //   _list = state.list;
+                          //   indicators.clear();
+                          //   if (_list.isNotEmpty) {
+                          //     indicators.add(_list.last);
+                          //   }
+                          // });
+                          if (state.list.isNotEmpty) {
+                            lastProduct = state.list.last;
+                            if (state.list.length == productCount) {
+                              _pagingController.appendPage(
+                                  state.list, currentPage + 1);
+                            } else {
+                              _pagingController.appendLastPage(state.list);
                             }
-                          });
+                            print(
+                                'lastrProduct name: ${lastProduct!.productname}');
+                            _pagingController.addPageRequestListener((pageKey) {
+                              if (lastProduct != null) {
+                                _productBloc.add(
+                                  GetNextProducts(
+                                    listType: 'user',
+                                    lastProductId: lastProduct!.productid!,
+                                    startAfterVal:
+                                        lastProduct!.price.toString(),
+                                    userId: widget.userId,
+                                  ),
+                                );
+                              }
+                            });
+                          }
                         }
 
                         if (state is GetProductsSuccess) {
-                          setState(() {
-                            _list = state.list;
+                          // setState(() {
+                          //   _list = state.list;
 
-                            indicators.add(_list.last);
-                          });
+                          //   indicators.add(_list.last);
+                          // });
 
-                          indicators.asMap().forEach((key, value) =>
-                              print('==== page : ${value.productid}'));
+                          // indicators.asMap().forEach((key, value) =>
+                          //     print('==== page : ${value.productid}'));
+
+                          print('HEYYYY');
+                          if (state.list.isNotEmpty) {
+                            lastProduct = state.list.last;
+                            if (state.list.length == productCount) {
+                              _pagingController.appendPage(
+                                  state.list, currentPage + 1);
+                            } else {
+                              _pagingController.appendLastPage(state.list);
+                            }
+                          } else {
+                            _pagingController.appendLastPage([]);
+                          }
                         }
                       },
                     ),
@@ -181,107 +228,186 @@ class _StoreScreenState extends State<StoreScreen> {
                       },
                     ),
                   ],
-                  child: Container(
-                    child: _list.isNotEmpty
-                        ? GridView.count(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 10.0,
-                              vertical: 10.0,
-                            ),
-                            crossAxisCount: 2,
-                            mainAxisSpacing: 14.0,
-                            crossAxisSpacing: 12.0,
-                            children: _list
-                                .map(
-                                  (product) => Center(
-                                    child: BarterListItem(
-                                      hideLikeBtn: true,
-                                      itemName: product.productname ?? '',
-                                      itemPrice: product.price != null
-                                          ? product.price!.toStringAsFixed(2)
-                                          : '0',
-                                      imageUrl: product.mediaPrimary != null &&
-                                              product.mediaPrimary!.url !=
-                                                  null &&
-                                              product
-                                                  .mediaPrimary!.url!.isNotEmpty
-                                          ? product.mediaPrimary!.url!
-                                          : '',
-                                      onTapped: () => Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              ProductDetailsScreen(
-                                            productId: product.productid ?? '',
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                )
-                                .toList(),
-                          )
-                        : Container(
-                            padding: EdgeInsets.symmetric(horizontal: 30.0),
-                            child: Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    'No products found',
-                                    style: Style.subtitle2
-                                        .copyWith(color: Colors.grey),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                  ),
+                  child: Container(child: _buildGridView()
+                      // GridView.count(
+                      //     padding: EdgeInsets.symmetric(
+                      //       horizontal: 10.0,
+                      //       vertical: 10.0,
+                      //     ),
+                      //     mainAxisSpacing: 16,
+                      //     crossAxisCount: 2,
+                      //     children: _list
+                      //         .map(
+                      //           (product) => Center(
+                      //             child: BarterListItem(
+                      //               height: SizeConfig.screenHeight * 0.23,
+                      //               width: SizeConfig.screenWidth * 0.40,
+                      //               hideLikeBtn: true,
+                      //               itemName: product.productname ?? '',
+                      //               itemPrice: product.price != null
+                      //                   ? product.price!.toStringAsFixed(2)
+                      //                   : '0',
+                      //               imageUrl: product.mediaPrimary != null &&
+                      //                       product.mediaPrimary!.url !=
+                      //                           null &&
+                      //                       product
+                      //                           .mediaPrimary!.url!.isNotEmpty
+                      //                   ? product.mediaPrimary!.url!
+                      //                   : '',
+                      //               onTapped: () => Navigator.push(
+                      //                 context,
+                      //                 MaterialPageRoute(
+                      //                   builder: (context) =>
+                      //                       ProductDetailsScreen(
+                      //                     productId: product.productid ?? '',
+                      //                   ),
+                      //                 ),
+                      //               ),
+                      //             ),
+                      //           ),
+                      //         )
+                      //         .toList(),
+                      //   )
+                      // : Container(
+                      //     padding: EdgeInsets.symmetric(horizontal: 30.0),
+                      //     child: Center(
+                      //       child: Column(
+                      //         mainAxisAlignment: MainAxisAlignment.center,
+                      //         children: [
+                      //           Text(
+                      //             'No products found',
+                      //             style: Style.subtitle2
+                      //                 .copyWith(color: Colors.grey),
+                      //           ),
+                      //         ],
+                      //       ),
+                      //     ),
+                      //   ),
+                      ),
                 ),
               ),
-              Container(
-                width: double.infinity,
-                padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 5.0),
-                height: SizeConfig.screenHeight * .06,
-                color: kBackgroundColor,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Expanded(
-                      child: InkWell(
-                        onTap: _onPrevTapped,
-                        child: Container(
-                          child: Center(
-                              child: Icon(
-                            Icons.arrow_left,
-                            size: 40.0,
-                            color:
-                                currentPage == 0 ? Colors.grey : Colors.white,
-                          )),
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      child: InkWell(
-                        onTap: _onNextTapped,
-                        child: Container(
-                          child: Center(
-                            child: Icon(
-                              Icons.arrow_right,
-                              size: 40.0,
-                              color: _list.isEmpty ? Colors.grey : Colors.white,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              // Container(
+              //   width: double.infinity,
+              //   padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 5.0),
+              //   height: SizeConfig.screenHeight * .06,
+              //   color: kBackgroundColor,
+              //   child: Row(
+              //     mainAxisAlignment: MainAxisAlignment.center,
+              //     crossAxisAlignment: CrossAxisAlignment.center,
+              //     children: [
+              //       Expanded(
+              //         child: InkWell(
+              //           onTap: _onPrevTapped,
+              //           child: Container(
+              //             child: Center(
+              //                 child: Icon(
+              //               Icons.arrow_left,
+              //               size: 40.0,
+              //               color:
+              //                   currentPage == 0 ? Colors.grey : Colors.white,
+              //             )),
+              //           ),
+              //         ),
+              //       ),
+              //       Expanded(
+              //         child: InkWell(
+              //           onTap: _onNextTapped,
+              //           child: Container(
+              //             child: Center(
+              //               child: Icon(
+              //                 Icons.arrow_right,
+              //                 size: 40.0,
+              //                 color: _list.isEmpty ? Colors.grey : Colors.white,
+              //               ),
+              //             ),
+              //           ),
+              //         ),
+              //       ),
+              //     ],
+              //   ),
+              // ),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildGridView() {
+    return PagedGridView<int, ProductModel>(
+      pagingController: _pagingController,
+      showNewPageProgressIndicatorAsGridChild: false,
+      showNewPageErrorIndicatorAsGridChild: false,
+      showNoMoreItemsIndicatorAsGridChild: false,
+      padding: EdgeInsets.symmetric(
+        horizontal: 16.0,
+        vertical: 10.0,
+      ),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        mainAxisSpacing: 16,
+        crossAxisCount: 2,
+      ),
+      builderDelegate: PagedChildBuilderDelegate<ProductModel>(
+        itemBuilder: (context, product, index) {
+          return Center(
+            child: StreamBuilder<List<UserLikesRecord?>>(
+                stream: queryUserLikesRecord(
+                  queryBuilder: (userLikesRecord) => userLikesRecord
+                      .where('userid', isEqualTo: widget.userId)
+                      .where('productid', isEqualTo: product.productid),
+                  singleRecord: true,
+                ),
+                builder: (context, snapshot) {
+                  bool liked = false;
+                  UserLikesRecord? record;
+                  if (snapshot.hasData) {
+                    if (snapshot.data != null && snapshot.data!.isNotEmpty) {
+                      record = snapshot.data!.first;
+                      if (record != null) {
+                        liked = record.liked ?? false;
+                      }
+                    }
+                  }
+
+                  return BarterListItem(
+                    height: SizeConfig.screenHeight * 0.23,
+                    width: SizeConfig.screenWidth * 0.40,
+                    liked: liked,
+                    itemName: product.productname ?? '',
+                    itemPrice: product.price != null
+                        ? product.price!.toStringAsFixed(2)
+                        : '0',
+                    imageUrl: product.mediaPrimary != null
+                        ? product.mediaPrimary!.url!
+                        : '',
+                    onTapped: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ProductDetailsScreen(
+                          productId: product.productid ?? '',
+                        ),
+                      ),
+                    ),
+                    onLikeTapped: () {
+                      if (record != null) {
+                        final newData = createUserLikesRecordData(
+                          liked: !record.liked!,
+                        );
+
+                        record.reference!.update(newData);
+                        if (liked) {
+                          _productBloc.add(
+                            Unlike(product),
+                          );
+                        } else {
+                          _productBloc.add(AddLike(product));
+                        }
+                      }
+                    },
+                  );
+                }),
+          );
+        },
       ),
     );
   }

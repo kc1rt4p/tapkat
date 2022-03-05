@@ -21,6 +21,16 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
         emit(SearchSuccess(result));
       }
 
+      if (event is GetNextProducts) {
+        final list = await _productRepo.searchProducts(
+          event.keyword.split(" "),
+          lastProductId: event.lastProductId,
+          startAfterVal: event.startAfterVal,
+        );
+
+        emit(GetNextProductsSuccess(list));
+      }
+
       if (event is GetProductMarkers) {
         emit(GetProductMarkersSuccess(queryProductMarkersRecord(limit: 20)));
       }

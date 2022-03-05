@@ -28,3 +28,9 @@ class GetProductMarkersSuccess extends SearchState {
 
   GetProductMarkersSuccess(this.productMarkers);
 }
+
+class GetNextProductsSuccess extends SearchState {
+  final List<ProductModel> list;
+
+  GetNextProductsSuccess(this.list);
+}

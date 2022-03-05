@@ -7,6 +7,7 @@ part 'root_state.dart';
 class RootBloc extends Bloc<RootEvent, RootState> {
   RootBloc() : super(RootInitial()) {
     on<RootEvent>((event, emit) {
+      emit(RootInitial());
       if (event is MoveTab) emit(MoveToTab(event.index));
     });
   }

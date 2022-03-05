@@ -46,6 +46,13 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
   }
 
   @override
+  void setState(fn) {
+    if (mounted) {
+      super.setState(fn);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
     return Scaffold(
@@ -76,21 +83,72 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
 
                     if (state is BarterTransactionsInitialized) {
                       _byYouStream = state.byYouStream.listen((list) {
-                        if (list.isNotEmpty) {
-                          setState(() {
-                            byYouList = list;
-                          });
-                        }
+                        setState(() {
+                          if (list.isNotEmpty) {
+                            byYouList.addAll(list);
+                          } else {
+                            byYouList.clear();
+                          }
+                        });
+                        // List<BarterRecordModel> _byYou = [];
+                        // List<BarterRecordModel> _fromOthers = [];
+
+                        // list.forEach((barterRecord) {
+                        //   if (barterRecord.userid1Role == 'sender') {
+                        //     _byYou.add(barterRecord);
+                        //   } else {
+                        //     _fromOthers.add(barterRecord);
+                        //   }
+                        // });
+
+                        // setState(() {
+                        //   if (_byYou.isNotEmpty)
+                        //     byYouList.addAll(_byYou);
+                        //   else
+                        //     byYouList.clear();
+
+                        //   if (_fromOthers.isNotEmpty)
+                        //     fromOthersList.addAll(_fromOthers);
+                        //   else
+                        //     fromOthersList.clear();
+                        // });
                       });
 
                       _fromOthersStream = state.fromOthersStream.listen((list) {
-                        if (list.isNotEmpty) {
-                          setState(() {
+                        setState(() {
+                          if (list.isNotEmpty) {
                             fromOthersList = list
-                                .where((barter) => barter.dealStatus != 'new')
+                                .where((barterRecord) =>
+                                    barterRecord.dealStatus != 'new')
                                 .toList();
-                          });
-                        }
+                          } else {
+                            fromOthersList.clear();
+                          }
+                        });
+                        // List<BarterRecordModel> _byYou = [];
+                        // List<BarterRecordModel> _fromOthers = [];
+
+                        // list.forEach((barterRecord) {
+                        //   if (barterRecord.dealStatus != 'new') {
+                        //     if (barterRecord.userid1Role == 'sender') {
+                        //       _byYou.add(barterRecord);
+                        //     } else {
+                        //       _fromOthers.add(barterRecord);
+                        //     }
+                        //   }
+                        // });
+
+                        // setState(() {
+                        //   if (_byYou.isNotEmpty)
+                        //     byYouList.addAll(_byYou);
+                        //   else
+                        //     byYouList.clear();
+
+                        //   if (_fromOthers.isNotEmpty)
+                        //     fromOthersList.addAll(_fromOthers);
+                        //   else
+                        //     fromOthersList.clear();
+                        // });
                       });
                     }
 
@@ -130,17 +188,20 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                                                     CrossAxisAlignment.center,
                                                 children: byYouList.map(
                                                   (barter) {
-                                                    final barteringWith = barter
-                                                                    .userid2 !=
-                                                                null &&
-                                                            barter.userid2!
-                                                                    .length >
-                                                                10
-                                                        ? barter.userid2!
-                                                                .substring(
-                                                                    0, 10) +
-                                                            '...'
-                                                        : barter.userid2!;
+                                                    var name =
+                                                        barter.userid2Name !=
+                                                                    null &&
+                                                                barter
+                                                                    .userid2Name!
+                                                                    .isNotEmpty
+                                                            ? barter
+                                                                .userid2Name!
+                                                            : barter.userid2!;
+                                                    if (name.length > 10) {
+                                                      name = name.substring(
+                                                              0, 10) +
+                                                          '...';
+                                                    }
                                                     return Stack(
                                                       children: [
                                                         Container(
@@ -167,7 +228,7 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                                                                             'For '),
                                                                     TextSpan(
                                                                       text:
-                                                                          barteringWith,
+                                                                          name,
                                                                       style:
                                                                           TextStyle(
                                                                         fontWeight:
@@ -211,10 +272,10 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                                                                     ),
                                                                   );
 
-                                                                  _barterBloc
-                                                                      .add(
-                                                                    InitializeBarterTransactions(),
-                                                                  );
+                                                                  // _barterBloc
+                                                                  //     .add(
+                                                                  //   InitializeBarterTransactions(),
+                                                                  // );
                                                                 },
                                                               ),
                                                               barter.dealDate !=
@@ -241,7 +302,7 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                                                           top: (SizeConfig
                                                                       .screenHeight *
                                                                   0.26) *
-                                                              0.61,
+                                                              0.555,
                                                           child: Container(
                                                             padding: EdgeInsets
                                                                 .symmetric(
@@ -350,18 +411,20 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                                                   CrossAxisAlignment.center,
                                               children: fromOthersList.map(
                                                 (barter) {
-                                                  final barteringWith = barter
-                                                                  .userid1 !=
-                                                              null &&
-                                                          barter.userid1!
-                                                                  .length >
-                                                              10
-                                                      ? barter.userid1!
-                                                              .substring(
-                                                                  0, 10) +
-                                                          '...'
-                                                      : barter.userid1!;
+                                                  var name =
+                                                      barter.userid1Name !=
+                                                                  null &&
+                                                              barter
+                                                                  .userid1Name!
+                                                                  .isNotEmpty
+                                                          ? barter.userid1Name!
+                                                          : barter.userid1!;
 
+                                                  if (name.length > 10) {
+                                                    name =
+                                                        name.substring(0, 10) +
+                                                            '...';
+                                                  }
                                                   return Stack(
                                                     children: [
                                                       Container(
@@ -386,8 +449,7 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                                                                       text:
                                                                           'From '),
                                                                   TextSpan(
-                                                                    text:
-                                                                        barteringWith,
+                                                                    text: name,
                                                                     style:
                                                                         TextStyle(
                                                                       fontWeight:
@@ -401,37 +463,42 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                                                             SizedBox(
                                                                 height: 8.0),
                                                             BarterListItem(
-                                                              hideLikeBtn: true,
-                                                              itemName: barter
-                                                                      .u2P1Name ??
-                                                                  '',
-                                                              itemPrice: barter
-                                                                          .u2P1Price !=
-                                                                      null
-                                                                  ? barter
-                                                                      .u2P1Price!
-                                                                      .toStringAsFixed(
-                                                                          2)
-                                                                  : '0.00',
-                                                              imageUrl: barter
-                                                                      .u2P1Image ??
-                                                                  '',
-                                                              onTapped: () =>
-                                                                  Navigator
+                                                                hideLikeBtn:
+                                                                    true,
+                                                                itemName: barter
+                                                                        .u2P1Name ??
+                                                                    '',
+                                                                itemPrice: barter
+                                                                            .u2P1Price !=
+                                                                        null
+                                                                    ? barter
+                                                                        .u2P1Price!
+                                                                        .toStringAsFixed(
+                                                                            2)
+                                                                    : '0.00',
+                                                                imageUrl: barter
+                                                                        .u2P1Image ??
+                                                                    '',
+                                                                onTapped:
+                                                                    () async {
+                                                                  await Navigator
                                                                       .push(
-                                                                context,
-                                                                MaterialPageRoute(
-                                                                  builder:
-                                                                      (context) =>
-                                                                          BarterScreen(
-                                                                    barterRecord:
-                                                                        barter,
-                                                                    fromOtherUser:
-                                                                        true,
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                            ),
+                                                                    context,
+                                                                    MaterialPageRoute(
+                                                                      builder:
+                                                                          (context) =>
+                                                                              BarterScreen(
+                                                                        barterRecord:
+                                                                            barter,
+                                                                        // fromOtherUser:
+                                                                        //     true,
+                                                                      ),
+                                                                    ),
+                                                                  );
+
+                                                                  // _barterBloc.add(
+                                                                  //     InitializeBarterTransactions());
+                                                                }),
                                                             barter.dealDate !=
                                                                     null
                                                                 ? Container(
@@ -458,7 +525,7 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                                                         top: (SizeConfig
                                                                     .screenHeight *
                                                                 0.26) *
-                                                            0.61,
+                                                            0.555,
                                                         child: Container(
                                                           padding: EdgeInsets
                                                               .symmetric(

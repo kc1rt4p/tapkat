@@ -14,3 +14,15 @@ class InitializeSearch extends SearchEvent {
 }
 
 class GetProductMarkers extends SearchEvent {}
+
+class GetNextProducts extends SearchEvent {
+  final String keyword;
+  final String lastProductId;
+  final String startAfterVal;
+
+  GetNextProducts({
+    required this.keyword,
+    required this.lastProductId,
+    required this.startAfterVal,
+  });
+}

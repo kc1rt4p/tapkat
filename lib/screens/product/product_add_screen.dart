@@ -242,6 +242,38 @@ class _ProductAddScreenState extends State<ProductAddScreen> {
       setState(() {
         _currentUserLoc = placemarks.first;
         _currentUserPosition = userLoc;
+        _selectedLocation = PlaceDetails(
+          placeId: '',
+          name: _currentUserLoc!.name ?? '',
+          geometry: Geometry(
+            location: Location(
+              lat: _currentUserPosition!.latitude,
+              lng: _currentUserPosition!.longitude,
+            ),
+          ),
+          addressComponents: [
+            AddressComponent(
+              longName: _currentUserLoc!.street ?? '',
+              types: [],
+              shortName: '',
+            ),
+            AddressComponent(
+              longName: _currentUserLoc!.locality ?? '',
+              types: [],
+              shortName: '',
+            ),
+            AddressComponent(
+              longName: _currentUserLoc!.subAdministrativeArea ?? '',
+              types: [],
+              shortName: '',
+            ),
+            AddressComponent(
+              longName: _currentUserLoc!.country ?? '',
+              types: [],
+              shortName: '',
+            ),
+          ],
+        );
         _locationTextController.text =
             '${_currentUserLoc!.street ?? ''}, ${_currentUserLoc!.locality ?? ''}, ${_currentUserLoc!.subAdministrativeArea ?? ''}, ${_currentUserLoc!.country ?? ''}';
       });

@@ -53,7 +53,7 @@ class _BarterListItemState extends State<BarterListItem> {
                 width: widget.width ?? SizeConfig.screenWidth * 0.40,
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(20.0),
+                  borderRadius: BorderRadius.circular(15.0),
                   boxShadow: [
                     BoxShadow(
                       offset: Offset(1, 1),
@@ -65,7 +65,7 @@ class _BarterListItemState extends State<BarterListItem> {
                 child: Column(
                   children: [
                     Expanded(
-                      flex: 2,
+                      flex: 5,
                       child: Container(
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.only(
@@ -85,22 +85,28 @@ class _BarterListItemState extends State<BarterListItem> {
                       ),
                     ),
                     Expanded(
+                      flex: 3,
                       child: Container(
-                        padding: EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 5.0),
+                        padding: EdgeInsets.symmetric(
+                            vertical: SizeConfig.safeBlockVertical * 1.3,
+                            horizontal: SizeConfig.safeBlockVertical),
                         width: double.infinity,
                         child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.start,
                           children: [
                             Text(
                               widget.itemName,
+                              textAlign: TextAlign.center,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 fontSize: widget.fontSize ??
-                                    SizeConfig.textScaleFactor * 12.5,
-                                fontWeight: FontWeight.w500,
+                                    SizeConfig.textScaleFactor * 13.5,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
-                            SizedBox(height: SizeConfig.screenHeight * 0.007),
+                            // SizedBox(height: SizeConfig.screenHeight * 0.009),
+                            Spacer(),
                             Text(
                               widget.itemPrice,
                               style: TextStyle(
@@ -130,7 +136,7 @@ class _BarterListItemState extends State<BarterListItem> {
           visible: !widget.hideLikeBtn,
           child: Positioned(
             top: 5,
-            left: widget.likeLeftMargin ?? SizeConfig.screenWidth * 0.35,
+            right: widget.likeLeftMargin ?? SizeConfig.safeBlockHorizontal * 5,
             child: Stack(
               alignment: Alignment.center,
               children: [

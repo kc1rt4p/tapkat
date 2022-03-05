@@ -9,6 +9,7 @@ import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import 'package:tapkat/models/user.dart';
 import 'package:tapkat/schemas/users_record.dart';
 import 'package:tapkat/utilities/helper.dart';
 
@@ -20,7 +21,7 @@ class TapkatFirebaseUser {
 
 class AuthService {
   final _googleSignIn = GoogleSignIn();
-
+  UserModel? currentUserModel;
   TapkatFirebaseUser? currentUser;
   bool get loggedIn => currentUser?.loggedIn ?? false;
   Stream<TapkatFirebaseUser> tapkatFirebaseUserStream() => FirebaseAuth.instance

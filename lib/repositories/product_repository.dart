@@ -89,14 +89,16 @@ class ProductRepository {
     required String startAfterVal,
   }) async {
     final response =
-        await _apiService.post(url: 'products/$listType/searchSet', body: {
+        await _apiService.post(url: 'products/$listType/searchset', body: {
       'psk': psk,
       'userid': userId,
       'productcount': productCount,
-      'sortBy': 'price',
-      'startafterval': startAfterVal,
+      'sortby': 'price',
+      'startafterval': double.parse(startAfterVal),
       'productid': lastProductId,
     });
+
+    if (response.data['status'] == 'FAIL') return [];
 
     return (response.data['products'] as List<dynamic>).map((json) {
       return ProductModel.fromJson(json);
@@ -111,7 +113,7 @@ class ProductRepository {
         'psk': psk,
         'userid': userid,
         'productcount': productCount,
-        'sortBy': 'price',
+        'sortby': 'price',
         'sortdirection': listType == 'reco' ? 'ascending' : 'descending',
       },
       // params: userid != null
@@ -172,16 +174,28 @@ class ProductRepository {
     return true;
   }
 
-  Future<List<ProductModel>> searchProducts(List<String> keyword) async {
+  Future<List<ProductModel>> searchProducts(
+    List<String> keyword, {
+    String? lastProductId,
+    String? startAfterVal,
+  }) async {
+    var _body = {
+      'psk': psk,
+      'keywords': keyword,
+      'sortby': 'price',
+      'sortdirection': 'ascending',
+      'productcount': productCount,
+    };
+    if (lastProductId != null && startAfterVal != null) {
+      _body.addAll({
+        'startafterval': double.parse(startAfterVal),
+        'productid': lastProductId,
+      });
+    }
     final response = await _apiService.post(
-      url: 'products/searchfirst',
-      body: {
-        'psk': psk,
-        'keywords': keyword,
-        'sortby': 'price',
-        'sortDirection': 'ascending',
-        'productcount': productCount,
-      },
+      url:
+          'products/${(lastProductId != null && startAfterVal != null) ? 'searchset' : 'searchfirst'}',
+      body: _body,
     );
 
     if (response.data['status'] != 'SUCCESS') return [];
@@ -231,10 +245,11 @@ class ProductRepository {
       body: {
         'psk': psk,
         'productid': productRequest.productid,
-        'userid': productRequest.userid,
+        'userid': userId,
         'like': like,
       },
     );
+    print(response.data['status']);
 
     return response.data['status'] == 'SUCCESS';
   }
