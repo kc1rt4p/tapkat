@@ -377,9 +377,11 @@ class _StoreScreenState extends State<StoreScreen> {
                     itemPrice: product.price != null
                         ? product.price!.toStringAsFixed(2)
                         : '0',
-                    imageUrl: product.mediaPrimary != null
-                        ? product.mediaPrimary!.url!
-                        : '',
+                    imageUrl: product.mediaPrimary != null &&
+                            product.mediaPrimary!.url_t != null &&
+                            product.mediaPrimary!.url_t!.isNotEmpty
+                        ? product.mediaPrimary!.url_t ?? ''
+                        : product.mediaPrimary!.url ?? '',
                     onTapped: () => Navigator.push(
                       context,
                       MaterialPageRoute(

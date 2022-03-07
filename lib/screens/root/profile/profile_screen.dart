@@ -469,10 +469,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ? product.price!.toStringAsFixed(2)
                   : '0',
               imageUrl: product.mediaPrimary != null &&
-                      product.mediaPrimary!.url != null &&
-                      product.mediaPrimary!.url!.isNotEmpty
-                  ? product.mediaPrimary!.url!
-                  : '',
+                      product.mediaPrimary!.url_t != null &&
+                      product.mediaPrimary!.url_t!.isNotEmpty
+                  ? product.mediaPrimary!.url_t ?? ''
+                  : product.mediaPrimary!.url ?? '',
               onTapped: () async {
                 await Navigator.push(
                   context,

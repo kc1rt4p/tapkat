@@ -196,9 +196,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                   itemPrice: product.price != null
                                       ? product.price!.toStringAsFixed(2)
                                       : '0',
-                                  imageUrl: product.mediaPrimary != null
-                                      ? product.mediaPrimary!.url!
-                                      : '',
+                                  imageUrl: product.mediaPrimary != null &&
+                                          product.mediaPrimary!.url_t != null &&
+                                          product
+                                              .mediaPrimary!.url_t!.isNotEmpty
+                                      ? product.mediaPrimary!.url_t ?? ''
+                                      : product.mediaPrimary!.url ?? '',
                                   datePosted: product.updated_time ?? null,
                                   onTapped: () async {
                                     await Navigator.push(
@@ -280,9 +283,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                   itemPrice: product.price != null
                                       ? product.price!.toStringAsFixed(2)
                                       : '0',
-                                  imageUrl: product.mediaPrimary != null
-                                      ? product.mediaPrimary!.url!
-                                      : '',
+                                  imageUrl: product.mediaPrimary != null &&
+                                          product.mediaPrimary!.url_t != null &&
+                                          product
+                                              .mediaPrimary!.url_t!.isNotEmpty
+                                      ? product.mediaPrimary!.url_t ?? ''
+                                      : product.mediaPrimary!.url ?? '',
                                   datePosted: product.updated_time ?? null,
                                   onTapped: () async {
                                     await Navigator.push(
@@ -348,9 +354,11 @@ class _HomeScreenState extends State<HomeScreen> {
                               itemPrice: product.price != null
                                   ? product.price!.toStringAsFixed(2)
                                   : '0',
-                              imageUrl: product.mediaPrimary != null
-                                  ? product.mediaPrimary!.url!
-                                  : '',
+                              imageUrl: product.mediaPrimary != null &&
+                                      product.mediaPrimary!.url_t != null &&
+                                      product.mediaPrimary!.url_t!.isNotEmpty
+                                  ? product.mediaPrimary!.url_t ?? ''
+                                  : product.mediaPrimary!.url ?? '',
                               onTapped: () async {
                                 await Navigator.push(
                                   context,

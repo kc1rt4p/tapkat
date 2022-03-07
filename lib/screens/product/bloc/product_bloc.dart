@@ -6,7 +6,6 @@ import 'package:tapkat/models/upload_product_image_response.dart';
 import 'package:tapkat/repositories/product_repository.dart';
 import 'package:tapkat/repositories/user_repository.dart';
 import 'package:tapkat/services/auth_service.dart';
-import 'package:tapkat/services/firebase.dart';
 import 'package:tapkat/utilities/upload_media.dart';
 
 part 'product_event.dart';
@@ -24,12 +23,12 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
         if (event is SaveProduct) {
           emit(ProductLoading());
 
-          final downloadUrl = await uploadData(
-              event.media[0].storagePath, event.media[0].bytes);
+          // final downloadUrl = await uploadData(
+          //     event.media[0].storagePath, event.media[0].bytes);
+          // event.productRequest.image_url = downloadUrl;
 
           final userModel = await _userRepo.getUser(_user!.uid);
 
-          event.productRequest.image_url = downloadUrl;
           event.productRequest.display_name = userModel!.display_name;
 
           final productId = await _productRepo.addProduct(event.productRequest);
@@ -39,18 +38,40 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
             return;
           }
 
-          if (event.media.length > 1) {
-            event.media.removeAt(0);
-            final upload = await _productRepo.addProductImages(
-              userId: _user.uid,
-              productId: productId,
-              images: event.media,
-            );
-            if (upload == null) {
-              emit(ProductError('Error while uploading product images'));
-              return;
-            }
+          // if (event.media.length > 1) {
+          //   event.media.removeAt(0);
+          //   final upload = await _productRepo.addProductImages(
+          //     userId: _user.uid,
+          //     productId: productId,
+          //     images: event.media,
+          //   );
+          //   if (upload == null) {
+          //     emit(ProductError('Error while uploading product images'));
+          //     return;
+          //   }
+
+          //   event.productRequest.productid = productId;
+          //   event.productRequest.image_url = upload.media_primary!.url;
+          //   event.productRequest.media_type = upload.media_primary!.type;
+
+          //   _productRepo.updateProduct(event.productRequest);
+          // }
+
+          final upload = await _productRepo.addProductImages(
+            userId: _user.uid,
+            productId: productId,
+            images: event.media,
+          );
+          if (upload == null) {
+            emit(ProductError('Error while uploading product images'));
+            return;
           }
+
+          event.productRequest.productid = productId;
+          event.productRequest.image_url = upload.media![0].url_t;
+          event.productRequest.media_type = upload.media![0].type;
+
+          _productRepo.updateProduct(event.productRequest);
 
           emit(SaveProductSuccess(productId));
         }

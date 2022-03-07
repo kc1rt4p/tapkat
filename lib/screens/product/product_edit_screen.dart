@@ -341,7 +341,11 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
                                 borderRadius: BorderRadius.circular(20.0),
                                 color: Colors.white,
                                 image: DecorationImage(
-                                  image: CachedNetworkImageProvider(media.url!),
+                                  image: CachedNetworkImageProvider(media.url !=
+                                              null &&
+                                          media.url!.isNotEmpty
+                                      ? media.url!
+                                      : 'https://storage.googleapis.com/map-surf-assets/noimage.jpg'),
                                   scale: 1.0,
                                   fit: BoxFit.cover,
                                 ),

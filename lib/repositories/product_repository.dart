@@ -1,12 +1,24 @@
+import 'dart:io';
+import 'dart:isolate';
+
 import 'package:dio/dio.dart';
 import 'package:http_parser/http_parser.dart';
+import 'package:image/image.dart';
 import 'package:mime_type/mime_type.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:tapkat/models/decode_param.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/models/request/add_product_request.dart';
 import 'package:tapkat/models/upload_product_image_response.dart';
 import 'package:tapkat/services/http/api_service.dart';
 import 'package:tapkat/utilities/constants.dart';
 import 'package:tapkat/utilities/upload_media.dart';
+
+void decodeIsolate(DecodeParam param) {
+  var image = decodeImage(param.file.readAsBytesSync())!;
+  var thumbnail = copyResize(image, width: 150);
+  param.sendPort.send(thumbnail);
+}
 
 class ProductRepository {
   final _apiService = ApiService();
@@ -48,18 +60,75 @@ class ProductRepository {
     required String userId,
     required List<SelectedMedia> images,
   }) async {
-    print('no. images to upload: ${images.length}');
-
     var formData = FormData.fromMap({
       "psk": "lcp9321p",
       'userid': userId,
       'productid': productId,
     });
 
-    images.forEach((img) {
+    List<SelectedMedia> _imgsToUpload = [];
+
+    for (var img in images) {
+      var receivePort = ReceivePort();
+
+      print('==== scaling image ====');
+      await Isolate.spawn(
+          decodeIsolate, DecodeParam(File(img.rawPath!), receivePort.sendPort));
+      print('==== done scaling ====');
+
+      // Get the processed image from the isolate.
+      var image = await receivePort.first as Image;
+
+      final fileName = img.fileName.split('.')[0] + '_t.jpg';
+
+      Directory appDocDirectory = await getApplicationDocumentsDirectory();
+
+      final thumbnail = await File(appDocDirectory.path + '/' + fileName)
+          .writeAsBytes(encodeJpg(image));
+
+      print('thumbnail width: ${image.width}');
+      print('original file size: ${await File(img.rawPath!).length()}');
+      print('thumbnail file size: ${await thumbnail.length()}');
+
+      _imgsToUpload.addAll([
+        img,
+        SelectedMedia(fileName, thumbnail.path, thumbnail.readAsBytesSync(),
+            appDocDirectory.path + '/' + fileName),
+      ]);
+    }
+
+    // images.forEach((img) async {
+    //   var receivePort = ReceivePort();
+    //   print('==== scaling image ====');
+    //   await Isolate.spawn(
+    //       decodeIsolate, DecodeParam(File(img.rawPath!), receivePort.sendPort));
+
+    //   print('==== done scaling ====');
+
+    //   // var decodedImage = decodeImage(img.bytes)!;
+    //   // var resizedImage = copyResize(decodedImage, width: 120);
+
+    //   // Get the processed image from the isolate.
+    //   var image = await receivePort.first as Image;
+    //   final fileName = img.fileName.split('.')[0] + '_t.png';
+
+    //   Directory appDocDirectory = await getApplicationDocumentsDirectory();
+
+    //   final thumbnail = await File(appDocDirectory.path + '/' + fileName)
+    //       .writeAsBytes(encodePng(image));
+
+    //   images.add(
+    //       SelectedMedia(fileName, thumbnail.path, thumbnail.readAsBytesSync()));
+    // });
+
+    print('no. of images to upload: ${_imgsToUpload.length}');
+
+    for (var img in _imgsToUpload) {
       final mimeType = mime(img.fileName);
       String mimee = mimeType!.split('/')[0];
       String type = mimeType.split('/')[1];
+
+      if (img.rawPath == null) continue;
 
       formData.files.add(
         MapEntry(
@@ -70,7 +139,27 @@ class ProductRepository {
           ),
         ),
       );
-    });
+    }
+
+    print('ready to upload: ${formData.files.length}');
+
+    // _imgsToUpload.forEach((img) {
+    //   final mimeType = mime(img.fileName);
+    //   String mimee = mimeType!.split('/')[0];
+    //   String type = mimeType.split('/')[1];
+
+    //   print(img.storagePath);
+
+    //   formData.files.add(
+    //     MapEntry(
+    //       'media',
+    //       MultipartFile.fromFileSync(
+    //         img.rawPath!,
+    //         contentType: MediaType(mimee, type),
+    //       ),
+    //     ),
+    //   );
+    // });
 
     final response = await _apiService.post(
       url: 'products/upload',

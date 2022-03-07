@@ -9,7 +9,6 @@ import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import 'package:tapkat/backend.dart';
 import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
-import 'package:tapkat/models/media_primary_model.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/schemas/user_likes_record.dart';
 import 'package:tapkat/screens/barter/barter_screen.dart';
@@ -82,13 +81,6 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   if (state is GetProductDetailsSuccess) {
                     setState(() {
                       _product = state.product;
-                      _product!.media!.insert(
-                        0,
-                        MediaPrimaryModel(
-                          url: _product!.mediaPrimary!.url,
-                          type: _product!.mediaPrimary!.type,
-                        ),
-                      );
                     });
                   }
 
