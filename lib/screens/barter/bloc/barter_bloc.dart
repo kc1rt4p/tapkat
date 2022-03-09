@@ -116,7 +116,7 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
                   ? double.parse(event.product.price.toString())
                   : 0;
               _newBarterRecord.u2P1Image = event.product.imgUrl;
-              _newBarterRecord.dealStatus = 'new';
+              _newBarterRecord.dealStatus = 'submitted';
 
               final updated =
                   await _barterRepository.counterOffer(_newBarterRecord);
