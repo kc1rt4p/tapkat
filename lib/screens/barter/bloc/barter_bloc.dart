@@ -71,17 +71,21 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
                   ? _barterRecord.userid1
                   : _barterRecord.userid2;
 
-              final senderProducts = await _productRepository.getFirstProducts(
-                  'user', senderUserId);
+              final currentUserProducts =
+                  await _productRepository.getFirstProducts('user', _user!.uid);
 
-              final recipientProducts = await _productRepository
-                  .getFirstProducts('user', recipientUserId);
+              final remoteUserProducts =
+                  await _productRepository.getFirstProducts(
+                      'user',
+                      senderUserId == _user!.uid
+                          ? recipientUserId
+                          : senderUserId);
 
               emit(BarterInitialized(
                 barterStream:
                     _barterRepository.streamBarter(event.barterData.barterId!),
-                senderProducts: senderProducts,
-                recipientProducts: recipientProducts,
+                remoteUserProducts: remoteUserProducts,
+                currentUserProducts: currentUserProducts,
                 barterProductsStream: _barterRepository
                     .streamBarterProducts(event.barterData.barterId!),
               ));
@@ -112,7 +116,7 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
                   ? double.parse(event.product.price.toString())
                   : 0;
               _newBarterRecord.u2P1Image = event.product.imgUrl;
-              _newBarterRecord.dealStatus = 'submitted';
+              _newBarterRecord.dealStatus = 'new';
 
               final updated =
                   await _barterRepository.counterOffer(_newBarterRecord);
@@ -219,17 +223,21 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
                     ? event.barterRecord.userid1
                     : event.barterRecord.userid2;
 
-            final senderProducts =
-                await _productRepository.getFirstProducts('user', senderUserId);
+            final currentUserProducts =
+                await _productRepository.getFirstProducts('user', _user!.uid);
 
-            final recipientProducts = await _productRepository.getFirstProducts(
-                'user', recipientUserId);
+            final remoteUserProducts =
+                await _productRepository.getFirstProducts(
+                    'user',
+                    senderUserId == _user!.uid
+                        ? recipientUserId
+                        : senderUserId);
 
             emit(BarterInitialized(
               barterStream:
                   _barterRepository.streamBarter(event.barterRecord.barterId!),
-              senderProducts: senderProducts,
-              recipientProducts: recipientProducts,
+              currentUserProducts: currentUserProducts,
+              remoteUserProducts: remoteUserProducts,
               barterProductsStream: _barterRepository
                   .streamBarterProducts(event.barterRecord.barterId!),
             ));

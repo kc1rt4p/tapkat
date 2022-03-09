@@ -16,7 +16,7 @@ import 'package:tapkat/utilities/upload_media.dart';
 
 void decodeIsolate(DecodeParam param) {
   var image = decodeImage(param.file.readAsBytesSync())!;
-  var thumbnail = copyResize(image, width: 150);
+  var thumbnail = copyResizeCropSquare(image, 300);
   param.sendPort.send(thumbnail);
 }
 
