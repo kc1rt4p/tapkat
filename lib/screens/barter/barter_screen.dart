@@ -63,12 +63,12 @@ class _BarterScreenState extends State<BarterScreen> {
   BarterRecordModel? _barterRecord;
   StreamSubscription<BarterRecordModel?>? _barterStreamSub;
   StreamSubscription<List<BarterProductModel>>? _barterProductsStream;
-  num? _origRequestedCash;
-  num? _requestedCash;
-  num? _origOfferedCash;
-  num? _offeredCash;
-  BarterProductModel? _offeredCashModel;
-  BarterProductModel? _requestedCashModel;
+  num? _origRemoteUserOfferedCash;
+  num? _remoteUserOfferedCash;
+  num? _origCurrentUserOfferedCash;
+  num? _currentUserOfferedCash;
+  BarterProductModel? _currentUserOfferedCashModel;
+  BarterProductModel? _remoteUserOfferedCashModel;
 
   final amounTextController = TextEditingController();
   final _messageTextController = TextEditingController();
@@ -285,19 +285,28 @@ class _BarterScreenState extends State<BarterScreen> {
               setState(() {
                 origCurrentUserOffers = List.from(currentUserOffers);
                 origRemoteUserOffers = List.from(remoteUserOffers);
-                _origOfferedCash = _offeredCash;
-                _origRequestedCash = _requestedCash;
+                _origCurrentUserOfferedCash = _currentUserOfferedCash;
+                _origRemoteUserOfferedCash = _remoteUserOfferedCash;
               });
+
+              String message = '';
+
+              switch (_barterRecord!.dealStatus) {
+                case 'accepted':
+                  message = 'You have accepted this offer';
+                  break;
+                case 'revoked':
+                  message = 'You have revoked acceptance for this offer';
+                  break;
+                default:
+                  message = 'You have submitted this offer';
+              }
 
               if (!_closing) {
                 await DialogMessage.show(
                   context,
                   title: 'Info',
-                  message: _barterRecord!.dealStatus != 'accepted'
-                      ? _currentUserRole == 'recipient'
-                          ? 'You have accepted this offer'
-                          : 'You have submitted this offer'
-                      : 'You have accepted this offer',
+                  message: message,
                   hideClose: true,
                 );
               }
@@ -369,40 +378,40 @@ class _BarterScreenState extends State<BarterScreen> {
                     currentUserOffers.clear();
                     origCurrentUserOffers.clear();
                     origRemoteUserOffers.clear();
-                    _offeredCash = null;
-                    _requestedCash = null;
-                    _origOfferedCash = null;
-                    _origRequestedCash = null;
+                    _currentUserOfferedCash = null;
+                    _remoteUserOfferedCash = null;
+                    _origCurrentUserOfferedCash = null;
+                    _origRemoteUserOfferedCash = null;
                   });
                   list.forEach((bProduct) {
                     // final _prod = ProductModel.fromJson(bProduct.toJson());
                     if (bProduct.productId!.contains('cash')) {
                       if (_currentUser!.uid == _senderUserId) {
                         if (_senderUserId == bProduct.userId) {
-                          _origOfferedCash = bProduct.price;
-                          _offeredCash = bProduct.price;
+                          _origCurrentUserOfferedCash = bProduct.price;
+                          _currentUserOfferedCash = bProduct.price;
                           setState(() {
-                            _offeredCashModel = bProduct;
+                            _currentUserOfferedCashModel = bProduct;
                           });
                         } else {
                           setState(() {
-                            _requestedCashModel = bProduct;
+                            _remoteUserOfferedCashModel = bProduct;
                           });
-                          _requestedCash = bProduct.price;
-                          _origRequestedCash = bProduct.price;
+                          _remoteUserOfferedCash = bProduct.price;
+                          _origRemoteUserOfferedCash = bProduct.price;
                         }
                       } else {
                         if (_recipientUserId == bProduct.userId) {
                           setState(() {
-                            _requestedCashModel = bProduct;
+                            _remoteUserOfferedCashModel = bProduct;
                           });
-                          _requestedCash = bProduct.price;
-                          _origRequestedCash = bProduct.price;
+                          _remoteUserOfferedCash = bProduct.price;
+                          _origRemoteUserOfferedCash = bProduct.price;
                         } else {
-                          _origOfferedCash = bProduct.price;
-                          _offeredCash = bProduct.price;
+                          _origCurrentUserOfferedCash = bProduct.price;
+                          _currentUserOfferedCash = bProduct.price;
                           setState(() {
-                            _offeredCashModel = bProduct;
+                            _currentUserOfferedCashModel = bProduct;
                           });
                         }
                       }
@@ -917,7 +926,7 @@ class _BarterScreenState extends State<BarterScreen> {
             _buildBarterList(
               label: 'You will receive:',
               items: [
-                _requestedCash != null
+                _remoteUserOfferedCash != null
                     ? Stack(
                         children: [
                           InkWell(
@@ -926,7 +935,7 @@ class _BarterScreenState extends State<BarterScreen> {
                                   _showAddCashDialog('participant');
                                 }
                               },
-                              child: buildCashItem(_requestedCash!)),
+                              child: buildCashItem(_remoteUserOfferedCash!)),
                           Visibility(
                             child: Positioned(
                               top: 8.0,
@@ -934,7 +943,7 @@ class _BarterScreenState extends State<BarterScreen> {
                               child: InkWell(
                                 onTap: () {
                                   setState(() {
-                                    _requestedCash = null;
+                                    _remoteUserOfferedCash = null;
                                   });
                                 },
                                 child: Container(
@@ -1010,8 +1019,7 @@ class _BarterScreenState extends State<BarterScreen> {
                 }).toList()
               ],
               addBtnTapped: _showRemoteUserItems,
-              showAddBtn:
-                  _barterRecord != null && _barterRecord!.dealStatus != 'sold',
+              showAddBtn: _shouldShowAdd(),
             ),
             _buildBarterList(
               label: 'You will send:',
@@ -1019,7 +1027,7 @@ class _BarterScreenState extends State<BarterScreen> {
                 '${currentUserOffers.length} Item(s)',
               ),
               items: [
-                _offeredCash != null
+                _currentUserOfferedCash != null
                     ? Stack(
                         children: [
                           InkWell(
@@ -1028,7 +1036,7 @@ class _BarterScreenState extends State<BarterScreen> {
                                   _showAddCashDialog('user');
                                 }
                               },
-                              child: buildCashItem(_offeredCash!)),
+                              child: buildCashItem(_currentUserOfferedCash!)),
                           Visibility(
                             visible: _barterRecord != null &&
                                 _barterRecord!.dealStatus != 'sold',
@@ -1038,7 +1046,7 @@ class _BarterScreenState extends State<BarterScreen> {
                               child: InkWell(
                                 onTap: () {
                                   setState(() {
-                                    _offeredCash = null;
+                                    _currentUserOfferedCash = null;
                                   });
                                 },
                                 child: Container(
@@ -1114,8 +1122,7 @@ class _BarterScreenState extends State<BarterScreen> {
                 }).toList()
               ],
               addBtnTapped: _showCurrentUserItems,
-              showAddBtn:
-                  _barterRecord != null && _barterRecord!.dealStatus != 'sold',
+              showAddBtn: _shouldShowAdd(),
             ),
             _barterRecord != null && _barterRecord!.dealStatus != 'sold'
                 ? Container(
@@ -1136,6 +1143,17 @@ class _BarterScreenState extends State<BarterScreen> {
     );
   }
 
+  bool _shouldShowAdd() {
+    if (_barterRecord == null) return false;
+
+    if (_currentUserRole == 'sender')
+      return ['new', 'withdrawn', 'rejected', 'revoked']
+          .contains(_barterRecord!.dealStatus);
+    else
+      return !['new', 'withdrawn', 'rejected', 'submitted', 'accepted']
+          .contains(_barterRecord!.dealStatus);
+  }
+
   Widget _buildBarterStatus() {
     if (_barterRecord == null) return Container();
     print('current barter status: ${_barterRecord!.dealStatus}');
@@ -1148,7 +1166,7 @@ class _BarterScreenState extends State<BarterScreen> {
         if (_currentUserRole == 'sender')
           message = 'You have submitted this offer';
         else
-          message = _recipientName;
+          message = '$_recipientName submitted this offer';
         break;
       case 'rejected':
         if (_currentUserRole == 'sender')
@@ -1203,7 +1221,7 @@ class _BarterScreenState extends State<BarterScreen> {
     List<Widget> wantWidgets = [];
     List<Widget> offerWidgets = [];
 
-    if (_requestedCash != null) {
+    if (_remoteUserOfferedCash != null) {
       wantWidgets.add(
         InkWell(
           onTap: () {
@@ -1249,7 +1267,7 @@ class _BarterScreenState extends State<BarterScreen> {
       );
     }).toList());
 
-    if (_offeredCash != null) {
+    if (_currentUserOfferedCash != null) {
       offerWidgets.add(
         InkWell(
           onTap: () => _showAddCashDialog('user'),
@@ -1330,7 +1348,8 @@ class _BarterScreenState extends State<BarterScreen> {
                                   : Container(),
                             ),
                             SizedBox(height: 5.0),
-                            Text('Cash: \$ ${_requestedCash ?? '0.00'}'),
+                            Text(
+                                'Cash: \$ ${_remoteUserOfferedCash ?? '0.00'}'),
                           ],
                         ),
                       ),
@@ -1367,7 +1386,8 @@ class _BarterScreenState extends State<BarterScreen> {
                                   : Container(),
                             ),
                             SizedBox(height: 5.0),
-                            Text('Cash: \$ ${_offeredCash ?? '0.00'}'),
+                            Text(
+                                'Cash: \$ ${_currentUserOfferedCash ?? '0.00'}'),
                           ],
                         ),
                       ),
@@ -1404,8 +1424,8 @@ class _BarterScreenState extends State<BarterScreen> {
         (origRemoteUserOffers.length != remoteUserOffers.length))
       changed = true;
 
-    if ((_origOfferedCash != _offeredCash) ||
-        (_origRequestedCash != _requestedCash)) changed = true;
+    if ((_origCurrentUserOfferedCash != _currentUserOfferedCash) ||
+        (_origRemoteUserOfferedCash != _remoteUserOfferedCash)) changed = true;
 
     return changed;
   }
@@ -1443,7 +1463,17 @@ class _BarterScreenState extends State<BarterScreen> {
         }
       }
 
-      if (_barterRecord!.dealStatus == 'new') {
+      if (_barterRecord!.dealStatus == 'revoked') {
+        if (_currentUserRole == 'sender') {
+          message =
+              'You are about to make a new offer\n\nDo you want to continue?';
+        } else {
+          message =
+              'You are about to counter offer\n\nDo you want to continue?';
+        }
+      }
+
+      if (_barterRecord!.dealStatus == 'completed') {
         message =
             'You are about to submit this offer\n\nDo you want to continue?';
       }
@@ -1495,13 +1525,13 @@ class _BarterScreenState extends State<BarterScreen> {
       });
     }
 
-    if (_origOfferedCash != _offeredCash) {
-      if (_offeredCash != null) {
+    if (_origCurrentUserOfferedCash != _currentUserOfferedCash) {
+      if (_currentUserOfferedCash != null) {
         _barterBloc.add(
           AddCashOffer(
             barterId: _barterRecord!.barterId!,
             userId: _currentUser!.uid,
-            amount: _offeredCash!,
+            amount: _currentUserOfferedCash!,
             currency: 'PHP',
           ),
         );
@@ -1509,19 +1539,19 @@ class _BarterScreenState extends State<BarterScreen> {
         _barterBloc.add(
           DeleteCashOffer(
             barterId: _barterRecord!.barterId!,
-            productId: _offeredCashModel!.productId!,
+            productId: _currentUserOfferedCashModel!.productId!,
           ),
         );
       }
     }
 
-    if (_origRequestedCash != _requestedCash) {
-      if (_requestedCash != null) {
+    if (_origRemoteUserOfferedCash != _remoteUserOfferedCash) {
+      if (_remoteUserOfferedCash != null) {
         _barterBloc.add(
           AddCashOffer(
             barterId: _barterRecord!.barterId!,
             userId: _barterRecord!.userid2!,
-            amount: _requestedCash!,
+            amount: _remoteUserOfferedCash!,
             currency: 'PHP',
           ),
         );
@@ -1529,7 +1559,7 @@ class _BarterScreenState extends State<BarterScreen> {
         _barterBloc.add(
           DeleteCashOffer(
             barterId: _barterRecord!.barterId!,
-            productId: _requestedCashModel!.productId!,
+            productId: _remoteUserOfferedCashModel!.productId!,
           ),
         );
       }
@@ -1821,7 +1851,7 @@ class _BarterScreenState extends State<BarterScreen> {
                                     BarterProductModel.fromProductModel(item))
                                 .toList());
                             // if (_currentUserRole == 'sender')
-                            //   _add_offeredCashItems(selectedItems
+                            //   _add_currentUserOfferedCashItems(selectedItems
                             //       .map((item) =>
                             //           BarterProductModel.fromProductModel(item))
                             //       .toList());
@@ -1835,16 +1865,14 @@ class _BarterScreenState extends State<BarterScreen> {
                       SizedBox(width: 8.0),
                       Expanded(
                         child: CustomButton(
-                          label: _requestedCash != null
+                          label: _remoteUserOfferedCash != null
                               ? 'Edit ${_currentUserRole == 'sender' ? 'Requested' : 'Offered'} Cash'
                               : '${_currentUserRole == 'sender' ? 'Request' : 'Offer'} Cash',
                           bgColor: Color(0xFFBB3F03),
                           textColor: Colors.white,
                           onTap: () {
                             Navigator.pop(context);
-                            _showAddCashDialog(_currentUserRole == 'recipient'
-                                ? 'participant'
-                                : 'user');
+                            _showAddCashDialog('recipient');
                           },
                           removeMargin: true,
                         ),
@@ -1863,19 +1891,23 @@ class _BarterScreenState extends State<BarterScreen> {
   _showAddCashDialog(String from) async {
     if (from == 'participant') {
       if (_currentUserRole == 'recipient') {
-        amounTextController.text =
-            _offeredCash != null ? _offeredCash.toString() : '';
+        amounTextController.text = _currentUserOfferedCash != null
+            ? _currentUserOfferedCash.toString()
+            : '';
       } else {
-        amounTextController.text =
-            _requestedCash != null ? _requestedCash.toString() : '';
+        amounTextController.text = _remoteUserOfferedCash != null
+            ? _remoteUserOfferedCash.toString()
+            : '';
       }
     } else {
       if (_currentUserRole == 'recipient') {
-        amounTextController.text =
-            _requestedCash != null ? _requestedCash.toString() : '';
+        amounTextController.text = _remoteUserOfferedCash != null
+            ? _remoteUserOfferedCash.toString()
+            : '';
       } else {
-        amounTextController.text =
-            _offeredCash != null ? _offeredCash.toString() : '';
+        amounTextController.text = _currentUserOfferedCash != null
+            ? _currentUserOfferedCash.toString()
+            : '';
       }
     }
     final _cFormKey = GlobalKey<FormState>();
@@ -1951,15 +1983,15 @@ class _BarterScreenState extends State<BarterScreen> {
       setState(() {
         if (from == 'participant') {
           if (_currentUserRole == 'recipient') {
-            _offeredCash = amount;
+            _currentUserOfferedCash = amount;
           } else {
-            _requestedCash = amount;
+            _remoteUserOfferedCash = amount;
           }
         } else {
           if (_currentUserRole == 'recipient') {
-            _requestedCash = amount;
+            _remoteUserOfferedCash = amount;
           } else {
-            _offeredCash = amount;
+            _currentUserOfferedCash = amount;
           }
         }
       });
@@ -1972,7 +2004,7 @@ class _BarterScreenState extends State<BarterScreen> {
     });
   }
 
-  _add_offeredCashItems(List<BarterProductModel> items) {
+  _add_currentUserOfferedCashItems(List<BarterProductModel> items) {
     setState(() {
       currentUserOffers.addAll(items);
     });
@@ -2127,12 +2159,12 @@ class _BarterScreenState extends State<BarterScreen> {
                           bgColor: kBackgroundColor,
                           textColor: Colors.white,
                           onTap: () {
-                            _add_offeredCashItems(selectedItems
+                            _add_currentUserOfferedCashItems(selectedItems
                                 .map((item) =>
                                     BarterProductModel.fromProductModel(item))
                                 .toList());
                             // if (_currentUserRole == 'recipient')
-                            //   _add_offeredCashItems(selectedItems
+                            //   _add_currentUserOfferedCashItems(selectedItems
                             //       .map((item) =>
                             //           BarterProductModel.fromProductModel(item))
                             //       .toList());
@@ -2149,16 +2181,14 @@ class _BarterScreenState extends State<BarterScreen> {
                       SizedBox(width: 8.0),
                       Expanded(
                         child: CustomButton(
-                          label: _offeredCash != null
+                          label: _currentUserOfferedCash != null
                               ? 'Edit ${_currentUserRole == 'recipient' ? 'Requested' : 'Offered'} Cash'
                               : '${_currentUserRole == 'recipient' ? 'Request' : 'Offer'} Cash',
                           bgColor: Color(0xFFBB3F03),
                           textColor: Colors.white,
                           onTap: () {
                             Navigator.pop(context);
-                            _showAddCashDialog(_currentUserRole == 'recipient'
-                                ? 'participant'
-                                : 'user');
+                            _showAddCashDialog('user');
                           },
                           removeMargin: true,
                         ),
