@@ -846,6 +846,7 @@ class _BarterScreenState extends State<BarterScreen> {
               margin: EdgeInsets.only(right: 8.0),
               child: CustomButton(
                 removeMargin: true,
+                enabled: false,
                 label: 'Leave Review',
                 onTap: _onCancelTapped,
               ),
@@ -1553,7 +1554,8 @@ class _BarterScreenState extends State<BarterScreen> {
           _barterBloc
               .add(CounterOffer(_barterRecord!.barterId!, remoteUserOffers[0]));
         } else {
-          _barterBloc.add(UpdateBarterStatus(_barterRecord!.barterId!, 'new'));
+          _barterBloc
+              .add(UpdateBarterStatus(_barterRecord!.barterId!, 'submitted'));
         }
         break;
       case 'new':
