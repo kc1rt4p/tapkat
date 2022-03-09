@@ -387,33 +387,43 @@ class _BarterScreenState extends State<BarterScreen> {
                     // final _prod = ProductModel.fromJson(bProduct.toJson());
                     if (bProduct.productId!.contains('cash')) {
                       if (_currentUser!.uid == _senderUserId) {
-                        if (_senderUserId == bProduct.userId) {
-                          _origCurrentUserOfferedCash = bProduct.price;
-                          _currentUserOfferedCash = bProduct.price;
-                          setState(() {
-                            _currentUserOfferedCashModel = bProduct;
-                          });
-                        } else {
-                          setState(() {
-                            _remoteUserOfferedCashModel = bProduct;
-                          });
-                          _remoteUserOfferedCash = bProduct.price;
-                          _origRemoteUserOfferedCash = bProduct.price;
-                        }
+                        setState(() {
+                          _currentUserOfferedCashModel = bProduct;
+                        });
+                        _origCurrentUserOfferedCash = bProduct.price;
+                        _currentUserOfferedCash = bProduct.price;
+                        // if (_senderUserId == bProduct.userId) {
+                        //   _origCurrentUserOfferedCash = bProduct.price;
+                        //   _currentUserOfferedCash = bProduct.price;
+                        //   setState(() {
+                        //     _currentUserOfferedCashModel = bProduct;
+                        //   });
+                        // } else {
+                        //   setState(() {
+                        //     _remoteUserOfferedCashModel = bProduct;
+                        //   });
+                        //   _remoteUserOfferedCash = bProduct.price;
+                        //   _origRemoteUserOfferedCash = bProduct.price;
+                        // }
                       } else {
-                        if (_recipientUserId == bProduct.userId) {
-                          setState(() {
-                            _remoteUserOfferedCashModel = bProduct;
-                          });
-                          _remoteUserOfferedCash = bProduct.price;
-                          _origRemoteUserOfferedCash = bProduct.price;
-                        } else {
-                          _origCurrentUserOfferedCash = bProduct.price;
-                          _currentUserOfferedCash = bProduct.price;
-                          setState(() {
-                            _currentUserOfferedCashModel = bProduct;
-                          });
-                        }
+                        setState(() {
+                          _remoteUserOfferedCashModel = bProduct;
+                        });
+                        _remoteUserOfferedCash = bProduct.price;
+                        _origRemoteUserOfferedCash = bProduct.price;
+                        // if (_recipientUserId == bProduct.userId) {
+                        //   setState(() {
+                        //     _remoteUserOfferedCashModel = bProduct;
+                        //   });
+                        //   _remoteUserOfferedCash = bProduct.price;
+                        //   _origRemoteUserOfferedCash = bProduct.price;
+                        // } else {
+                        //   _origCurrentUserOfferedCash = bProduct.price;
+                        //   _currentUserOfferedCash = bProduct.price;
+                        //   setState(() {
+                        //     _currentUserOfferedCashModel = bProduct;
+                        //   });
+                        // }
                       }
                     } else {
                       if (bProduct.userId == _currentUser!.uid) {
