@@ -1138,6 +1138,7 @@ class _BarterScreenState extends State<BarterScreen> {
 
   Widget _buildBarterStatus() {
     if (_barterRecord == null) return Container();
+    print('current barter status: ${_barterRecord!.dealStatus}');
     var message = '';
     switch (_barterRecord!.dealStatus) {
       case 'new':
@@ -1167,7 +1168,7 @@ class _BarterScreenState extends State<BarterScreen> {
         else
           message = 'You have accepted this offer';
         break;
-      case 'revoke':
+      case 'revoked':
         if (_currentUserRole == 'sender')
           message = '$_recipientName revoked acceptance';
         else

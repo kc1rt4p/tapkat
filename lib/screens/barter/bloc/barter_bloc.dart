@@ -139,32 +139,30 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
           if (event is UpdateBarterStatus) {
             await _barterRepository.updateBarterStatus(
                 event.barterId, event.status);
-            if (event.status != 'new') {
-              final barterRecord =
-                  await _barterRepository.getBarterRecord(event.barterId);
-              if (barterRecord != null) {
-                final senderUserId = barterRecord.userid1Role == 'sender'
-                    ? barterRecord.userid1
-                    : barterRecord.userid2;
-                final recipientUserId = barterRecord.userid1Role == 'recipient'
-                    ? barterRecord.userid1
-                    : barterRecord.userid2;
+            final barterRecord =
+                await _barterRepository.getBarterRecord(event.barterId);
+            if (barterRecord != null) {
+              final senderUserId = barterRecord.userid1Role == 'sender'
+                  ? barterRecord.userid1
+                  : barterRecord.userid2;
+              final recipientUserId = barterRecord.userid1Role == 'recipient'
+                  ? barterRecord.userid1
+                  : barterRecord.userid2;
 
-                String userId =
-                    ['accepted', 'rejected', 'sold'].contains(event.status)
-                        ? recipientUserId!
-                        : senderUserId!;
+              String userId =
+                  ['accepted', 'rejected', 'completed'].contains(event.status)
+                      ? recipientUserId!
+                      : senderUserId!;
 
-                final user = await _userRepo.getUser(userId);
+              final user = await _userRepo.getUser(userId);
 
-                _barterRepository.addMessage(ChatMessageModel(
-                  barterId: event.barterId,
-                  userId: userId,
-                  userName: user!.display_name,
-                  message: 'Offer ${event.status.toUpperCase()}',
-                  dateCreated: DateTime.now(),
-                ));
-              }
+              _barterRepository.addMessage(ChatMessageModel(
+                barterId: event.barterId,
+                userId: userId,
+                userName: user!.display_name,
+                message: 'Offer ${event.status.toUpperCase()}',
+                dateCreated: DateTime.now(),
+              ));
             }
 
             emit(UpdateBarterStatusSuccess());

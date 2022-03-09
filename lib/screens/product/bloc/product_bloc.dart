@@ -67,12 +67,6 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
             return;
           }
 
-          event.productRequest.productid = productId;
-          event.productRequest.image_url = upload.media![0].url_t;
-          event.productRequest.media_type = upload.media![0].type;
-
-          _productRepo.updateProduct(event.productRequest);
-
           emit(SaveProductSuccess(productId));
         }
 
