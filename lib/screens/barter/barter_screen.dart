@@ -756,6 +756,48 @@ class _BarterScreenState extends State<BarterScreen> {
         );
         break;
       case 'submitted':
+        if (_currentUserRole == 'sender') {
+          buttons.add(
+            Expanded(
+              child: Container(
+                margin: EdgeInsets.only(right: 8.0),
+                child: CustomButton(
+                  removeMargin: true,
+                  bgColor: Color(0xFFBB3F03),
+                  label: 'Withdraw',
+                  onTap: _onCancelTapped,
+                ),
+              ),
+            ),
+          );
+        } else {
+          buttons.addAll(
+            [
+              Expanded(
+                child: Container(
+                  margin: EdgeInsets.only(right: 8.0),
+                  child: CustomButton(
+                    removeMargin: true,
+                    label: 'Accept',
+                    onTap: _onSubmitTapped,
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Container(
+                  margin: EdgeInsets.only(right: 8.0),
+                  child: CustomButton(
+                    removeMargin: true,
+                    bgColor: Color(0xFFBB3F03),
+                    label: 'Reject',
+                    onTap: _onCancelTapped,
+                  ),
+                ),
+              ),
+            ],
+          );
+        }
+        break;
       case 'accepted':
         if (_currentUserRole == 'sender') {
           buttons.add(
