@@ -9,7 +9,7 @@ class ProductModel {
   String? currency;
   String? specifications;
   String? type;
-  String? category;
+  List<String>? category;
   String? display_name;
   MediaPrimaryModel? mediaPrimary;
   List<MediaPrimaryModel>? media;
@@ -20,6 +20,7 @@ class ProductModel {
   String? imgUrl;
   String? status;
   DateTime? updated_time;
+  String? acquiredBy;
 
   ProductModel({
     this.productid,
@@ -40,6 +41,7 @@ class ProductModel {
     this.status,
     this.updated_time,
     this.display_name,
+    this.acquiredBy,
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
@@ -51,7 +53,7 @@ class ProductModel {
       currency: json['currency'],
       specifications: json['specifications'],
       type: json['type'],
-      category: json['category'],
+      category: json['category'] is List<String> ? json['category'] : [],
       mediaPrimary: json['media_primary'] != null
           ? MediaPrimaryModel.fromJson(json['media_primary'])
           : null,
@@ -71,6 +73,7 @@ class ProductModel {
       updated_time:
           json['updated_time'] != null ? json['updated_time'].toDate() : null,
       display_name: json['image_url'] as String?,
+      acquiredBy: json['acquiredBy'] as String?,
     );
   }
 
@@ -88,6 +91,8 @@ class ProductModel {
       'likes': this.likes,
       'display_name': this.display_name,
       'updated_time': this.updated_time,
+      'acquiredBy': this.acquiredBy,
+      'status': this.status,
     };
     return json..addAll({'productid': this.productid});
   }

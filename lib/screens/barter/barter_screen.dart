@@ -1444,7 +1444,8 @@ class _BarterScreenState extends State<BarterScreen> {
     }
 
     if (!_closing) {
-      String message = '';
+      String message =
+          'You are about to submit this offer\n\nDo you want to continue?';
 
       if (_barterRecord!.dealStatus == 'accepted') {
         if (_currentUserRole == 'recipient') {

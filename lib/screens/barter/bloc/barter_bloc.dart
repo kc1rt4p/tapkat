@@ -5,6 +5,7 @@ import 'package:tapkat/models/barter_product.dart';
 import 'package:tapkat/models/barter_record_model.dart';
 import 'package:tapkat/models/chat_message.dart';
 import 'package:tapkat/models/product.dart';
+import 'package:tapkat/models/request/add_product_request.dart';
 import 'package:tapkat/repositories/barter_repository.dart';
 import 'package:tapkat/repositories/product_repository.dart';
 import 'package:tapkat/repositories/user_repository.dart';
@@ -163,6 +164,37 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
                 message: 'Offer ${event.status.toUpperCase()}',
                 dateCreated: DateTime.now(),
               ));
+            }
+
+            // update products' status
+            final barterProducts =
+                await _barterRepository.getBarterProducts(event.barterId);
+
+            if (barterProducts.isNotEmpty &&
+                barterRecord!.dealStatus != 'new') {
+              final productsToUpdate = barterProducts
+                  .where((bProduct) => !bProduct.productId!.contains('cash'));
+
+              for (var product in productsToUpdate) {
+                final productModel =
+                    await _productRepository.getProduct(product.productId!);
+
+                var updatedData = ProductRequestModel.fromProduct(productModel);
+
+                switch (event.status) {
+                  case 'accepted':
+                    updatedData.status = 'Reserved';
+                    break;
+                  case 'completed':
+                    updatedData.status = 'Sold';
+                    updatedData.acquiredBy = _user!.uid;
+                    break;
+                  default:
+                    updatedData.status = 'Available';
+                }
+
+                await _productRepository.updateProduct(updatedData);
+              }
             }
 
             emit(UpdateBarterStatusSuccess());

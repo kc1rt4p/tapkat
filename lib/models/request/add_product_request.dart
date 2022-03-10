@@ -12,11 +12,13 @@ class ProductRequestModel {
   String? address;
   String? city;
   String? country;
+  List<String>? category;
   String? postcode;
-  String? category;
   String? image_url;
   String? media_type;
   String? display_name;
+  String? status;
+  String? acquiredBy;
   LocationModel? location;
   num? price;
   num? rating;
@@ -40,6 +42,8 @@ class ProductRequestModel {
     this.rating,
     this.price,
     this.display_name,
+    this.status,
+    this.acquiredBy,
   });
 
   factory ProductRequestModel.fromProduct(ProductModel product) {
@@ -55,13 +59,17 @@ class ProductRequestModel {
       city: product.address!.city ?? '',
       country: product.address!.country ?? '',
       postcode: product.address!.postCode ?? '',
-      category: product.category ?? '',
+      category: product.category != null && product.category is List
+          ? product.category
+          : [],
       image_url: product.mediaPrimary!.url ?? '',
       media_type: product.mediaPrimary!.type ?? '',
       location: product.address!.location ?? null,
       price: product.price ?? 0,
       rating: product.rating ?? 0,
       display_name: product.display_name,
+      acquiredBy: product.acquiredBy ?? '',
+      status: product.status ?? '',
     );
   }
 
@@ -84,6 +92,8 @@ class ProductRequestModel {
       'rating': this.rating ?? 0,
       'price': this.price ?? 0,
       'display_name': this.display_name ?? '',
+      'acquiredBy': this.acquiredBy ?? '',
+      'status': this.status ?? '',
     };
 
     if (updating) {
