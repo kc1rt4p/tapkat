@@ -947,6 +947,7 @@ class _BarterScreenState extends State<BarterScreen> {
                               },
                               child: buildCashItem(_remoteUserOfferedCash!)),
                           Visibility(
+                            visible: _shouldShowAdd(),
                             child: Positioned(
                               top: 8.0,
                               right: 14.0,
@@ -994,8 +995,7 @@ class _BarterScreenState extends State<BarterScreen> {
                               : 'https://storage.googleapis.com/map-surf-assets/noimage.jpg',
                         ),
                         Visibility(
-                          visible: _barterRecord != null &&
-                              _barterRecord!.dealStatus != 'sold',
+                          visible: _shouldShowAdd(),
                           child: Positioned(
                             top: 5.0,
                             right: 10.0,
@@ -1048,8 +1048,7 @@ class _BarterScreenState extends State<BarterScreen> {
                               },
                               child: buildCashItem(_currentUserOfferedCash!)),
                           Visibility(
-                            visible: _barterRecord != null &&
-                                _barterRecord!.dealStatus != 'sold',
+                            visible: _shouldShowAdd(),
                             child: Positioned(
                               top: 8.0,
                               right: 14.0,
@@ -1097,8 +1096,7 @@ class _BarterScreenState extends State<BarterScreen> {
                               : 'https://storage.googleapis.com/map-surf-assets/noimage.jpg',
                         ),
                         Visibility(
-                          visible: _barterRecord != null &&
-                              _barterRecord!.dealStatus != 'sold',
+                          visible: _shouldShowAdd(),
                           child: Positioned(
                             top: 5.0,
                             right: 10.0,
@@ -1160,7 +1158,7 @@ class _BarterScreenState extends State<BarterScreen> {
       return ['new', 'withdrawn', 'rejected', 'revoked']
           .contains(_barterRecord!.dealStatus);
     else
-      return !['new', 'withdrawn', 'rejected', 'submitted', 'accepted']
+      return !['new', 'submitted', 'accepted']
           .contains(_barterRecord!.dealStatus);
   }
 
