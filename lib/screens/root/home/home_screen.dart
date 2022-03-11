@@ -248,6 +248,16 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ),
                         ),
+                        onMapBtnTapped: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ProductListScreen(
+                              listType: 'reco',
+                              showAdd: false,
+                              initialView: 'map',
+                            ),
+                          ),
+                        ),
                       ),
                       BarterList(
                         loading: _loadingTrendingList,
@@ -335,6 +345,16 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ),
                         ),
+                        onMapBtnTapped: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ProductListScreen(
+                              listType: 'demand',
+                              showAdd: false,
+                              initialView: 'map',
+                            ),
+                          ),
+                        ),
                       ),
                       Visibility(
                         visible:
@@ -378,6 +398,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           smallItems: true,
                           removeMargin: true,
                           onViewAllTapped: () => _rootBloc.add(MoveTab(3)),
+                          removeMapBtn: true,
                         ),
                       ),
                       SizedBox(height: 10.0),

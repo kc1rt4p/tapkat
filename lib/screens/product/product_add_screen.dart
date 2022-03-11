@@ -15,8 +15,11 @@ import 'package:google_maps_webservice/places.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
 import 'package:tapkat/models/location.dart';
+import 'package:tapkat/models/product_category.dart';
+import 'package:tapkat/models/product_type.dart';
 import 'package:tapkat/models/request/add_product_request.dart';
 import 'package:tapkat/screens/product/bloc/product_bloc.dart';
+import 'package:tapkat/screens/product/product_select_categories_screen.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/dialog_message.dart';
 import 'package:tapkat/utilities/size_config.dart';
@@ -25,6 +28,7 @@ import 'package:tapkat/utilities/upload_media.dart';
 import 'package:tapkat/widgets/custom_app_bar.dart';
 import 'package:tapkat/widgets/custom_button.dart';
 import 'package:tapkat/widgets/custom_textformfield.dart';
+import 'package:toggle_switch/toggle_switch.dart';
 
 class ProductAddScreen extends StatefulWidget {
   const ProductAddScreen({Key? key}) : super(key: key);
@@ -60,6 +64,9 @@ class _ProductAddScreenState extends State<ProductAddScreen> {
   geoCoding.Placemark? _currentUserLoc;
   geoLocator.Position? _currentUserPosition;
 
+  List<ProductTypeModel> _productTypes = [];
+  List<ProductCategoryModel> _productCategories = [];
+
   @override
   void initState() {
     _authBloc = BlocProvider.of<AuthBloc>(context);
@@ -91,6 +98,8 @@ class _ProductAddScreenState extends State<ProductAddScreen> {
                     setState(() {
                       _user = state.user;
                     });
+
+                    _productBloc.add(InitializeAddUpdateProduct());
                   }
                 },
               ),
@@ -101,6 +110,13 @@ class _ProductAddScreenState extends State<ProductAddScreen> {
                     ProgressHUD.of(context)!.show();
                   } else {
                     ProgressHUD.of(context)!.dismiss();
+                  }
+
+                  if (state is InitializeAddUpdateProductSuccess) {
+                    setState(() {
+                      _productCategories = state.categories;
+                      _productTypes = state.types;
+                    });
                   }
 
                   if (state is SaveProductSuccess) {
@@ -173,21 +189,68 @@ class _ProductAddScreenState extends State<ProductAddScreen> {
                                     : null,
                                 keyboardType: TextInputType.number,
                               ),
-                              CustomTextFormField(
-                                label: 'Offer Type',
-                                hintText: 'Tap to select type',
-                                controller: _offerTypeTextController,
-                                isReadOnly: true,
-                                color: kBackgroundColor,
-                                suffixIcon: Icon(
-                                  FontAwesomeIcons.chevronDown,
-                                  color: Colors.white,
+                              Container(
+                                width: double.infinity,
+                                margin: EdgeInsets.only(bottom: 16.0),
+                                padding: EdgeInsets.symmetric(
+                                    vertical: 10.0, horizontal: 10.0),
+                                decoration: BoxDecoration(
+                                  color: kBackgroundColor,
+                                  borderRadius: BorderRadius.circular(12.0),
+                                  border: Border.all(
+                                    color: kBackgroundColor,
+                                  ),
                                 ),
-                                onTap: () => _onSelectOfferType(context),
-                                validator: (val) => val != null && val.isEmpty
-                                    ? 'Required'
-                                    : null,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Offer Type',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                    SizedBox(height: 12.0),
+                                    _productTypes.length > 0
+                                        ? Center(
+                                            child: ToggleSwitch(
+                                              initialLabelIndex: 0,
+                                              inactiveBgColor: kBackgroundColor,
+                                              minWidth:
+                                                  SizeConfig.screenWidth * 0.25,
+                                              activeFgColor: Colors.black,
+                                              inactiveFgColor: Colors.white,
+                                              borderColor: [Color(0xFFEBFBFF)],
+                                              totalSwitches:
+                                                  _productTypes.length,
+                                              labels: _productTypes
+                                                  .map((pt) => pt.name!)
+                                                  .toList(),
+                                              onToggle: (index) {
+                                                _selectedOfferType =
+                                                    _productTypes[index!].code;
+                                              },
+                                            ),
+                                          )
+                                        : Container(),
+                                  ],
+                                ),
                               ),
+                              // CustomTextFormField(
+                              //   label: 'Offer Type',
+                              //   hintText: 'Tap to select type',
+                              //   controller: _offerTypeTextController,
+                              //   isReadOnly: true,
+                              //   color: kBackgroundColor,
+                              //   suffixIcon: Icon(
+                              //     FontAwesomeIcons.chevronDown,
+                              //     color: Colors.white,
+                              //   ),
+                              //   onTap: () => _onSelectOfferType(context),
+                              //   validator: (val) => val != null && val.isEmpty
+                              //       ? 'Required'
+                              //       : null,
+                              // ),
                               CustomTextFormField(
                                 label: 'Description',
                                 hintText: 'Enter a description',
@@ -214,7 +277,7 @@ class _ProductAddScreenState extends State<ProductAddScreen> {
                                     : null,
                               ),
                               CustomButton(
-                                label: 'Save',
+                                label: 'Next',
                                 onTap: _onSaveTapped,
                               ),
                             ],
@@ -337,10 +400,23 @@ class _ProductAddScreenState extends State<ProductAddScreen> {
         }
       }
 
-      _productBloc.add(SaveProduct(
-        media: _selectedMedia,
-        productRequest: newProduct,
-      ));
+      // _productBloc.add(SaveProduct(
+      //   media: _selectedMedia,
+      //   productRequest: newProduct,
+      // ));
+
+      print('product request: ${newProduct.toJson()}');
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => SelectProductCategoryScreen(
+            productRequest: newProduct,
+            media: _selectedMedia,
+            categories: _productCategories,
+          ),
+        ),
+      );
     }
   }
 

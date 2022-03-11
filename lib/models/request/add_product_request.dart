@@ -18,7 +18,7 @@ class ProductRequestModel {
   String? media_type;
   String? display_name;
   String? status;
-  String? acquiredBy;
+  String? acquired_by;
   LocationModel? location;
   num? price;
   num? rating;
@@ -43,7 +43,7 @@ class ProductRequestModel {
     this.price,
     this.display_name,
     this.status,
-    this.acquiredBy,
+    this.acquired_by,
   });
 
   factory ProductRequestModel.fromProduct(ProductModel product) {
@@ -68,7 +68,7 @@ class ProductRequestModel {
       price: product.price ?? 0,
       rating: product.rating ?? 0,
       display_name: product.display_name,
-      acquiredBy: product.acquiredBy ?? '',
+      acquired_by: product.acquired_by ?? '',
       status: product.status ?? '',
     );
   }
@@ -92,7 +92,7 @@ class ProductRequestModel {
       'rating': this.rating ?? 0,
       'price': this.price ?? 0,
       'display_name': this.display_name ?? '',
-      'acquiredBy': this.acquiredBy ?? '',
+      'acquired_by': this.acquired_by ?? '',
       'status': this.status ?? '',
     };
 

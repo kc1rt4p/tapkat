@@ -1,6 +1,8 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:tapkat/models/product.dart';
+import 'package:tapkat/models/product_category.dart';
+import 'package:tapkat/models/product_type.dart';
 import 'package:tapkat/models/request/add_product_request.dart';
 import 'package:tapkat/models/upload_product_image_response.dart';
 import 'package:tapkat/repositories/product_repository.dart';
@@ -101,6 +103,18 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
           final result = await _productRepo.deleteProduct(event.productId);
 
           if (result) emit(DeleteProductSuccess());
+        }
+
+        if (event is InitializeAddUpdateProduct) {
+          final data = await _productRepo.getProductRefData();
+          if (data != null) {
+            emit(InitializeAddUpdateProductSuccess(
+              data['categories'],
+              data['types'],
+            ));
+          } else {
+            emit(ProductError('Unable to get product types & categories'));
+          }
         }
 
         if (event is GetFirstProducts) {

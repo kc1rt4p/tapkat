@@ -8,6 +8,8 @@ import 'package:mime_type/mime_type.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:tapkat/models/decode_param.dart';
 import 'package:tapkat/models/product.dart';
+import 'package:tapkat/models/product_category.dart';
+import 'package:tapkat/models/product_type.dart';
 import 'package:tapkat/models/request/add_product_request.dart';
 import 'package:tapkat/models/upload_product_image_response.dart';
 import 'package:tapkat/services/http/api_service.dart';
@@ -225,6 +227,23 @@ class ProductRepository {
     return response.data['status'] == 'SUCCESS';
   }
 
+  Future<Map<String, dynamic>?> getProductRefData() async {
+    final response = await _apiService.get(url: 'reference/productref');
+
+    if (response.data['status'] != 'SUCCESS') return null;
+
+    return {
+      'categories': (response.data['product reference data']['categories']
+              as List<dynamic>)
+          .map((data) => ProductCategoryModel.fromJson(data))
+          .toList(),
+      'types':
+          (response.data['product reference data']['types'] as List<dynamic>)
+              .map((data) => ProductTypeModel.fromJson(data))
+              .toList(),
+    };
+  }
+
   Future<bool> updateProduct(ProductRequestModel product) async {
     final response = await _apiService.post(
       url: 'products/update/${product.productid}',
@@ -307,7 +326,7 @@ class ProductRepository {
   Future<bool> addRating({
     required ProductRequestModel productRequest,
     required String userId,
-    required int rating,
+    required double rating,
   }) async {
     final response = await _apiService.post(
       url: 'products/update/${productRequest.productid}',

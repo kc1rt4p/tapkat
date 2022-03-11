@@ -28,6 +28,7 @@ class ProductListScreen extends StatefulWidget {
   final String listType;
   final String? userId;
   final bool ownListing;
+  final String initialView;
 
   const ProductListScreen({
     Key? key,
@@ -35,6 +36,7 @@ class ProductListScreen extends StatefulWidget {
     this.userId,
     this.showAdd = false,
     this.ownListing = false,
+    this.initialView = 'grid',
   }) : super(key: key);
 
   @override
@@ -70,6 +72,9 @@ class _ProductListScreenState extends State<ProductListScreen> {
     _productBloc.add(GetFirstProducts(widget.listType, userId: widget.userId));
 
     super.initState();
+    setState(() {
+      _selectedView = widget.initialView;
+    });
   }
 
   @override
@@ -123,8 +128,14 @@ class _ProductListScreenState extends State<ProductListScreen> {
               if (state.list.isNotEmpty) {
                 lastProduct = state.list.last;
                 if (state.list.length == productCount) {
+                  setState(() {
+                    _list.addAll(state.list);
+                  });
                   _pagingController.appendPage(state.list, currentPage + 1);
                 } else {
+                  setState(() {
+                    _list.addAll(state.list);
+                  });
                   _pagingController.appendLastPage(state.list);
                 }
                 print('lastrProduct name: ${lastProduct!.productname}');

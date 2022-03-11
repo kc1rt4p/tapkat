@@ -10,6 +10,8 @@ import 'package:google_api_headers/google_api_headers.dart';
 import 'package:google_maps_webservice/places.dart';
 import 'package:tapkat/models/media_primary_model.dart';
 import 'package:tapkat/models/product.dart';
+import 'package:tapkat/models/product_category.dart';
+import 'package:tapkat/models/product_type.dart';
 import 'package:tapkat/models/request/add_product_request.dart';
 import 'package:tapkat/screens/product/bloc/product_bloc.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
@@ -20,6 +22,7 @@ import 'package:tapkat/utilities/upload_media.dart';
 import 'package:tapkat/widgets/custom_app_bar.dart';
 import 'package:tapkat/widgets/custom_button.dart';
 import 'package:tapkat/widgets/custom_textformfield.dart';
+import 'package:toggle_switch/toggle_switch.dart';
 
 class ProductEditScreen extends StatefulWidget {
   final ProductModel product;
@@ -52,11 +55,17 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
   final _offerTypeTextController = TextEditingController();
   final _descTextController = TextEditingController();
   final _locationTextController = TextEditingController();
+  List<ProductCategoryModel> _categories = [];
+  List<ProductTypeModel> _types = [];
+  int _initialTypeIndex = 0;
 
   @override
   void initState() {
     _product = widget.product;
+    _selectedOfferType = _product.type;
     _init();
+    _productBloc.add(InitializeAddUpdateProduct());
+
     super.initState();
   }
 
@@ -95,6 +104,24 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
                 state.urls.forEach((url) {
                   _media.removeWhere((media) => media.url == url);
                 });
+              });
+            }
+
+            if (state is InitializeAddUpdateProductSuccess) {
+              setState(() {
+                _categories = state.categories;
+                _types = state.types;
+                _selectedOfferType =
+                    _product.type![_product.type!.length - 1] != 's'
+                        ? _product.type! + 's'
+                        : _product.type;
+                print('==== types: $_selectedOfferType');
+                _initialTypeIndex = _types.indexOf(_types.firstWhere(
+                    (pt) =>
+                        pt.code == _selectedOfferType ||
+                        pt.name!.toLowerCase() ==
+                            _selectedOfferType!.toLowerCase(),
+                    orElse: () => _types[1]));
               });
             }
 
@@ -160,20 +187,66 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
                                 val != null && val.isEmpty ? 'Required' : null,
                             keyboardType: TextInputType.number,
                           ),
-                          CustomTextFormField(
-                            label: 'Offer Type',
-                            hintText: 'Tap to select type',
-                            controller: _offerTypeTextController,
-                            isReadOnly: true,
-                            color: kBackgroundColor,
-                            suffixIcon: Icon(
-                              FontAwesomeIcons.chevronDown,
-                              color: Colors.white,
+                          Container(
+                            width: double.infinity,
+                            margin: EdgeInsets.only(bottom: 16.0),
+                            padding: EdgeInsets.symmetric(
+                                vertical: 10.0, horizontal: 10.0),
+                            decoration: BoxDecoration(
+                              color: kBackgroundColor,
+                              borderRadius: BorderRadius.circular(12.0),
+                              border: Border.all(
+                                color: kBackgroundColor,
+                              ),
                             ),
-                            onTap: () => _onSelectOfferType(context),
-                            validator: (val) =>
-                                val != null && val.isEmpty ? 'Required' : null,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Offer Type',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                SizedBox(height: 12.0),
+                                _types.isNotEmpty
+                                    ? Center(
+                                        child: ToggleSwitch(
+                                          initialLabelIndex: _initialTypeIndex,
+                                          inactiveBgColor: kBackgroundColor,
+                                          minWidth:
+                                              SizeConfig.screenWidth * 0.25,
+                                          activeFgColor: Colors.black,
+                                          inactiveFgColor: Colors.white,
+                                          borderColor: [Color(0xFFEBFBFF)],
+                                          totalSwitches: 3,
+                                          labels: _types
+                                              .map((pt) => pt.name!)
+                                              .toList(),
+                                          onToggle: (index) {
+                                            _selectedOfferType =
+                                                _types[index!].code!;
+                                          },
+                                        ),
+                                      )
+                                    : Container(),
+                              ],
+                            ),
                           ),
+                          // CustomTextFormField(
+                          //   label: 'Offer Type',
+                          //   hintText: 'Tap to select type',
+                          //   controller: _offerTypeTextController,
+                          //   isReadOnly: true,
+                          //   color: kBackgroundColor,
+                          //   suffixIcon: Icon(
+                          //     FontAwesomeIcons.chevronDown,
+                          //     color: Colors.white,
+                          //   ),
+                          //   onTap: () => _onSelectOfferType(context),
+                          //   validator: (val) =>
+                          //       val != null && val.isEmpty ? 'Required' : null,
+                          // ),
                           CustomTextFormField(
                             label: 'Description',
                             hintText: 'Enter a description',

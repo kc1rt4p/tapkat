@@ -20,7 +20,7 @@ class ProductModel {
   String? imgUrl;
   String? status;
   DateTime? updated_time;
-  String? acquiredBy;
+  String? acquired_by;
 
   ProductModel({
     this.productid,
@@ -41,7 +41,7 @@ class ProductModel {
     this.status,
     this.updated_time,
     this.display_name,
-    this.acquiredBy,
+    this.acquired_by,
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
@@ -73,7 +73,7 @@ class ProductModel {
       updated_time:
           json['updated_time'] != null ? json['updated_time'].toDate() : null,
       display_name: json['image_url'] as String?,
-      acquiredBy: json['acquiredBy'] as String?,
+      acquired_by: json['acquired_by'] as String?,
     );
   }
 
@@ -91,7 +91,7 @@ class ProductModel {
       'likes': this.likes,
       'display_name': this.display_name,
       'updated_time': this.updated_time,
-      'acquiredBy': this.acquiredBy,
+      'acquired_by': this.acquired_by,
       'status': this.status,
     };
     return json..addAll({'productid': this.productid});

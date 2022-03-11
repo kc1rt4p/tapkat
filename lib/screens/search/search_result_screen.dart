@@ -105,28 +105,32 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
             }
 
             if (state is SearchSuccess) {
-              setState(() {
-                searchResults = state.searchResults;
-              });
-              lastProduct = searchResults.last;
-              if (state.searchResults.length == productCount) {
-                _pagingController.appendPage(
-                    state.searchResults, currentPage + 1);
-              } else {
-                _pagingController.appendLastPage(state.searchResults);
-              }
-
-              _pagingController.addPageRequestListener((pageKey) {
-                if (lastProduct != null) {
-                  _searchBloc.add(
-                    GetNextProducts(
-                      keyword: _keyWordTextController.text.trim(),
-                      lastProductId: lastProduct!.productid!,
-                      startAfterVal: lastProduct!.price!.toString(),
-                    ),
-                  );
+              if (state.searchResults.isNotEmpty) {
+                lastProduct = state.searchResults.last;
+                if (state.searchResults.length == productCount) {
+                  setState(() {
+                    searchResults.addAll(state.searchResults);
+                  });
+                  _pagingController.appendPage(
+                      state.searchResults, currentPage + 1);
+                } else {
+                  setState(() {
+                    searchResults.addAll(state.searchResults);
+                  });
+                  _pagingController.appendLastPage(state.searchResults);
                 }
-              });
+                _pagingController.addPageRequestListener((pageKey) {
+                  if (lastProduct != null) {
+                    _searchBloc.add(
+                      GetNextProducts(
+                        keyword: _keyWordTextController.text.trim(),
+                        lastProductId: lastProduct!.productid!,
+                        startAfterVal: lastProduct!.price!.toString(),
+                      ),
+                    );
+                  }
+                });
+              }
             }
           },
           child: Container(
@@ -275,22 +279,45 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                         color: Colors.white,
                         padding: EdgeInsets.symmetric(
                             horizontal: 20.0, vertical: 16.0),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
+                        child: Row(
                           children: [
-                            Text(
-                              productMarker.productname ?? '',
-                              style: Style.subtitle2
-                                  .copyWith(color: kBackgroundColor),
+                            Expanded(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    productMarker.productname ?? '',
+                                    style: Style.subtitle2
+                                        .copyWith(color: kBackgroundColor),
+                                  ),
+                                  SizedBox(height: 12.0),
+                                  Text(
+                                    productMarker.price == null
+                                        ? ''
+                                        : '\$${productMarker.price!.toStringAsFixed(2)}',
+                                    style: Style.subtitle2.copyWith(
+                                        color: kBackgroundColor,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                ],
+                              ),
                             ),
-                            SizedBox(height: 12.0),
-                            Text(
-                              productMarker.price == null
-                                  ? ''
-                                  : '\$${productMarker.price!.toStringAsFixed(2)}',
-                              style: Style.subtitle2.copyWith(
+                            InkWell(
+                              onTap: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => ProductDetailsScreen(
+                                    ownItem: false,
+                                    productId: productMarker.productid ?? '',
+                                  ),
+                                ),
+                              ),
+                              child: Container(
+                                child: Icon(
+                                  Icons.chevron_right,
                                   color: kBackgroundColor,
-                                  fontWeight: FontWeight.bold),
+                                ),
+                              ),
                             ),
                           ],
                         ),
