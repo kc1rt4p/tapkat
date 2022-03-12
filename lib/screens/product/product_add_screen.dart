@@ -116,7 +116,7 @@ class _ProductAddScreenState extends State<ProductAddScreen> {
                     setState(() {
                       _productCategories = state.categories;
                       _productTypes = state.types;
-                      _selectedOfferType = _productTypes[1].code;
+                      _selectedOfferType = _productTypes[0].code;
                     });
                   }
 
@@ -215,7 +215,7 @@ class _ProductAddScreenState extends State<ProductAddScreen> {
                                     _productTypes.length > 0
                                         ? Center(
                                             child: ToggleSwitch(
-                                              initialLabelIndex: 1,
+                                              initialLabelIndex: 0,
                                               inactiveBgColor: kBackgroundColor,
                                               minWidth:
                                                   SizeConfig.screenWidth * 0.25,

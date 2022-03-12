@@ -188,6 +188,26 @@ class _HomeScreenState extends State<HomeScreen> {
                                   }
                                 }
 
+                                var thumbnail = '';
+
+                                if (product.mediaPrimary != null &&
+                                    product.mediaPrimary!.url != null &&
+                                    product.mediaPrimary!.url!.isNotEmpty)
+                                  thumbnail = product.mediaPrimary!.url!;
+
+                                if (product.mediaPrimary != null &&
+                                    product.mediaPrimary!.url_t != null &&
+                                    product.mediaPrimary!.url_t!.isNotEmpty)
+                                  thumbnail = product.mediaPrimary!.url_t!;
+
+                                if (product.mediaPrimary!.url!.isEmpty &&
+                                    product.mediaPrimary!.url_t!.isEmpty &&
+                                    product.media != null &&
+                                    product.media!.isNotEmpty)
+                                  thumbnail = product.media!.first.url_t != null
+                                      ? product.media!.first.url_t!
+                                      : product.media!.first.url!;
+
                                 return BarterListItem(
                                   likeLeftMargin:
                                       SizeConfig.safeBlockHorizontal * 3,
@@ -196,12 +216,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   itemPrice: product.price != null
                                       ? product.price!.toStringAsFixed(2)
                                       : '0',
-                                  imageUrl: product.mediaPrimary != null &&
-                                          product.mediaPrimary!.url_t != null &&
-                                          product
-                                              .mediaPrimary!.url_t!.isNotEmpty
-                                      ? product.mediaPrimary!.url_t ?? ''
-                                      : product.mediaPrimary!.url ?? '',
+                                  imageUrl: thumbnail,
                                   datePosted: product.updated_time ?? null,
                                   onTapped: () async {
                                     await Navigator.push(
@@ -285,6 +300,26 @@ class _HomeScreenState extends State<HomeScreen> {
                                   }
                                 }
 
+                                var thumbnail = '';
+
+                                if (product.mediaPrimary != null &&
+                                    product.mediaPrimary!.url != null &&
+                                    product.mediaPrimary!.url!.isNotEmpty)
+                                  thumbnail = product.mediaPrimary!.url!;
+
+                                if (product.mediaPrimary != null &&
+                                    product.mediaPrimary!.url_t != null &&
+                                    product.mediaPrimary!.url_t!.isNotEmpty)
+                                  thumbnail = product.mediaPrimary!.url_t!;
+
+                                if (product.mediaPrimary!.url!.isEmpty &&
+                                    product.mediaPrimary!.url_t!.isEmpty &&
+                                    product.media != null &&
+                                    product.media!.isNotEmpty)
+                                  thumbnail = product.media!.first.url_t != null
+                                      ? product.media!.first.url_t!
+                                      : product.media!.first.url!;
+
                                 return BarterListItem(
                                   likeLeftMargin:
                                       SizeConfig.safeBlockHorizontal * 3,
@@ -293,12 +328,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   itemPrice: product.price != null
                                       ? product.price!.toStringAsFixed(2)
                                       : '0',
-                                  imageUrl: product.mediaPrimary != null &&
-                                          product.mediaPrimary!.url_t != null &&
-                                          product
-                                              .mediaPrimary!.url_t!.isNotEmpty
-                                      ? product.mediaPrimary!.url_t ?? ''
-                                      : product.mediaPrimary!.url ?? '',
+                                  imageUrl: thumbnail,
                                   datePosted: product.updated_time ?? null,
                                   onTapped: () async {
                                     await Navigator.push(
@@ -364,6 +394,26 @@ class _HomeScreenState extends State<HomeScreen> {
                           context: context,
                           ownList: true,
                           items: _myProductList.map((product) {
+                            var thumbnail = '';
+
+                            if (product.mediaPrimary != null &&
+                                product.mediaPrimary!.url != null &&
+                                product.mediaPrimary!.url!.isNotEmpty)
+                              thumbnail = product.mediaPrimary!.url!;
+
+                            if (product.mediaPrimary != null &&
+                                product.mediaPrimary!.url_t != null &&
+                                product.mediaPrimary!.url_t!.isNotEmpty)
+                              thumbnail = product.mediaPrimary!.url_t!;
+
+                            if (product.mediaPrimary!.url!.isEmpty &&
+                                product.mediaPrimary!.url_t!.isEmpty &&
+                                product.media != null &&
+                                product.media!.isNotEmpty)
+                              thumbnail = product.media!.first.url_t != null
+                                  ? product.media!.first.url_t!
+                                  : product.media!.first.url!;
+
                             return BarterListItem(
                               height: SizeConfig.screenHeight * 0.165,
                               width: SizeConfig.screenWidth * 0.27,
@@ -374,11 +424,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               itemPrice: product.price != null
                                   ? product.price!.toStringAsFixed(2)
                                   : '0',
-                              imageUrl: product.mediaPrimary != null &&
-                                      product.mediaPrimary!.url_t != null &&
-                                      product.mediaPrimary!.url_t!.isNotEmpty
-                                  ? product.mediaPrimary!.url_t ?? ''
-                                  : product.mediaPrimary!.url ?? '',
+                              imageUrl: thumbnail,
                               onTapped: () async {
                                 await Navigator.push(
                                   context,

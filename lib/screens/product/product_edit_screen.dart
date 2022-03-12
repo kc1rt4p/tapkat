@@ -121,7 +121,7 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
                         pt.code == _selectedOfferType ||
                         pt.name!.toLowerCase() ==
                             _selectedOfferType!.toLowerCase(),
-                    orElse: () => _types[1]));
+                    orElse: () => _types[0]));
               });
             }
 

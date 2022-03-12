@@ -459,6 +459,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       builderDelegate: PagedChildBuilderDelegate<ProductModel>(
         itemBuilder: (context, product, index) {
+          var thumbnail = '';
+
+          if (product.mediaPrimary != null &&
+              product.mediaPrimary!.url != null &&
+              product.mediaPrimary!.url!.isNotEmpty)
+            thumbnail = product.mediaPrimary!.url!;
+
+          if (product.mediaPrimary != null &&
+              product.mediaPrimary!.url_t != null &&
+              product.mediaPrimary!.url_t!.isNotEmpty)
+            thumbnail = product.mediaPrimary!.url_t!;
+
+          if (product.mediaPrimary!.url!.isEmpty &&
+              product.mediaPrimary!.url_t!.isEmpty &&
+              product.media != null &&
+              product.media!.isNotEmpty)
+            thumbnail = product.media!.first.url_t != null
+                ? product.media!.first.url_t!
+                : product.media!.first.url!;
           return Center(
             child: BarterListItem(
               height: SizeConfig.screenHeight * 0.215,
@@ -468,11 +487,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               itemPrice: product.price != null
                   ? product.price!.toStringAsFixed(2)
                   : '0',
-              imageUrl: product.mediaPrimary != null &&
-                      product.mediaPrimary!.url_t != null &&
-                      product.mediaPrimary!.url_t!.isNotEmpty
-                  ? product.mediaPrimary!.url_t ?? ''
-                  : product.mediaPrimary!.url ?? '',
+              imageUrl: thumbnail,
               onTapped: () async {
                 await Navigator.push(
                   context,

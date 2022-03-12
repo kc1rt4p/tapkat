@@ -403,6 +403,26 @@ class _ProductListScreenState extends State<ProductListScreen> {
       ),
       builderDelegate: PagedChildBuilderDelegate<ProductModel>(
         itemBuilder: (context, product, index) {
+          var thumbnail = '';
+
+          if (product.mediaPrimary != null &&
+              product.mediaPrimary!.url != null &&
+              product.mediaPrimary!.url!.isNotEmpty)
+            thumbnail = product.mediaPrimary!.url!;
+
+          if (product.mediaPrimary != null &&
+              product.mediaPrimary!.url_t != null &&
+              product.mediaPrimary!.url_t!.isNotEmpty)
+            thumbnail = product.mediaPrimary!.url_t!;
+
+          if (product.mediaPrimary == null &&
+              product.mediaPrimary!.url!.isEmpty &&
+              product.mediaPrimary!.url_t!.isEmpty &&
+              product.media != null &&
+              product.media!.isNotEmpty)
+            thumbnail = product.media!.first.url_t != null
+                ? product.media!.first.url_t!
+                : product.media!.first.url!;
           return Center(
             child: StreamBuilder<List<UserLikesRecord?>>(
                 stream: queryUserLikesRecord(
@@ -432,9 +452,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                     itemPrice: product.price != null
                         ? product.price!.toStringAsFixed(2)
                         : '0',
-                    imageUrl: product.mediaPrimary != null
-                        ? product.mediaPrimary!.url!
-                        : '',
+                    imageUrl: thumbnail,
                     onTapped: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -465,78 +483,6 @@ class _ProductListScreenState extends State<ProductListScreen> {
           );
         },
       ),
-    );
-  }
-
-  Widget _buildGridView() {
-    return GridView.count(
-      padding: EdgeInsets.symmetric(vertical: 10.0),
-      crossAxisCount: 2,
-      mainAxisSpacing: 10.0,
-      children: _list
-          .map(
-            (product) => Center(
-              child: StreamBuilder<List<UserLikesRecord?>>(
-                  stream: queryUserLikesRecord(
-                    queryBuilder: (userLikesRecord) => userLikesRecord
-                        .where('userid', isEqualTo: widget.userId)
-                        .where('productid', isEqualTo: product.productid),
-                    singleRecord: true,
-                  ),
-                  builder: (context, snapshot) {
-                    bool liked = false;
-                    UserLikesRecord? record;
-                    if (snapshot.hasData) {
-                      if (snapshot.data != null && snapshot.data!.isNotEmpty) {
-                        record = snapshot.data!.first;
-                        if (record != null) {
-                          liked = record.liked ?? false;
-                        }
-                      }
-                    }
-
-                    return BarterListItem(
-                      hideLikeBtn: widget.ownListing,
-                      liked: liked,
-                      itemName: product.productname ?? '',
-                      itemPrice: product.price != null
-                          ? product.price!.toStringAsFixed(2)
-                          : '0',
-                      imageUrl: product.mediaPrimary != null &&
-                              product.mediaPrimary!.url_t != null &&
-                              product.mediaPrimary!.url_t!.isNotEmpty
-                          ? product.mediaPrimary!.url_t ?? ''
-                          : product.mediaPrimary!.url ?? '',
-                      onTapped: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ProductDetailsScreen(
-                            productId: product.productid ?? '',
-                            ownItem: widget.ownListing ? true : false,
-                          ),
-                        ),
-                      ),
-                      onLikeTapped: () {
-                        if (record != null) {
-                          final newData = createUserLikesRecordData(
-                            liked: !record.liked!,
-                          );
-
-                          record.reference!.update(newData);
-                          if (liked) {
-                            _productBloc.add(
-                              Unlike(product),
-                            );
-                          } else {
-                            _productBloc.add(AddLike(product));
-                          }
-                        }
-                      },
-                    );
-                  }),
-            ),
-          )
-          .toList(),
     );
   }
 

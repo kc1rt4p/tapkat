@@ -162,82 +162,92 @@ class _WishListScreenState extends State<WishListScreen> {
                             crossAxisCount: 2,
                             shrinkWrap: true,
                             mainAxisSpacing: 8.0,
-                            children: _list
-                                .map((product) => Center(
-                                      child: StreamBuilder<
-                                              List<UserLikesRecord?>>(
-                                          stream: queryUserLikesRecord(
-                                            queryBuilder: (userLikesRecord) =>
-                                                userLikesRecord
-                                                    .where('userid',
-                                                        isEqualTo: _user!.uid)
-                                                    .where('productid',
-                                                        isEqualTo:
-                                                            product.productid),
-                                            singleRecord: true,
+                            children: _list.map((product) {
+                              var thumbnail = '';
+
+                              if (product.mediaPrimary != null &&
+                                  product.mediaPrimary!.url != null &&
+                                  product.mediaPrimary!.url!.isNotEmpty)
+                                thumbnail = product.mediaPrimary!.url!;
+
+                              if (product.mediaPrimary != null &&
+                                  product.mediaPrimary!.url_t != null &&
+                                  product.mediaPrimary!.url_t!.isNotEmpty)
+                                thumbnail = product.mediaPrimary!.url_t!;
+
+                              if (product.mediaPrimary!.url!.isEmpty &&
+                                  product.mediaPrimary!.url_t!.isEmpty &&
+                                  product.media != null &&
+                                  product.media!.isNotEmpty)
+                                thumbnail = product.media!.first.url_t != null
+                                    ? product.media!.first.url_t!
+                                    : product.media!.first.url!;
+                              return Center(
+                                child: StreamBuilder<List<UserLikesRecord?>>(
+                                    stream: queryUserLikesRecord(
+                                      queryBuilder: (userLikesRecord) =>
+                                          userLikesRecord
+                                              .where('userid',
+                                                  isEqualTo: _user!.uid)
+                                              .where('productid',
+                                                  isEqualTo: product.productid),
+                                      singleRecord: true,
+                                    ),
+                                    builder: (context, snapshot) {
+                                      bool liked = false;
+                                      UserLikesRecord? record;
+                                      if (snapshot.hasData) {
+                                        if (snapshot.data != null &&
+                                            snapshot.data!.isNotEmpty) {
+                                          record = snapshot.data!.first;
+                                          if (record != null) {
+                                            liked = record.liked ?? false;
+                                          }
+                                        }
+                                      }
+
+                                      return BarterListItem(
+                                        height: SizeConfig.screenHeight * 0.23,
+                                        width: SizeConfig.screenWidth * 0.40,
+                                        liked: liked,
+                                        itemName: product.productname ?? '',
+                                        itemPrice: product.price != null
+                                            ? product.price!.toStringAsFixed(2)
+                                            : '0',
+                                        imageUrl: thumbnail,
+                                        onTapped: () => Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                ProductDetailsScreen(
+                                              productId:
+                                                  product.productid ?? '',
+                                            ),
                                           ),
-                                          builder: (context, snapshot) {
-                                            bool liked = false;
-                                            UserLikesRecord? record;
-                                            if (snapshot.hasData) {
-                                              if (snapshot.data != null &&
-                                                  snapshot.data!.isNotEmpty) {
-                                                record = snapshot.data!.first;
-                                                if (record != null) {
-                                                  liked = record.liked ?? false;
-                                                }
-                                              }
-                                            }
-
-                                            return BarterListItem(
-                                              height: SizeConfig.screenHeight *
-                                                  0.23,
-                                              width:
-                                                  SizeConfig.screenWidth * 0.40,
-                                              liked: liked,
-                                              itemName:
-                                                  product.productname ?? '',
-                                              itemPrice: product.price != null
-                                                  ? product.price!
-                                                      .toStringAsFixed(2)
-                                                  : '0',
-                                              imageUrl: product.imgUrl != null
-                                                  ? product.imgUrl!
-                                                  : '',
-                                              onTapped: () => Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      ProductDetailsScreen(
-                                                    productId:
-                                                        product.productid ?? '',
-                                                  ),
-                                                ),
-                                              ),
-                                              onLikeTapped: () {
-                                                if (record != null) {
-                                                  final newData =
-                                                      createUserLikesRecordData(
-                                                    liked: !record.liked!,
-                                                  );
-
-                                                  record.reference!
-                                                      .update(newData);
-
-                                                  if (liked) {
-                                                    _productBloc.add(
-                                                      Unlike(product),
-                                                    );
-                                                  } else {
-                                                    _productBloc
-                                                        .add(AddLike(product));
-                                                  }
-                                                }
-                                              },
+                                        ),
+                                        onLikeTapped: () {
+                                          if (record != null) {
+                                            final newData =
+                                                createUserLikesRecordData(
+                                              liked: !record.liked!,
                                             );
-                                          }),
-                                    ))
-                                .toList(),
+
+                                            record.reference!.update(newData);
+
+                                            if (liked) {
+                                              _productBloc.add(
+                                                Unlike(product),
+                                              );
+                                            } else {
+                                              _productBloc
+                                                  .add(AddLike(product));
+                                            }
+                                          }
+                                        },
+                                      );
+                                    }),
+                              );
+                            }).toList(),
                           )
                         : Visibility(
                             visible: !_loading,

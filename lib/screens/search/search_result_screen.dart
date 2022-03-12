@@ -348,6 +348,26 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
       ),
       builderDelegate: PagedChildBuilderDelegate<ProductModel>(
         itemBuilder: (context, product, index) {
+          var thumbnail = '';
+
+          if (product.mediaPrimary != null &&
+              product.mediaPrimary!.url != null &&
+              product.mediaPrimary!.url!.isNotEmpty)
+            thumbnail = product.mediaPrimary!.url!;
+
+          if (product.mediaPrimary != null &&
+              product.mediaPrimary!.url_t != null &&
+              product.mediaPrimary!.url_t!.isNotEmpty)
+            thumbnail = product.mediaPrimary!.url_t!;
+
+          if (product.mediaPrimary!.url!.isEmpty &&
+              product.mediaPrimary!.url_t!.isEmpty &&
+              product.media != null &&
+              product.media!.isNotEmpty)
+            thumbnail = product.media!.first.url_t != null
+                ? product.media!.first.url_t!
+                : product.media!.first.url!;
+          print(thumbnail);
           return BarterListItem(
             height: SizeConfig.screenHeight * 0.23,
             width: SizeConfig.screenWidth * 0.40,
@@ -356,10 +376,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                 (product.price != null
                     ? product.price!.toStringAsFixed(2)
                     : '0.00'),
-            imageUrl: product.mediaPrimary != null &&
-                    product.mediaPrimary!.url != null
-                ? product.mediaPrimary!.url!
-                : '',
+            imageUrl: thumbnail,
             onTapped: () => Navigator.push(
               context,
               MaterialPageRoute(
@@ -372,37 +389,6 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
           );
         },
       ),
-    );
-  }
-
-  GridView _buildGridView() {
-    return GridView.count(
-      shrinkWrap: true,
-      padding: EdgeInsets.zero,
-      crossAxisCount: 2,
-      mainAxisSpacing: 10.0,
-      children: searchResults.map((product) {
-        return BarterListItem(
-          itemName: product.productname ?? '',
-          itemPrice: (product.currency ?? '') +
-              (product.price != null
-                  ? product.price!.toStringAsFixed(2)
-                  : '0.00'),
-          imageUrl:
-              product.mediaPrimary != null && product.mediaPrimary!.url != null
-                  ? product.mediaPrimary!.url!
-                  : '',
-          onTapped: () => Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ProductDetailsScreen(
-                ownItem: false,
-                productId: product.productid ?? '',
-              ),
-            ),
-          ),
-        );
-      }).toList(),
     );
   }
 

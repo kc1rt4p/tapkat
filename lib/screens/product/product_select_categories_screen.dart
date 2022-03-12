@@ -88,6 +88,10 @@ class _SelectProductCategoryScreenState
                                   mainAxisSpacing: 5.0,
                                   crossAxisCount: 3,
                                   children: _categories
+                                      .where((cat) =>
+                                          widget.productRequest.type == 'PT1'
+                                              ? cat.code!.contains('PC')
+                                              : cat.code!.contains('SC'))
                                       .map((cat) => Center(
                                             child: InkWell(
                                               onTap: () {

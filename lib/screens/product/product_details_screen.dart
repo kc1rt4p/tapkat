@@ -703,9 +703,13 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   Widget _buildPhotos() {
     if (_product == null) return Container();
 
-    if (_product!.mediaPrimary != null && _product!.mediaPrimary!.url != null ||
+    if (_product!.mediaPrimary != null &&
+        _product!.mediaPrimary!.url != null &&
         _product!.mediaPrimary!.url!.isNotEmpty) {
-      if (_product!.media != null || _product!.media!.isNotEmpty) {
+      if (_product!.media != null &&
+              _product!.media!.isNotEmpty &&
+              _product!.media!.length > 1 ||
+          _product!.media!.length == 0) {
         if (!_product!.media!
             .any((media) => media.url == _product!.mediaPrimary!.url)) {
           _product!.media!.insert(
