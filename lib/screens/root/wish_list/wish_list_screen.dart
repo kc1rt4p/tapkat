@@ -163,26 +163,6 @@ class _WishListScreenState extends State<WishListScreen> {
                             shrinkWrap: true,
                             mainAxisSpacing: 8.0,
                             children: _list.map((product) {
-                              var thumbnail = '';
-
-                              if (product.mediaPrimary != null &&
-                                  product.mediaPrimary!.url != null &&
-                                  product.mediaPrimary!.url!.isNotEmpty)
-                                thumbnail = product.mediaPrimary!.url!;
-
-                              if (product.mediaPrimary != null &&
-                                  product.mediaPrimary!.url_t != null &&
-                                  product.mediaPrimary!.url_t!.isNotEmpty)
-                                thumbnail = product.mediaPrimary!.url_t!;
-
-                              if (product.mediaPrimary != null &&
-                                  product.mediaPrimary!.url!.isEmpty &&
-                                  product.mediaPrimary!.url_t!.isEmpty &&
-                                  product.media != null &&
-                                  product.media!.isNotEmpty)
-                                thumbnail = product.media!.first.url_t != null
-                                    ? product.media!.first.url_t!
-                                    : product.media!.first.url!;
                               return Center(
                                 child: StreamBuilder<List<UserLikesRecord?>>(
                                     stream: queryUserLikesRecord(
@@ -215,7 +195,7 @@ class _WishListScreenState extends State<WishListScreen> {
                                         itemPrice: product.price != null
                                             ? product.price!.toStringAsFixed(2)
                                             : '0',
-                                        imageUrl: thumbnail,
+                                        imageUrl: product.imgUrl ?? '',
                                         onTapped: () => Navigator.push(
                                           context,
                                           MaterialPageRoute(

@@ -69,6 +69,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   @override
+  void dispose() {
+    _pagingController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
     return Scaffold(
@@ -252,50 +258,55 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   ],
                                 ),
                               ),
-                              Row(
-                                children: [
-                                  _buildPhoto(),
-                                  Expanded(
-                                    child: Container(
-                                      margin: EdgeInsets.symmetric(
-                                        vertical: 10.0,
-                                      ),
-                                      width: double.infinity,
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: [
-                                          _buildInfoItem(
-                                            label: 'Display name',
-                                            controller:
-                                                _displayNameTextController,
-                                          ),
-                                          _buildInfoItem(
-                                            label: 'Email',
-                                            controller: _emailTextController,
-                                          ),
-                                          _buildInfoItem(
-                                            label: 'Phone number',
-                                            controller: _phoneTextController,
-                                          ),
-                                          _buildInfoItem(
-                                            label: 'Location',
-                                            controller: _locationTextController,
-                                            suffix: Icon(
-                                              FontAwesomeIcons.mapMarked,
-                                              color: kBackgroundColor,
-                                              size: 12.0,
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16.0),
+                                child: Row(
+                                  children: [
+                                    _buildPhoto(),
+                                    Expanded(
+                                      child: Container(
+                                        margin: EdgeInsets.symmetric(
+                                          vertical: 10.0,
+                                        ),
+                                        width: double.infinity,
+                                        child: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          children: [
+                                            _buildInfoItem(
+                                              label: 'Display name',
+                                              controller:
+                                                  _displayNameTextController,
                                             ),
-                                            onTap: _onSelectLocation,
-                                            readOnly: true,
-                                          ),
-                                        ],
+                                            _buildInfoItem(
+                                              label: 'Email',
+                                              controller: _emailTextController,
+                                            ),
+                                            _buildInfoItem(
+                                              label: 'Phone number',
+                                              controller: _phoneTextController,
+                                            ),
+                                            _buildInfoItem(
+                                              label: 'Location',
+                                              controller:
+                                                  _locationTextController,
+                                              suffix: Icon(
+                                                FontAwesomeIcons.mapMarked,
+                                                color: kBackgroundColor,
+                                                size: 12.0,
+                                              ),
+                                              onTap: _onSelectLocation,
+                                              readOnly: true,
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
                               Expanded(
                                 child: Container(
