@@ -2,8 +2,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_progress_hud/flutter_progress_hud.dart';
+import 'package:tapkat/backend.dart';
 import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
 import 'package:tapkat/models/product.dart';
+import 'package:tapkat/schemas/user_likes_record.dart';
 import 'package:tapkat/screens/product/bloc/product_bloc.dart';
 import 'package:tapkat/screens/product/product_details_screen.dart';
 import 'package:tapkat/screens/product/product_list_screen.dart';
@@ -276,7 +278,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildProductItem(
-      {required ProductModel product, bool hideLike = false}) {
+      {required ProductModel product,
+      bool hideLike = false,
+      UserLikesRecord? record}) {
     var thumbnail = '';
 
     if (product.mediaPrimary != null &&
@@ -297,30 +301,114 @@ class _HomeScreenState extends State<HomeScreen> {
           ? product.media!.first.url_t!
           : product.media!.first.url!;
 
-    return BarterListItem(
-      height: hideLike ? SizeConfig.screenHeight * 0.165 : null,
-      width: hideLike ? SizeConfig.screenWidth * 0.27 : null,
-      fontSize: hideLike ? SizeConfig.textScaleFactor * 9 : null,
-      hideLikeBtn: hideLike,
-      itemName: product.productname ?? '',
-      datePosted: product.updated_time ?? null,
-      itemPrice:
-          product.price != null ? product.price!.toStringAsFixed(2) : '0',
-      imageUrl: thumbnail,
-      onTapped: () async {
-        await Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ProductDetailsScreen(
-              productId: product.productid ?? '',
-              ownItem: true,
+    if (hideLike) {
+      return BarterListItem(
+        height: SizeConfig.screenHeight * 0.165,
+        width: SizeConfig.screenWidth * 0.27,
+        fontSize: SizeConfig.textScaleFactor * 9,
+        hideLikeBtn: true,
+        itemName: product.productname ?? '',
+        datePosted: product.updated_time ?? null,
+        itemPrice:
+            product.price != null ? product.price!.toStringAsFixed(2) : '0',
+        imageUrl: thumbnail,
+        onTapped: () async {
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ProductDetailsScreen(
+                productId: product.productid ?? '',
+                ownItem: true,
+              ),
             ),
-          ),
-        );
+          );
 
-        _homeBloc.add(LoadUserList());
-      },
-    );
+          _homeBloc.add(LoadUserList());
+        },
+      );
+    }
+
+    return StreamBuilder<List<UserLikesRecord?>>(
+        stream: queryUserLikesRecord(
+          queryBuilder: (userLikesRecord) => userLikesRecord
+              .where('userid', isEqualTo: _user!.uid)
+              .where('productid', isEqualTo: product.productid),
+          singleRecord: true,
+        ),
+        builder: (context, snapshot) {
+          bool liked = false;
+          UserLikesRecord? record;
+          if (snapshot.hasData) {
+            if (snapshot.data != null && snapshot.data!.isNotEmpty) {
+              record = snapshot.data!.first;
+              if (record != null) {
+                liked = record.liked ?? false;
+              }
+            }
+          }
+
+          return StreamBuilder<List<UserLikesRecord?>>(
+              stream: queryUserLikesRecord(
+                queryBuilder: (userLikesRecord) => userLikesRecord
+                    .where('userid', isEqualTo: _user!.uid)
+                    .where('productid', isEqualTo: product.productid),
+                singleRecord: true,
+              ),
+              builder: (context, snapshot) {
+                bool liked = false;
+                UserLikesRecord? record;
+                if (snapshot.hasData) {
+                  if (snapshot.data != null && snapshot.data!.isNotEmpty) {
+                    record = snapshot.data!.first;
+                    if (record != null) {
+                      liked = record.liked ?? false;
+                    }
+                  }
+                }
+
+                return BarterListItem(
+                  likeLeftMargin: SizeConfig.safeBlockHorizontal * 3,
+                  liked: liked,
+                  itemName: product.productname ?? '',
+                  itemPrice: product.price != null
+                      ? product.price!.toStringAsFixed(2)
+                      : '0',
+                  imageUrl: thumbnail,
+                  datePosted: product.updated_time ?? null,
+                  onTapped: () async {
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ProductDetailsScreen(
+                          productId: product.productid ?? '',
+                          ownItem: false,
+                        ),
+                      ),
+                    );
+
+                    _homeBloc.add(LoadRecommendedList());
+                  },
+                  onLikeTapped: () {
+                    if (record != null) {
+                      final newData = createUserLikesRecordData(
+                        liked: !record.liked!,
+                      );
+
+                      record.reference!.update(newData);
+                      if (liked) {
+                        _productBloc.add(
+                          Unlike(product),
+                        );
+                      } else {
+                        _productBloc.add(AddLike(product));
+                      }
+                    } else {
+                      _productBloc.add(AddLike(product));
+                    }
+                  },
+                );
+              });
+        });
   }
 
   _onSearchSubmitted(String? val) {
