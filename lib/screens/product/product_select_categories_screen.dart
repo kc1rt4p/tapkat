@@ -59,7 +59,11 @@ class _SelectProductCategoryScreenState
               await DialogMessage.show(context,
                   message: 'An offer has been added');
 
-              Navigator.of(context).popUntil((route) => route.isFirst);
+              // Navigator.of(context).popUntil((route) => route.isFirst);
+              var count = 0;
+              Navigator.popUntil(context, (route) {
+                return count++ == 2;
+              });
             }
           },
           child: Container(

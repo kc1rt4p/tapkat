@@ -138,6 +138,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                   });
                   _pagingController.appendLastPage(state.list);
                 }
+              } else {
                 print('lastrProduct name: ${lastProduct!.productname}');
                 _pagingController.addPageRequestListener((pageKey) {
                   if (lastProduct != null) {
@@ -152,6 +153,20 @@ class _ProductListScreenState extends State<ProductListScreen> {
                   }
                 });
               }
+
+              print('lastrProduct name: ${lastProduct!.productname}');
+              _pagingController.addPageRequestListener((pageKey) {
+                if (lastProduct != null) {
+                  _productBloc.add(
+                    GetNextProducts(
+                      listType: widget.listType,
+                      lastProductId: lastProduct!.productid!,
+                      startAfterVal: lastProduct!.price!.toString(),
+                      userId: widget.listType == 'user' ? widget.userId : '',
+                    ),
+                  );
+                }
+              });
             }
 
             if (state is GetProductsSuccess) {
@@ -415,11 +430,11 @@ class _ProductListScreenState extends State<ProductListScreen> {
               product.mediaPrimary!.url_t!.isNotEmpty)
             thumbnail = product.mediaPrimary!.url_t!;
 
-          if (product.mediaPrimary == null &&
+          if (product.mediaPrimary == null ||
               product.mediaPrimary!.url!.isEmpty &&
-              product.mediaPrimary!.url_t!.isEmpty &&
-              product.media != null &&
-              product.media!.isNotEmpty)
+                  product.mediaPrimary!.url_t!.isEmpty &&
+                  product.media != null &&
+                  product.media!.isNotEmpty)
             thumbnail = product.media!.first.url_t != null
                 ? product.media!.first.url_t!
                 : product.media!.first.url!;

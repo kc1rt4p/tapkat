@@ -175,7 +175,8 @@ class _WishListScreenState extends State<WishListScreen> {
                                   product.mediaPrimary!.url_t!.isNotEmpty)
                                 thumbnail = product.mediaPrimary!.url_t!;
 
-                              if (product.mediaPrimary!.url!.isEmpty &&
+                              if (product.mediaPrimary != null &&
+                                  product.mediaPrimary!.url!.isEmpty &&
                                   product.mediaPrimary!.url_t!.isEmpty &&
                                   product.media != null &&
                                   product.media!.isNotEmpty)

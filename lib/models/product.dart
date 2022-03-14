@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:tapkat/models/address.dart';
 import 'package:tapkat/models/media_primary_model.dart';
 
@@ -70,8 +71,11 @@ class ProductModel {
           : [],
       imgUrl: json['image_url'] as String?,
       status: json['status'] as String?,
-      updated_time:
-          json['updated_time'] != null ? json['updated_time'].toDate() : null,
+      updated_time: json['updated_time'] != null
+          ? Timestamp(json['updated_time']['_seconds'],
+                  json['updated_time']['_nanoseconds'])
+              .toDate()
+          : null,
       display_name: json['image_url'] as String?,
       acquired_by: json['acquired_by'] as String?,
     );

@@ -8,3 +8,15 @@ abstract class ProfileEvent extends Equatable {
 }
 
 class InitializeProfileScreen extends ProfileEvent {}
+
+class UpdateUserPhoto extends ProfileEvent {
+  final SelectedMedia photo;
+
+  UpdateUserPhoto(this.photo);
+}
+
+class UpdateUserInfo extends ProfileEvent {
+  final UpdateUserModel user;
+
+  UpdateUserInfo(this.user);
+}

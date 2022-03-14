@@ -109,13 +109,15 @@ class _RootScreenState extends State<RootScreen> {
       ),
     );
 
+    print('OLRYT!');
+
     setState(() {
       _currentIndex = 1;
     });
 
     Future.delayed(Duration(milliseconds: 100), () {
       setState(() {
-        _currentIndex = 0;
+        _currentIndex = 3;
       });
     });
   }

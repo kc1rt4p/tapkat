@@ -196,6 +196,47 @@ class ProductRepository {
     }).toList();
   }
 
+  Future<List<Map<String, dynamic>>> getAllCategoryProducts() async {
+    final data = await getProductRefData();
+    if (data == null) return [];
+    final categories = data['categories'] as List<ProductCategoryModel>;
+
+    List<Map<String, dynamic>> list = [];
+
+    for (var cat in categories.where((cat) => cat.type == 'PT1')) {
+      list.add({
+        'name': cat.name,
+        'code': cat.code,
+        'products': await getCategoryProducts(cat.code!),
+      });
+    }
+
+    return list;
+  }
+
+  Future<List<ProductModel>> getCategoryProducts(String category,
+      [String? userid]) async {
+    var _body = {
+      'psk': psk,
+      'sortby': 'price',
+      'type': 'PT1',
+      'category': category,
+      'sortdirection': 'ascending',
+      'productcount': productCount,
+    };
+
+    final response = await _apiService.post(
+      url: 'products/searchfirst',
+      body: _body,
+    );
+
+    if (response.data['status'] != 'SUCCESS') return [];
+
+    return (response.data['products'] as List<dynamic>)
+        .map((json) => ProductModel.fromJson(json))
+        .toList();
+  }
+
   Future<List<ProductModel>> getFirstProducts(String listType,
       [String? userid]) async {
     final response = await _apiService.post(

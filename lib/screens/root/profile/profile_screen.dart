@@ -12,7 +12,9 @@ import 'package:google_api_headers/google_api_headers.dart';
 import 'package:google_maps_webservice/places.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
+import 'package:tapkat/models/location.dart';
 import 'package:tapkat/models/product.dart';
+import 'package:tapkat/models/request/update_user.dart';
 import 'package:tapkat/models/user.dart';
 import 'package:tapkat/screens/product/bloc/product_bloc.dart';
 import 'package:tapkat/screens/product/product_add_screen.dart';
@@ -79,10 +81,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
             BlocListener(
               bloc: _profileBloc,
               listener: (context, state) {
+                print('current state profile: $state');
                 if (state is ProfileLoading) {
                   ProgressHUD.of(context)!.show();
                 } else {
                   ProgressHUD.of(context)!.dismiss();
+                }
+
+                if (state is UpdateUserInfoSuccess) {
+                  setState(() {
+                    editProfile = !editProfile;
+                  });
+
+                  _profileBloc.add(InitializeProfileScreen());
                 }
 
                 if (state is ProfileScreenInitialized) {
@@ -96,7 +107,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       _userModel!.display_name ?? 'Unknown';
                   _emailTextController.text = _userModel!.email ?? 'Unknown';
                   _phoneTextController.text =
-                      _userModel!.mobilenum ?? 'Unknown';
+                      _userModel!.phone_number ?? 'Unknown';
                   _locationTextController.text =
                       _userModel!.address ?? 'Unknown';
 
@@ -107,20 +118,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     } else {
                       _pagingController.appendLastPage(state.list);
                     }
-                    print('lastrProduct name: ${lastProduct!.productname}');
-                    _pagingController.addPageRequestListener((pageKey) {
-                      if (lastProduct != null) {
-                        _productBloc.add(
-                          GetNextProducts(
-                            listType: 'user',
-                            lastProductId: lastProduct!.productid!,
-                            startAfterVal: lastProduct!.price.toString(),
-                            userId: _user!.uid,
-                          ),
-                        );
-                      }
-                    });
+                  } else {
+                    _pagingController.appendLastPage([]);
                   }
+                  _pagingController.addPageRequestListener((pageKey) {
+                    if (lastProduct != null) {
+                      _productBloc.add(
+                        GetNextProducts(
+                          listType: 'user',
+                          lastProductId: lastProduct!.productid!,
+                          startAfterVal: lastProduct!.price.toString(),
+                          userId: _user!.uid,
+                        ),
+                      );
+                    }
+                  });
                 }
               },
             ),
@@ -212,9 +224,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                           ),
                                           SizedBox(width: 10.0),
                                           GestureDetector(
-                                            onTap: () {
-                                              //
-                                            },
+                                            onTap: _onUpdateUserInfo,
                                             child: Icon(
                                               FontAwesomeIcons.solidSave,
                                               color: Colors.white,
@@ -338,92 +348,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       Expanded(
                                         child: Container(
                                           child: _buildGridView(),
-                                          // ? GridView.count(
-                                          //     shrinkWrap: true,
-                                          //     padding: EdgeInsets.symmetric(
-                                          //         vertical: 10.0),
-                                          //     crossAxisCount: 2,
-                                          //     mainAxisSpacing: 10.0,
-                                          //     children: _list
-                                          //         .map(
-                                          //           (product) => Center(
-                                          //             child: BarterListItem(
-                                          //               height: SizeConfig
-                                          //                       .screenHeight *
-                                          //                   0.215,
-                                          //               width: SizeConfig
-                                          //                       .screenWidth *
-                                          //                   0.4,
-                                          //               hideLikeBtn: true,
-                                          //               itemName: product
-                                          //                       .productname ??
-                                          //                   '',
-                                          //               itemPrice: product
-                                          //                           .price !=
-                                          //                       null
-                                          //                   ? product.price!
-                                          //                       .toStringAsFixed(
-                                          //                           2)
-                                          //                   : '0',
-                                          //               imageUrl: product
-                                          //                               .mediaPrimary !=
-                                          //                           null &&
-                                          //                       product.mediaPrimary!
-                                          //                               .url !=
-                                          //                           null &&
-                                          //                       product
-                                          //                           .mediaPrimary!
-                                          //                           .url!
-                                          //                           .isNotEmpty
-                                          //                   ? product
-                                          //                       .mediaPrimary!
-                                          //                       .url!
-                                          //                   : '',
-                                          //               onTapped: () async {
-                                          //                 await Navigator
-                                          //                     .push(
-                                          //                   context,
-                                          //                   MaterialPageRoute(
-                                          //                     builder:
-                                          //                         (context) =>
-                                          //                             ProductDetailsScreen(
-                                          //                       ownItem:
-                                          //                           true,
-                                          //                       productId:
-                                          //                           product.productid ??
-                                          //                               '',
-                                          //                     ),
-                                          //                   ),
-                                          //                 );
-
-                                          //                 _profileBloc.add(
-                                          //                     InitializeProfileScreen());
-                                          //               },
-                                          //             ),
-                                          //           ),
-                                          //         )
-                                          //         .toList(),
-                                          //   )
-                                          // : Container(
-                                          //     padding: EdgeInsets.symmetric(
-                                          //         horizontal: 30.0),
-                                          //     child: Center(
-                                          //       child: Column(
-                                          //         mainAxisAlignment:
-                                          //             MainAxisAlignment
-                                          //                 .center,
-                                          //         children: [
-                                          //           Text(
-                                          //             'No products found',
-                                          //             style: Style.subtitle2
-                                          //                 .copyWith(
-                                          //                     color: Colors
-                                          //                         .grey),
-                                          //           ),
-                                          //         ],
-                                          //       ),
-                                          //     ),
-                                          //   ),
                                         ),
                                       ),
                                     ],
@@ -441,6 +365,35 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
       ),
     );
+  }
+
+  _onUpdateUserInfo() {
+    if (_userModel != null) {
+      var updateData = UpdateUserModel(
+        userid: _userModel!.userid,
+        display_name: _displayNameTextController.text.trim(),
+        email: _emailTextController.text.trim(),
+        phone_number: _phoneTextController.text.trim(),
+      );
+
+      if (_selectedLocation != null) {
+        updateData.city = _selectedLocation!.addressComponents[1] != null
+            ? _selectedLocation!.addressComponents[1]!.longName
+            : null;
+        updateData.address = _selectedLocation!.addressComponents[0] != null
+            ? _selectedLocation!.addressComponents[0]!.longName
+            : null;
+        updateData.country = _selectedLocation!.addressComponents.last != null
+            ? _selectedLocation!.addressComponents.last!.longName
+            : null;
+        updateData.location = LocationModel(
+          longitude: _selectedLocation!.geometry!.location.lng,
+          latitude: _selectedLocation!.geometry!.location.lat,
+        );
+      }
+
+      _profileBloc.add(UpdateUserInfo(updateData));
+    }
   }
 
   Widget _buildGridView() {
@@ -709,6 +662,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       setState(() {
         _selectedMedia = selectedMedia;
       });
+
+      _profileBloc.add(UpdateUserPhoto(_selectedMedia!));
     }
   }
 }

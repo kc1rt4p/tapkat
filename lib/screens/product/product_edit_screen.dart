@@ -219,7 +219,7 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
                                           activeFgColor: Colors.black,
                                           inactiveFgColor: Colors.white,
                                           borderColor: [Color(0xFFEBFBFF)],
-                                          totalSwitches: 3,
+                                          totalSwitches: _types.length,
                                           labels: _types
                                               .map((pt) => pt.name!)
                                               .toList(),

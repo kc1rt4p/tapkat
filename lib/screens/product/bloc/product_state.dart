@@ -24,6 +24,12 @@ class InitializeAddUpdateProductSuccess extends ProductState {
   InitializeAddUpdateProductSuccess(this.categories, this.types);
 }
 
+class GetProductCategoriesSuccess extends ProductState {
+  final List<Map<String, dynamic>> list;
+
+  GetProductCategoriesSuccess(this.list);
+}
+
 class GetProductDetailsSuccess extends ProductState {
   final ProductModel product;
 

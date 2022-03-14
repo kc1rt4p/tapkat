@@ -78,7 +78,7 @@ class DislikeProduct extends ProductEvent {
   DislikeProduct(this.product);
 }
 
-class InitializeProductCategories extends ProductEvent {}
+class GetProductCategories extends ProductEvent {}
 
 class DeleteProduct extends ProductEvent {
   final String productId;

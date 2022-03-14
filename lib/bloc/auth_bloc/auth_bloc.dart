@@ -46,7 +46,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             email: event.email,
             displayName: event.username,
             phoneNumber: event.mobileNumber,
-            location: LatLng(0, 0),
+            location: LatLng(event.location.geometry!.location.lat,
+                event.location.geometry!.location.lng),
           );
 
           await UsersRecord.collection.doc(user.uid).update(usersCreateData);
