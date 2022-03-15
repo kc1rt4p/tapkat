@@ -54,7 +54,9 @@ class ProductModel {
       currency: json['currency'],
       specifications: json['specifications'],
       type: json['type'],
-      category: json['category'] as String?,
+      category: json['category'] is List<dynamic>
+          ? (json['category'] as List<dynamic>).first as String?
+          : json['category'] as String?,
       mediaPrimary: json['media_primary'] != null
           ? MediaPrimaryModel.fromJson(json['media_primary'])
           : null,
