@@ -7,6 +7,10 @@ const productCount = 10;
 // Keys
 const psk = 'lcp9321p';
 
+const iOSGoogleMapsApiKey = 'AIzaSyBCyNgeJDA8_nwdGrPf5ecuIsVFRXSF0mQ';
+const androidGoogleMapsApiKey = 'AIzaSyAH4fWM5IbEO0X-Txkm6HNsFAQ3KOfW20I';
+const webGoogleMapsApiKey = 'AIzaSyAzPjfTTLzdfp-56tarHguvLXgdw7QAGkg';
+
 enum ProductListType {
   reco,
   demand,

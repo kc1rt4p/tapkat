@@ -20,6 +20,7 @@ import 'package:tapkat/screens/product/bloc/product_bloc.dart';
 import 'package:tapkat/screens/product/product_add_screen.dart';
 import 'package:tapkat/screens/product/product_details_screen.dart';
 import 'package:tapkat/screens/root/profile/bloc/profile_bloc.dart';
+import 'package:tapkat/screens/root/profile/edit_profile_screen.dart';
 import 'package:tapkat/screens/settings/settings_screen.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/constants.dart';
@@ -51,9 +52,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final _phoneTextController = TextEditingController();
   PlaceDetails? _selectedLocation;
   final _locationTextController = TextEditingController();
-  final iOSGoogleMapsApiKey = 'AIzaSyBCyNgeJDA8_nwdGrPf5ecuIsVFRXSF0mQ';
-  final androidGoogleMapsApiKey = 'AIzaSyAH4fWM5IbEO0X-Txkm6HNsFAQ3KOfW20I';
-  final webGoogleMapsApiKey = 'AIzaSyAzPjfTTLzdfp-56tarHguvLXgdw7QAGkg';
   int currentPage = 0;
 
   ProductModel? lastProduct;
@@ -240,19 +238,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         ],
                                       ),
                                     ),
-                                    Visibility(
-                                      visible: !editProfile,
-                                      child: GestureDetector(
-                                        onTap: () {
-                                          setState(() {
-                                            editProfile = !editProfile;
-                                          });
-                                        },
-                                        child: Icon(
-                                          FontAwesomeIcons.solidEdit,
-                                          color: Colors.white,
-                                          size: 18.0,
-                                        ),
+                                    GestureDetector(
+                                      onTap: _userModel != null
+                                          ? () async {
+                                              await Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      EditProfileScreen(
+                                                    user: _userModel!,
+                                                  ),
+                                                ),
+                                              );
+
+                                              _profileBloc.add(
+                                                  InitializeProfileScreen());
+                                            }
+                                          : () {},
+                                      child: Icon(
+                                        FontAwesomeIcons.solidEdit,
+                                        color: Colors.white,
+                                        size: 18.0,
                                       ),
                                     ),
                                   ],

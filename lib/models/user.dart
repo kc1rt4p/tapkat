@@ -8,6 +8,7 @@ class UserModel {
   String? country;
   String? postcode;
   String? photo_url;
+  List<String>? interests;
 
   UserModel({
     this.userid,
@@ -19,6 +20,7 @@ class UserModel {
     this.country,
     this.postcode,
     this.photo_url,
+    this.interests,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -32,6 +34,11 @@ class UserModel {
       country: json['country'] as String?,
       postcode: json['postcode'] as String?,
       photo_url: json['photo_url'] as String?,
+      interests: json['interests'] != null
+          ? (json['interests'] as List<dynamic>)
+              .map((d) => d.toString())
+              .toList()
+          : null,
     );
   }
 
@@ -46,6 +53,7 @@ class UserModel {
       'country': this.country,
       'postcode': this.postcode,
       'photo_url': this.photo_url,
+      'interests': this.interests,
     };
   }
 }

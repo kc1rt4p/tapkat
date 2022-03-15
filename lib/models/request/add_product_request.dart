@@ -12,7 +12,7 @@ class ProductRequestModel {
   String? address;
   String? city;
   String? country;
-  List<String>? category;
+  String? category;
   String? postcode;
   String? image_url;
   String? media_type;
@@ -59,9 +59,7 @@ class ProductRequestModel {
       city: product.address!.city ?? '',
       country: product.address!.country ?? '',
       postcode: product.address!.postCode ?? '',
-      category: product.category != null && product.category is List
-          ? product.category
-          : [],
+      category: product.category ?? '',
       image_url: product.mediaPrimary!.url ?? '',
       media_type: product.mediaPrimary!.type ?? '',
       location: product.address!.location ?? null,

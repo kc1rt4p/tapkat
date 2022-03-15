@@ -5,6 +5,7 @@ import 'package:flutter_progress_hud/flutter_progress_hud.dart';
 import 'package:tapkat/backend.dart';
 import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
 import 'package:tapkat/models/product.dart';
+import 'package:tapkat/models/user.dart';
 import 'package:tapkat/schemas/user_likes_record.dart';
 import 'package:tapkat/screens/product/bloc/product_bloc.dart';
 import 'package:tapkat/screens/product/product_details_screen.dart';
@@ -34,6 +35,8 @@ class _HomeScreenState extends State<HomeScreen> {
   List<ProductModel> _trendingList = [];
   List<ProductModel> _myProductList = [];
 
+  List<String> _userInterests = [];
+
   List<Map<String, dynamic>> _categoryProducts = [];
 
   final _keywordTextController = TextEditingController();
@@ -43,6 +46,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _loadingUserProducts = false;
 
   User? _user;
+  UserModel? _userModel;
 
   @override
   void initState() {
@@ -74,6 +78,15 @@ class _HomeScreenState extends State<HomeScreen> {
                 print('----- OHOY');
                 setState(() {
                   _categoryProducts = state.list;
+                  if (_userInterests.isNotEmpty) {
+                    _userInterests.forEach((ui) {
+                      final catIndex = _categoryProducts
+                          .indexWhere((cp) => cp['code'] == ui);
+                      final cat = _categoryProducts[catIndex];
+                      _categoryProducts.removeAt(catIndex);
+                      _categoryProducts.insert(0, cat);
+                    });
+                  }
                 });
               }
             },
@@ -133,7 +146,15 @@ class _HomeScreenState extends State<HomeScreen> {
               if (state is GetCurrentUsersuccess) {
                 setState(() {
                   _user = state.user;
+                  _userModel = state.userModel;
+                  print('-=-=-=-= $_userModel');
                 });
+
+                if (_userModel != null &&
+                    _userModel!.interests != null &&
+                    _userModel!.interests!.isNotEmpty) {
+                  _userInterests = _userModel!.interests!;
+                }
 
                 _homeBloc.add(InitializeHomeScreen());
 

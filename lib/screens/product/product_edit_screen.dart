@@ -14,6 +14,7 @@ import 'package:tapkat/models/product_category.dart';
 import 'package:tapkat/models/product_type.dart';
 import 'package:tapkat/models/request/add_product_request.dart';
 import 'package:tapkat/screens/product/bloc/product_bloc.dart';
+import 'package:tapkat/screens/product/product_select_categories_screen.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/dialog_message.dart';
 import 'package:tapkat/utilities/size_config.dart';
@@ -62,6 +63,7 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
   @override
   void initState() {
     _product = widget.product;
+    print(_product.toJson());
     _selectedOfferType = _product.type;
     _init();
     _productBloc.add(InitializeAddUpdateProduct());
@@ -111,10 +113,10 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
               setState(() {
                 _categories = state.categories;
                 _types = state.types;
-                _selectedOfferType =
-                    _product.type![_product.type!.length - 1] != 's'
-                        ? _product.type! + 's'
-                        : _product.type;
+                _selectedOfferType = _types
+                    .firstWhere((typ) => typ.code == _product.type,
+                        orElse: () => _types.first)
+                    .code;
                 print('==== types: $_selectedOfferType');
                 _initialTypeIndex = _types.indexOf(_types.firstWhere(
                     (pt) =>
@@ -123,13 +125,6 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
                             _selectedOfferType!.toLowerCase(),
                     orElse: () => _types[0]));
               });
-            }
-
-            if (state is EditProductSuccess) {
-              await DialogMessage.show(context,
-                  message: 'The product has been updated.');
-
-              Navigator.pop(context);
             }
 
             if (state is AddProductImageSuccess) {
@@ -226,6 +221,7 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
                                           onToggle: (index) {
                                             _selectedOfferType =
                                                 _types[index!].code!;
+                                            print(_selectedOfferType);
                                           },
                                         ),
                                       )
@@ -281,7 +277,7 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
                     vertical: 10.0,
                   ),
                   child: CustomButton(
-                    label: 'Update',
+                    label: 'Next',
                     onTap: _onUpdateTapped,
                   ),
                 ),
@@ -294,12 +290,10 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
   }
 
   void _onUpdateTapped() {
-    var productRequest = ProductRequestModel(
-      productname: _nameTextController.text.trim(),
-      productdesc: _descTextController.text.trim(),
-      price: double.parse(_priceTextController.text.trim()),
-      productid: _product.productid,
-    );
+    var productRequest = ProductRequestModel.fromProduct(_product);
+    productRequest.productname = _nameTextController.text.trim();
+    productRequest.productdesc = _descTextController.text.trim();
+    productRequest.price = double.parse(_priceTextController.text.trim());
 
     if (_selectedLocation != null) {
       productRequest.address =
@@ -311,7 +305,18 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
 
     if (_selectedOfferType != null) productRequest.type = _selectedOfferType;
 
-    _productBloc.add(EditProduct(productRequest));
+    // _productBloc.add(EditProduct(productRequest));
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SelectProductCategoryScreen(
+          productRequest: productRequest,
+          categories: _categories,
+          updating: true,
+        ),
+      ),
+    );
   }
 
   _onSelectOfferType(BuildContext context) async {

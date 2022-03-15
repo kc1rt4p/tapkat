@@ -10,7 +10,7 @@ class ProductModel {
   String? currency;
   String? specifications;
   String? type;
-  List<String>? category;
+  String? category;
   String? display_name;
   MediaPrimaryModel? mediaPrimary;
   List<MediaPrimaryModel>? media;
@@ -54,7 +54,7 @@ class ProductModel {
       currency: json['currency'],
       specifications: json['specifications'],
       type: json['type'],
-      category: json['category'] is List<String> ? json['category'] : [],
+      category: json['category'] as String?,
       mediaPrimary: json['media_primary'] != null
           ? MediaPrimaryModel.fromJson(json['media_primary'])
           : null,

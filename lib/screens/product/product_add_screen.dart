@@ -237,21 +237,6 @@ class _ProductAddScreenState extends State<ProductAddScreen> {
                                   ],
                                 ),
                               ),
-                              // CustomTextFormField(
-                              //   label: 'Offer Type',
-                              //   hintText: 'Tap to select type',
-                              //   controller: _offerTypeTextController,
-                              //   isReadOnly: true,
-                              //   color: kBackgroundColor,
-                              //   suffixIcon: Icon(
-                              //     FontAwesomeIcons.chevronDown,
-                              //     color: Colors.white,
-                              //   ),
-                              //   onTap: () => _onSelectOfferType(context),
-                              //   validator: (val) => val != null && val.isEmpty
-                              //       ? 'Required'
-                              //       : null,
-                              // ),
                               CustomTextFormField(
                                 label: 'Description',
                                 hintText: 'Enter a description',
@@ -400,11 +385,6 @@ class _ProductAddScreenState extends State<ProductAddScreen> {
           );
         }
       }
-
-      // _productBloc.add(SaveProduct(
-      //   media: _selectedMedia,
-      //   productRequest: newProduct,
-      // ));
 
       print('product request: ${newProduct.toJson()}');
 

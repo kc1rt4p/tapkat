@@ -12,6 +12,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
 import 'package:tapkat/screens/signup/photo_selection_screen.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
+import 'package:tapkat/utilities/constants.dart';
 import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/utilities/upload_media.dart';
 import 'package:tapkat/widgets/custom_app_bar.dart';
@@ -35,10 +36,6 @@ class _InitialSignUpScreenState extends State<InitialSignUpScreen> {
   final _mobileNumberTextController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   PlaceDetails? _selectedLocation;
-
-  final iOSGoogleMapsApiKey = 'AIzaSyBCyNgeJDA8_nwdGrPf5ecuIsVFRXSF0mQ';
-  final androidGoogleMapsApiKey = 'AIzaSyAH4fWM5IbEO0X-Txkm6HNsFAQ3KOfW20I';
-  final webGoogleMapsApiKey = 'AIzaSyAzPjfTTLzdfp-56tarHguvLXgdw7QAGkg';
 
   geoCoding.Placemark? _currentUserLoc;
   geoLocator.Position? _currentUserPosition;

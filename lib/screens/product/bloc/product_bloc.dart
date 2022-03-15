@@ -59,14 +59,17 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
           //   _productRepo.updateProduct(event.productRequest);
           // }
 
-          final upload = await _productRepo.addProductImages(
-            userId: _user.uid,
-            productId: productId,
-            images: event.media,
-          );
-          if (upload == null) {
-            emit(ProductError('Error while uploading product images'));
-            return;
+          if (event.media.isNotEmpty) {
+            final upload = await _productRepo.addProductImages(
+              userId: _user.uid,
+              productId: productId,
+              images: event.media,
+            );
+
+            if (upload == null) {
+              emit(ProductError('Error while uploading product images'));
+              return;
+            }
           }
 
           emit(SaveProductSuccess(productId));
@@ -106,6 +109,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
         }
 
         if (event is InitializeAddUpdateProduct) {
+          emit(ProductLoading());
           final data = await _productRepo.getProductRefData();
           if (data != null) {
             emit(InitializeAddUpdateProductSuccess(

@@ -1,54 +1,44 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_progress_hud/flutter_progress_hud.dart';
+import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
 import 'package:tapkat/models/product_category.dart';
-import 'package:tapkat/models/request/add_product_request.dart';
+import 'package:tapkat/models/request/update_user.dart';
+import 'package:tapkat/models/user.dart';
+import 'package:tapkat/screens/product/bloc/product_bloc.dart';
+import 'package:tapkat/screens/root/profile/bloc/profile_bloc.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
-import 'package:tapkat/utilities/dialog_message.dart';
 import 'package:tapkat/utilities/size_config.dart';
-import 'package:tapkat/utilities/upload_media.dart';
 import 'package:tapkat/widgets/custom_app_bar.dart';
 import 'package:tapkat/widgets/custom_button.dart';
 
-import 'bloc/product_bloc.dart';
-
-class SelectProductCategoryScreen extends StatefulWidget {
-  final bool updating;
-  final ProductRequestModel productRequest;
-  final List<SelectedMedia>? media;
-  final List<ProductCategoryModel> categories;
-  const SelectProductCategoryScreen({
+class InterestSelectionScreen extends StatefulWidget {
+  final UserModel user;
+  final bool signingUp;
+  const InterestSelectionScreen({
     Key? key,
-    required this.productRequest,
-    this.media,
-    required this.categories,
-    this.updating = false,
+    required this.user,
+    this.signingUp = false,
   }) : super(key: key);
 
   @override
-  State<SelectProductCategoryScreen> createState() =>
-      _SelectProductCategoryScreenState();
+  State<InterestSelectionScreen> createState() =>
+      _InterestSelectionScreenState();
 }
 
-class _SelectProductCategoryScreenState
-    extends State<SelectProductCategoryScreen> {
+class _InterestSelectionScreenState extends State<InterestSelectionScreen> {
+  late UserModel _user;
+  late AuthBloc _authBloc;
+  final _profileBloc = ProfileBloc();
   final _productBloc = ProductBloc();
   List<ProductCategoryModel> _categories = [];
   List<ProductCategoryModel> _selectedCategories = [];
-  ProductCategoryModel? _selectedCategory;
 
   @override
   void initState() {
-    // TODO: implement initState
-    _categories.addAll(widget.categories);
-    print(widget.productRequest.toJson());
-    if (widget.productRequest.category != null &&
-        widget.productRequest.category!.isNotEmpty) {
-      setState(() {
-        _selectedCategory = _categories
-            .firstWhere((cat) => cat.code == widget.productRequest.category);
-      });
-    }
+    _user = widget.user;
+    _productBloc.add(InitializeAddUpdateProduct());
+    if (widget.signingUp) _authBloc = BlocProvider.of<AuthBloc>(context);
     super.initState();
   }
 
@@ -57,42 +47,64 @@ class _SelectProductCategoryScreenState
     SizeConfig().init(context);
     return Scaffold(
       body: ProgressHUD(
-        child: BlocListener(
-          bloc: _productBloc,
-          listener: (context, state) async {
-            if (state is ProductLoading) {
-              ProgressHUD.of(context)!.show();
-            } else {
-              ProgressHUD.of(context)!.dismiss();
-            }
+        child: MultiBlocListener(
+          listeners: [
+            BlocListener(
+              bloc: _profileBloc,
+              listener: (context, state) {
+                if (state is ProfileLoading) {
+                  ProgressHUD.of(context)!.show();
+                } else {
+                  ProgressHUD.of(context)!.dismiss();
+                }
 
-            if (state is SaveProductSuccess) {
-              await DialogMessage.show(context,
-                  message: 'An offer has been added');
+                if (state is UpdateUserInfoSuccess) {
+                  if (!widget.signingUp) {
+                    var count = 0;
+                    Navigator.popUntil(context, (route) {
+                      return count++ == 2;
+                    });
+                  } else {
+                    _authBloc.add(SkipSignUpPhoto());
+                  }
+                }
+              },
+            ),
+            BlocListener(
+              bloc: _productBloc,
+              listener: (context, state) {
+                if (state is ProductLoading) {
+                  ProgressHUD.of(context)!.show();
+                } else {
+                  ProgressHUD.of(context)!.dismiss();
+                }
 
-              // Navigator.of(context).popUntil((route) => route.isFirst);
-              var count = 0;
-              Navigator.popUntil(context, (route) {
-                return count++ == 2;
-              });
-            }
+                if (state is InitializeAddUpdateProductSuccess) {
+                  setState(() {
+                    _categories = state.categories
+                        .where((cat) =>
+                            cat.type == 'PT1' &&
+                            cat.name!.toLowerCase() != 'others')
+                        .toList();
+                  });
 
-            if (state is EditProductSuccess) {
-              await DialogMessage.show(context,
-                  message: 'The product has been updated.');
-
-              var count = 0;
-              Navigator.popUntil(context, (route) {
-                return count++ == 2;
-              });
-            }
-          },
+                  if (_user.interests != null && _user.interests!.isNotEmpty) {
+                    _categories.forEach((cat) {
+                      if (_user.interests!.contains(cat.code)) {
+                        _selectedCategories.add(cat);
+                      }
+                    });
+                  }
+                }
+              },
+            ),
+          ],
           child: Container(
             color: Color(0xFFEBFBFF),
             child: Column(
               children: [
                 CustomAppBar(
-                  label: widget.updating ? 'Edit Product' : 'Add to Your Store',
+                  label: widget.signingUp ? 'Sign Up' : 'Edit Profile',
                 ),
                 Expanded(
                   child: Container(
@@ -103,7 +115,10 @@ class _SelectProductCategoryScreenState
                     ),
                     child: Column(
                       children: [
-                        Text('Select category of your product'),
+                        Text(
+                          'Select your interests, this will help us show you offers from other users that you might be interested',
+                          textAlign: TextAlign.center,
+                        ),
                         _categories.isNotEmpty
                             ? Expanded(
                                 child: GridView.count(
@@ -113,21 +128,19 @@ class _SelectProductCategoryScreenState
                                   mainAxisSpacing: 5.0,
                                   crossAxisCount: 3,
                                   children: _categories
-                                      .where((cat) =>
-                                          cat.type ==
-                                          widget.productRequest.type)
+                                      .where((cat) => cat.type == 'PT1')
                                       .map((cat) => Center(
                                             child: InkWell(
                                               onTap: () {
                                                 setState(() {
-                                                  _selectedCategory = cat;
-                                                  // if (_selectedCategories
-                                                  //     .contains(cat))
-                                                  //   _selectedCategories
-                                                  //       .remove(cat);
-                                                  // else
-                                                  //   _selectedCategories
-                                                  //       .add(cat);
+                                                  // _selectedCategory = cat;
+                                                  if (_selectedCategories
+                                                      .contains(cat))
+                                                    _selectedCategories
+                                                        .remove(cat);
+                                                  else
+                                                    _selectedCategories
+                                                        .add(cat);
                                                 });
                                               },
                                               child: Container(
@@ -141,12 +154,12 @@ class _SelectProductCategoryScreenState
                                                   borderRadius:
                                                       BorderRadius.circular(
                                                           10.0),
-                                                  color:
-                                                      _selectedCategory == cat
-                                                          ? kBackgroundColor
-                                                          : Color(0xFFEBFBFF),
-                                                  border: _selectedCategory ==
-                                                          cat
+                                                  color: _selectedCategories
+                                                          .contains(cat)
+                                                      ? kBackgroundColor
+                                                      : Color(0xFFEBFBFF),
+                                                  border: _selectedCategories
+                                                          .contains(cat)
                                                       ? null
                                                       : Border.all(
                                                           color:
@@ -156,8 +169,8 @@ class _SelectProductCategoryScreenState
                                                   child: Text(
                                                     cat.name ?? '',
                                                     style: TextStyle(
-                                                      color: _selectedCategory ==
-                                                              cat
+                                                      color: _selectedCategories
+                                                              .contains(cat)
                                                           ? Colors.white
                                                           : kBackgroundColor,
                                                       fontSize: SizeConfig
@@ -186,7 +199,6 @@ class _SelectProductCategoryScreenState
                     vertical: 10.0,
                   ),
                   child: CustomButton(
-                    enabled: _selectedCategory != null,
                     label: 'Save',
                     onTap: _onSaveTapped,
                   ),
@@ -200,15 +212,13 @@ class _SelectProductCategoryScreenState
   }
 
   _onSaveTapped() {
-    var productRequest = widget.productRequest;
-    productRequest.category = _selectedCategory!.code;
-    if (widget.updating) {
-      _productBloc.add(EditProduct(productRequest));
-    } else {
-      _productBloc.add(SaveProduct(
-        media: widget.media!,
-        productRequest: productRequest,
-      ));
-    }
+    var user = UpdateUserModel(
+      userid: _user.userid,
+      display_name: _user.display_name,
+      phone_number: _user.phone_number,
+      interests: _selectedCategories.map((scat) => scat.code!).toList(),
+    );
+
+    _profileBloc.add(UpdateUserInfo(user));
   }
 }

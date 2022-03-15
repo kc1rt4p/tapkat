@@ -14,6 +14,7 @@ class UpdateUserModel {
   String? postcode;
   String? phone_number;
   LocationModel? location;
+  List<String>? interests;
 
   UpdateUserModel({
     this.userid,
@@ -29,6 +30,7 @@ class UpdateUserModel {
     this.postcode,
     this.phone_number,
     this.location,
+    this.interests,
   });
 
   Map<String, dynamic> toJson() {
@@ -46,6 +48,7 @@ class UpdateUserModel {
       "postcode": this.postcode,
       "phone_number": this.phone_number,
       "location": this.location != null ? this.location!.toJson() : null,
+      'interests': this.interests,
     };
   }
 }

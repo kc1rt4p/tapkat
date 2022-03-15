@@ -84,7 +84,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                     setState(() {
                       _product = state.product;
                     });
-                    print('===== product status: ${_product!.status}');
+                    print('===== product status: ${_product!.toJson()}');
                   }
 
                   if (state is AddLikeSuccess ||
