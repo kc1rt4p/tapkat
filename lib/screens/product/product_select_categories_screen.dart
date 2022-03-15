@@ -186,7 +186,6 @@ class _SelectProductCategoryScreenState
                     vertical: 10.0,
                   ),
                   child: CustomButton(
-                    enabled: _selectedCategory != null,
                     label: 'Save',
                     onTap: _onSaveTapped,
                   ),
@@ -201,7 +200,8 @@ class _SelectProductCategoryScreenState
 
   _onSaveTapped() {
     var productRequest = widget.productRequest;
-    productRequest.category = _selectedCategory!.code;
+    productRequest.category =
+        _selectedCategory != null ? _selectedCategory!.code : null;
     if (widget.updating) {
       _productBloc.add(EditProduct(productRequest));
     } else {

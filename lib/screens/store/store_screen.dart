@@ -52,10 +52,7 @@ class _StoreScreenState extends State<StoreScreen> {
   @override
   void initState() {
     _storeBloc.add(InitializeStoreScreen(widget.userId));
-    storeOwnerName = widget.userId;
-    storeOwnerName = storeOwnerName.length > 10
-        ? storeOwnerName.substring(0, 7) + '...'
-        : storeOwnerName;
+
     super.initState();
   }
 
@@ -95,7 +92,7 @@ class _StoreScreenState extends State<StoreScreen> {
                                   _buildInfoItem(
                                     label: 'Store Owner',
                                     controller: TextEditingController(
-                                        text: _storeOwner!.userid ?? ''),
+                                        text: storeOwnerName),
                                   ),
                                   _buildInfoItem(
                                     label: 'Email',
@@ -220,7 +217,7 @@ class _StoreScreenState extends State<StoreScreen> {
                           print(state.user.toJson());
                           setState(() {
                             _storeOwner = state.user;
-                            storeOwnerName = _storeOwner!.userid!;
+                            storeOwnerName = _storeOwner!.display_name!;
                           });
                           _productBloc.add(
                               GetFirstProducts('user', userId: widget.userId));
@@ -274,6 +271,27 @@ class _StoreScreenState extends State<StoreScreen> {
                     }
                   }
 
+                  var thumbnail = '';
+
+                  if (product.mediaPrimary != null &&
+                      product.mediaPrimary!.url != null &&
+                      product.mediaPrimary!.url!.isNotEmpty)
+                    thumbnail = product.mediaPrimary!.url!;
+
+                  if (product.mediaPrimary != null &&
+                      product.mediaPrimary!.url_t != null &&
+                      product.mediaPrimary!.url_t!.isNotEmpty)
+                    thumbnail = product.mediaPrimary!.url_t!;
+
+                  if (product.mediaPrimary != null &&
+                      product.mediaPrimary!.url!.isEmpty &&
+                      product.mediaPrimary!.url_t!.isEmpty &&
+                      product.media != null &&
+                      product.media!.isNotEmpty)
+                    thumbnail = product.media!.first.url_t != null
+                        ? product.media!.first.url_t!
+                        : product.media!.first.url!;
+
                   return BarterListItem(
                     height: SizeConfig.screenHeight * 0.23,
                     width: SizeConfig.screenWidth * 0.40,
@@ -282,11 +300,7 @@ class _StoreScreenState extends State<StoreScreen> {
                     itemPrice: product.price != null
                         ? product.price!.toStringAsFixed(2)
                         : '0',
-                    imageUrl: product.mediaPrimary != null &&
-                            product.mediaPrimary!.url_t != null &&
-                            product.mediaPrimary!.url_t!.isNotEmpty
-                        ? product.mediaPrimary!.url_t ?? ''
-                        : product.mediaPrimary!.url ?? '',
+                    imageUrl: thumbnail,
                     onTapped: () => Navigator.push(
                       context,
                       MaterialPageRoute(
