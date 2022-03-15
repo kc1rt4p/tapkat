@@ -196,11 +196,29 @@ class _InterestSelectionScreenState extends State<InterestSelectionScreen> {
                 Container(
                   padding: EdgeInsets.symmetric(
                     horizontal: 20.0,
-                    vertical: 10.0,
                   ),
                   child: CustomButton(
+                    removeMargin: true,
                     label: 'Save',
                     onTap: _onSaveTapped,
+                  ),
+                ),
+                Visibility(
+                  visible: widget.signingUp,
+                  child: Column(
+                    children: [
+                      SizedBox(height: 10.0),
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 20.0,
+                        ),
+                        child: CustomButton(
+                          bgColor: Color(0xFFBB3F03),
+                          label: 'Skip',
+                          onTap: () => _authBloc.add(SkipSignUpPhoto()),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
