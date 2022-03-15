@@ -60,7 +60,9 @@ class _MyAppState extends State<MyApp> {
               if (state is AuthInitialized) {
                 _userStream = state.stream.listen((user) {
                   print(user.user.toString());
-                  _authBloc.add(GetCurrentuser());
+                  if (_user != null) {
+                    _authBloc.add(GetCurrentuser());
+                  }
                   return _user ?? setState(() => _user = user);
                 });
               }
