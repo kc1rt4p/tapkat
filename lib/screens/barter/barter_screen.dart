@@ -329,10 +329,10 @@ class _BarterScreenState extends State<BarterScreen> {
                   Navigator.pop(context);
                   return;
                 } else {
+                  print('-===== ${barterRecord.toJson()}');
                   setState(() {
                     _barterRecord = barterRecord;
                     if (_barterId == null) {
-                      print('-===== ${_barterRecord!.toJson()}');
                       _barterId = _barterRecord!.barterId;
                     }
 
@@ -484,10 +484,6 @@ class _BarterScreenState extends State<BarterScreen> {
                       dealDate: DateTime.now(),
                       userid1Role: 'sender',
                       userid2Role: 'recipient',
-                      userid1Name: _currentUserModel != null
-                          ? _currentUserModel!.display_name
-                          : '',
-                      userid2Name: _product!.display_name,
                     ),
                   ),
                 );

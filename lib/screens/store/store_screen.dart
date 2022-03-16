@@ -362,6 +362,7 @@ class _StoreScreenState extends State<StoreScreen> {
               alignment: Alignment.centerRight,
               child: Text(
                 controller.text,
+                textAlign: TextAlign.right,
                 style: Style.fieldText
                     .copyWith(fontSize: SizeConfig.textScaleFactor * 12),
               ),

@@ -38,9 +38,22 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
 
             if (_barterRecord == null) {
               event.barterData.dealStatus = 'new';
+
+              final user1Model =
+                  await _userRepo.getUser(event.barterData.userid1!);
+              final user2Model =
+                  await _userRepo.getUser(event.barterData.userid2!);
+
+              event.barterData.userid1Name = user1Model!.display_name;
+              event.barterData.userid2Name = user2Model!.display_name;
+
               final newBarter =
                   await _barterRepository.setBarterRecord(event.barterData);
-              print('=== new barter added: $newBarter');
+
+              print(
+                  '=================================================================');
+              print(user1Model.display_name);
+              print(user2Model.display_name);
 
               var barterProducts = await _barterRepository
                   .getBarterProducts(event.barterData.barterId!);

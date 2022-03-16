@@ -636,13 +636,16 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                   horizontal: 20.0, vertical: 8.0),
                               child: CustomButton(
                                 label: 'BARTER',
-                                onTap: () => Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        BarterScreen(product: _product!),
-                                  ),
-                                ),
+                                onTap: () {
+                                  print('=====-==== ${_product!.toJson()}');
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          BarterScreen(product: _product!),
+                                    ),
+                                  );
+                                },
                               ),
                             ),
                           ),
