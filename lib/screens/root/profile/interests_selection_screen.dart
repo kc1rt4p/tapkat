@@ -235,6 +235,9 @@ class _InterestSelectionScreenState extends State<InterestSelectionScreen> {
       display_name: _user.display_name,
       phone_number: _user.phone_number,
       interests: _selectedCategories.map((scat) => scat.code!).toList(),
+      city: _user.city,
+      address: _user.address,
+      country: _user.country,
     );
 
     _profileBloc.add(UpdateUserInfo(user));

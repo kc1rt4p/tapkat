@@ -107,8 +107,15 @@ class _StoreScreenState extends State<StoreScreen> {
                                   _buildInfoItem(
                                     label: 'Location',
                                     controller: TextEditingController(
-                                        text:
-                                            _storeOwner!.address ?? 'Unknown'),
+                                        text: (_storeOwner!.address != null &&
+                                                _storeOwner!.city != null &&
+                                                _storeOwner!.country != null)
+                                            ? (_storeOwner!.address ?? '') +
+                                                ', ' +
+                                                (_storeOwner!.city ?? '') +
+                                                ', ' +
+                                                (_storeOwner!.country ?? '')
+                                            : ''),
                                     suffix: Icon(
                                       FontAwesomeIcons.mapMarked,
                                       color: kBackgroundColor,

@@ -50,11 +50,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _displayNameTextController.text = _userModel.display_name ?? '';
     _emailTextController.text = _userModel.email ?? '';
     _phoneTextController.text = _userModel.phone_number ?? '';
-    _locationTextController.text = (_userModel.address ?? '') +
-        ', ' +
-        (_userModel.city ?? '') +
-        ', ' +
-        (_userModel.country ?? '');
+    _locationTextController.text = (_userModel.address != null &&
+            _userModel.city != null &&
+            _userModel.country != null)
+        ? (_userModel.address ?? '') +
+            ', ' +
+            (_userModel.city ?? '') +
+            ', ' +
+            (_userModel.country ?? '')
+        : '';
 
     super.initState();
   }
