@@ -50,7 +50,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _displayNameTextController.text = _userModel.display_name ?? '';
     _emailTextController.text = _userModel.email ?? '';
     _phoneTextController.text = _userModel.phone_number ?? '';
-    _locationTextController.text = _userModel.address ?? '';
+    _locationTextController.text = (_userModel.address ?? '') +
+        ', ' +
+        (_userModel.city ?? '') +
+        ', ' +
+        (_userModel.country ?? '');
 
     super.initState();
   }
@@ -90,37 +94,39 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   child: Container(
                     padding:
                         EdgeInsets.symmetric(horizontal: 20.0, vertical: 36.0),
-                    child: Column(
-                      children: [
-                        _buildPhoto(),
-                        SizedBox(height: 26.0),
-                        CustomTextFormField(
-                          label: 'Display Name',
-                          hintText: 'Enter your display name',
-                          controller: _displayNameTextController,
-                          color: kBackgroundColor,
-                        ),
-                        CustomTextFormField(
-                          label: 'Phone Number',
-                          hintText: 'Enter your phone number',
-                          controller: _phoneTextController,
-                          color: kBackgroundColor,
-                        ),
-                        CustomTextFormField(
-                          label: 'Email Address',
-                          hintText: 'Enter your email address',
-                          controller: _emailTextController,
-                          color: kBackgroundColor,
-                        ),
-                        CustomTextFormField(
-                          label: 'Location',
-                          isReadOnly: true,
-                          hintText: '',
-                          controller: _locationTextController,
-                          onTap: _onSelectLocation,
-                          color: kBackgroundColor,
-                        ),
-                      ],
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          _buildPhoto(),
+                          SizedBox(height: 26.0),
+                          CustomTextFormField(
+                            label: 'Display Name',
+                            hintText: 'Enter your display name',
+                            controller: _displayNameTextController,
+                            color: kBackgroundColor,
+                          ),
+                          CustomTextFormField(
+                            label: 'Phone Number',
+                            hintText: 'Enter your phone number',
+                            controller: _phoneTextController,
+                            color: kBackgroundColor,
+                          ),
+                          CustomTextFormField(
+                            label: 'Email Address',
+                            hintText: 'Enter your email address',
+                            controller: _emailTextController,
+                            color: kBackgroundColor,
+                          ),
+                          CustomTextFormField(
+                            label: 'Location',
+                            isReadOnly: true,
+                            hintText: '',
+                            controller: _locationTextController,
+                            onTap: _onSelectLocation,
+                            color: kBackgroundColor,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),

@@ -384,7 +384,7 @@ class _BarterScreenState extends State<BarterScreen> {
                     _origRemoteUserOfferedCash = null;
                   });
                   list.forEach((bProduct) {
-                    // final _prod = ProductModel.fromJson(bProduct.toJson());
+                    print(bProduct.toJson());
                     if (bProduct.productId!.contains('cash')) {
                       if (_currentUser!.uid == _senderUserId) {
                         setState(() {
@@ -392,38 +392,12 @@ class _BarterScreenState extends State<BarterScreen> {
                         });
                         _origCurrentUserOfferedCash = bProduct.price;
                         _currentUserOfferedCash = bProduct.price;
-                        // if (_senderUserId == bProduct.userId) {
-                        //   _origCurrentUserOfferedCash = bProduct.price;
-                        //   _currentUserOfferedCash = bProduct.price;
-                        //   setState(() {
-                        //     _currentUserOfferedCashModel = bProduct;
-                        //   });
-                        // } else {
-                        //   setState(() {
-                        //     _remoteUserOfferedCashModel = bProduct;
-                        //   });
-                        //   _remoteUserOfferedCash = bProduct.price;
-                        //   _origRemoteUserOfferedCash = bProduct.price;
-                        // }
                       } else {
                         setState(() {
                           _remoteUserOfferedCashModel = bProduct;
                         });
                         _remoteUserOfferedCash = bProduct.price;
                         _origRemoteUserOfferedCash = bProduct.price;
-                        // if (_recipientUserId == bProduct.userId) {
-                        //   setState(() {
-                        //     _remoteUserOfferedCashModel = bProduct;
-                        //   });
-                        //   _remoteUserOfferedCash = bProduct.price;
-                        //   _origRemoteUserOfferedCash = bProduct.price;
-                        // } else {
-                        //   _origCurrentUserOfferedCash = bProduct.price;
-                        //   _currentUserOfferedCash = bProduct.price;
-                        //   setState(() {
-                        //     _currentUserOfferedCashModel = bProduct;
-                        //   });
-                        // }
                       }
                     } else {
                       if (bProduct.userId == _currentUser!.uid) {
@@ -501,7 +475,11 @@ class _BarterScreenState extends State<BarterScreen> {
                       u2P1Id: _product!.productid!,
                       u2P1Name: _product!.productname,
                       u2P1Price: _product!.price!.toDouble(),
-                      u2P1Image: _product!.mediaPrimary!.url!,
+                      u2P1Image: (_product!.media != null &&
+                              _product!.media!.isNotEmpty)
+                          ? _product!.media!.first.url_t
+                          : _product!.mediaPrimary!.url_t ??
+                              _product!.mediaPrimary!.url,
                       barterNo: 0,
                       dealDate: DateTime.now(),
                       userid1Role: 'sender',

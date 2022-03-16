@@ -112,8 +112,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   _emailTextController.text = _userModel!.email ?? 'Unknown';
                   _phoneTextController.text =
                       _userModel!.phone_number ?? 'Unknown';
-                  _locationTextController.text =
-                      _userModel!.address ?? 'Unknown';
+                  _locationTextController.text = (_userModel!.address ?? '') +
+                      ', ' +
+                      (_userModel!.city ?? '') +
+                      ', ' +
+                      (_userModel!.country ?? '');
 
                   if (state.list.isNotEmpty) {
                     lastProduct = state.list.last;
@@ -468,8 +471,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
                 );
-
-                _profileBloc.add(InitializeProfileScreen());
               },
             ),
           );

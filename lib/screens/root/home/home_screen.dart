@@ -119,6 +119,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   _myProductList
                       .sort((a, b) => a.productname!.compareTo(b.productname!));
                 });
+
+                _productBloc.add(GetProductCategories());
               }
 
               if (state is LoadingUserList) {
@@ -157,8 +159,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 }
 
                 _homeBloc.add(InitializeHomeScreen());
-
-                _productBloc.add(GetProductCategories());
               }
             },
             child: Container(),
