@@ -122,6 +122,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
         }
 
         if (event is GetProductCategories) {
+          print('*************** GETTING PRODUCTS CATEGORIES');
           final list = await _productRepo.getAllCategoryProducts();
           emit(GetProductCategoriesSuccess(list));
         }

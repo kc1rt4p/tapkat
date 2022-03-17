@@ -200,7 +200,7 @@ class ProductRepository {
     final data = await getProductRefData();
     if (data == null) return [];
     final categories = data['categories'] as List<ProductCategoryModel>;
-
+    print("=== === === ${categories.length}");
     List<Map<String, dynamic>> list = [];
 
     for (var cat in categories.where((cat) => cat.type == 'PT1')) {

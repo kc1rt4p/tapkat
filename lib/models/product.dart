@@ -74,9 +74,11 @@ class ProductModel {
       imgUrl: json['image_url'] as String?,
       status: json['status'] as String?,
       updated_time: json['updated_time'] != null
-          ? Timestamp(json['updated_time']['_seconds'],
-                  json['updated_time']['_nanoseconds'])
-              .toDate()
+          ? json['updated_time'] is String
+              ? DateTime.parse(json['updated_time'])
+              : Timestamp(json['updated_time']['_seconds'],
+                      json['updated_time']['_nanoseconds'])
+                  .toDate()
           : null,
       display_name: json['image_url'] as String?,
       acquired_by: json['acquired_by'] as String?,

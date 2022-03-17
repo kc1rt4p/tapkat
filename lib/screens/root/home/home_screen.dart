@@ -82,9 +82,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     _userInterests.forEach((ui) {
                       final catIndex = _categoryProducts
                           .indexWhere((cp) => cp['code'] == ui);
-                      final cat = _categoryProducts[catIndex];
-                      _categoryProducts.removeAt(catIndex);
-                      _categoryProducts.insert(0, cat);
+                      if (catIndex > 0) {
+                        final cat = _categoryProducts[catIndex];
+                        _categoryProducts.removeAt(catIndex);
+                        _categoryProducts.insert(0, cat);
+                      }
                     });
                   }
                 });
