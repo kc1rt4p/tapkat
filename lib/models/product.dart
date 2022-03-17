@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:tapkat/models/address.dart';
 import 'package:tapkat/models/media_primary_model.dart';
 
@@ -20,6 +21,7 @@ class ProductModel {
   String? imgUrl;
   String? status;
   DateTime? updated_time;
+  String? acquired_by;
 
   ProductModel({
     this.productid,
@@ -40,6 +42,7 @@ class ProductModel {
     this.status,
     this.updated_time,
     this.display_name,
+    this.acquired_by,
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
@@ -51,7 +54,9 @@ class ProductModel {
       currency: json['currency'],
       specifications: json['specifications'],
       type: json['type'],
-      category: json['category'],
+      category: json['category'] is List<dynamic>
+          ? (json['category'] as List<dynamic>).first as String?
+          : json['category'] as String?,
       mediaPrimary: json['media_primary'] != null
           ? MediaPrimaryModel.fromJson(json['media_primary'])
           : null,
@@ -68,9 +73,13 @@ class ProductModel {
           : [],
       imgUrl: json['image_url'] as String?,
       status: json['status'] as String?,
-      updated_time:
-          json['updated_time'] != null ? json['updated_time'].toDate() : null,
+      updated_time: json['updated_time'] != null
+          ? Timestamp(json['updated_time']['_seconds'],
+                  json['updated_time']['_nanoseconds'])
+              .toDate()
+          : null,
       display_name: json['image_url'] as String?,
+      acquired_by: json['acquired_by'] as String?,
     );
   }
 
@@ -88,6 +97,8 @@ class ProductModel {
       'likes': this.likes,
       'display_name': this.display_name,
       'updated_time': this.updated_time,
+      'acquired_by': this.acquired_by,
+      'status': this.status,
     };
     return json..addAll({'productid': this.productid});
   }

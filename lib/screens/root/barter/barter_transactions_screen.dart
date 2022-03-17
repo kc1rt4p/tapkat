@@ -85,7 +85,7 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                       _byYouStream = state.byYouStream.listen((list) {
                         setState(() {
                           if (list.isNotEmpty) {
-                            byYouList.addAll(list);
+                            byYouList = list;
                           } else {
                             byYouList.clear();
                           }

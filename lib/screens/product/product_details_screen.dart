@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_progress_hud/flutter_progress_hud.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
@@ -82,14 +83,8 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   if (state is GetProductDetailsSuccess) {
                     setState(() {
                       _product = state.product;
-                      _product!.media!.insert(
-                        0,
-                        MediaPrimaryModel(
-                          url: _product!.mediaPrimary!.url,
-                          type: _product!.mediaPrimary!.type,
-                        ),
-                      );
                     });
+                    print('===== product status: ${_product!.toJson()}');
                   }
 
                   if (state is AddLikeSuccess ||
@@ -227,7 +222,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                         .toLowerCase() !=
                                                     'available',
                                             child: Text(
-                                              '(${_product != null && _product!.status != null && _product!.status!.toLowerCase() == 'available' ? _product!.status!.toUpperCase() : 'AVAILABLE'})',
+                                              '(${_product != null && _product!.status != null && _product!.status!.toLowerCase() != 'available' ? _product!.status!.toUpperCase() : 'AVAILABLE'})',
                                               style: Style.fieldText.copyWith(
                                                 fontWeight: FontWeight.bold,
                                                 fontSize:
@@ -377,38 +372,82 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                   )
                                                 ],
                                               ),
-                                              Row(
-                                                children: List.generate(5, (i) {
-                                                  return Padding(
-                                                    padding: EdgeInsets.only(
-                                                        right:
-                                                            i != 5 ? 5.0 : 0.0),
-                                                    child: GestureDetector(
-                                                      onTap: () {
-                                                        _productBloc.add(
-                                                            AddRating(_product!,
-                                                                i + 1));
-                                                      },
-                                                      child: Icon(
-                                                        i <
-                                                                (_product !=
-                                                                            null &&
-                                                                        _product!.rating !=
-                                                                            null
-                                                                    ? _product!
-                                                                        .rating!
-                                                                        .round()
-                                                                    : 0)
-                                                            ? Icons.star
-                                                            : Icons.star_border,
-                                                        color:
-                                                            Color(0xFFFFC107),
-                                                        size: 20.0,
+                                              _product != null
+                                                  ? RatingBar.builder(
+                                                      ignoreGestures: _product!
+                                                                  .acquired_by ==
+                                                              null &&
+                                                          _product!
+                                                                  .acquired_by !=
+                                                              _user!.uid,
+                                                      initialRating: _product!
+                                                                  .rating !=
+                                                              null
+                                                          ? _product!.rating!
+                                                              .roundToDouble()
+                                                          : 0,
+                                                      minRating: 0,
+                                                      direction:
+                                                          Axis.horizontal,
+                                                      allowHalfRating: true,
+                                                      itemCount: 5,
+                                                      itemSize: 20,
+                                                      tapOnlyMode: true,
+                                                      itemPadding:
+                                                          EdgeInsets.symmetric(
+                                                              horizontal: 4.0),
+                                                      itemBuilder:
+                                                          (context, _) => Icon(
+                                                        Icons.star,
+                                                        color: Colors.amber,
                                                       ),
-                                                    ),
-                                                  );
-                                                }),
-                                              ),
+                                                      onRatingUpdate: (rating) {
+                                                        if (_product!.userid !=
+                                                                _user!.uid &&
+                                                            _product!
+                                                                    .acquired_by ==
+                                                                _user!.uid) {
+                                                          print('hey');
+                                                          _productBloc.add(
+                                                              AddRating(
+                                                                  _product!,
+                                                                  rating));
+                                                        }
+                                                      },
+                                                    )
+                                                  : Container(),
+                                              // Row(
+                                              //   children: List.generate(5, (i) {
+                                              //     return Padding(
+                                              //       padding: EdgeInsets.only(
+                                              //           right:
+                                              //               i != 5 ? 5.0 : 0.0),
+                                              //       child: GestureDetector(
+                                              //         onTap: () {
+                                              //           _productBloc.add(
+                                              //               AddRating(_product!,
+                                              //                   i + 1));
+                                              //         },
+                                              //         child: Icon(
+                                              //           i <
+                                              //                   (_product !=
+                                              //                               null &&
+                                              //                           _product!.rating !=
+                                              //                               null
+                                              //                       ? _product!
+                                              //                           .rating!
+                                              //                           .round()
+                                              //                       : 0)
+                                              //               ? Icons.star
+                                              //               : Icons.star_border,
+                                              //           color:
+                                              //               Color(0xFFFFC107),
+                                              //           size: 20.0,
+                                              //         ),
+                                              //       ),
+                                              //     );
+                                              //   }),
+                                              // ),
                                             ],
                                           ),
                                           Text(
@@ -588,64 +627,71 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                           Visibility(
                             visible: !widget.ownItem &&
                                 _product != null &&
-                                _product!.userid != _user!.uid,
+                                _product!.userid != _user!.uid &&
+                                (_product!.status!.toLowerCase() != 'sold' &&
+                                    _product!.status!.toLowerCase() !=
+                                        'reserved'),
                             child: Container(
                               padding: EdgeInsets.symmetric(
                                   horizontal: 20.0, vertical: 8.0),
                               child: CustomButton(
                                 label: 'BARTER',
-                                onTap: () => Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        BarterScreen(product: _product!),
-                                  ),
-                                ),
+                                onTap: () {
+                                  print('=====-==== ${_product!.toJson()}');
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          BarterScreen(product: _product!),
+                                    ),
+                                  );
+                                },
                               ),
                             ),
                           ),
-                          Visibility(
-                            visible: widget.ownItem ||
-                                _product != null &&
-                                    _user != null &&
-                                    _user!.uid == _product!.userid,
-                            child: Container(
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: 20.0, vertical: 8.0),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Expanded(
-                                    child: CustomButton(
-                                      label: 'DELETE',
-                                      icon: Icon(
-                                        FontAwesomeIcons.trash,
-                                        color: Colors.white,
-                                        size: 16.0,
-                                      ),
-                                      bgColor: Colors.red,
-                                      removeMargin: true,
-                                      onTap: _onDeleteTapped,
+                          _product != null && _user != null
+                              ? Visibility(
+                                  visible: widget.ownItem &&
+                                      _user!.uid == _product!.userid,
+                                  child: Container(
+                                    padding: EdgeInsets.symmetric(
+                                        horizontal: 20.0, vertical: 8.0),
+                                    child: Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        Expanded(
+                                          child: CustomButton(
+                                            label: 'DELETE',
+                                            icon: Icon(
+                                              FontAwesomeIcons.trash,
+                                              color: Colors.white,
+                                              size: 16.0,
+                                            ),
+                                            bgColor: Colors.red,
+                                            removeMargin: true,
+                                            onTap: _onDeleteTapped,
+                                          ),
+                                        ),
+                                        SizedBox(width: 20.0),
+                                        Expanded(
+                                          child: CustomButton(
+                                            label: 'EDIT',
+                                            removeMargin: true,
+                                            bgColor: kBackgroundColor,
+                                            icon: Icon(
+                                              FontAwesomeIcons.solidEdit,
+                                              color: Colors.white,
+                                              size: 16.0,
+                                            ),
+                                            onTap: _onEditTapped,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                  SizedBox(width: 20.0),
-                                  Expanded(
-                                    child: CustomButton(
-                                      label: 'EDIT',
-                                      removeMargin: true,
-                                      bgColor: kBackgroundColor,
-                                      icon: Icon(
-                                        FontAwesomeIcons.solidEdit,
-                                        color: Colors.white,
-                                        size: 16.0,
-                                      ),
-                                      onTap: _onEditTapped,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
+                                )
+                              : Container(),
                         ],
                       ),
                     ),
@@ -658,6 +704,28 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   }
 
   Widget _buildPhotos() {
+    if (_product == null) return Container();
+
+    if (_product!.mediaPrimary != null &&
+        _product!.mediaPrimary!.url != null &&
+        _product!.mediaPrimary!.url!.isNotEmpty) {
+      if (_product!.media != null &&
+              _product!.media!.isNotEmpty &&
+              _product!.media!.length > 1 ||
+          _product!.media!.length == 0) {
+        if (!_product!.media!
+            .any((media) => media.url == _product!.mediaPrimary!.url)) {
+          _product!.media!.insert(
+              0,
+              MediaPrimaryModel(
+                url: _product!.mediaPrimary!.url,
+                url_t: _product!.mediaPrimary!.url_t,
+                type: _product!.mediaPrimary!.type,
+              ));
+        }
+      }
+    }
+
     return Container(
       height: SizeConfig.screenHeight * .35,
       child: PhotoViewGallery.builder(

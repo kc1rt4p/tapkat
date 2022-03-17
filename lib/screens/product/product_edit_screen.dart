@@ -10,8 +10,11 @@ import 'package:google_api_headers/google_api_headers.dart';
 import 'package:google_maps_webservice/places.dart';
 import 'package:tapkat/models/media_primary_model.dart';
 import 'package:tapkat/models/product.dart';
+import 'package:tapkat/models/product_category.dart';
+import 'package:tapkat/models/product_type.dart';
 import 'package:tapkat/models/request/add_product_request.dart';
 import 'package:tapkat/screens/product/bloc/product_bloc.dart';
+import 'package:tapkat/screens/product/product_select_categories_screen.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/dialog_message.dart';
 import 'package:tapkat/utilities/size_config.dart';
@@ -20,6 +23,7 @@ import 'package:tapkat/utilities/upload_media.dart';
 import 'package:tapkat/widgets/custom_app_bar.dart';
 import 'package:tapkat/widgets/custom_button.dart';
 import 'package:tapkat/widgets/custom_textformfield.dart';
+import 'package:toggle_switch/toggle_switch.dart';
 
 class ProductEditScreen extends StatefulWidget {
   final ProductModel product;
@@ -52,11 +56,18 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
   final _offerTypeTextController = TextEditingController();
   final _descTextController = TextEditingController();
   final _locationTextController = TextEditingController();
+  List<ProductCategoryModel> _categories = [];
+  List<ProductTypeModel> _types = [];
+  int _initialTypeIndex = 0;
 
   @override
   void initState() {
     _product = widget.product;
+    print(_product.toJson());
+    _selectedOfferType = _product.type;
     _init();
+    _productBloc.add(InitializeAddUpdateProduct());
+
     super.initState();
   }
 
@@ -98,11 +109,22 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
               });
             }
 
-            if (state is EditProductSuccess) {
-              await DialogMessage.show(context,
-                  message: 'The product has been updated.');
-
-              Navigator.pop(context);
+            if (state is InitializeAddUpdateProductSuccess) {
+              setState(() {
+                _categories = state.categories;
+                _types = state.types;
+                _selectedOfferType = _types
+                    .firstWhere((typ) => typ.code == _product.type,
+                        orElse: () => _types.first)
+                    .code;
+                print('==== types: $_selectedOfferType');
+                _initialTypeIndex = _types.indexOf(_types.firstWhere(
+                    (pt) =>
+                        pt.code == _selectedOfferType ||
+                        pt.name!.toLowerCase() ==
+                            _selectedOfferType!.toLowerCase(),
+                    orElse: () => _types[0]));
+              });
             }
 
             if (state is AddProductImageSuccess) {
@@ -160,20 +182,67 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
                                 val != null && val.isEmpty ? 'Required' : null,
                             keyboardType: TextInputType.number,
                           ),
-                          CustomTextFormField(
-                            label: 'Offer Type',
-                            hintText: 'Tap to select type',
-                            controller: _offerTypeTextController,
-                            isReadOnly: true,
-                            color: kBackgroundColor,
-                            suffixIcon: Icon(
-                              FontAwesomeIcons.chevronDown,
-                              color: Colors.white,
+                          Container(
+                            width: double.infinity,
+                            margin: EdgeInsets.only(bottom: 16.0),
+                            padding: EdgeInsets.symmetric(
+                                vertical: 10.0, horizontal: 10.0),
+                            decoration: BoxDecoration(
+                              color: kBackgroundColor,
+                              borderRadius: BorderRadius.circular(12.0),
+                              border: Border.all(
+                                color: kBackgroundColor,
+                              ),
                             ),
-                            onTap: () => _onSelectOfferType(context),
-                            validator: (val) =>
-                                val != null && val.isEmpty ? 'Required' : null,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Offer Type',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                SizedBox(height: 12.0),
+                                _types.isNotEmpty
+                                    ? Center(
+                                        child: ToggleSwitch(
+                                          initialLabelIndex: _initialTypeIndex,
+                                          inactiveBgColor: kBackgroundColor,
+                                          minWidth:
+                                              SizeConfig.screenWidth * 0.25,
+                                          activeFgColor: Colors.black,
+                                          inactiveFgColor: Colors.white,
+                                          borderColor: [Color(0xFFEBFBFF)],
+                                          totalSwitches: _types.length,
+                                          labels: _types
+                                              .map((pt) => pt.name!)
+                                              .toList(),
+                                          onToggle: (index) {
+                                            _selectedOfferType =
+                                                _types[index!].code!;
+                                            print(_selectedOfferType);
+                                          },
+                                        ),
+                                      )
+                                    : Container(),
+                              ],
+                            ),
                           ),
+                          // CustomTextFormField(
+                          //   label: 'Offer Type',
+                          //   hintText: 'Tap to select type',
+                          //   controller: _offerTypeTextController,
+                          //   isReadOnly: true,
+                          //   color: kBackgroundColor,
+                          //   suffixIcon: Icon(
+                          //     FontAwesomeIcons.chevronDown,
+                          //     color: Colors.white,
+                          //   ),
+                          //   onTap: () => _onSelectOfferType(context),
+                          //   validator: (val) =>
+                          //       val != null && val.isEmpty ? 'Required' : null,
+                          // ),
                           CustomTextFormField(
                             label: 'Description',
                             hintText: 'Enter a description',
@@ -208,7 +277,7 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
                     vertical: 10.0,
                   ),
                   child: CustomButton(
-                    label: 'Update',
+                    label: 'Next',
                     onTap: _onUpdateTapped,
                   ),
                 ),
@@ -221,12 +290,10 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
   }
 
   void _onUpdateTapped() {
-    var productRequest = ProductRequestModel(
-      productname: _nameTextController.text.trim(),
-      productdesc: _descTextController.text.trim(),
-      price: double.parse(_priceTextController.text.trim()),
-      productid: _product.productid,
-    );
+    var productRequest = ProductRequestModel.fromProduct(_product);
+    productRequest.productname = _nameTextController.text.trim();
+    productRequest.productdesc = _descTextController.text.trim();
+    productRequest.price = double.parse(_priceTextController.text.trim());
 
     if (_selectedLocation != null) {
       productRequest.address =
@@ -238,7 +305,18 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
 
     if (_selectedOfferType != null) productRequest.type = _selectedOfferType;
 
-    _productBloc.add(EditProduct(productRequest));
+    // _productBloc.add(EditProduct(productRequest));
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SelectProductCategoryScreen(
+          productRequest: productRequest,
+          categories: _categories,
+          updating: true,
+        ),
+      ),
+    );
   }
 
   _onSelectOfferType(BuildContext context) async {
@@ -341,7 +419,11 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
                                 borderRadius: BorderRadius.circular(20.0),
                                 color: Colors.white,
                                 image: DecorationImage(
-                                  image: CachedNetworkImageProvider(media.url!),
+                                  image: CachedNetworkImageProvider(media.url !=
+                                              null &&
+                                          media.url!.isNotEmpty
+                                      ? media.url!
+                                      : 'https://storage.googleapis.com/map-surf-assets/noimage.jpg'),
                                   scale: 1.0,
                                   fit: BoxFit.cover,
                                 ),

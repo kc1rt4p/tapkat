@@ -63,9 +63,11 @@ class Unlike extends ProductEvent {
   Unlike(this.product);
 }
 
+class InitializeAddUpdateProduct extends ProductEvent {}
+
 class AddRating extends ProductEvent {
   final ProductModel product;
-  final int rating;
+  final double rating;
 
   AddRating(this.product, this.rating);
 }
@@ -75,6 +77,8 @@ class DislikeProduct extends ProductEvent {
 
   DislikeProduct(this.product);
 }
+
+class GetProductCategories extends ProductEvent {}
 
 class DeleteProduct extends ProductEvent {
   final String productId;

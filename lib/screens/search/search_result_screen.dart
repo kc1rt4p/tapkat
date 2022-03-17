@@ -105,28 +105,32 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
             }
 
             if (state is SearchSuccess) {
-              setState(() {
-                searchResults = state.searchResults;
-              });
-              lastProduct = searchResults.last;
-              if (state.searchResults.length == productCount) {
-                _pagingController.appendPage(
-                    state.searchResults, currentPage + 1);
-              } else {
-                _pagingController.appendLastPage(state.searchResults);
-              }
-
-              _pagingController.addPageRequestListener((pageKey) {
-                if (lastProduct != null) {
-                  _searchBloc.add(
-                    GetNextProducts(
-                      keyword: _keyWordTextController.text.trim(),
-                      lastProductId: lastProduct!.productid!,
-                      startAfterVal: lastProduct!.price!.toString(),
-                    ),
-                  );
+              if (state.searchResults.isNotEmpty) {
+                lastProduct = state.searchResults.last;
+                if (state.searchResults.length == productCount) {
+                  setState(() {
+                    searchResults.addAll(state.searchResults);
+                  });
+                  _pagingController.appendPage(
+                      state.searchResults, currentPage + 1);
+                } else {
+                  setState(() {
+                    searchResults.addAll(state.searchResults);
+                  });
+                  _pagingController.appendLastPage(state.searchResults);
                 }
-              });
+                _pagingController.addPageRequestListener((pageKey) {
+                  if (lastProduct != null) {
+                    _searchBloc.add(
+                      GetNextProducts(
+                        keyword: _keyWordTextController.text.trim(),
+                        lastProductId: lastProduct!.productid!,
+                        startAfterVal: lastProduct!.price!.toString(),
+                      ),
+                    );
+                  }
+                });
+              }
             }
           },
           child: Container(
@@ -275,22 +279,45 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                         color: Colors.white,
                         padding: EdgeInsets.symmetric(
                             horizontal: 20.0, vertical: 16.0),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
+                        child: Row(
                           children: [
-                            Text(
-                              productMarker.productname ?? '',
-                              style: Style.subtitle2
-                                  .copyWith(color: kBackgroundColor),
+                            Expanded(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    productMarker.productname ?? '',
+                                    style: Style.subtitle2
+                                        .copyWith(color: kBackgroundColor),
+                                  ),
+                                  SizedBox(height: 12.0),
+                                  Text(
+                                    productMarker.price == null
+                                        ? ''
+                                        : '\$${productMarker.price!.toStringAsFixed(2)}',
+                                    style: Style.subtitle2.copyWith(
+                                        color: kBackgroundColor,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                ],
+                              ),
                             ),
-                            SizedBox(height: 12.0),
-                            Text(
-                              productMarker.price == null
-                                  ? ''
-                                  : '\$${productMarker.price!.toStringAsFixed(2)}',
-                              style: Style.subtitle2.copyWith(
+                            InkWell(
+                              onTap: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => ProductDetailsScreen(
+                                    ownItem: false,
+                                    productId: productMarker.productid ?? '',
+                                  ),
+                                ),
+                              ),
+                              child: Container(
+                                child: Icon(
+                                  Icons.chevron_right,
                                   color: kBackgroundColor,
-                                  fontWeight: FontWeight.bold),
+                                ),
+                              ),
                             ),
                           ],
                         ),
@@ -321,6 +348,26 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
       ),
       builderDelegate: PagedChildBuilderDelegate<ProductModel>(
         itemBuilder: (context, product, index) {
+          var thumbnail = '';
+
+          if (product.mediaPrimary != null &&
+              product.mediaPrimary!.url != null &&
+              product.mediaPrimary!.url!.isNotEmpty)
+            thumbnail = product.mediaPrimary!.url!;
+
+          if (product.mediaPrimary != null &&
+              product.mediaPrimary!.url_t != null &&
+              product.mediaPrimary!.url_t!.isNotEmpty)
+            thumbnail = product.mediaPrimary!.url_t!;
+
+          if (product.mediaPrimary!.url!.isEmpty &&
+              product.mediaPrimary!.url_t!.isEmpty &&
+              product.media != null &&
+              product.media!.isNotEmpty)
+            thumbnail = product.media!.first.url_t != null
+                ? product.media!.first.url_t!
+                : product.media!.first.url!;
+          print(thumbnail);
           return BarterListItem(
             height: SizeConfig.screenHeight * 0.23,
             width: SizeConfig.screenWidth * 0.40,
@@ -329,10 +376,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                 (product.price != null
                     ? product.price!.toStringAsFixed(2)
                     : '0.00'),
-            imageUrl: product.mediaPrimary != null &&
-                    product.mediaPrimary!.url != null
-                ? product.mediaPrimary!.url!
-                : '',
+            imageUrl: thumbnail,
             onTapped: () => Navigator.push(
               context,
               MaterialPageRoute(
@@ -345,37 +389,6 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
           );
         },
       ),
-    );
-  }
-
-  GridView _buildGridView() {
-    return GridView.count(
-      shrinkWrap: true,
-      padding: EdgeInsets.zero,
-      crossAxisCount: 2,
-      mainAxisSpacing: 10.0,
-      children: searchResults.map((product) {
-        return BarterListItem(
-          itemName: product.productname ?? '',
-          itemPrice: (product.currency ?? '') +
-              (product.price != null
-                  ? product.price!.toStringAsFixed(2)
-                  : '0.00'),
-          imageUrl:
-              product.mediaPrimary != null && product.mediaPrimary!.url != null
-                  ? product.mediaPrimary!.url!
-                  : '',
-          onTapped: () => Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ProductDetailsScreen(
-                ownItem: false,
-                productId: product.productid ?? '',
-              ),
-            ),
-          ),
-        );
-      }).toList(),
     );
   }
 

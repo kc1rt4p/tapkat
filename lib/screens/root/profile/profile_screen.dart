@@ -12,12 +12,15 @@ import 'package:google_api_headers/google_api_headers.dart';
 import 'package:google_maps_webservice/places.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
+import 'package:tapkat/models/location.dart';
 import 'package:tapkat/models/product.dart';
+import 'package:tapkat/models/request/update_user.dart';
 import 'package:tapkat/models/user.dart';
 import 'package:tapkat/screens/product/bloc/product_bloc.dart';
 import 'package:tapkat/screens/product/product_add_screen.dart';
 import 'package:tapkat/screens/product/product_details_screen.dart';
 import 'package:tapkat/screens/root/profile/bloc/profile_bloc.dart';
+import 'package:tapkat/screens/root/profile/edit_profile_screen.dart';
 import 'package:tapkat/screens/settings/settings_screen.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/constants.dart';
@@ -49,9 +52,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final _phoneTextController = TextEditingController();
   PlaceDetails? _selectedLocation;
   final _locationTextController = TextEditingController();
-  final iOSGoogleMapsApiKey = 'AIzaSyBCyNgeJDA8_nwdGrPf5ecuIsVFRXSF0mQ';
-  final androidGoogleMapsApiKey = 'AIzaSyAH4fWM5IbEO0X-Txkm6HNsFAQ3KOfW20I';
-  final webGoogleMapsApiKey = 'AIzaSyAzPjfTTLzdfp-56tarHguvLXgdw7QAGkg';
   int currentPage = 0;
 
   ProductModel? lastProduct;
@@ -67,6 +67,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   @override
+  void dispose() {
+    _pagingController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
     return Scaffold(
@@ -79,10 +85,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
             BlocListener(
               bloc: _profileBloc,
               listener: (context, state) {
+                print('current state profile: $state');
                 if (state is ProfileLoading) {
                   ProgressHUD.of(context)!.show();
                 } else {
                   ProgressHUD.of(context)!.dismiss();
+                }
+
+                if (state is UpdateUserInfoSuccess) {
+                  setState(() {
+                    editProfile = !editProfile;
+                  });
+
+                  _profileBloc.add(InitializeProfileScreen());
                 }
 
                 if (state is ProfileScreenInitialized) {
@@ -96,9 +111,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       _userModel!.display_name ?? 'Unknown';
                   _emailTextController.text = _userModel!.email ?? 'Unknown';
                   _phoneTextController.text =
-                      _userModel!.mobilenum ?? 'Unknown';
-                  _locationTextController.text =
-                      _userModel!.address ?? 'Unknown';
+                      _userModel!.phone_number ?? 'Unknown';
+                  _locationTextController.text = (_userModel!.address ?? '') +
+                      ', ' +
+                      (_userModel!.city ?? '') +
+                      ', ' +
+                      (_userModel!.country ?? '');
 
                   if (state.list.isNotEmpty) {
                     lastProduct = state.list.last;
@@ -107,20 +125,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     } else {
                       _pagingController.appendLastPage(state.list);
                     }
-                    print('lastrProduct name: ${lastProduct!.productname}');
-                    _pagingController.addPageRequestListener((pageKey) {
-                      if (lastProduct != null) {
-                        _productBloc.add(
-                          GetNextProducts(
-                            listType: 'user',
-                            lastProductId: lastProduct!.productid!,
-                            startAfterVal: lastProduct!.price.toString(),
-                            userId: _user!.uid,
-                          ),
-                        );
-                      }
-                    });
+                  } else {
+                    _pagingController.appendLastPage([]);
                   }
+                  _pagingController.addPageRequestListener((pageKey) {
+                    if (lastProduct != null) {
+                      _productBloc.add(
+                        GetNextProducts(
+                          listType: 'user',
+                          lastProductId: lastProduct!.productid!,
+                          startAfterVal: lastProduct!.price.toString(),
+                          userId: _user!.uid,
+                        ),
+                      );
+                    }
+                  });
                 }
               },
             ),
@@ -212,9 +231,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                           ),
                                           SizedBox(width: 10.0),
                                           GestureDetector(
-                                            onTap: () {
-                                              //
-                                            },
+                                            onTap: _onUpdateUserInfo,
                                             child: Icon(
                                               FontAwesomeIcons.solidSave,
                                               color: Colors.white,
@@ -224,68 +241,81 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         ],
                                       ),
                                     ),
-                                    Visibility(
-                                      visible: !editProfile,
-                                      child: GestureDetector(
-                                        onTap: () {
-                                          setState(() {
-                                            editProfile = !editProfile;
-                                          });
-                                        },
-                                        child: Icon(
-                                          FontAwesomeIcons.solidEdit,
-                                          color: Colors.white,
-                                          size: 18.0,
-                                        ),
+                                    GestureDetector(
+                                      onTap: _userModel != null
+                                          ? () async {
+                                              await Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      EditProfileScreen(
+                                                    user: _userModel!,
+                                                  ),
+                                                ),
+                                              );
+
+                                              _profileBloc.add(
+                                                  InitializeProfileScreen());
+                                            }
+                                          : () {},
+                                      child: Icon(
+                                        FontAwesomeIcons.solidEdit,
+                                        color: Colors.white,
+                                        size: 18.0,
                                       ),
                                     ),
                                   ],
                                 ),
                               ),
-                              Row(
-                                children: [
-                                  _buildPhoto(),
-                                  Expanded(
-                                    child: Container(
-                                      margin: EdgeInsets.symmetric(
-                                        vertical: 10.0,
-                                      ),
-                                      width: double.infinity,
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: [
-                                          _buildInfoItem(
-                                            label: 'Display name',
-                                            controller:
-                                                _displayNameTextController,
-                                          ),
-                                          _buildInfoItem(
-                                            label: 'Email',
-                                            controller: _emailTextController,
-                                          ),
-                                          _buildInfoItem(
-                                            label: 'Phone number',
-                                            controller: _phoneTextController,
-                                          ),
-                                          _buildInfoItem(
-                                            label: 'Location',
-                                            controller: _locationTextController,
-                                            suffix: Icon(
-                                              FontAwesomeIcons.mapMarked,
-                                              color: kBackgroundColor,
-                                              size: 12.0,
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16.0),
+                                child: Row(
+                                  children: [
+                                    _buildPhoto(),
+                                    Expanded(
+                                      child: Container(
+                                        margin: EdgeInsets.symmetric(
+                                          vertical: 10.0,
+                                        ),
+                                        width: double.infinity,
+                                        child: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          children: [
+                                            _buildInfoItem(
+                                              label: 'Display name',
+                                              controller:
+                                                  _displayNameTextController,
                                             ),
-                                            onTap: _onSelectLocation,
-                                            readOnly: true,
-                                          ),
-                                        ],
+                                            _buildInfoItem(
+                                              label: 'Email',
+                                              controller: _emailTextController,
+                                            ),
+                                            _buildInfoItem(
+                                              label: 'Phone number',
+                                              controller: _phoneTextController,
+                                            ),
+                                            _buildInfoItem(
+                                              label: 'Location',
+                                              controller:
+                                                  _locationTextController,
+                                              suffix: Icon(
+                                                FontAwesomeIcons.mapMarked,
+                                                color: kBackgroundColor,
+                                                size: 12.0,
+                                              ),
+                                              onTap: _onSelectLocation,
+                                              readOnly: true,
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
                               Expanded(
                                 child: Container(
@@ -338,92 +368,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       Expanded(
                                         child: Container(
                                           child: _buildGridView(),
-                                          // ? GridView.count(
-                                          //     shrinkWrap: true,
-                                          //     padding: EdgeInsets.symmetric(
-                                          //         vertical: 10.0),
-                                          //     crossAxisCount: 2,
-                                          //     mainAxisSpacing: 10.0,
-                                          //     children: _list
-                                          //         .map(
-                                          //           (product) => Center(
-                                          //             child: BarterListItem(
-                                          //               height: SizeConfig
-                                          //                       .screenHeight *
-                                          //                   0.215,
-                                          //               width: SizeConfig
-                                          //                       .screenWidth *
-                                          //                   0.4,
-                                          //               hideLikeBtn: true,
-                                          //               itemName: product
-                                          //                       .productname ??
-                                          //                   '',
-                                          //               itemPrice: product
-                                          //                           .price !=
-                                          //                       null
-                                          //                   ? product.price!
-                                          //                       .toStringAsFixed(
-                                          //                           2)
-                                          //                   : '0',
-                                          //               imageUrl: product
-                                          //                               .mediaPrimary !=
-                                          //                           null &&
-                                          //                       product.mediaPrimary!
-                                          //                               .url !=
-                                          //                           null &&
-                                          //                       product
-                                          //                           .mediaPrimary!
-                                          //                           .url!
-                                          //                           .isNotEmpty
-                                          //                   ? product
-                                          //                       .mediaPrimary!
-                                          //                       .url!
-                                          //                   : '',
-                                          //               onTapped: () async {
-                                          //                 await Navigator
-                                          //                     .push(
-                                          //                   context,
-                                          //                   MaterialPageRoute(
-                                          //                     builder:
-                                          //                         (context) =>
-                                          //                             ProductDetailsScreen(
-                                          //                       ownItem:
-                                          //                           true,
-                                          //                       productId:
-                                          //                           product.productid ??
-                                          //                               '',
-                                          //                     ),
-                                          //                   ),
-                                          //                 );
-
-                                          //                 _profileBloc.add(
-                                          //                     InitializeProfileScreen());
-                                          //               },
-                                          //             ),
-                                          //           ),
-                                          //         )
-                                          //         .toList(),
-                                          //   )
-                                          // : Container(
-                                          //     padding: EdgeInsets.symmetric(
-                                          //         horizontal: 30.0),
-                                          //     child: Center(
-                                          //       child: Column(
-                                          //         mainAxisAlignment:
-                                          //             MainAxisAlignment
-                                          //                 .center,
-                                          //         children: [
-                                          //           Text(
-                                          //             'No products found',
-                                          //             style: Style.subtitle2
-                                          //                 .copyWith(
-                                          //                     color: Colors
-                                          //                         .grey),
-                                          //           ),
-                                          //         ],
-                                          //       ),
-                                          //     ),
-                                          //   ),
                                         ),
                                       ),
                                     ],
@@ -443,6 +387,35 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  _onUpdateUserInfo() {
+    if (_userModel != null) {
+      var updateData = UpdateUserModel(
+        userid: _userModel!.userid,
+        display_name: _displayNameTextController.text.trim(),
+        email: _emailTextController.text.trim(),
+        phone_number: _phoneTextController.text.trim(),
+      );
+
+      if (_selectedLocation != null) {
+        updateData.city = _selectedLocation!.addressComponents[1] != null
+            ? _selectedLocation!.addressComponents[1]!.longName
+            : null;
+        updateData.address = _selectedLocation!.addressComponents[0] != null
+            ? _selectedLocation!.addressComponents[0]!.longName
+            : null;
+        updateData.country = _selectedLocation!.addressComponents.last != null
+            ? _selectedLocation!.addressComponents.last!.longName
+            : null;
+        updateData.location = LocationModel(
+          longitude: _selectedLocation!.geometry!.location.lng,
+          latitude: _selectedLocation!.geometry!.location.lat,
+        );
+      }
+
+      _profileBloc.add(UpdateUserInfo(updateData));
+    }
+  }
+
   Widget _buildGridView() {
     return PagedGridView<int, ProductModel>(
       pagingController: _pagingController,
@@ -459,6 +432,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       builderDelegate: PagedChildBuilderDelegate<ProductModel>(
         itemBuilder: (context, product, index) {
+          var thumbnail = '';
+
+          if (product.mediaPrimary != null &&
+              product.mediaPrimary!.url != null &&
+              product.mediaPrimary!.url!.isNotEmpty)
+            thumbnail = product.mediaPrimary!.url!;
+
+          if (product.mediaPrimary != null &&
+              product.mediaPrimary!.url_t != null &&
+              product.mediaPrimary!.url_t!.isNotEmpty)
+            thumbnail = product.mediaPrimary!.url_t!;
+
+          if (product.mediaPrimary!.url!.isEmpty &&
+              product.mediaPrimary!.url_t!.isEmpty &&
+              product.media != null &&
+              product.media!.isNotEmpty)
+            thumbnail = product.media!.first.url_t != null
+                ? product.media!.first.url_t!
+                : product.media!.first.url!;
           return Center(
             child: BarterListItem(
               height: SizeConfig.screenHeight * 0.215,
@@ -468,11 +460,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               itemPrice: product.price != null
                   ? product.price!.toStringAsFixed(2)
                   : '0',
-              imageUrl: product.mediaPrimary != null &&
-                      product.mediaPrimary!.url != null &&
-                      product.mediaPrimary!.url!.isNotEmpty
-                  ? product.mediaPrimary!.url!
-                  : '',
+              imageUrl: thumbnail,
               onTapped: () async {
                 await Navigator.push(
                   context,
@@ -483,8 +471,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
                 );
-
-                _profileBloc.add(InitializeProfileScreen());
               },
             ),
           );
@@ -694,6 +680,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       setState(() {
         _selectedMedia = selectedMedia;
       });
+
+      _profileBloc.add(UpdateUserPhoto(_selectedMedia!));
     }
   }
 }

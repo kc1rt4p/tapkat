@@ -1,12 +1,13 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:tapkat/models/product.dart';
+import 'package:tapkat/models/product_category.dart';
+import 'package:tapkat/models/product_type.dart';
 import 'package:tapkat/models/request/add_product_request.dart';
 import 'package:tapkat/models/upload_product_image_response.dart';
 import 'package:tapkat/repositories/product_repository.dart';
 import 'package:tapkat/repositories/user_repository.dart';
 import 'package:tapkat/services/auth_service.dart';
-import 'package:tapkat/services/firebase.dart';
 import 'package:tapkat/utilities/upload_media.dart';
 
 part 'product_event.dart';
@@ -24,12 +25,12 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
         if (event is SaveProduct) {
           emit(ProductLoading());
 
-          final downloadUrl = await uploadData(
-              event.media[0].storagePath, event.media[0].bytes);
+          // final downloadUrl = await uploadData(
+          //     event.media[0].storagePath, event.media[0].bytes);
+          // event.productRequest.image_url = downloadUrl;
 
           final userModel = await _userRepo.getUser(_user!.uid);
 
-          event.productRequest.image_url = downloadUrl;
           event.productRequest.display_name = userModel!.display_name;
 
           final productId = await _productRepo.addProduct(event.productRequest);
@@ -39,13 +40,32 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
             return;
           }
 
-          if (event.media.length > 1) {
-            event.media.removeAt(0);
+          // if (event.media.length > 1) {
+          //   event.media.removeAt(0);
+          //   final upload = await _productRepo.addProductImages(
+          //     userId: _user.uid,
+          //     productId: productId,
+          //     images: event.media,
+          //   );
+          //   if (upload == null) {
+          //     emit(ProductError('Error while uploading product images'));
+          //     return;
+          //   }
+
+          //   event.productRequest.productid = productId;
+          //   event.productRequest.image_url = upload.media_primary!.url;
+          //   event.productRequest.media_type = upload.media_primary!.type;
+
+          //   _productRepo.updateProduct(event.productRequest);
+          // }
+
+          if (event.media.isNotEmpty) {
             final upload = await _productRepo.addProductImages(
               userId: _user.uid,
               productId: productId,
               images: event.media,
             );
+
             if (upload == null) {
               emit(ProductError('Error while uploading product images'));
               return;
@@ -86,6 +106,24 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
           final result = await _productRepo.deleteProduct(event.productId);
 
           if (result) emit(DeleteProductSuccess());
+        }
+
+        if (event is InitializeAddUpdateProduct) {
+          emit(ProductLoading());
+          final data = await _productRepo.getProductRefData();
+          if (data != null) {
+            emit(InitializeAddUpdateProductSuccess(
+              data['categories'],
+              data['types'],
+            ));
+          } else {
+            emit(ProductError('Unable to get product types & categories'));
+          }
+        }
+
+        if (event is GetProductCategories) {
+          final list = await _productRepo.getAllCategoryProducts();
+          emit(GetProductCategoriesSuccess(list));
         }
 
         if (event is GetFirstProducts) {

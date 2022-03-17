@@ -9,6 +9,8 @@ abstract class ProfileState extends Equatable {
 
 class ProfileInitial extends ProfileState {}
 
+class UpdateUserPhotoSuccess extends ProfileState {}
+
 class ProfileScreenInitialized extends ProfileState {
   final User? user;
   final List<ProductModel> list;
@@ -22,3 +24,5 @@ class ProfileScreenInitialized extends ProfileState {
 }
 
 class ProfileLoading extends ProfileState {}
+
+class UpdateUserInfoSuccess extends ProfileState {}

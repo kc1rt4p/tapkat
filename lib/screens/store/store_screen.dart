@@ -52,10 +52,7 @@ class _StoreScreenState extends State<StoreScreen> {
   @override
   void initState() {
     _storeBloc.add(InitializeStoreScreen(widget.userId));
-    storeOwnerName = widget.userId;
-    storeOwnerName = storeOwnerName.length > 10
-        ? storeOwnerName.substring(0, 7) + '...'
-        : storeOwnerName;
+
     super.initState();
   }
 
@@ -95,7 +92,7 @@ class _StoreScreenState extends State<StoreScreen> {
                                   _buildInfoItem(
                                     label: 'Store Owner',
                                     controller: TextEditingController(
-                                        text: _storeOwner!.userid ?? ''),
+                                        text: storeOwnerName),
                                   ),
                                   _buildInfoItem(
                                     label: 'Email',
@@ -105,13 +102,20 @@ class _StoreScreenState extends State<StoreScreen> {
                                   _buildInfoItem(
                                     label: 'Phone number',
                                     controller: TextEditingController(
-                                        text: _storeOwner!.mobilenum ?? ''),
+                                        text: _storeOwner!.phone_number ?? ''),
                                   ),
                                   _buildInfoItem(
                                     label: 'Location',
                                     controller: TextEditingController(
-                                        text:
-                                            _storeOwner!.address ?? 'Unknown'),
+                                        text: (_storeOwner!.address != null &&
+                                                _storeOwner!.city != null &&
+                                                _storeOwner!.country != null)
+                                            ? (_storeOwner!.address ?? '') +
+                                                ', ' +
+                                                (_storeOwner!.city ?? '') +
+                                                ', ' +
+                                                (_storeOwner!.country ?? '')
+                                            : ''),
                                     suffix: Icon(
                                       FontAwesomeIcons.mapMarked,
                                       color: kBackgroundColor,
@@ -220,7 +224,7 @@ class _StoreScreenState extends State<StoreScreen> {
                           print(state.user.toJson());
                           setState(() {
                             _storeOwner = state.user;
-                            storeOwnerName = _storeOwner!.userid!;
+                            storeOwnerName = _storeOwner!.display_name!;
                           });
                           _productBloc.add(
                               GetFirstProducts('user', userId: widget.userId));
@@ -228,104 +232,9 @@ class _StoreScreenState extends State<StoreScreen> {
                       },
                     ),
                   ],
-                  child: Container(child: _buildGridView()
-                      // GridView.count(
-                      //     padding: EdgeInsets.symmetric(
-                      //       horizontal: 10.0,
-                      //       vertical: 10.0,
-                      //     ),
-                      //     mainAxisSpacing: 16,
-                      //     crossAxisCount: 2,
-                      //     children: _list
-                      //         .map(
-                      //           (product) => Center(
-                      //             child: BarterListItem(
-                      //               height: SizeConfig.screenHeight * 0.23,
-                      //               width: SizeConfig.screenWidth * 0.40,
-                      //               hideLikeBtn: true,
-                      //               itemName: product.productname ?? '',
-                      //               itemPrice: product.price != null
-                      //                   ? product.price!.toStringAsFixed(2)
-                      //                   : '0',
-                      //               imageUrl: product.mediaPrimary != null &&
-                      //                       product.mediaPrimary!.url !=
-                      //                           null &&
-                      //                       product
-                      //                           .mediaPrimary!.url!.isNotEmpty
-                      //                   ? product.mediaPrimary!.url!
-                      //                   : '',
-                      //               onTapped: () => Navigator.push(
-                      //                 context,
-                      //                 MaterialPageRoute(
-                      //                   builder: (context) =>
-                      //                       ProductDetailsScreen(
-                      //                     productId: product.productid ?? '',
-                      //                   ),
-                      //                 ),
-                      //               ),
-                      //             ),
-                      //           ),
-                      //         )
-                      //         .toList(),
-                      //   )
-                      // : Container(
-                      //     padding: EdgeInsets.symmetric(horizontal: 30.0),
-                      //     child: Center(
-                      //       child: Column(
-                      //         mainAxisAlignment: MainAxisAlignment.center,
-                      //         children: [
-                      //           Text(
-                      //             'No products found',
-                      //             style: Style.subtitle2
-                      //                 .copyWith(color: Colors.grey),
-                      //           ),
-                      //         ],
-                      //       ),
-                      //     ),
-                      //   ),
-                      ),
+                  child: Container(child: _buildGridView()),
                 ),
               ),
-              // Container(
-              //   width: double.infinity,
-              //   padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 5.0),
-              //   height: SizeConfig.screenHeight * .06,
-              //   color: kBackgroundColor,
-              //   child: Row(
-              //     mainAxisAlignment: MainAxisAlignment.center,
-              //     crossAxisAlignment: CrossAxisAlignment.center,
-              //     children: [
-              //       Expanded(
-              //         child: InkWell(
-              //           onTap: _onPrevTapped,
-              //           child: Container(
-              //             child: Center(
-              //                 child: Icon(
-              //               Icons.arrow_left,
-              //               size: 40.0,
-              //               color:
-              //                   currentPage == 0 ? Colors.grey : Colors.white,
-              //             )),
-              //           ),
-              //         ),
-              //       ),
-              //       Expanded(
-              //         child: InkWell(
-              //           onTap: _onNextTapped,
-              //           child: Container(
-              //             child: Center(
-              //               child: Icon(
-              //                 Icons.arrow_right,
-              //                 size: 40.0,
-              //                 color: _list.isEmpty ? Colors.grey : Colors.white,
-              //               ),
-              //             ),
-              //           ),
-              //         ),
-              //       ),
-              //     ],
-              //   ),
-              // ),
             ],
           ),
         ),
@@ -369,6 +278,27 @@ class _StoreScreenState extends State<StoreScreen> {
                     }
                   }
 
+                  var thumbnail = '';
+
+                  if (product.mediaPrimary != null &&
+                      product.mediaPrimary!.url != null &&
+                      product.mediaPrimary!.url!.isNotEmpty)
+                    thumbnail = product.mediaPrimary!.url!;
+
+                  if (product.mediaPrimary != null &&
+                      product.mediaPrimary!.url_t != null &&
+                      product.mediaPrimary!.url_t!.isNotEmpty)
+                    thumbnail = product.mediaPrimary!.url_t!;
+
+                  if (product.mediaPrimary != null &&
+                      product.mediaPrimary!.url!.isEmpty &&
+                      product.mediaPrimary!.url_t!.isEmpty &&
+                      product.media != null &&
+                      product.media!.isNotEmpty)
+                    thumbnail = product.media!.first.url_t != null
+                        ? product.media!.first.url_t!
+                        : product.media!.first.url!;
+
                   return BarterListItem(
                     height: SizeConfig.screenHeight * 0.23,
                     width: SizeConfig.screenWidth * 0.40,
@@ -377,9 +307,7 @@ class _StoreScreenState extends State<StoreScreen> {
                     itemPrice: product.price != null
                         ? product.price!.toStringAsFixed(2)
                         : '0',
-                    imageUrl: product.mediaPrimary != null
-                        ? product.mediaPrimary!.url!
-                        : '',
+                    imageUrl: thumbnail,
                     onTapped: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -412,42 +340,6 @@ class _StoreScreenState extends State<StoreScreen> {
     );
   }
 
-  void _onNextTapped() {
-    print('next tapped, current page $currentPage');
-    if (_list.isEmpty) return;
-
-    _productBloc.add(
-      GetNextProducts(
-        listType: 'user',
-        lastProductId: _list.last.productid!,
-        startAfterVal: _list.last.price!.toString(),
-        userId: widget.userId,
-      ),
-    );
-
-    setState(() {
-      currentPage += 1;
-    });
-  }
-
-  void _onPrevTapped() {
-    if (currentPage < 1) return;
-
-    if (currentPage == 1)
-      _productBloc.add(GetFirstProducts('user', userId: widget.userId));
-
-    if (currentPage > 1) {
-      _productBloc.add(GetNextProducts(
-          listType: 'user',
-          lastProductId: indicators[currentPage - 2].productid!,
-          startAfterVal: indicators[currentPage - 2].price!.toString()));
-    }
-
-    setState(() {
-      currentPage -= 1;
-    });
-  }
-
   Container _buildInfoItem({
     required String label,
     required TextEditingController controller,
@@ -470,6 +362,7 @@ class _StoreScreenState extends State<StoreScreen> {
               alignment: Alignment.centerRight,
               child: Text(
                 controller.text,
+                textAlign: TextAlign.right,
                 style: Style.fieldText
                     .copyWith(fontSize: SizeConfig.textScaleFactor * 12),
               ),

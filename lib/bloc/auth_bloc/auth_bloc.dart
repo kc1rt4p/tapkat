@@ -30,6 +30,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       }
 
       if (event is GetCurrentuser) {
+        final _user = FirebaseAuth.instance.currentUser;
+        if (_user != null) {
+          final userModel = await userRepo.getUser(_user.uid);
+          authService.currentUserModel = userModel;
+          authService.currentUser = TapkatFirebaseUser(_user);
+        }
+
         emit(GetCurrentUsersuccess(
             authService.currentUser!.user!, authService.currentUserModel));
       }
@@ -46,7 +53,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             email: event.email,
             displayName: event.username,
             phoneNumber: event.mobileNumber,
-            location: LatLng(0, 0),
+            location: LatLng(event.location.geometry!.location.lat,
+                event.location.geometry!.location.lng),
           );
 
           await UsersRecord.collection.doc(user.uid).update(usersCreateData);
@@ -105,7 +113,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
             await userRef.update(usersUpdateData);
 
-            emit(AuthSignedIn(authService.currentUser!.user!));
+            emit(SaveUserPhotoSuccess());
+
+            // emit(AuthSignedIn(authService.currentUser!.user!));
           } else {
             emit(AuthError('error saving user photo'));
           }
@@ -118,8 +128,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         print('asd');
         print('user: ${authService.currentUser!.user!.uid}');
         if (authService.currentUser != null) {
-          // emit(AuthSignedIn(authService.currentUser!.user!));
-          emit(ShowSignUpSocialMedia());
+          emit(AuthSignedIn(authService.currentUser!.user!));
+          // emit(ShowSignUpSocialMedia());
         }
       }
 

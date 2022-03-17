@@ -13,6 +13,12 @@ class SendMessage extends BarterEvent {
   SendMessage(this.message);
 }
 
+class SwitchRoles extends BarterEvent {
+  final String barterId;
+
+  SwitchRoles(this.barterId);
+}
+
 class InitializeBarterChat extends BarterEvent {
   final String barterId;
 

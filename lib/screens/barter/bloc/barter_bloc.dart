@@ -5,6 +5,7 @@ import 'package:tapkat/models/barter_product.dart';
 import 'package:tapkat/models/barter_record_model.dart';
 import 'package:tapkat/models/chat_message.dart';
 import 'package:tapkat/models/product.dart';
+import 'package:tapkat/models/request/add_product_request.dart';
 import 'package:tapkat/repositories/barter_repository.dart';
 import 'package:tapkat/repositories/product_repository.dart';
 import 'package:tapkat/repositories/user_repository.dart';
@@ -37,9 +38,22 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
 
             if (_barterRecord == null) {
               event.barterData.dealStatus = 'new';
+
+              final user1Model =
+                  await _userRepo.getUser(event.barterData.userid1!);
+              final user2Model =
+                  await _userRepo.getUser(event.barterData.userid2!);
+
+              event.barterData.userid1Name = user1Model!.display_name;
+              event.barterData.userid2Name = user2Model!.display_name;
+
               final newBarter =
                   await _barterRepository.setBarterRecord(event.barterData);
-              print('=== new barter added: $newBarter');
+
+              print(
+                  '=================================================================');
+              print(user1Model.display_name);
+              print(user2Model.display_name);
 
               var barterProducts = await _barterRepository
                   .getBarterProducts(event.barterData.barterId!);
@@ -71,17 +85,21 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
                   ? _barterRecord.userid1
                   : _barterRecord.userid2;
 
-              final senderProducts = await _productRepository.getFirstProducts(
-                  'user', senderUserId);
+              final currentUserProducts =
+                  await _productRepository.getFirstProducts('user', _user!.uid);
 
-              final recipientProducts = await _productRepository
-                  .getFirstProducts('user', recipientUserId);
+              final remoteUserProducts =
+                  await _productRepository.getFirstProducts(
+                      'user',
+                      senderUserId == _user!.uid
+                          ? recipientUserId
+                          : senderUserId);
 
               emit(BarterInitialized(
                 barterStream:
                     _barterRepository.streamBarter(event.barterData.barterId!),
-                senderProducts: senderProducts,
-                recipientProducts: recipientProducts,
+                remoteUserProducts: remoteUserProducts,
+                currentUserProducts: currentUserProducts,
                 barterProductsStream: _barterRepository
                     .streamBarterProducts(event.barterData.barterId!),
               ));
@@ -135,34 +153,68 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
           if (event is UpdateBarterStatus) {
             await _barterRepository.updateBarterStatus(
                 event.barterId, event.status);
-            if (event.status != 'new') {
-              final barterRecord =
-                  await _barterRepository.getBarterRecord(event.barterId);
-              if (barterRecord != null) {
-                final senderUserId = barterRecord.userid1Role == 'sender'
-                    ? barterRecord.userid1
-                    : barterRecord.userid2;
-                final recipientUserId = barterRecord.userid1Role == 'recipient'
-                    ? barterRecord.userid1
-                    : barterRecord.userid2;
+            final barterRecord =
+                await _barterRepository.getBarterRecord(event.barterId);
+            if (barterRecord != null) {
+              final senderUserId = barterRecord.userid1Role == 'sender'
+                  ? barterRecord.userid1
+                  : barterRecord.userid2;
+              final recipientUserId = barterRecord.userid1Role == 'recipient'
+                  ? barterRecord.userid1
+                  : barterRecord.userid2;
 
-                String userId =
-                    ['accepted', 'rejected', 'sold'].contains(event.status)
-                        ? recipientUserId!
-                        : senderUserId!;
+              String userId =
+                  ['accepted', 'rejected', 'completed'].contains(event.status)
+                      ? recipientUserId!
+                      : senderUserId!;
 
-                final user = await _userRepo.getUser(userId);
+              final user = await _userRepo.getUser(userId);
 
-                _barterRepository.addMessage(ChatMessageModel(
-                  barterId: event.barterId,
-                  userId: userId,
-                  userName: user!.display_name,
-                  message: 'Offer ${event.status.toUpperCase()}',
-                  dateCreated: DateTime.now(),
-                ));
+              _barterRepository.addMessage(ChatMessageModel(
+                barterId: event.barterId,
+                userId: userId,
+                userName: user!.display_name,
+                message: 'Offer ${event.status.toUpperCase()}',
+                dateCreated: DateTime.now(),
+              ));
+
+              // update products' status
+              final barterProducts =
+                  await _barterRepository.getBarterProducts(event.barterId);
+
+              if (barterProducts.isNotEmpty &&
+                  barterRecord.dealStatus != 'new') {
+                final productsToUpdate = barterProducts
+                    .where((bProduct) => !bProduct.productId!.contains('cash'));
+
+                for (var product in productsToUpdate) {
+                  final productModel =
+                      await _productRepository.getProduct(product.productId!);
+
+                  var updatedData =
+                      ProductRequestModel.fromProduct(productModel);
+
+                  switch (event.status) {
+                    case 'accepted':
+                      updatedData.status = 'reserved';
+                      break;
+                    case 'completed':
+                      updatedData.status = 'sold';
+                      if (product.userId == senderUserId) {
+                        updatedData.acquired_by = recipientUserId;
+                      } else {
+                        updatedData.acquired_by = senderUserId;
+                      }
+
+                      break;
+                    default:
+                      updatedData.status = 'available';
+                  }
+
+                  await _productRepository.updateProduct(updatedData);
+                }
               }
             }
-
             emit(UpdateBarterStatusSuccess());
           }
 
@@ -219,17 +271,21 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
                     ? event.barterRecord.userid1
                     : event.barterRecord.userid2;
 
-            final senderProducts =
-                await _productRepository.getFirstProducts('user', senderUserId);
+            final currentUserProducts =
+                await _productRepository.getFirstProducts('user', _user!.uid);
 
-            final recipientProducts = await _productRepository.getFirstProducts(
-                'user', recipientUserId);
+            final remoteUserProducts =
+                await _productRepository.getFirstProducts(
+                    'user',
+                    senderUserId == _user!.uid
+                        ? recipientUserId
+                        : senderUserId);
 
             emit(BarterInitialized(
               barterStream:
                   _barterRepository.streamBarter(event.barterRecord.barterId!),
-              senderProducts: senderProducts,
-              recipientProducts: recipientProducts,
+              currentUserProducts: currentUserProducts,
+              remoteUserProducts: remoteUserProducts,
               barterProductsStream: _barterRepository
                   .streamBarterProducts(event.barterRecord.barterId!),
             ));

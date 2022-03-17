@@ -17,6 +17,19 @@ class SaveProductSuccess extends ProductState {
   SaveProductSuccess(this.productId);
 }
 
+class InitializeAddUpdateProductSuccess extends ProductState {
+  final List<ProductCategoryModel> categories;
+  final List<ProductTypeModel> types;
+
+  InitializeAddUpdateProductSuccess(this.categories, this.types);
+}
+
+class GetProductCategoriesSuccess extends ProductState {
+  final List<Map<String, dynamic>> list;
+
+  GetProductCategoriesSuccess(this.list);
+}
+
 class GetProductDetailsSuccess extends ProductState {
   final ProductModel product;
 

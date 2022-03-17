@@ -4,11 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_google_places/flutter_google_places.dart';
 import 'package:flutter_progress_hud/flutter_progress_hud.dart';
+import 'package:geocoding/geocoding.dart' as geoCoding;
+import 'package:geolocator/geolocator.dart' as geoLocator;
 import 'package:google_api_headers/google_api_headers.dart';
 import 'package:google_maps_webservice/places.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
 import 'package:tapkat/screens/signup/photo_selection_screen.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
+import 'package:tapkat/utilities/constants.dart';
 import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/utilities/upload_media.dart';
 import 'package:tapkat/widgets/custom_app_bar.dart';
@@ -33,14 +37,14 @@ class _InitialSignUpScreenState extends State<InitialSignUpScreen> {
   final _formKey = GlobalKey<FormState>();
   PlaceDetails? _selectedLocation;
 
-  final iOSGoogleMapsApiKey = 'AIzaSyBCyNgeJDA8_nwdGrPf5ecuIsVFRXSF0mQ';
-  final androidGoogleMapsApiKey = 'AIzaSyAH4fWM5IbEO0X-Txkm6HNsFAQ3KOfW20I';
-  final webGoogleMapsApiKey = 'AIzaSyAzPjfTTLzdfp-56tarHguvLXgdw7QAGkg';
+  geoCoding.Placemark? _currentUserLoc;
+  geoLocator.Position? _currentUserPosition;
 
   @override
   void initState() {
     _authBloc = BlocProvider.of<AuthBloc>(context);
     super.initState();
+    _loadUserLocation();
   }
 
   @override
@@ -313,6 +317,56 @@ class _InitialSignUpScreenState extends State<InitialSignUpScreen> {
         _selectedLocation = detail.result;
       });
       _locationTextController.text = _selectedLocation!.formattedAddress!;
+    }
+  }
+
+  _loadUserLocation() async {
+    if (await Permission.location.isDenied) return;
+    if (!(await geoLocator.GeolocatorPlatform.instance
+        .isLocationServiceEnabled())) return;
+    final userLoc = await geoLocator.Geolocator.getCurrentPosition();
+    List<geoCoding.Placemark> placemarks = await geoCoding
+        .placemarkFromCoordinates(userLoc.latitude, userLoc.longitude);
+    if (placemarks.isNotEmpty) {
+      placemarks.forEach((placemark) => print(placemark.toJson()));
+      setState(() {
+        _currentUserLoc = placemarks.first;
+        _currentUserPosition = userLoc;
+        _selectedLocation = PlaceDetails(
+          placeId: '',
+          name: _currentUserLoc!.name ?? '',
+          geometry: Geometry(
+            location: Location(
+              lat: _currentUserPosition!.latitude,
+              lng: _currentUserPosition!.longitude,
+            ),
+          ),
+          addressComponents: [
+            AddressComponent(
+              longName: _currentUserLoc!.street ?? '',
+              types: [],
+              shortName: '',
+            ),
+            AddressComponent(
+              longName: _currentUserLoc!.locality ?? '',
+              types: [],
+              shortName: '',
+            ),
+            AddressComponent(
+              longName: _currentUserLoc!.subAdministrativeArea ?? '',
+              types: [],
+              shortName: '',
+            ),
+            AddressComponent(
+              longName: _currentUserLoc!.country ?? '',
+              types: [],
+              shortName: '',
+            ),
+          ],
+        );
+        _locationTextController.text =
+            '${_currentUserLoc!.street ?? ''}, ${_currentUserLoc!.locality ?? ''}, ${_currentUserLoc!.subAdministrativeArea ?? ''}, ${_currentUserLoc!.country ?? ''}';
+      });
     }
   }
 }

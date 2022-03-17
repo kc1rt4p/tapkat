@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_progress_hud/flutter_progress_hud.dart';
 import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
-import 'package:tapkat/screens/signup/social_media_screen.dart';
+import 'package:tapkat/models/user.dart';
+import 'package:tapkat/screens/root/profile/interests_selection_screen.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/utilities/style.dart';
@@ -23,10 +24,12 @@ class _SignUpPhotoSelectionScreenState
     extends State<SignUpPhotoSelectionScreen> {
   late AuthBloc _authBloc;
   SelectedMedia? _selectedMedia;
+  UserModel? _user;
 
   @override
   void initState() {
     _authBloc = BlocProvider.of<AuthBloc>(context);
+    _authBloc.add(GetCurrentuser());
     super.initState();
   }
 
@@ -51,14 +54,32 @@ class _SignUpPhotoSelectionScreenState
               Navigator.of(context).popUntil((route) => route.isFirst);
             }
 
-            if (state is ShowSignUpSocialMedia) {
+            if (state is GetCurrentUsersuccess) {
+              setState(() {
+                _user = state.userModel;
+              });
+            }
+
+            if (state is SaveUserPhotoSuccess) {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => SignUpSocialMediaAccounts(),
+                  builder: (context) => InterestSelectionScreen(
+                    user: _user!,
+                    signingUp: true,
+                  ),
                 ),
               );
             }
+
+            // if (state is ShowSignUpSocialMedia) {
+            //   Navigator.push(
+            //     context,
+            //     MaterialPageRoute(
+            //       builder: (context) => SignUpSocialMediaAccounts(),
+            //     ),
+            //   );
+            // }
           },
           child: Stack(
             children: [
@@ -182,8 +203,18 @@ class _SignUpPhotoSelectionScreenState
                           label: 'Skip',
                           onTap: () {
                             print('skip');
-                            BlocProvider.of<AuthBloc>(context)
-                                .add(SkipSignUpPhoto());
+                            // BlocProvider.of<AuthBloc>(context)
+                            //     .add(SkipSignUpPhoto());
+
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => InterestSelectionScreen(
+                                  user: _user!,
+                                  signingUp: true,
+                                ),
+                              ),
+                            );
                           },
                           bgColor: Color(0xFFBB3F03),
                         ),

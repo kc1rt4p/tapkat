@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/style.dart';
 
@@ -6,6 +7,7 @@ class BarterList extends StatefulWidget {
   final List<Widget> items;
   final String label;
   final Function()? onViewAllTapped;
+  final Function()? onMapBtnTapped;
   final bool removeMargin;
   final bool smallItems;
   final Widget? labelAction;
@@ -13,12 +15,14 @@ class BarterList extends StatefulWidget {
   final bool hideViewAll;
   final bool ownList;
   final bool loading;
+  final bool removeMapBtn;
 
   const BarterList({
     Key? key,
     required this.items,
     required this.label,
     this.onViewAllTapped,
+    this.onMapBtnTapped,
     this.removeMargin = false,
     this.smallItems = false,
     this.labelAction,
@@ -26,6 +30,7 @@ class BarterList extends StatefulWidget {
     this.hideViewAll = false,
     this.ownList = false,
     this.loading = false,
+    this.removeMapBtn = false,
   }) : super(key: key);
 
   @override
@@ -48,31 +53,76 @@ class _BarterListState extends State<BarterList> {
                       color: kBackgroundColor, fontWeight: FontWeight.bold),
                 ),
                 Spacer(),
-                widget.labelAction ??
-                    Visibility(
-                      visible: !widget.hideViewAll,
-                      child: Container(
-                        padding: EdgeInsets.fromLTRB(16.0, 2.0, 10.0, 2.0),
-                        decoration: BoxDecoration(
-                          color: Color(0xFF94D2BD),
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                        child: GestureDetector(
-                          onTap: widget.onViewAllTapped,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text('See All'),
-                              SizedBox(width: 5.0),
-                              Icon(
-                                Icons.chevron_right,
-                                size: 20.0,
+                Row(
+                  children: [
+                    widget.labelAction ??
+                        Visibility(
+                          visible: !widget.hideViewAll,
+                          child: InkWell(
+                            onTap: widget.onViewAllTapped,
+                            child: Container(
+                              padding: EdgeInsets.fromLTRB(6.0, 3.0, 3.0, 3.0),
+                              decoration: BoxDecoration(
+                                color: Color(0xFF94D2BD),
+                                borderRadius: BorderRadius.circular(10.0),
+                                boxShadow: [
+                                  BoxShadow(
+                                    offset: Offset(1, 1),
+                                    color: Colors.grey,
+                                  ),
+                                ],
                               ),
-                            ],
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  Text('See All',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 14.0,
+                                      )),
+                                  SizedBox(width: 5.0),
+                                  Icon(
+                                    Icons.chevron_right,
+                                    size: 20.0,
+                                    color: Colors.white,
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
                         ),
+                    Visibility(
+                      visible: !widget.removeMapBtn,
+                      child: Row(
+                        children: [
+                          SizedBox(width: 8.0),
+                          InkWell(
+                            onTap: widget.onMapBtnTapped,
+                            child: Container(
+                              padding: EdgeInsets.all(8.0),
+                              decoration: BoxDecoration(
+                                color: Color(0xFF94D2BD),
+                                borderRadius: BorderRadius.circular(10.0),
+                                boxShadow: [
+                                  BoxShadow(
+                                    offset: Offset(1, 1),
+                                    color: Colors.grey,
+                                  ),
+                                ],
+                              ),
+                              child: Icon(
+                                FontAwesomeIcons.solidMap,
+                                size: 12.0,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
+                    SizedBox(width: 2.0),
+                  ],
+                ),
               ],
             ),
           ),
