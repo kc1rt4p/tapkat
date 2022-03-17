@@ -360,13 +360,15 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
               product.mediaPrimary!.url_t!.isNotEmpty)
             thumbnail = product.mediaPrimary!.url_t!;
 
-          if (product.mediaPrimary!.url!.isEmpty &&
-              product.mediaPrimary!.url_t!.isEmpty &&
-              product.media != null &&
-              product.media!.isNotEmpty)
-            thumbnail = product.media!.first.url_t != null
-                ? product.media!.first.url_t!
-                : product.media!.first.url!;
+          if (product.mediaPrimary != null) {
+            if (product.mediaPrimary!.url!.isEmpty &&
+                product.mediaPrimary!.url_t!.isEmpty &&
+                product.media != null &&
+                product.media!.isNotEmpty)
+              thumbnail = product.media!.first.url_t != null
+                  ? product.media!.first.url_t!
+                  : product.media!.first.url!;
+          }
           print(thumbnail);
           return BarterListItem(
             height: SizeConfig.screenHeight * 0.23,
