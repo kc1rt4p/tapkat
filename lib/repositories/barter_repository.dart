@@ -226,10 +226,8 @@ class BarterRepository {
   }
 
   Future<bool> addMessage(ChatMessageModel message) async {
-    final messageData = message.toJson();
-
     try {
-      final newRecord = await barterRef
+      await barterRef
           .doc(message.barterId)
           .collection('messages')
           .add(message.toJson());

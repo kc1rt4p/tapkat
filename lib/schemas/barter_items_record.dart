@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:built_value/built_value.dart';
 
-import 'index.dart';
 import 'serializers.dart';
 
 part 'barter_items_record.g.dart';

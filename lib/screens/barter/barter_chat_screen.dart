@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_progress_hud/flutter_progress_hud.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
 import 'package:tapkat/models/chat_message.dart';
 import 'package:tapkat/screens/barter/bloc/barter_bloc.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
@@ -23,7 +22,6 @@ class BarterChatScreen extends StatefulWidget {
 
 class _BarterChatScreenState extends State<BarterChatScreen> {
   final _messageTextController = TextEditingController();
-  late AuthBloc _authBloc;
   late String _barterId;
   final _barterBloc = BarterBloc();
   List<ChatMessageModel> _messages = [];

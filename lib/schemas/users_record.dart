@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:built_value/built_value.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
-import 'index.dart';
 import 'serializers.dart';
 
 part 'users_record.g.dart';

@@ -1,11 +1,9 @@
 import 'dart:async';
 
-import 'package:algolia/algolia.dart';
 import 'package:built_value/built_value.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:tapkat/services/algolia_manager.dart';
 
-import 'index.dart';
 import 'serializers.dart';
 
 part 'product_markers_record.g.dart';
