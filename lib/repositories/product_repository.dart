@@ -11,6 +11,7 @@ import 'package:tapkat/models/product.dart';
 import 'package:tapkat/models/product_category.dart';
 import 'package:tapkat/models/product_type.dart';
 import 'package:tapkat/models/request/add_product_request.dart';
+import 'package:tapkat/models/request/product_review_resuest.dart';
 import 'package:tapkat/models/upload_product_image_response.dart';
 import 'package:tapkat/services/http/api_service.dart';
 import 'package:tapkat/utilities/constants.dart';
@@ -55,6 +56,18 @@ class ProductRepository {
     if (response.data['status'] != 'SUCCESS') return null;
 
     return response.data['productid'] as String;
+  }
+
+  Future<bool> addProductReview(ProductReviewModel productReview) async {
+    final response = await _apiService.post(
+      url: 'products/review',
+      body: {
+        "psk": "lcp9321p",
+        ...productReview.toJson(),
+      },
+    );
+
+    return response.data['status'] == 'SUCCESS';
   }
 
   Future<UploadProductImageResponseModel?> addProductImages({
@@ -171,6 +184,52 @@ class ProductRepository {
     if (response.data['status'] != 'SUCCESS') return null;
 
     return UploadProductImageResponseModel.fromJson(response.data);
+  }
+
+  Future<List<ProductReviewModel>> getProductRatings({
+    required ProductModel product,
+  }) async {
+    final response = await _apiService.post(
+      url: 'products/review/searchfirst',
+      body: {
+        'psk': psk,
+        'productid': product.productid,
+        'sortby': 'rating',
+        'sortdirection': 'ascending',
+        'productcount': 10,
+      },
+    );
+
+    if (response.data['status'] != 'SUCCESS') return [];
+
+    return (response.data['products'] as List<dynamic>)
+        .map((d) => ProductReviewModel.fromJson(d))
+        .toList();
+  }
+
+  Future<List<ProductReviewModel>> getNextRatings({
+    required String productId,
+    required String lastUserId,
+    required double startAfterVal,
+  }) async {
+    final response = await _apiService.post(
+      url: 'products/review/searchSet',
+      body: {
+        'psk': psk,
+        'productid': productId,
+        'sortby': 'rating',
+        'sortdirection': 'ascending',
+        'productcount': 10,
+        'startafterval': startAfterVal,
+        'secondaryval': lastUserId,
+      },
+    );
+
+    if (response.data['status'] != 'SUCCESS') return [];
+
+    return (response.data['products'] as List<dynamic>)
+        .map((d) => ProductReviewModel.fromJson(d))
+        .toList();
   }
 
   Future<List<ProductModel>> getNextProducts({

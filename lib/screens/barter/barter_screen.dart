@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_progress_hud/flutter_progress_hud.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:localstorage/localstorage.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
@@ -13,6 +14,7 @@ import 'package:tapkat/models/barter_product.dart';
 import 'package:tapkat/models/barter_record_model.dart';
 import 'package:tapkat/models/chat_message.dart';
 import 'package:tapkat/models/product.dart';
+import 'package:tapkat/models/request/product_review_resuest.dart';
 import 'package:tapkat/models/user.dart';
 import 'package:tapkat/screens/barter/widgets/add_item_btn.dart';
 import 'package:tapkat/screens/barter/widgets/cash_item.dart';
@@ -579,6 +581,10 @@ class _BarterScreenState extends State<BarterScreen> {
                   _messageTextController.clear();
                 }
 
+                if (state is RateProductSuccess) {
+                  //
+                }
+
                 if (state is BarterChatInitialized) {
                   _barterChatStreamSub = state.barterChatStream.listen((list) {
                     setState(() {
@@ -968,6 +974,24 @@ class _BarterScreenState extends State<BarterScreen> {
                               ? item.imgUrl!
                               : 'https://storage.googleapis.com/map-surf-assets/noimage.jpg',
                         ),
+                        Positioned(
+                          top: 5.0,
+                          right: 10.0,
+                          child: InkWell(
+                            onTap: () => _onRateProduct(item),
+                            child: Container(
+                              padding: EdgeInsets.all(5.0),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: kBackgroundColor,
+                              ),
+                              child: Icon(
+                                Icons.star,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
                         Visibility(
                           visible: _shouldShowAdd(),
                           child: Positioned(
@@ -1125,6 +1149,104 @@ class _BarterScreenState extends State<BarterScreen> {
     );
   }
 
+  _onRateProduct(BarterProductModel item) async {
+    final rating = await showDialog(
+      context: context,
+      builder: (context) {
+        final _reviewTextController = TextEditingController();
+        num _rating = 0;
+        return Dialog(
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(26.0),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Rate Product',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: kBackgroundColor,
+                          fontSize: SizeConfig.textScaleFactor * 16.0,
+                        ),
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: Icon(
+                        Icons.close,
+                        color: kBackgroundColor,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 32.0),
+                Container(
+                  child: Center(
+                      child: Text(
+                    item.productName ?? '',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w500,
+                    ),
+                  )),
+                ),
+                SizedBox(height: 16.0),
+                RatingBar.builder(
+                  initialRating: 0,
+                  minRating: 0,
+                  direction: Axis.horizontal,
+                  allowHalfRating: true,
+                  itemCount: 5,
+                  itemSize: 20,
+                  itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
+                  itemBuilder: (context, _) => Icon(
+                    Icons.star,
+                    color: Colors.amber,
+                  ),
+                  onRatingUpdate: (rating) {
+                    _rating = rating;
+                  },
+                ),
+                SizedBox(height: 8.0),
+                CustomTextFormField(
+                  label: 'Review',
+                  hintText: 'Write a user review',
+                  controller: _reviewTextController,
+                  textColor: kBackgroundColor,
+                  maxLines: 3,
+                ),
+                CustomButton(
+                  bgColor: kBackgroundColor,
+                  label: 'SUBMIT',
+                  onTap: () {
+                    Navigator.pop(context, {
+                      'rating': _rating,
+                      'review': _reviewTextController.text.trim(),
+                    });
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    // TODO: rate product
+    _barterBloc.add(RateProduct(ProductReviewModel(
+      productid: item.productId,
+      productname: item.productName,
+      image_url_t: item.imgUrl,
+      rating: rating['rating'] as double,
+      review: rating['review'] as String?,
+    )));
+  }
+
   bool _shouldShowAdd() {
     if (_barterRecord == null) return false;
 
@@ -1132,7 +1254,7 @@ class _BarterScreenState extends State<BarterScreen> {
       return ['new', 'withdrawn', 'rejected', 'revoked']
           .contains(_barterRecord!.dealStatus);
     else
-      return !['new', 'submitted', 'accepted']
+      return !['new', 'submitted', 'accepted', 'completed']
           .contains(_barterRecord!.dealStatus);
   }
 
@@ -1179,24 +1301,126 @@ class _BarterScreenState extends State<BarterScreen> {
     }
 
     return Container(
-      width: double.infinity,
       margin: EdgeInsets.only(bottom: 16.0),
-      padding: EdgeInsets.all(5.0),
-      decoration: BoxDecoration(
-        color: kDangerColor,
-        borderRadius: BorderRadius.circular(5.0),
-      ),
-      child: Center(
-        child: Text(
-          message,
-          textAlign: TextAlign.center,
-          style: Style.bodyText1.copyWith(
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
+      child: Column(
+        children: [
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.all(5.0),
+            decoration: BoxDecoration(
+              color: kDangerColor,
+              borderRadius: BorderRadius.circular(5.0),
+            ),
+            child: Center(
+              child: Text(
+                message,
+                textAlign: TextAlign.center,
+                style: Style.bodyText1.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            ),
           ),
-        ),
+          SizedBox(height: 10.0),
+          GestureDetector(
+            onTap: _onRateUser,
+            child: Text(
+              'Rate User',
+              style: TextStyle(
+                color: kBackgroundColor,
+                decoration: TextDecoration.underline,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
       ),
     );
+  }
+
+  _onRateUser() async {
+    final rating = await showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (context) {
+        final _reviewTextController = TextEditingController();
+        num _rating = 0;
+        return Dialog(
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(26.0),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Rate User',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: kBackgroundColor,
+                          fontSize: SizeConfig.textScaleFactor * 15.0,
+                        ),
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: Icon(
+                        Icons.close,
+                        color: kBackgroundColor,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 16.0),
+                RatingBar.builder(
+                  initialRating: 0,
+                  minRating: 0,
+                  direction: Axis.horizontal,
+                  allowHalfRating: true,
+                  itemCount: 5,
+                  itemSize: 20,
+                  itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
+                  itemBuilder: (context, _) => Icon(
+                    Icons.star,
+                    color: Colors.amber,
+                  ),
+                  onRatingUpdate: (rating) {
+                    _rating = rating;
+                  },
+                ),
+                SizedBox(height: 8.0),
+                CustomTextFormField(
+                  label: 'Review',
+                  hintText: 'Write a user review',
+                  controller: _reviewTextController,
+                  textColor: kBackgroundColor,
+                  maxLines: 3,
+                ),
+                CustomButton(
+                  bgColor: kBackgroundColor,
+                  label: 'SUBMIT',
+                  onTap: () {
+                    Navigator.pop(context, {
+                      'rating': _rating,
+                      'review': _reviewTextController.text.trim(),
+                    });
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    if (rating != null) {
+      print(rating);
+    }
   }
 
   Container _buildMinimizedView() {

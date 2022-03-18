@@ -19,6 +19,12 @@ class SwitchRoles extends BarterEvent {
   SwitchRoles(this.barterId);
 }
 
+class RateProduct extends BarterEvent {
+  final ProductReviewModel review;
+
+  RateProduct(this.review);
+}
+
 class InitializeBarterChat extends BarterEvent {
   final String barterId;
 

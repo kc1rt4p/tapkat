@@ -4,6 +4,7 @@ import 'package:tapkat/models/product.dart';
 import 'package:tapkat/models/product_category.dart';
 import 'package:tapkat/models/product_type.dart';
 import 'package:tapkat/models/request/add_product_request.dart';
+import 'package:tapkat/models/request/product_review_resuest.dart';
 import 'package:tapkat/models/upload_product_image_response.dart';
 import 'package:tapkat/repositories/product_repository.dart';
 import 'package:tapkat/repositories/user_repository.dart';
@@ -127,12 +128,26 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
           emit(GetProductCategoriesSuccess(list));
         }
 
+        if (event is GetProductRatings) {
+          final list =
+              await _productRepo.getProductRatings(product: event.product);
+          emit(GetProductRatingsSucess(list));
+        }
+
         if (event is GetFirstProducts) {
           emit(ProductLoading());
           final result =
               await _productRepo.getFirstProducts(event.listType, event.userId);
 
           emit(GetFirstProductsSuccess(result));
+        }
+
+        if (event is GetNextRatings) {
+          final result = await _productRepo.getNextRatings(
+            productId: event.productId,
+            lastUserId: event.lastUserId,
+            startAfterVal: event.startAfterVal,
+          );
         }
 
         if (event is GetNextProducts) {

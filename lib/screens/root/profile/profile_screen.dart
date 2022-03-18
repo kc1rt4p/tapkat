@@ -21,6 +21,7 @@ import 'package:tapkat/screens/product/product_add_screen.dart';
 import 'package:tapkat/screens/product/product_details_screen.dart';
 import 'package:tapkat/screens/root/profile/bloc/profile_bloc.dart';
 import 'package:tapkat/screens/root/profile/edit_profile_screen.dart';
+import 'package:tapkat/screens/root/profile/user_ratings_screen.dart';
 import 'package:tapkat/screens/settings/settings_screen.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/constants.dart';
@@ -184,13 +185,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       color: Colors.white,
                     ),
                   ),
-                  action: GestureDetector(
-                    onTap: _onSignOut,
-                    child: Icon(
-                      FontAwesomeIcons.signOutAlt,
-                      color: Colors.white,
-                    ),
-                  ),
+                  // action: GestureDetector(
+                  //   onTap: _onSignOut,
+                  //   child: Icon(
+                  //     FontAwesomeIcons.signOutAlt,
+                  //     color: Colors.white,
+                  //   ),
+                  // ),
                 ),
                 Expanded(
                   child: Container(
@@ -328,6 +329,44 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
+                                      InkWell(
+                                        onTap: () => Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                UserRatingsScreen(
+                                                    user: _userModel!),
+                                          ),
+                                        ),
+                                        child: Container(
+                                          width: double.infinity,
+                                          margin: EdgeInsets.only(bottom: 12.0),
+                                          decoration: BoxDecoration(
+                                            color: kBackgroundColor,
+                                            borderRadius:
+                                                BorderRadius.circular(10.0),
+                                          ),
+                                          padding: EdgeInsets.symmetric(
+                                            vertical: 8.0,
+                                            horizontal: 10.0,
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              Text(
+                                                'User Ratings',
+                                                style: Style.subtitle2.copyWith(
+                                                    color: Colors.white),
+                                              ),
+                                              Spacer(),
+                                              Icon(
+                                                FontAwesomeIcons.chevronRight,
+                                                color: Colors.white,
+                                                size: 18.0,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
                                       Container(
                                         width: double.infinity,
                                         decoration: BoxDecoration(

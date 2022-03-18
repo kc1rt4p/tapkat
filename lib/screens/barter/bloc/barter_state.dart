@@ -63,6 +63,8 @@ class DeleteBarterProductsSuccess extends BarterState {}
 
 class UpdateBarterProductsSuccess extends BarterState {}
 
+class RateProductSuccess extends BarterState {}
+
 class SwitchRolesSuccess extends BarterState {}
 
 class BarterChatInitialized extends BarterState {

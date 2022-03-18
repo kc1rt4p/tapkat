@@ -130,10 +130,43 @@ class _StoreScreenState extends State<StoreScreen> {
                       ),
                     )
                   : Container(),
-              CustomSearchBar(
-                margin: EdgeInsets.symmetric(horizontal: 20.0),
-                controller: TextEditingController(),
-                backgroundColor: Color(0xFF005F73).withOpacity(0.3),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: CustomSearchBar(
+                        margin: EdgeInsets.zero,
+                        controller: TextEditingController(),
+                        backgroundColor: Color(0xFF005F73).withOpacity(0.3),
+                      ),
+                    ),
+                    SizedBox(width: 10.0),
+                    InkWell(
+                      onTap: () {},
+                      child: Container(
+                        padding: EdgeInsets.all(10.0),
+                        decoration: BoxDecoration(
+                          color: Color(0xFF005F73).withOpacity(0.3),
+                          borderRadius: BorderRadius.circular(10.0),
+                          boxShadow: [
+                            BoxShadow(
+                              offset: Offset(0, 0.5),
+                              blurRadius: 0.5,
+                              spreadRadius: 0.5,
+                              color: Color(0xFF005F73).withOpacity(0.3),
+                            ),
+                          ],
+                        ),
+                        child: Icon(
+                          FontAwesomeIcons.solidMap,
+                          size: 24.0,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
               Expanded(
                 child: MultiBlocListener(

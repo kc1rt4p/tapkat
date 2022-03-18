@@ -78,6 +78,23 @@ class DislikeProduct extends ProductEvent {
   DislikeProduct(this.product);
 }
 
+class GetProductRatings extends ProductEvent {
+  final ProductModel product;
+
+  GetProductRatings(this.product);
+}
+
+class GetNextRatings extends ProductEvent {
+  final String productId;
+  final String lastUserId;
+  final double startAfterVal;
+
+  GetNextRatings(
+      {required this.productId,
+      required this.lastUserId,
+      required this.startAfterVal});
+}
+
 class GetProductCategories extends ProductEvent {}
 
 class DeleteProduct extends ProductEvent {

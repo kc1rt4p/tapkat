@@ -13,6 +13,7 @@ class CustomTextFormField extends StatefulWidget {
   final bool isReadOnly;
   final bool isPhone;
   final Color? color;
+  final Color? textColor;
   final int maxLines;
   final TextInputType? keyboardType;
   final List<TextInputFormatter>? inputFormatters;
@@ -28,6 +29,7 @@ class CustomTextFormField extends StatefulWidget {
     this.onTap,
     this.isReadOnly = false,
     this.isPhone = false,
+    this.textColor,
     this.color,
     this.maxLines = 1,
     this.keyboardType,
@@ -65,7 +67,7 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
             onTap: widget.onTap,
             controller: widget.controller,
             style: TextStyle(
-              color: Colors.white,
+              color: widget.textColor ?? Colors.white,
             ),
             obscureText: widget.obscureText,
             keyboardType: widget.isPhone
@@ -78,7 +80,7 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
               label: Text(
                 widget.label,
                 style: TextStyle(
-                  color: Colors.white,
+                  color: widget.textColor ?? Colors.white,
                 ),
               ),
               border: InputBorder.none,
@@ -86,7 +88,7 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
               isDense: true,
               hintText: widget.hintText,
               hintStyle: TextStyle(
-                color: Colors.white.withOpacity(0.3),
+                color: (widget.textColor ?? Colors.white).withOpacity(0.3),
               ),
               prefix: widget.isPhone ? Text('+63 ') : null,
               suffixIcon: widget.suffixIcon,

@@ -6,6 +6,7 @@ import 'package:tapkat/models/barter_record_model.dart';
 import 'package:tapkat/models/chat_message.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/models/request/add_product_request.dart';
+import 'package:tapkat/models/request/product_review_resuest.dart';
 import 'package:tapkat/repositories/barter_repository.dart';
 import 'package:tapkat/repositories/product_repository.dart';
 import 'package:tapkat/repositories/user_repository.dart';
@@ -107,6 +108,13 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
               print('EXISTING BARTER');
               add(StreamBarter(_barterRecord));
             }
+          }
+
+          if (event is RateProduct) {
+            final added =
+                await _productRepository.addProductReview(event.review);
+
+            if (added) emit(RateProductSuccess());
           }
 
           if (event is CounterOffer) {

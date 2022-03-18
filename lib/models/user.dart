@@ -1,3 +1,5 @@
+import 'package:tapkat/models/location.dart';
+
 class UserModel {
   String? userid;
   String? email;
@@ -9,6 +11,7 @@ class UserModel {
   String? postcode;
   String? photo_url;
   List<String>? interests;
+  LocationModel? location;
 
   UserModel({
     this.userid,
@@ -21,6 +24,7 @@ class UserModel {
     this.postcode,
     this.photo_url,
     this.interests,
+    this.location,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -39,6 +43,7 @@ class UserModel {
               .map((d) => d.toString())
               .toList()
           : null,
+      location: LocationModel.fromJson(json['location']),
     );
   }
 
@@ -54,6 +59,7 @@ class UserModel {
       'postcode': this.postcode,
       'photo_url': this.photo_url,
       'interests': this.interests,
+      'location': this.location,
     };
   }
 }

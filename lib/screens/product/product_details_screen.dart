@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -6,16 +8,19 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_progress_hud/flutter_progress_hud.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import 'package:tapkat/backend.dart';
 import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
 import 'package:tapkat/models/media_primary_model.dart';
 import 'package:tapkat/models/product.dart';
+import 'package:tapkat/models/user.dart';
 import 'package:tapkat/schemas/user_likes_record.dart';
 import 'package:tapkat/screens/barter/barter_screen.dart';
 import 'package:tapkat/screens/product/bloc/product_bloc.dart';
 import 'package:tapkat/screens/product/product_edit_screen.dart';
+import 'package:tapkat/screens/product/product_ratings_screen.dart';
 import 'package:tapkat/screens/store/store_screen.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/dialog_message.dart';
@@ -23,6 +28,8 @@ import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/utilities/style.dart';
 import 'package:tapkat/widgets/custom_app_bar.dart';
 import 'package:tapkat/widgets/custom_button.dart';
+import 'package:tapkat/widgets/tapkat_map.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 class ProductDetailsScreen extends StatefulWidget {
   final String productId;
@@ -46,6 +53,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   Map<String, dynamic>? mappedProductDetails;
   ProductModel? _product;
   User? _user;
+  UserModel? _userModel;
+
+  LatLng? googleMapsCenter;
 
   @override
   void initState() {
@@ -100,6 +110,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   if (state is GetCurrentUsersuccess) {
                     setState(() {
                       _user = state.user;
+                      _userModel = state.userModel;
                     });
                     _productBloc.add(GetProductDetails(widget.productId));
                   }
@@ -256,35 +267,38 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                               ),
                                             ),
                                           ),
-                                          // Column(
-                                          //   crossAxisAlignment:
-                                          //       CrossAxisAlignment.end,
-                                          //   children: [
-                                          //     Text(
-                                          //       'Listed by:',
-                                          //       style: TextStyle(
-                                          //         fontSize: 13.0,
-                                          //         color: Color(0xFF414141),
-                                          //       ),
-                                          //     ),
-                                          //     Text(
-                                          //       _product != null &&
-                                          //               _product!
-                                          //                   .userid!.isNotEmpty
-                                          //           ? _product!.userid!.length >
-                                          //                   8
-                                          //               ? '${_product!.userid!.substring(0, 8)}...'
-                                          //               : _product!.userid!
-                                          //           : '',
-                                          //       overflow: TextOverflow.ellipsis,
-                                          //       style: TextStyle(
-                                          //         fontSize: 15.0,
-                                          //         fontWeight: FontWeight.w600,
-                                          //       ),
-                                          //     ),
-                                          //   ],
-                                          // ),
                                           SizedBox(width: 16.0),
+                                          InkWell(
+                                            onTap: () => Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      ProductRatingsScreen(
+                                                          product: _product!)),
+                                            ),
+                                            child: Container(
+                                              padding: EdgeInsets.symmetric(
+                                                  horizontal: 20.0,
+                                                  vertical: 10.0),
+                                              decoration: BoxDecoration(
+                                                color: kBackgroundColor,
+                                                borderRadius:
+                                                    BorderRadius.circular(9.0),
+                                              ),
+                                              child: Center(
+                                                child: Text(
+                                                  'View Ratings',
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 12.0,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
                                           Visibility(
                                             visible: !widget.ownItem,
                                             child: InkWell(
@@ -303,6 +317,8 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                 );
                                               },
                                               child: Container(
+                                                margin:
+                                                    EdgeInsets.only(left: 8.0),
                                                 padding: EdgeInsets.symmetric(
                                                     horizontal: 20.0,
                                                     vertical: 10.0),
@@ -340,123 +356,131 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                         color: kBackgroundColor,
                                       ),
                                     ),
+                                    InkWell(
+                                      onTap: _onMapViewTapped,
+                                      child: Container(
+                                        margin: EdgeInsets.only(bottom: 6.0),
+                                        child: Row(
+                                          children: [
+                                            Icon(
+                                              Icons.location_pin,
+                                              size: 16.0,
+                                            ),
+                                            Text(
+                                              _product != null &&
+                                                      _product!
+                                                          .address!
+                                                          .address!
+                                                          .isNotEmpty &&
+                                                      _product!.address!.city !=
+                                                          null &&
+                                                      _product!.address!
+                                                              .country !=
+                                                          null
+                                                  ? '${_product!.address!.city}, ${_product!.address!.country}'
+                                                  : '',
+                                              overflow: TextOverflow.ellipsis,
+                                              style: TextStyle(
+                                                fontSize: 14.0,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                            Spacer(),
+                                            _product != null &&
+                                                    _userModel != null
+                                                ? Text(
+                                                    '${calculateDistance(
+                                                      _product!.address!
+                                                          .location!.latitude,
+                                                      _product!.address!
+                                                          .location!.longitude,
+                                                      _userModel!
+                                                          .location!.latitude,
+                                                      _userModel!
+                                                          .location!.longitude,
+                                                    ).toStringAsFixed(2)}km away',
+                                                  )
+                                                : Container(),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
                                     Container(
                                       child: Row(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.end,
                                         children: [
-                                          Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Row(
-                                                children: [
-                                                  Icon(
-                                                    Icons.location_pin,
-                                                    size: 16.0,
-                                                  ),
-                                                  Text(
-                                                    _product != null &&
-                                                            _product!
-                                                                .address!
-                                                                .address!
-                                                                .isNotEmpty
-                                                        ? _product!
-                                                            .address!.address!
-                                                        : '',
-                                                    style: TextStyle(
-                                                      fontSize: 14.0,
-                                                      fontWeight:
-                                                          FontWeight.w600,
-                                                    ),
-                                                  )
-                                                ],
-                                              ),
-                                              _product != null
-                                                  ? RatingBar.builder(
-                                                      ignoreGestures: _product!
-                                                                  .acquired_by ==
-                                                              null &&
-                                                          _product!
-                                                                  .acquired_by !=
-                                                              _user!.uid,
-                                                      initialRating: _product!
-                                                                  .rating !=
-                                                              null
-                                                          ? _product!.rating!
-                                                              .roundToDouble()
-                                                          : 0,
-                                                      minRating: 0,
-                                                      direction:
-                                                          Axis.horizontal,
-                                                      allowHalfRating: true,
-                                                      itemCount: 5,
-                                                      itemSize: 20,
-                                                      tapOnlyMode: true,
-                                                      itemPadding:
-                                                          EdgeInsets.symmetric(
-                                                              horizontal: 4.0),
-                                                      itemBuilder:
-                                                          (context, _) => Icon(
-                                                        Icons.star,
-                                                        color: Colors.amber,
+                                          Expanded(
+                                            child: _product != null
+                                                ? Row(
+                                                    children: [
+                                                      Expanded(
+                                                        child:
+                                                            RatingBar.builder(
+                                                          ignoreGestures: _product!
+                                                                      .acquired_by ==
+                                                                  null &&
+                                                              _product!
+                                                                      .acquired_by !=
+                                                                  _user!.uid,
+                                                          initialRating: _product!
+                                                                      .rating !=
+                                                                  null
+                                                              ? _product!
+                                                                  .rating!
+                                                                  .roundToDouble()
+                                                              : 0,
+                                                          minRating: 0,
+                                                          direction:
+                                                              Axis.horizontal,
+                                                          allowHalfRating: true,
+                                                          itemCount: 5,
+                                                          itemSize: 20,
+                                                          tapOnlyMode: true,
+                                                          itemPadding: EdgeInsets
+                                                              .symmetric(
+                                                                  horizontal:
+                                                                      4.0),
+                                                          itemBuilder:
+                                                              (context, _) =>
+                                                                  Icon(
+                                                            Icons.star,
+                                                            color: Colors.amber,
+                                                          ),
+                                                          onRatingUpdate:
+                                                              (rating) {
+                                                            if (_product!
+                                                                        .userid !=
+                                                                    _user!
+                                                                        .uid &&
+                                                                _product!
+                                                                        .acquired_by ==
+                                                                    _user!
+                                                                        .uid) {
+                                                              print('hey');
+                                                              _productBloc.add(
+                                                                  AddRating(
+                                                                      _product!,
+                                                                      rating));
+                                                            }
+                                                          },
+                                                        ),
                                                       ),
-                                                      onRatingUpdate: (rating) {
-                                                        if (_product!.userid !=
-                                                                _user!.uid &&
-                                                            _product!
-                                                                    .acquired_by ==
-                                                                _user!.uid) {
-                                                          print('hey');
-                                                          _productBloc.add(
-                                                              AddRating(
-                                                                  _product!,
-                                                                  rating));
-                                                        }
-                                                      },
-                                                    )
-                                                  : Container(),
-                                              // Row(
-                                              //   children: List.generate(5, (i) {
-                                              //     return Padding(
-                                              //       padding: EdgeInsets.only(
-                                              //           right:
-                                              //               i != 5 ? 5.0 : 0.0),
-                                              //       child: GestureDetector(
-                                              //         onTap: () {
-                                              //           _productBloc.add(
-                                              //               AddRating(_product!,
-                                              //                   i + 1));
-                                              //         },
-                                              //         child: Icon(
-                                              //           i <
-                                              //                   (_product !=
-                                              //                               null &&
-                                              //                           _product!.rating !=
-                                              //                               null
-                                              //                       ? _product!
-                                              //                           .rating!
-                                              //                           .round()
-                                              //                       : 0)
-                                              //               ? Icons.star
-                                              //               : Icons.star_border,
-                                              //           color:
-                                              //               Color(0xFFFFC107),
-                                              //           size: 20.0,
-                                              //         ),
-                                              //       ),
-                                              //     );
-                                              //   }),
-                                              // ),
-                                            ],
-                                          ),
-                                          Text(
-                                            _product != null &&
-                                                    _product!.rating != null
-                                                ? _product!.rating!
-                                                    .toStringAsFixed(1)
-                                                : '0',
-                                            style: TextStyle(fontSize: 16.0),
+                                                      Text(
+                                                        _product != null &&
+                                                                _product!
+                                                                        .rating !=
+                                                                    null
+                                                            ? _product!.rating!
+                                                                .toStringAsFixed(
+                                                                    1)
+                                                            : '0',
+                                                        style: TextStyle(
+                                                            fontSize: 16.0),
+                                                      ),
+                                                    ],
+                                                  )
+                                                : Container(),
                                           ),
                                           Expanded(
                                             child: Row(
@@ -590,7 +614,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                         vertical: 10.0,
                                       ),
                                       child: Divider(
-                                        thickness: 0.3,
+                                        thickness: 0.6,
                                         color: kBackgroundColor,
                                       ),
                                     ),
@@ -624,6 +648,13 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                               ),
                             ),
                           ),
+                          _product != null
+                              ? Center(
+                                  child: Text(
+                                      'Last updated ${timeago.format(_product!.updated_time ?? DateTime.now())}.'),
+                                )
+                              : Container(),
+                          SizedBox(height: 8.0),
                           Visibility(
                             visible: !widget.ownItem &&
                                 _product != null &&
@@ -701,6 +732,88 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
             ),
           )),
     );
+  }
+
+  _onMapViewTapped() {
+    showGeneralDialog(
+        context: context,
+        pageBuilder: (context, _, __) {
+          return Dialog(
+            insetPadding: EdgeInsets.symmetric(
+              horizontal: 10.0,
+              vertical: 30.0,
+            ),
+            backgroundColor: Colors.white,
+            child: Container(
+              child: Column(
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(5.0),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.map,
+                          color: kBackgroundColor,
+                        ),
+                        SizedBox(width: 16.0),
+                        Text(
+                          _product!.productname!,
+                          style: TextStyle(
+                            color: kBackgroundColor,
+                          ),
+                        ),
+                        Spacer(),
+                        GestureDetector(
+                          onTap: () => Navigator.pop(context),
+                          child: Icon(Icons.close),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: TapkatGoogleMap(
+                      showLocation: true,
+                      initialZoom: 14,
+                      onCameraIdle: (latLng) => googleMapsCenter = latLng,
+                      initialLocation: LatLng(
+                          _product!.address != null &&
+                                  _product!.address!.location != null
+                              ? _product!.address!.location!.latitude!
+                                  .toDouble()
+                              : 0.00,
+                          _product!.address != null &&
+                                  _product!.address!.location != null
+                              ? _product!.address!.location!.longitude!
+                                  .toDouble()
+                              : 0.00),
+                      onMapCreated: (controller) {
+                        //
+                      },
+                      markers: [
+                        TapkatMarker(
+                            _product!.productid!,
+                            LatLng(
+                              _product!.address != null &&
+                                      _product!.address!.location != null
+                                  ? _product!.address!.location!.latitude!
+                                      .toDouble()
+                                  : 0.00,
+                              _product!.address != null &&
+                                      _product!.address!.location != null
+                                  ? _product!.address!.location!.longitude!
+                                      .toDouble()
+                                  : 0.00,
+                            ),
+                            () => _onMarkerTapped(_product!),
+                            _product),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        });
   }
 
   Widget _buildPhotos() {
@@ -789,5 +902,122 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
       ),
     );
     _productBloc.add(GetProductDetails(widget.productId));
+  }
+
+  double calculateDistance(lat1, lon1, lat2, lon2) {
+    var p = 0.017453292519943295;
+    var c = cos;
+    var a = 0.5 -
+        c((lat2 - lat1) * p) / 2 +
+        c(lat1 * p) * c(lat2 * p) * (1 - c((lon2 - lon1) * p)) / 2;
+    return 12742 * asin(sqrt(a));
+  }
+
+  Future<dynamic> _onMarkerTapped(ProductModel product) async {
+    print(product.address!.toJson());
+    await showModalBottomSheet(
+      isScrollControlled: true,
+      backgroundColor: Color(0x79FFFFFF),
+      barrierColor: Color(0x99000000),
+      context: context,
+      builder: (context) {
+        return Container(
+          color: Colors.white,
+          padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: SizeConfig.screenWidth * .2,
+                    height: SizeConfig.screenWidth * .2,
+                    decoration: BoxDecoration(
+                      image: DecorationImage(
+                        image: product.mediaPrimary != null
+                            ? NetworkImage(product.mediaPrimary!.url!)
+                            : AssetImage('assets/images/image_placeholder.jpg')
+                                as ImageProvider<Object>,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 12.0),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          product.productname ?? '',
+                          style: Style.subtitle2.copyWith(
+                            color: kBackgroundColor,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(height: 8.0),
+                        Text(
+                          product.price == null
+                              ? ''
+                              : '\$ ${product.price!.toStringAsFixed(2)}',
+                          style: Style.subtitle2.copyWith(
+                            color: kBackgroundColor,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(height: 8.0),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.location_pin,
+                              size: 20.0,
+                              color: Colors.red,
+                            ),
+                            Text(
+                              product.address!.address!.isNotEmpty
+                                  ? product.address!.address!
+                                  : 'No address',
+                              style: Style.subtitle2
+                                  .copyWith(color: kBackgroundColor),
+                            )
+                          ],
+                        ),
+                        SizedBox(height: 8.0),
+                        Row(
+                          children: [
+                            ...List.generate(5, (i) {
+                              return Padding(
+                                padding:
+                                    EdgeInsets.only(right: i != 5 ? 5.0 : 0.0),
+                                child: Icon(
+                                  i <
+                                          (product.rating != null
+                                              ? product.rating!.round()
+                                              : 0)
+                                      ? Icons.star
+                                      : Icons.star_border,
+                                  color: Color(0xFFFFC107),
+                                  size: 20.0,
+                                ),
+                              );
+                            }),
+                            Text(
+                              product.rating != null
+                                  ? product.rating!.toStringAsFixed(1)
+                                  : '0',
+                              style: TextStyle(fontSize: 16.0),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 }
