@@ -125,36 +125,17 @@ class _ProductListScreenState extends State<ProductListScreen> {
               //     indicators.add(_list.last);
               //   }
               // });
+
               if (state.list.isNotEmpty) {
                 lastProduct = state.list.last;
                 if (state.list.length == productCount) {
-                  setState(() {
-                    _list.addAll(state.list);
-                  });
                   _pagingController.appendPage(state.list, currentPage + 1);
                 } else {
-                  setState(() {
-                    _list.addAll(state.list);
-                  });
                   _pagingController.appendLastPage(state.list);
                 }
               } else {
-                print('lastrProduct name: ${lastProduct!.productname}');
-                _pagingController.addPageRequestListener((pageKey) {
-                  if (lastProduct != null) {
-                    _productBloc.add(
-                      GetNextProducts(
-                        listType: widget.listType,
-                        lastProductId: lastProduct!.productid!,
-                        startAfterVal: lastProduct!.price!.toString(),
-                        userId: widget.listType == 'user' ? widget.userId : '',
-                      ),
-                    );
-                  }
-                });
+                _pagingController.appendLastPage([]);
               }
-
-              print('lastrProduct name: ${lastProduct!.productname}');
               _pagingController.addPageRequestListener((pageKey) {
                 if (lastProduct != null) {
                   _productBloc.add(

@@ -129,8 +129,8 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
         }
 
         if (event is GetProductRatings) {
-          final list =
-              await _productRepo.getProductRatings(product: event.product);
+          final list = await _productRepo.getProductRatings(
+              productId: event.product.productid);
           emit(GetProductRatingsSucess(list));
         }
 
@@ -145,7 +145,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
         if (event is GetNextRatings) {
           final result = await _productRepo.getNextRatings(
             productId: event.productId,
-            lastUserId: event.lastUserId,
+            secondaryVal: event.lastUserId,
             startAfterVal: event.startAfterVal,
           );
         }

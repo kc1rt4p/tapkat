@@ -26,3 +26,15 @@ class ProfileScreenInitialized extends ProfileState {
 class ProfileLoading extends ProfileState {}
 
 class UpdateUserInfoSuccess extends ProfileState {}
+
+class GetUserRatingsSuccess extends ProfileState {
+  final List<ProductReviewModel> list;
+
+  GetUserRatingsSuccess(this.list);
+}
+
+class GetNextRatingsSuccess extends ProfileState {
+  final List<ProductReviewModel> list;
+
+  GetNextRatingsSuccess(this.list);
+}

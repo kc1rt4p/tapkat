@@ -187,13 +187,14 @@ class ProductRepository {
   }
 
   Future<List<ProductReviewModel>> getProductRatings({
-    required ProductModel product,
+    String? productId,
+    String? userId,
   }) async {
     final response = await _apiService.post(
       url: 'products/review/searchfirst',
       body: {
         'psk': psk,
-        'productid': product.productid,
+        productId != null ? 'productid' : 'userid': productId ?? userId,
         'sortby': 'rating',
         'sortdirection': 'ascending',
         'productcount': 10,
@@ -208,20 +209,21 @@ class ProductRepository {
   }
 
   Future<List<ProductReviewModel>> getNextRatings({
-    required String productId,
-    required String lastUserId,
+    String? productId,
+    String? userId,
+    required String secondaryVal,
     required double startAfterVal,
   }) async {
     final response = await _apiService.post(
       url: 'products/review/searchSet',
       body: {
         'psk': psk,
-        'productid': productId,
+        productId != null ? 'productid' : 'userid': productId ?? userId,
         'sortby': 'rating',
         'sortdirection': 'ascending',
         'productcount': 10,
         'startafterval': startAfterVal,
-        'secondaryval': lastUserId,
+        'secondaryval': secondaryVal,
       },
     );
 

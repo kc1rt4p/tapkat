@@ -20,3 +20,21 @@ class UpdateUserInfo extends ProfileEvent {
 
   UpdateUserInfo(this.user);
 }
+
+class GetUserRatings extends ProfileEvent {
+  final String userId;
+
+  GetUserRatings(this.userId);
+}
+
+class GetNextRatings extends ProfileEvent {
+  final String userId;
+  final String lastProductId;
+  final double startAfterVal;
+
+  GetNextRatings({
+    required this.userId,
+    required this.lastProductId,
+    required this.startAfterVal,
+  });
+}

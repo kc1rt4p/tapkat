@@ -2,6 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:tapkat/models/product.dart';
+import 'package:tapkat/models/request/product_review_resuest.dart';
 import 'package:tapkat/models/request/update_user.dart';
 import 'package:tapkat/models/user.dart';
 import 'package:tapkat/repositories/product_repository.dart';
@@ -32,6 +33,20 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
             userModel: userModel!,
           ));
         }
+      }
+
+      if (event is GetUserRatings) {
+        final list = await _productRepo.getProductRatings(userId: event.userId);
+        emit(GetUserRatingsSuccess(list));
+      }
+
+      if (event is GetNextRatings) {
+        final list = await _productRepo.getNextRatings(
+          secondaryVal: event.lastProductId,
+          startAfterVal: event.startAfterVal,
+          userId: event.userId,
+        );
+        emit(GetNextRatingsSuccess(list));
       }
 
       if (event is UpdateUserPhoto) {

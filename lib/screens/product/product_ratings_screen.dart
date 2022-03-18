@@ -65,29 +65,36 @@ class _ProductRatingsScreenState extends State<ProductRatingsScreen> {
               if (state.list.isNotEmpty) {
                 lastProduct = state.list.last;
                 if (state.list.length == productCount) {
-                  setState(() {
-                    _ratings.addAll(state.list);
-                  });
                   _pagingController.appendPage(state.list, currentPage + 1);
                 } else {
-                  setState(() {
-                    _ratings.addAll(state.list);
-                  });
                   _pagingController.appendLastPage(state.list);
                 }
               } else {
-                print('lastrProduct name: ${lastProduct!.productname}');
-                _pagingController.addPageRequestListener((pageKey) {
-                  if (lastProduct != null) {
-                    _productBloc.add(
-                      GetNextRatings(
-                        productId: lastProduct!.productid!,
-                        startAfterVal: lastProduct!.rating!.toDouble(),
-                        lastUserId: lastProduct!.userid!,
-                      ),
-                    );
-                  }
-                });
+                _pagingController.appendLastPage([]);
+              }
+              _pagingController.addPageRequestListener((pageKey) {
+                if (lastProduct != null) {
+                  _productBloc.add(
+                    GetNextRatings(
+                      productId: lastProduct!.productid!,
+                      startAfterVal: lastProduct!.rating!.toDouble(),
+                      lastUserId: lastProduct!.userid!,
+                    ),
+                  );
+                }
+              });
+            }
+
+            if (state is GetNextRatingsSuccess) {
+              if (state.list.isNotEmpty) {
+                lastProduct = state.list.last;
+                if (state.list.length == productCount) {
+                  _pagingController.appendPage(state.list, currentPage + 1);
+                } else {
+                  _pagingController.appendLastPage(state.list);
+                }
+              } else {
+                _pagingController.appendLastPage([]);
               }
             }
           },
@@ -209,78 +216,77 @@ class _ProductRatingsScreenState extends State<ProductRatingsScreen> {
                 ),
               ),
               Expanded(
-                child: SingleChildScrollView(
-                  child: Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 20.0,
-                      vertical: 10.0,
-                    ),
-                    child: Column(
-                      children: _ratings.map((rating) {
-                        return Container(
-                          decoration: BoxDecoration(
-                            border: Border(
-                              bottom: BorderSide(
-                                color: Colors.grey,
-                              ),
-                            ),
-                          ),
-                          child: Column(
-                            children: [
-                              Row(
-                                children: [
-                                  Text(rating.display_name != null &&
-                                          rating.display_name!.isNotEmpty
-                                      ? rating.display_name!
-                                      : 'Anonymous'),
-                                  Spacer(),
-                                  Text(timeago.format(
-                                      rating.review_date ?? DateTime.now())),
-                                ],
-                              ),
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 10.0),
-                                child: Text(rating.review != null &&
-                                        rating.review!.isNotEmpty
-                                    ? '"${rating.review}"'
-                                    : '-'),
-                              ),
-                              Align(
-                                alignment: Alignment.bottomRight,
-                                child: RatingBar.builder(
-                                  ignoreGestures: true,
-                                  initialRating: rating.rating != null
-                                      ? rating.rating!.roundToDouble()
-                                      : 0,
-                                  minRating: 0,
-                                  direction: Axis.horizontal,
-                                  allowHalfRating: true,
-                                  itemCount: 5,
-                                  itemSize: 20,
-                                  tapOnlyMode: true,
-                                  itemPadding:
-                                      EdgeInsets.symmetric(horizontal: 4.0),
-                                  itemBuilder: (context, _) => Icon(
-                                    Icons.star,
-                                    color: Colors.amber,
-                                  ),
-                                  onRatingUpdate: (rating) {
-                                    //
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                ),
+                child: _buildUserRatingsList(),
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  _buildUserRatingsList() {
+    return PagedListView<int, ProductReviewModel>(
+      padding: EdgeInsets.symmetric(
+        horizontal: 16.0,
+        vertical: 10.0,
+      ),
+      pagingController: _pagingController,
+      builderDelegate: PagedChildBuilderDelegate<ProductReviewModel>(
+        itemBuilder: (context, rating, index) {
+          return Container(
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: Colors.grey,
+                ),
+              ),
+            ),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Text(rating.display_name != null &&
+                            rating.display_name!.isNotEmpty
+                        ? rating.display_name!
+                        : 'Anonymous'),
+                    Spacer(),
+                    Text(timeago.format(rating.review_date ?? DateTime.now())),
+                  ],
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10.0),
+                  child: Text(rating.review != null && rating.review!.isNotEmpty
+                      ? '"${rating.review}"'
+                      : '-'),
+                ),
+                Align(
+                  alignment: Alignment.bottomRight,
+                  child: RatingBar.builder(
+                    ignoreGestures: true,
+                    initialRating: rating.rating != null
+                        ? rating.rating!.roundToDouble()
+                        : 0,
+                    minRating: 0,
+                    direction: Axis.horizontal,
+                    allowHalfRating: true,
+                    itemCount: 5,
+                    itemSize: 20,
+                    tapOnlyMode: true,
+                    itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
+                    itemBuilder: (context, _) => Icon(
+                      Icons.star,
+                      color: Colors.amber,
+                    ),
+                    onRatingUpdate: (rating) {
+                      //
+                    },
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
