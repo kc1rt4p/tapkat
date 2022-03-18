@@ -387,7 +387,8 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                             ),
                                             Spacer(),
                                             _product != null &&
-                                                    _userModel != null
+                                                    _userModel != null &&
+                                                    _userModel!.location != null
                                                 ? Text(
                                                     '${calculateDistance(
                                                       _product!.address!
@@ -643,17 +644,15 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                         ],
                                       ),
                                     ),
+                                    _product != null
+                                        ? Text(
+                                            'Last updated ${timeago.format(_product!.updated_time ?? DateTime.now())}.')
+                                        : Container(),
                                   ],
                                 ),
                               ),
                             ),
                           ),
-                          _product != null
-                              ? Center(
-                                  child: Text(
-                                      'Last updated ${timeago.format(_product!.updated_time ?? DateTime.now())}.'),
-                                )
-                              : Container(),
                           SizedBox(height: 8.0),
                           Visibility(
                             visible: !widget.ownItem &&

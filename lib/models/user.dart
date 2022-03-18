@@ -43,7 +43,9 @@ class UserModel {
               .map((d) => d.toString())
               .toList()
           : null,
-      location: LocationModel.fromJson(json['location']),
+      location: json['location'] != null
+          ? LocationModel.fromJson(json['location'])
+          : null,
     );
   }
 
