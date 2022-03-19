@@ -42,8 +42,6 @@ class _StoreScreenState extends State<StoreScreen> {
   String storeOwnerName = '';
   UserModel? _storeOwner;
 
-  bool _isLoading = false;
-
   ProductModel? lastProduct;
 
   final _pagingController =
@@ -189,7 +187,9 @@ class _StoreScreenState extends State<StoreScreen> {
                           //     indicators.add(_list.last);
                           //   }
                           // });
+
                           if (state.list.isNotEmpty) {
+                            _list.addAll(state.list);
                             lastProduct = state.list.last;
                             if (state.list.length == productCount) {
                               _pagingController.appendPage(
@@ -244,12 +244,10 @@ class _StoreScreenState extends State<StoreScreen> {
                       bloc: _storeBloc,
                       listener: (context, state) {
                         if (state is LoadingStore) {
-                          setState(() {
-                            _isLoading = true;
-                          });
+                          ProgressHUD.of(context)!.show();
                         } else {
                           setState(() {
-                            _isLoading = false;
+                            ProgressHUD.of(context)!.dismiss();
                           });
                         }
 

@@ -15,10 +15,12 @@ import 'package:tapkat/models/barter_record_model.dart';
 import 'package:tapkat/models/chat_message.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/models/request/product_review_resuest.dart';
+import 'package:tapkat/models/request/user_review_request.dart';
 import 'package:tapkat/models/user.dart';
 import 'package:tapkat/screens/barter/widgets/add_item_btn.dart';
 import 'package:tapkat/screens/barter/widgets/cash_item.dart';
 import 'package:tapkat/screens/barter/widgets/chat_item.dart';
+import 'package:tapkat/screens/product/bloc/product_bloc.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/dialog_message.dart';
 import 'package:tapkat/utilities/size_config.dart';
@@ -281,6 +283,26 @@ class _BarterScreenState extends State<BarterScreen> {
               ProgressHUD.of(context)!.dismiss();
             }
 
+            if (state is AddUserReviewSuccess) {
+              DialogMessage.show(context,
+                  message: 'Your User Review has been submitted');
+            }
+
+            if (state is UpdateUserReviewSuccess) {
+              DialogMessage.show(context,
+                  message: 'Your User Review has been updated');
+            }
+
+            if (state is AddRatingSuccess) {
+              DialogMessage.show(context,
+                  message: 'Your Product Review has been submitted');
+            }
+
+            if (state is UpdateProductRatingSuccess) {
+              DialogMessage.show(context,
+                  message: 'Your Product Review has been updated');
+            }
+
             if (state is UpdateBarterProductsSuccess ||
                 state is DeleteBarterProductsSuccess ||
                 state is AddCashOfferSuccess) {
@@ -366,9 +388,9 @@ class _BarterScreenState extends State<BarterScreen> {
                           : _barterRecord!.userid1!;
                     }
 
-                    _recipientName = _recipientName.length > 10
-                        ? _recipientName.substring(0, 7) + '...'
-                        : _recipientName;
+                    // _recipientName = _recipientName.length > 10
+                    //     ? _recipientName.substring(0, 7) + '...'
+                    //     : _recipientName;
                   });
                 }
               });
@@ -462,6 +484,27 @@ class _BarterScreenState extends State<BarterScreen> {
               });
 
               if (widget.barterRecord == null && _product != null) {
+                var thumbnail = '';
+
+                if (_product!.mediaPrimary != null &&
+                    _product!.mediaPrimary!.url != null &&
+                    _product!.mediaPrimary!.url!.isNotEmpty)
+                  thumbnail = _product!.mediaPrimary!.url!;
+
+                if (_product!.mediaPrimary != null &&
+                    _product!.mediaPrimary!.url_t != null &&
+                    _product!.mediaPrimary!.url_t!.isNotEmpty)
+                  thumbnail = _product!.mediaPrimary!.url_t!;
+
+                if (_product!.mediaPrimary == null ||
+                    _product!.mediaPrimary!.url!.isEmpty &&
+                        _product!.mediaPrimary!.url_t!.isEmpty &&
+                        _product!.media != null &&
+                        _product!.media!.isNotEmpty)
+                  thumbnail = _product!.media!.first.url_t != null
+                      ? _product!.media!.first.url_t!
+                      : _product!.media!.first.url!;
+
                 setState(() {
                   _barterId = _currentUser!.uid +
                       _product!.userid! +
@@ -477,11 +520,7 @@ class _BarterScreenState extends State<BarterScreen> {
                       u2P1Id: _product!.productid!,
                       u2P1Name: _product!.productname,
                       u2P1Price: _product!.price!.toDouble(),
-                      u2P1Image: (_product!.media != null &&
-                              _product!.media!.isNotEmpty)
-                          ? _product!.media!.first.url_t
-                          : _product!.mediaPrimary!.url_t ??
-                              _product!.mediaPrimary!.url,
+                      u2P1Image: thumbnail,
                       barterNo: 0,
                       dealDate: DateTime.now(),
                       userid1Role: 'sender',
@@ -974,20 +1013,23 @@ class _BarterScreenState extends State<BarterScreen> {
                               ? item.imgUrl!
                               : 'https://storage.googleapis.com/map-surf-assets/noimage.jpg',
                         ),
-                        Positioned(
-                          top: 5.0,
-                          right: 10.0,
-                          child: InkWell(
-                            onTap: () => _onRateProduct(item),
-                            child: Container(
-                              padding: EdgeInsets.all(5.0),
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: kBackgroundColor,
-                              ),
-                              child: Icon(
-                                Icons.star,
-                                color: Colors.white,
+                        Visibility(
+                          visible: _barterRecord!.dealStatus == 'completed',
+                          child: Positioned(
+                            top: 5.0,
+                            right: 10.0,
+                            child: InkWell(
+                              onTap: () => _onRateProduct(item),
+                              child: Container(
+                                padding: EdgeInsets.all(5.0),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: kBackgroundColor,
+                                ),
+                                child: Icon(
+                                  Icons.star,
+                                  color: Colors.white,
+                                ),
                               ),
                             ),
                           ),
@@ -1335,14 +1377,17 @@ class _BarterScreenState extends State<BarterScreen> {
             ),
           ),
           SizedBox(height: 10.0),
-          GestureDetector(
-            onTap: _onRateUser,
-            child: Text(
-              'Rate User',
-              style: TextStyle(
-                color: kBackgroundColor,
-                decoration: TextDecoration.underline,
-                fontWeight: FontWeight.w500,
+          Visibility(
+            visible: _barterRecord!.dealStatus == 'completed',
+            child: GestureDetector(
+              onTap: _onRateUser,
+              child: Text(
+                'Rate User',
+                style: TextStyle(
+                  color: kBackgroundColor,
+                  decoration: TextDecoration.underline,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
           ),
@@ -1431,7 +1476,18 @@ class _BarterScreenState extends State<BarterScreen> {
     );
 
     if (rating != null) {
-      print(rating);
+      _barterBloc.add(AddUserReview(
+        UserReviewModel(
+            rating: rating['rating'] as double,
+            review: rating['review'] as String?,
+            reviewerid: _currentUserModel!.userid,
+            user_image_url: _currentUserModel!.photo_url,
+            reviewername: _currentUserModel!.display_name,
+            userid: _currentUserModel!.userid == _senderUserId
+                ? _recipientUserId
+                : _senderUserId,
+            username: _recipientName),
+      ));
     }
   }
 
@@ -1948,6 +2004,26 @@ class _BarterScreenState extends State<BarterScreen> {
                     ),
                     items: [
                       ...remoteUserItems.map((item) {
+                        var thumbnail = '';
+
+                        if (item.mediaPrimary != null &&
+                            item.mediaPrimary!.url != null &&
+                            item.mediaPrimary!.url!.isNotEmpty)
+                          thumbnail = item.mediaPrimary!.url!;
+
+                        if (item.mediaPrimary != null &&
+                            item.mediaPrimary!.url_t != null &&
+                            item.mediaPrimary!.url_t!.isNotEmpty)
+                          thumbnail = item.mediaPrimary!.url_t!;
+
+                        if (item.mediaPrimary == null ||
+                            item.mediaPrimary!.url!.isEmpty &&
+                                item.mediaPrimary!.url_t!.isEmpty &&
+                                item.media != null &&
+                                item.media!.isNotEmpty)
+                          thumbnail = item.media!.first.url_t != null
+                              ? item.media!.first.url_t!
+                              : item.media!.first.url!;
                         return Stack(
                           alignment: Alignment.topCenter,
                           children: [
@@ -1960,10 +2036,7 @@ class _BarterScreenState extends State<BarterScreen> {
                                         ? item.currency!
                                         : '\$') +
                                     (' ${item.price!.toStringAsFixed(2)}'),
-                                imageUrl: item.mediaPrimary != null &&
-                                        item.mediaPrimary!.url != null
-                                    ? item.mediaPrimary!.url!
-                                    : 'https://storage.googleapis.com/map-surf-assets/noimage.jpg',
+                                imageUrl: thumbnail,
                                 onTapped: () {
                                   if (remoteUserOffers.any((product) =>
                                       product.productId == item.productid))
@@ -2262,6 +2335,26 @@ class _BarterScreenState extends State<BarterScreen> {
                       ),
                     ),
                     items: currentUserItems.map((item) {
+                      var thumbnail = '';
+
+                      if (item.mediaPrimary != null &&
+                          item.mediaPrimary!.url != null &&
+                          item.mediaPrimary!.url!.isNotEmpty)
+                        thumbnail = item.mediaPrimary!.url!;
+
+                      if (item.mediaPrimary != null &&
+                          item.mediaPrimary!.url_t != null &&
+                          item.mediaPrimary!.url_t!.isNotEmpty)
+                        thumbnail = item.mediaPrimary!.url_t!;
+
+                      if (item.mediaPrimary == null ||
+                          item.mediaPrimary!.url!.isEmpty &&
+                              item.mediaPrimary!.url_t!.isEmpty &&
+                              item.media != null &&
+                              item.media!.isNotEmpty)
+                        thumbnail = item.media!.first.url_t != null
+                            ? item.media!.first.url_t!
+                            : item.media!.first.url!;
                       return Stack(
                         alignment: Alignment.topCenter,
                         children: [
@@ -2275,10 +2368,7 @@ class _BarterScreenState extends State<BarterScreen> {
                                       ? item.currency!
                                       : '\$') +
                                   (' ${item.price!.toStringAsFixed(2)}'),
-                              imageUrl: item.mediaPrimary != null &&
-                                      item.mediaPrimary!.url != null
-                                  ? item.mediaPrimary!.url!
-                                  : 'https://storage.googleapis.com/map-surf-assets/noimage.jpg',
+                              imageUrl: thumbnail,
                               onTapped: () {
                                 if (!selectedItems.any((want) =>
                                     want.productid == item.productid)) {

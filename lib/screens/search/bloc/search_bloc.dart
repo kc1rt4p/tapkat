@@ -14,8 +14,8 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
     on<SearchEvent>((event, emit) async {
       emit(SearchLoading());
       if (event is InitializeSearch) {
-        final result =
-            await _productRepo.searchProducts(event.keyword.split(" "));
+        final result = await _productRepo
+            .searchProducts(event.keyword.split(" "), category: event.category);
         print('search result count: ${result.length}');
 
         emit(SearchSuccess(result));

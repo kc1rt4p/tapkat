@@ -21,9 +21,13 @@ import 'package:tapkat/widgets/tapkat_map.dart';
 
 class SearchResultScreen extends StatefulWidget {
   final String keyword;
+  final String? category;
+  final bool mapFirst;
   const SearchResultScreen({
     Key? key,
     required this.keyword,
+    this.category,
+    this.mapFirst = false,
   }) : super(key: key);
 
   @override
@@ -54,13 +58,15 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
   void initState() {
     _keyWordTextController.text = widget.keyword;
 
-    _searchBloc.add(InitializeSearch(_keyWordTextController.text.trim()));
+    _searchBloc.add(
+        InitializeSearch(_keyWordTextController.text.trim(), widget.category));
     super.initState();
   }
 
   @override
   void dispose() {
     _pagingController.dispose();
+    _productMarkerStream?.cancel();
     super.dispose();
   }
 
@@ -107,6 +113,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
             if (state is SearchSuccess) {
               if (state.searchResults.isNotEmpty) {
                 lastProduct = state.searchResults.last;
+                searchResults.addAll(state.searchResults);
                 if (state.searchResults.length == productCount) {
                   setState(() {
                     searchResults.addAll(state.searchResults);
@@ -119,6 +126,11 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                   });
                   _pagingController.appendLastPage(state.searchResults);
                 }
+
+                if (widget.mapFirst) {
+                  _onSelectView();
+                }
+
                 _pagingController.addPageRequestListener((pageKey) {
                   if (lastProduct != null) {
                     _searchBloc.add(
@@ -413,6 +425,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
     if (val == null || val.isEmpty) return;
     lastProduct = null;
     _pagingController.refresh();
-    _searchBloc.add(InitializeSearch(_keyWordTextController.text.trim()));
+    _searchBloc.add(
+        InitializeSearch(_keyWordTextController.text.trim(), widget.category));
   }
 }

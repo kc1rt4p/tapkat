@@ -25,6 +25,23 @@ class RateProduct extends BarterEvent {
   RateProduct(this.review);
 }
 
+class UpdateProductRating extends BarterEvent {
+  final ProductReviewModel review;
+
+  UpdateProductRating(this.review);
+}
+
+class AddUserReview extends BarterEvent {
+  final UserReviewModel review;
+  AddUserReview(this.review);
+}
+
+class UpdateUserReview extends BarterEvent {
+  final UserReviewModel review;
+
+  UpdateUserReview(this.review);
+}
+
 class InitializeBarterChat extends BarterEvent {
   final String barterId;
 

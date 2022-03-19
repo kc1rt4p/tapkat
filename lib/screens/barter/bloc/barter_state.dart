@@ -63,9 +63,15 @@ class DeleteBarterProductsSuccess extends BarterState {}
 
 class UpdateBarterProductsSuccess extends BarterState {}
 
+class UpdateUserReviewSuccess extends BarterState {}
+
+class UpdateProductRatingSuccess extends BarterState {}
+
 class RateProductSuccess extends BarterState {}
 
 class SwitchRolesSuccess extends BarterState {}
+
+class AddUserReviewSuccess extends BarterState {}
 
 class BarterChatInitialized extends BarterState {
   final Stream<List<ChatMessageModel>> barterChatStream;

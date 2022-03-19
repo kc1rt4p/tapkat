@@ -8,7 +8,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_progress_hud/flutter_progress_hud.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:geocoding/geocoding.dart' as geoCoding;
+import 'package:geolocator/geolocator.dart' as geoLocator;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import 'package:tapkat/backend.dart';
@@ -57,10 +60,30 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
 
   LatLng? googleMapsCenter;
 
+  geoCoding.Placemark? _currentUserLoc;
+  geoLocator.Position? _currentUserPosition;
+
+  _loadUserLocation() async {
+    if (await Permission.location.isDenied) return;
+    if (!(await geoLocator.GeolocatorPlatform.instance
+        .isLocationServiceEnabled())) return;
+    final userLoc = await geoLocator.Geolocator.getCurrentPosition();
+    List<geoCoding.Placemark> placemarks = await geoCoding
+        .placemarkFromCoordinates(userLoc.latitude, userLoc.longitude);
+    if (placemarks.isNotEmpty) {
+      placemarks.forEach((placemark) => print(placemark.toJson()));
+      setState(() {
+        _currentUserLoc = placemarks.first;
+        _currentUserPosition = userLoc;
+      });
+    }
+  }
+
   @override
   void initState() {
     _authBloc = BlocProvider.of<AuthBloc>(context);
     _authBloc.add(GetCurrentuser());
+    _loadUserLocation();
     super.initState();
   }
 
@@ -395,10 +418,20 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                           .location!.latitude,
                                                       _product!.address!
                                                           .location!.longitude,
-                                                      _userModel!
-                                                          .location!.latitude,
-                                                      _userModel!
-                                                          .location!.longitude,
+                                                      _currentUserPosition !=
+                                                              null
+                                                          ? _currentUserPosition!
+                                                              .latitude
+                                                          : _userModel!
+                                                              .location!
+                                                              .latitude,
+                                                      _currentUserPosition !=
+                                                              null
+                                                          ? _currentUserPosition!
+                                                              .longitude
+                                                          : _userModel!
+                                                              .location!
+                                                              .longitude,
                                                     ).toStringAsFixed(2)}km away',
                                                   )
                                                 : Container(),

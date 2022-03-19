@@ -7,6 +7,7 @@ import 'package:tapkat/models/chat_message.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/models/request/add_product_request.dart';
 import 'package:tapkat/models/request/product_review_resuest.dart';
+import 'package:tapkat/models/request/user_review_request.dart';
 import 'package:tapkat/repositories/barter_repository.dart';
 import 'package:tapkat/repositories/product_repository.dart';
 import 'package:tapkat/repositories/user_repository.dart';
@@ -114,7 +115,32 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
             final added =
                 await _productRepository.addProductReview(event.review);
 
-            if (added) emit(RateProductSuccess());
+            if (added)
+              emit(RateProductSuccess());
+            else
+              add(UpdateProductRating(event.review));
+          }
+
+          if (event is UpdateProductRating) {
+            final updated =
+                await _productRepository.updateProductReview(event.review);
+            if (updated) emit(UpdateProductRatingSuccess());
+          }
+
+          if (event is AddUserReview) {
+            final added = await _userRepo.addUserReview(event.review);
+
+            if (added) {
+              emit(AddUserReviewSuccess());
+            } else {
+              add(UpdateUserReview(event.review));
+            }
+          }
+
+          if (event is UpdateUserReview) {
+            final updated = await _userRepo.updateUserReview(event.review);
+
+            if (updated) emit(UpdateUserReviewSuccess());
           }
 
           if (event is CounterOffer) {

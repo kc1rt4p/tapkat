@@ -72,9 +72,6 @@ class _ProductListScreenState extends State<ProductListScreen> {
     _productBloc.add(GetFirstProducts(widget.listType, userId: widget.userId));
 
     super.initState();
-    setState(() {
-      _selectedView = widget.initialView;
-    });
   }
 
   @override
@@ -127,7 +124,10 @@ class _ProductListScreenState extends State<ProductListScreen> {
               // });
 
               if (state.list.isNotEmpty) {
+                _list.addAll(state.list);
+
                 lastProduct = state.list.last;
+
                 if (state.list.length == productCount) {
                   _pagingController.appendPage(state.list, currentPage + 1);
                 } else {
@@ -136,6 +136,11 @@ class _ProductListScreenState extends State<ProductListScreen> {
               } else {
                 _pagingController.appendLastPage([]);
               }
+
+              if (widget.initialView != 'grid') {
+                _onSelectView();
+              }
+
               _pagingController.addPageRequestListener((pageKey) {
                 if (lastProduct != null) {
                   _productBloc.add(
@@ -440,7 +445,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                   }
 
                   return BarterListItem(
-                    height: SizeConfig.screenHeight * 0.23,
+                    height: SizeConfig.screenHeight * 0.22,
                     width: SizeConfig.screenWidth * 0.40,
                     hideLikeBtn: widget.ownListing,
                     liked: liked,

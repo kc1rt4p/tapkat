@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:tapkat/utilities/size_config.dart';
-import 'package:tapkat/utilities/style.dart';
-import 'package:timeago/timeago.dart' as timeago;
 
 class BarterListItem extends StatefulWidget {
   final String itemName;
@@ -122,13 +120,6 @@ class _BarterListItemState extends State<BarterListItem> {
                   ],
                 ),
               ),
-              widget.datePosted != null
-                  ? Text(
-                      timeago.format(widget.datePosted!),
-                      style: Style.subtitle2.copyWith(fontSize: 12.0),
-                      textAlign: TextAlign.center,
-                    )
-                  : Container(),
             ],
           ),
         ),

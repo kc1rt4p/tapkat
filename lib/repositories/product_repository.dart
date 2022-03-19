@@ -70,6 +70,16 @@ class ProductRepository {
     return response.data['status'] == 'SUCCESS';
   }
 
+  Future<bool> updateProductReview(ProductReviewModel productReview) async {
+    final response =
+        await _apiService.patch(url: 'products/review/update', body: {
+      'psk': psk,
+      ...productReview.toJson(),
+    });
+
+    return response.data['status'] == 'SUCCESS';
+  }
+
   Future<UploadProductImageResponseModel?> addProductImages({
     required String productId,
     required String userId,
@@ -388,14 +398,16 @@ class ProductRepository {
     List<String> keyword, {
     String? lastProductId,
     String? startAfterVal,
+    String? category,
   }) async {
     var _body = {
       'psk': psk,
-      'keywords': keyword,
       'sortby': 'price',
       'sortdirection': 'ascending',
       'productcount': productCount,
     };
+    if (keyword.isNotEmpty) _body.addAll({'keyword': keyword});
+    if (category != null) _body.addAll({'category': category});
     if (lastProductId != null && startAfterVal != null) {
       _body.addAll({
         'startafterval': double.parse(startAfterVal),

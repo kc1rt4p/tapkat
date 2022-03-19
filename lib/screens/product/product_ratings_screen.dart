@@ -123,12 +123,17 @@ class _ProductRatingsScreenState extends State<ProductRatingsScreen> {
                       width: SizeConfig.screenWidth * .3,
                       height: SizeConfig.screenWidth * .3,
                       decoration: BoxDecoration(
+                        color: Colors.white,
                         image: DecorationImage(
-                          image: product.mediaPrimary != null
+                          image: product.mediaPrimary != null &&
+                                  product.mediaPrimary!.url!.isNotEmpty
                               ? NetworkImage(product.mediaPrimary!.url!)
-                              : AssetImage(
-                                      'assets/images/image_placeholder.jpg')
-                                  as ImageProvider<Object>,
+                              : product.media != null &&
+                                      product.media!.isNotEmpty
+                                  ? NetworkImage(product.media!.first.url!)
+                                  : AssetImage(
+                                          'assets/images/image_placeholder.jpg')
+                                      as ImageProvider<Object>,
                           fit: BoxFit.cover,
                         ),
                       ),

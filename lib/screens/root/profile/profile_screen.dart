@@ -353,7 +353,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                           child: Row(
                                             children: [
                                               Text(
-                                                'User Ratings',
+                                                'Reviewed Products',
                                                 style: Style.subtitle2.copyWith(
                                                     color: Colors.white),
                                               ),
