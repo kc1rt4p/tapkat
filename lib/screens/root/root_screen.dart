@@ -67,7 +67,7 @@ class _RootScreenState extends State<RootScreen> {
                   color: Colors.white,
                   child: Center(
                     child: Text(
-                      'Version 1.0.${DateFormat('yyMMddhh').format(_currentVerDate)}_D',
+                      'Version 1.0.${DateFormat('yyMMddHH').format(_currentVerDate)}_D',
                       style: TextStyle(fontSize: 10.0),
                     ),
                   ),
