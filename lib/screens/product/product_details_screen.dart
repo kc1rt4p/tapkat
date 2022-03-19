@@ -410,8 +410,11 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                             ),
                                             Spacer(),
                                             _product != null &&
-                                                    _userModel != null &&
-                                                    _userModel!.location != null
+                                                    _product!.address != null &&
+                                                    _product!.address!
+                                                            .location !=
+                                                        null &&
+                                                    _currentUserPosition != null
                                                 ? Text(
                                                     '${calculateDistance(
                                                       _product!.address!
