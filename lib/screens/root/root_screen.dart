@@ -31,6 +31,8 @@ class _RootScreenState extends State<RootScreen> {
 
   final _rootBloc = RootBloc();
 
+  final _currentVerDate = DateTime(2020, 3, 19, 3);
+
   @override
   void initState() {
     Permission.location.request();
@@ -65,7 +67,7 @@ class _RootScreenState extends State<RootScreen> {
                   color: Colors.white,
                   child: Center(
                     child: Text(
-                      'Version 1.0.${DateFormat('yyMMdd').format(DateTime.now())}_D',
+                      'Version 1.0.${DateFormat('yyMMddhh').format(_currentVerDate)}_D',
                       style: TextStyle(fontSize: 10.0),
                     ),
                   ),
