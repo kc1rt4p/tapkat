@@ -77,7 +77,8 @@ class _ProductRatingsScreenState extends State<ProductRatingsScreen> {
                   _productBloc.add(
                     GetNextRatings(
                       productId: lastProduct!.productid!,
-                      startAfterVal: lastProduct!.rating!.toDouble(),
+                      startAfterVal:
+                          lastProduct!.review_date!.toIso8601String(),
                       lastUserId: lastProduct!.userid!,
                     ),
                   );

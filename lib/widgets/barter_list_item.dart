@@ -62,26 +62,63 @@ class _BarterListItemState extends State<BarterListItem> {
                 ),
                 child: Column(
                   children: [
-                    Expanded(
-                      flex: 5,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(20.0),
-                            topRight: Radius.circular(20.0),
-                          ),
-                          color: Colors.grey,
-                          image: DecorationImage(
-                            image: widget.imageUrl.isNotEmpty
-                                ? NetworkImage(widget.imageUrl)
-                                : AssetImage(
-                                        'assets/images/image_placeholder.jpg')
-                                    as ImageProvider<Object>,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ),
-                    ),
+                    // Expanded(
+                    //   flex: 5,
+                    //   child: widget.imageUrl.isNotEmpty
+                    //       ? CachedNetworkImage(
+                    //           imageUrl: widget.imageUrl,
+                    //           imageBuilder: (context, imageProvider) =>
+                    //               Container(
+                    //             decoration: BoxDecoration(
+                    //               borderRadius: BorderRadius.only(
+                    //                 topLeft: Radius.circular(20.0),
+                    //                 topRight: Radius.circular(20.0),
+                    //               ),
+                    //               color: Colors.grey,
+                    //               image: DecorationImage(
+                    //                 fit: BoxFit.cover,
+                    //                 alignment: FractionalOffset.center,
+                    //                 image: imageProvider,
+                    //               ),
+                    //             ),
+                    //           ),
+                    //           placeholder: (context, text) => Container(
+                    //             decoration: BoxDecoration(
+                    //               borderRadius: BorderRadius.only(
+                    //                 topLeft: Radius.circular(20.0),
+                    //                 topRight: Radius.circular(20.0),
+                    //               ),
+                    //               color: Colors.grey,
+                    //               image: DecorationImage(
+                    //                 image: AssetImage(
+                    //                     'assets/images/image_placeholder.jpg'),
+                    //                 fit: BoxFit.cover,
+                    //               ),
+                    //             ),
+                    //           ),
+                    //           errorWidget: (context, url, error) => Container(
+                    //             height: 150.0,
+                    //             child: Icon(
+                    //               Icons.error,
+                    //               color: kBackgroundColor,
+                    //             ),
+                    //           ),
+                    //         )
+                    //       : Container(
+                    //           decoration: BoxDecoration(
+                    //             borderRadius: BorderRadius.only(
+                    //               topLeft: Radius.circular(20.0),
+                    //               topRight: Radius.circular(20.0),
+                    //             ),
+                    //             color: Colors.grey,
+                    //             image: DecorationImage(
+                    //               image: AssetImage(
+                    //                   'assets/images/image_placeholder.jpg'),
+                    //               fit: BoxFit.cover,
+                    //             ),
+                    //           ),
+                    //         ),
+                    // ),
                     Expanded(
                       flex: 3,
                       child: Container(

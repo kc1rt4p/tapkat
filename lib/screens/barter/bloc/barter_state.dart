@@ -61,6 +61,18 @@ class DeleteCashOfferSuccess extends BarterState {}
 
 class DeleteBarterProductsSuccess extends BarterState {}
 
+class GetUserReviewSuccess extends BarterState {
+  final UserReviewModel? review;
+
+  GetUserReviewSuccess(this.review);
+}
+
+class GetProductReviewSuccess extends BarterState {
+  final ProductReviewModel? review;
+
+  GetProductReviewSuccess(this.review);
+}
+
 class UpdateBarterProductsSuccess extends BarterState {}
 
 class UpdateUserReviewSuccess extends BarterState {}

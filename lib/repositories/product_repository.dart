@@ -70,6 +70,23 @@ class ProductRepository {
     return response.data['status'] == 'SUCCESS';
   }
 
+  Future<ProductReviewModel?> getProductReview(
+      String productId, String userId) async {
+    final response = await _apiService.post(
+      url: 'products/review/get',
+      body: {
+        'psk': psk,
+        'userid': userId,
+        'productid': productId,
+      },
+    );
+
+    if (response.data['status'] == 'SUCCESS')
+      return ProductReviewModel.fromJson(response.data['products']);
+
+    return null;
+  }
+
   Future<bool> updateProductReview(ProductReviewModel productReview) async {
     final response =
         await _apiService.patch(url: 'products/review/update', body: {
@@ -95,11 +112,8 @@ class ProductRepository {
 
     for (var img in images) {
       var receivePort = ReceivePort();
-
-      print('==== scaling image ====');
       await Isolate.spawn(
           decodeIsolate, DecodeParam(File(img.rawPath!), receivePort.sendPort));
-      print('==== done scaling ====');
 
       // Get the processed image from the isolate.
       var image = await receivePort.first as Image;
@@ -111,42 +125,12 @@ class ProductRepository {
       final thumbnail = await File(appDocDirectory.path + '/' + fileName)
           .writeAsBytes(encodeJpg(image));
 
-      print('thumbnail width: ${image.width}');
-      print('original file size: ${await File(img.rawPath!).length()}');
-      print('thumbnail file size: ${await thumbnail.length()}');
-
       _imgsToUpload.addAll([
         img,
         SelectedMedia(fileName, thumbnail.path, thumbnail.readAsBytesSync(),
             appDocDirectory.path + '/' + fileName),
       ]);
     }
-
-    // images.forEach((img) async {
-    //   var receivePort = ReceivePort();
-    //   print('==== scaling image ====');
-    //   await Isolate.spawn(
-    //       decodeIsolate, DecodeParam(File(img.rawPath!), receivePort.sendPort));
-
-    //   print('==== done scaling ====');
-
-    //   // var decodedImage = decodeImage(img.bytes)!;
-    //   // var resizedImage = copyResize(decodedImage, width: 120);
-
-    //   // Get the processed image from the isolate.
-    //   var image = await receivePort.first as Image;
-    //   final fileName = img.fileName.split('.')[0] + '_t.png';
-
-    //   Directory appDocDirectory = await getApplicationDocumentsDirectory();
-
-    //   final thumbnail = await File(appDocDirectory.path + '/' + fileName)
-    //       .writeAsBytes(encodePng(image));
-
-    //   images.add(
-    //       SelectedMedia(fileName, thumbnail.path, thumbnail.readAsBytesSync()));
-    // });
-
-    print('no. of images to upload: ${_imgsToUpload.length}');
 
     for (var img in _imgsToUpload) {
       final mimeType = mime(img.fileName);
@@ -168,24 +152,6 @@ class ProductRepository {
 
     print('ready to upload: ${formData.files.length}');
 
-    // _imgsToUpload.forEach((img) {
-    //   final mimeType = mime(img.fileName);
-    //   String mimee = mimeType!.split('/')[0];
-    //   String type = mimeType.split('/')[1];
-
-    //   print(img.storagePath);
-
-    //   formData.files.add(
-    //     MapEntry(
-    //       'media',
-    //       MultipartFile.fromFileSync(
-    //         img.rawPath!,
-    //         contentType: MediaType(mimee, type),
-    //       ),
-    //     ),
-    //   );
-    // });
-
     final response = await _apiService.post(
       url: 'products/upload',
       formData: formData,
@@ -205,8 +171,8 @@ class ProductRepository {
       body: {
         'psk': psk,
         productId != null ? 'productid' : 'userid': productId ?? userId,
-        'sortby': 'rating',
-        'sortdirection': 'ascending',
+        'sortby': 'date',
+        'sortdirection': 'descending',
         'productcount': 10,
       },
     );
@@ -222,15 +188,15 @@ class ProductRepository {
     String? productId,
     String? userId,
     required String secondaryVal,
-    required double startAfterVal,
+    required String startAfterVal,
   }) async {
     final response = await _apiService.post(
       url: 'products/review/searchSet',
       body: {
         'psk': psk,
         productId != null ? 'productid' : 'userid': productId ?? userId,
-        'sortby': 'rating',
-        'sortdirection': 'ascending',
+        'sortby': 'date',
+        'sortdirection': 'descending',
         'productcount': 10,
         'startafterval': startAfterVal,
         'secondaryval': secondaryVal,
@@ -250,15 +216,25 @@ class ProductRepository {
     required String lastProductId,
     required String startAfterVal,
   }) async {
-    final response =
-        await _apiService.post(url: 'products/$listType/searchset', body: {
-      'psk': psk,
-      'userid': userId,
-      'productcount': productCount,
-      'sortby': 'price',
-      'startafterval': double.parse(startAfterVal),
-      'productid': lastProductId,
-    });
+    final response = await _apiService.post(
+      url: 'products/$listType/searchset',
+      body: listType != 'demand'
+          ? {
+              'psk': psk,
+              'userid': userId,
+              'productcount': productCount,
+              'sortby': 'price',
+              'startafterval': double.parse(startAfterVal),
+              'productid': lastProductId,
+            }
+          : {
+              'psk': psk,
+              'userid': userId,
+              'productcount': productCount,
+              'startafterval': int.parse(startAfterVal),
+              'productid': lastProductId,
+            },
+    );
 
     if (response.data['status'] == 'FAIL') return [];
 
@@ -312,13 +288,19 @@ class ProductRepository {
       [String? userid]) async {
     final response = await _apiService.post(
       url: 'products/$listType/searchfirst',
-      body: {
-        'psk': psk,
-        'userid': userid,
-        'productcount': productCount,
-        'sortby': 'price',
-        'sortdirection': listType == 'reco' ? 'ascending' : 'descending',
-      },
+      body: listType != 'demand'
+          ? {
+              'psk': psk,
+              'userid': userid,
+              'productcount': productCount,
+              'sortby': 'price',
+              'sortdirection': listType == 'reco' ? 'ascending' : 'descending',
+            }
+          : {
+              'psk': psk,
+              'userid': userid,
+              'productcount': productCount,
+            },
       // params: userid != null
       //     ? {
       //         'userid': userid,
@@ -406,7 +388,7 @@ class ProductRepository {
       'sortdirection': 'ascending',
       'productcount': productCount,
     };
-    if (keyword.isNotEmpty) _body.addAll({'keyword': keyword});
+    if (keyword.length > 0) _body.addAll({'keywords': keyword});
     if (category != null) _body.addAll({'category': category});
     if (lastProductId != null && startAfterVal != null) {
       _body.addAll({
@@ -447,8 +429,6 @@ class ProductRepository {
       body: {
         'psk': psk,
         ...productRequest.toJson(updating: true),
-        // 'productid': productRequest.productid,
-        // 'userid': productRequest.userid,
         'rating': rating,
       },
     );

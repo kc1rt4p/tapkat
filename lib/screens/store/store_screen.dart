@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_progress_hud/flutter_progress_hud.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/models/user.dart';
 import 'package:tapkat/schemas/user_likes_record.dart';
@@ -44,6 +45,8 @@ class _StoreScreenState extends State<StoreScreen> {
 
   ProductModel? lastProduct;
 
+  final _refreshController = RefreshController();
+
   final _pagingController =
       PagingController<int, ProductModel>(firstPageKey: 0);
 
@@ -62,211 +65,250 @@ class _StoreScreenState extends State<StoreScreen> {
       indicatorColor: kBackgroundColor,
       child: Scaffold(
         body: Container(
-          child: Column(
-            children: [
-              CustomAppBar(
-                label: '$storeOwnerName\'s Store',
-              ),
-              _storeOwner != null
-                  ? Container(
-                      padding: EdgeInsets.symmetric(
-                        vertical: 8.0,
-                        horizontal: 10.0,
-                      ),
-                      child: Row(
-                        children: [
-                          _buildPhoto(),
-                          SizedBox(width: 10.0),
-                          Expanded(
-                            child: Container(
-                              margin: EdgeInsets.symmetric(
-                                vertical: 10.0,
-                              ),
-                              width: double.infinity,
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  _buildInfoItem(
-                                    label: 'Store Owner',
-                                    controller: TextEditingController(
-                                        text: storeOwnerName),
-                                  ),
-                                  _buildInfoItem(
-                                    label: 'Email',
-                                    controller: TextEditingController(
-                                        text: _storeOwner!.email ?? ''),
-                                  ),
-                                  _buildInfoItem(
-                                    label: 'Phone number',
-                                    controller: TextEditingController(
-                                        text: _storeOwner!.phone_number ?? ''),
-                                  ),
-                                  _buildInfoItem(
-                                    label: 'Location',
-                                    controller: TextEditingController(
-                                        text: (_storeOwner!.address != null &&
-                                                _storeOwner!.city != null &&
-                                                _storeOwner!.country != null)
-                                            ? (_storeOwner!.address ?? '') +
-                                                ', ' +
-                                                (_storeOwner!.city ?? '') +
-                                                ', ' +
-                                                (_storeOwner!.country ?? '')
-                                            : ''),
-                                    suffix: Icon(
-                                      FontAwesomeIcons.mapMarked,
-                                      color: kBackgroundColor,
-                                      size: 12.0,
+          child: SmartRefresher(
+            controller: _refreshController,
+            onRefresh: () =>
+                _storeBloc.add(InitializeStoreScreen(widget.userId)),
+            child: Column(
+              children: [
+                CustomAppBar(
+                  label: '$storeOwnerName\'s Store',
+                ),
+                _storeOwner != null
+                    ? Container(
+                        padding: EdgeInsets.symmetric(
+                          vertical: 8.0,
+                          horizontal: 10.0,
+                        ),
+                        child: Row(
+                          children: [
+                            _buildPhoto(),
+                            SizedBox(width: 10.0),
+                            Expanded(
+                              child: Container(
+                                margin: EdgeInsets.symmetric(
+                                  vertical: 10.0,
+                                ),
+                                width: double.infinity,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    _buildInfoItem(
+                                      label: 'Store Owner',
+                                      controller: TextEditingController(
+                                          text: storeOwnerName),
                                     ),
+                                    _buildInfoItem(
+                                      label: 'Email',
+                                      controller: TextEditingController(
+                                          text: _storeOwner!.email ?? ''),
+                                    ),
+                                    _buildInfoItem(
+                                      label: 'Phone number',
+                                      controller: TextEditingController(
+                                          text:
+                                              _storeOwner!.phone_number ?? ''),
+                                    ),
+                                    _buildInfoItem(
+                                      label: 'Location',
+                                      controller: TextEditingController(
+                                          text: (_storeOwner!.address != null &&
+                                                  _storeOwner!.city != null &&
+                                                  _storeOwner!.country != null)
+                                              ? (_storeOwner!.address ?? '') +
+                                                  ', ' +
+                                                  (_storeOwner!.city ?? '') +
+                                                  ', ' +
+                                                  (_storeOwner!.country ?? '')
+                                              : ''),
+                                      suffix: Icon(
+                                        FontAwesomeIcons.mapMarked,
+                                        color: kBackgroundColor,
+                                        size: 12.0,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    : Container(),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                  child: Column(
+                    children: [
+                      Container(
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: kBackgroundColor,
+                          borderRadius: BorderRadius.circular(10.0),
+                        ),
+                        padding: EdgeInsets.symmetric(
+                          vertical: 6.0,
+                          horizontal: 10.0,
+                        ),
+                        child: Row(
+                          children: [
+                            Text(
+                              'User Reviews',
+                              style: Style.subtitle2.copyWith(
+                                color: Colors.white,
+                              ),
+                            ),
+                            Spacer(),
+                            Icon(
+                              FontAwesomeIcons.chevronRight,
+                              color: Colors.white,
+                              size: 14.0,
+                            ),
+                          ],
+                        ),
+                      ),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: CustomSearchBar(
+                              margin: EdgeInsets.zero,
+                              controller: TextEditingController(),
+                              backgroundColor: kBackgroundColor,
+                              textColor: Colors.white,
+                            ),
+                          ),
+                          SizedBox(width: 10.0),
+                          InkWell(
+                            onTap: () {},
+                            child: Container(
+                              padding: EdgeInsets.all(10.0),
+                              decoration: BoxDecoration(
+                                color: kBackgroundColor,
+                                borderRadius: BorderRadius.circular(10.0),
+                                boxShadow: [
+                                  BoxShadow(
+                                    offset: Offset(0, 0.5),
+                                    blurRadius: 0.5,
+                                    spreadRadius: 0.5,
+                                    color: Color(0xFF005F73).withOpacity(0.3),
                                   ),
                                 ],
+                              ),
+                              child: Icon(
+                                FontAwesomeIcons.solidMap,
+                                size: 14.0,
+                                color: Colors.white,
                               ),
                             ),
                           ),
                         ],
                       ),
-                    )
-                  : Container(),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: CustomSearchBar(
-                        margin: EdgeInsets.zero,
-                        controller: TextEditingController(),
-                        backgroundColor: Color(0xFF005F73).withOpacity(0.3),
-                      ),
-                    ),
-                    SizedBox(width: 10.0),
-                    InkWell(
-                      onTap: () {},
-                      child: Container(
-                        padding: EdgeInsets.all(10.0),
-                        decoration: BoxDecoration(
-                          color: Color(0xFF005F73).withOpacity(0.3),
-                          borderRadius: BorderRadius.circular(10.0),
-                          boxShadow: [
-                            BoxShadow(
-                              offset: Offset(0, 0.5),
-                              blurRadius: 0.5,
-                              spreadRadius: 0.5,
-                              color: Color(0xFF005F73).withOpacity(0.3),
-                            ),
-                          ],
-                        ),
-                        child: Icon(
-                          FontAwesomeIcons.solidMap,
-                          size: 24.0,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              Expanded(
-                child: MultiBlocListener(
-                  listeners: [
-                    BlocListener(
-                      bloc: _productBloc,
-                      listener: (context, state) {
-                        if (state is ProductLoading) {
-                          ProgressHUD.of(context)!.show();
-                        } else {
-                          ProgressHUD.of(context)!.dismiss();
-                        }
+                Expanded(
+                  child: MultiBlocListener(
+                    listeners: [
+                      BlocListener(
+                        bloc: _productBloc,
+                        listener: (context, state) {
+                          if (state is ProductLoading) {
+                            ProgressHUD.of(context)!.show();
+                          } else {
+                            ProgressHUD.of(context)!.dismiss();
+                          }
 
-                        if (state is GetFirstProductsSuccess) {
-                          // setState(() {
-                          //   currentPage = 0;
-                          //   _list = state.list;
-                          //   indicators.clear();
-                          //   if (_list.isNotEmpty) {
-                          //     indicators.add(_list.last);
-                          //   }
-                          // });
-
-                          if (state.list.isNotEmpty) {
-                            _list.addAll(state.list);
-                            lastProduct = state.list.last;
-                            if (state.list.length == productCount) {
-                              _pagingController.appendPage(
-                                  state.list, currentPage + 1);
-                            } else {
-                              _pagingController.appendLastPage(state.list);
-                            }
-                            print(
-                                'lastrProduct name: ${lastProduct!.productname}');
-                            _pagingController.addPageRequestListener((pageKey) {
-                              if (lastProduct != null) {
-                                _productBloc.add(
-                                  GetNextProducts(
-                                    listType: 'user',
-                                    lastProductId: lastProduct!.productid!,
-                                    startAfterVal:
-                                        lastProduct!.price.toString(),
-                                    userId: widget.userId,
-                                  ),
-                                );
+                          if (state is GetFirstProductsSuccess) {
+                            // setState(() {
+                            //   currentPage = 0;
+                            //   _list = state.list;
+                            //   indicators.clear();
+                            //   if (_list.isNotEmpty) {
+                            //     indicators.add(_list.last);
+                            //   }
+                            // });
+                            _refreshController.refreshCompleted();
+                            _pagingController.refresh();
+                            if (state.list.isNotEmpty) {
+                              _list.addAll(state.list);
+                              lastProduct = state.list.last;
+                              if (state.list.length == productCount) {
+                                _pagingController.appendPage(
+                                    state.list, currentPage + 1);
+                              } else {
+                                _pagingController.appendLastPage(state.list);
                               }
+                              print(
+                                  'lastrProduct name: ${lastProduct!.productname}');
+                              _pagingController
+                                  .addPageRequestListener((pageKey) {
+                                if (lastProduct != null) {
+                                  _productBloc.add(
+                                    GetNextProducts(
+                                      listType: 'user',
+                                      lastProductId: lastProduct!.productid!,
+                                      startAfterVal:
+                                          lastProduct!.price.toString(),
+                                      userId: widget.userId,
+                                    ),
+                                  );
+                                }
+                              });
+                            }
+                          }
+
+                          if (state is GetProductsSuccess) {
+                            // setState(() {
+                            //   _list = state.list;
+
+                            //   indicators.add(_list.last);
+                            // });
+
+                            // indicators.asMap().forEach((key, value) =>
+                            //     print('==== page : ${value.productid}'));
+
+                            if (state.list.isNotEmpty) {
+                              lastProduct = state.list.last;
+                              if (state.list.length == productCount) {
+                                _pagingController.appendPage(
+                                    state.list, currentPage + 1);
+                              } else {
+                                _pagingController.appendLastPage(state.list);
+                              }
+                            } else {
+                              _pagingController.appendLastPage([]);
+                            }
+                          }
+                        },
+                      ),
+                      BlocListener(
+                        bloc: _storeBloc,
+                        listener: (context, state) {
+                          if (state is LoadingStore) {
+                            ProgressHUD.of(context)!.show();
+                          } else {
+                            setState(() {
+                              ProgressHUD.of(context)!.dismiss();
                             });
                           }
-                        }
 
-                        if (state is GetProductsSuccess) {
-                          // setState(() {
-                          //   _list = state.list;
-
-                          //   indicators.add(_list.last);
-                          // });
-
-                          // indicators.asMap().forEach((key, value) =>
-                          //     print('==== page : ${value.productid}'));
-
-                          print('HEYYYY');
-                          if (state.list.isNotEmpty) {
-                            lastProduct = state.list.last;
-                            if (state.list.length == productCount) {
-                              _pagingController.appendPage(
-                                  state.list, currentPage + 1);
-                            } else {
-                              _pagingController.appendLastPage(state.list);
-                            }
-                          } else {
-                            _pagingController.appendLastPage([]);
+                          if (state is InitializedStoreScreen) {
+                            print(state.user.toJson());
+                            setState(() {
+                              _storeOwner = state.user;
+                              storeOwnerName = _storeOwner!.display_name!;
+                            });
+                            _productBloc.add(GetFirstProducts('user',
+                                userId: widget.userId));
                           }
-                        }
-                      },
-                    ),
-                    BlocListener(
-                      bloc: _storeBloc,
-                      listener: (context, state) {
-                        if (state is LoadingStore) {
-                          ProgressHUD.of(context)!.show();
-                        } else {
-                          setState(() {
-                            ProgressHUD.of(context)!.dismiss();
-                          });
-                        }
-
-                        if (state is InitializedStoreScreen) {
-                          print(state.user.toJson());
-                          setState(() {
-                            _storeOwner = state.user;
-                            storeOwnerName = _storeOwner!.display_name!;
-                          });
-                          _productBloc.add(
-                              GetFirstProducts('user', userId: widget.userId));
-                        }
-                      },
-                    ),
-                  ],
-                  child: Container(child: _buildGridView()),
+                        },
+                      ),
+                    ],
+                    child: Container(child: _buildGridView()),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -331,7 +373,7 @@ class _StoreScreenState extends State<StoreScreen> {
                         : product.media!.first.url!;
 
                   return BarterListItem(
-                    height: SizeConfig.screenHeight * 0.23,
+                    height: SizeConfig.screenHeight * 0.22,
                     width: SizeConfig.screenWidth * 0.40,
                     liked: liked,
                     itemName: product.productname ?? '',

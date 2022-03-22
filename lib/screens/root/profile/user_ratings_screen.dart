@@ -4,8 +4,10 @@ import 'package:flutter_progress_hud/flutter_progress_hud.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:tapkat/models/request/product_review_resuest.dart';
+import 'package:tapkat/models/request/user_review_request.dart';
 import 'package:tapkat/models/user.dart';
 import 'package:tapkat/screens/root/profile/bloc/profile_bloc.dart';
+import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/constants.dart';
 import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/widgets/custom_app_bar.dart';
@@ -25,19 +27,26 @@ class UserRatingsScreen extends StatefulWidget {
 class _UserRatingsScreenState extends State<UserRatingsScreen> {
   final _profileBloc = ProfileBloc();
 
-  List<ProductReviewModel> _ratings = [];
+  List<ProductReviewModel> _productRatings = [];
+  List<UserReviewModel> _userReviews = [];
 
-  final _pagingController =
+  final _userPagingController =
+      PagingController<int, UserReviewModel>(firstPageKey: 0);
+
+  final _productPagingController =
       PagingController<int, ProductReviewModel>(firstPageKey: 0);
 
-  ProductReviewModel? lastProduct;
+  ProductReviewModel? lastProductReview;
+  UserReviewModel? lastUserReview;
 
   int currentPage = 0;
+
+  String _selectedView = 'products';
 
   @override
   void initState() {
     // TODO: implement initState
-    _profileBloc.add(GetUserRatings(widget.user.userid!));
+    _profileBloc.add(GetProductRatings(widget.user.userid!));
     super.initState();
   }
 
@@ -49,6 +58,7 @@ class _UserRatingsScreenState extends State<UserRatingsScreen> {
         child: BlocListener(
           bloc: _profileBloc,
           listener: (context, state) {
+            print('current ratings state: $state');
             if (state is ProfileLoading) {
               ProgressHUD.of(context)!.show();
             } else {
@@ -57,38 +67,78 @@ class _UserRatingsScreenState extends State<UserRatingsScreen> {
 
             if (state is GetUserRatingsSuccess) {
               if (state.list.isNotEmpty) {
-                lastProduct = state.list.last;
+                lastUserReview = state.list.last;
                 if (state.list.length == productCount) {
-                  _pagingController.appendPage(state.list, currentPage + 1);
+                  _userPagingController.appendPage(state.list, currentPage + 1);
                 } else {
-                  _pagingController.appendLastPage(state.list);
+                  _userPagingController.appendLastPage(state.list);
                 }
               } else {
-                _pagingController.appendLastPage([]);
+                _userPagingController.appendLastPage([]);
               }
-              _pagingController.addPageRequestListener((pageKey) {
-                if (lastProduct != null) {
+              _userPagingController.addPageRequestListener((pageKey) {
+                if (lastProductReview != null) {
                   _profileBloc.add(
-                    GetNextRatings(
-                      userId: lastProduct!.userid!,
-                      startAfterVal: lastProduct!.rating!.toDouble(),
-                      lastProductId: lastProduct!.productid!,
+                    GetNextUserRatings(
+                      userId: lastProductReview!.userid!,
+                      startAfterVal: lastUserReview!.review_date!,
+                      lastUserId: lastUserReview!.userid!,
                     ),
                   );
                 }
               });
             }
 
-            if (state is GetNextRatingsSuccess) {
+            if (state is GetNextUserRatingsSuccess) {
               if (state.list.isNotEmpty) {
-                lastProduct = state.list.last;
+                lastUserReview = state.list.last;
                 if (state.list.length == productCount) {
-                  _pagingController.appendPage(state.list, currentPage + 1);
+                  _userPagingController.appendPage(state.list, currentPage + 1);
                 } else {
-                  _pagingController.appendLastPage(state.list);
+                  _userPagingController.appendLastPage(state.list);
                 }
               } else {
-                _pagingController.appendLastPage([]);
+                _userPagingController.appendLastPage([]);
+              }
+            }
+
+            if (state is GetProductRatingsSuccess) {
+              if (state.list.isNotEmpty) {
+                lastProductReview = state.list.last;
+                if (state.list.length == productCount) {
+                  _productPagingController.appendPage(
+                      state.list, currentPage + 1);
+                } else {
+                  _productPagingController.appendLastPage(state.list);
+                }
+              } else {
+                _productPagingController.appendLastPage([]);
+              }
+              _productPagingController.addPageRequestListener((pageKey) {
+                if (lastProductReview != null) {
+                  _profileBloc.add(
+                    GetNextProductRatings(
+                      userId: lastProductReview!.userid!,
+                      startAfterVal:
+                          lastProductReview!.review_date!.toIso8601String(),
+                      lastProductId: lastProductReview!.productid!,
+                    ),
+                  );
+                }
+              });
+            }
+
+            if (state is GetNextProductRatingsSuccess) {
+              if (state.list.isNotEmpty) {
+                lastProductReview = state.list.last;
+                if (state.list.length == productCount) {
+                  _productPagingController.appendPage(
+                      state.list, currentPage + 1);
+                } else {
+                  _productPagingController.appendLastPage(state.list);
+                }
+              } else {
+                _productPagingController.appendLastPage([]);
               }
             }
           },
@@ -97,8 +147,73 @@ class _UserRatingsScreenState extends State<UserRatingsScreen> {
               CustomAppBar(
                 label: 'User Ratings',
               ),
+              Container(
+                margin: EdgeInsets.only(top: 16.0, left: 16.0, right: 16.0),
+                decoration: BoxDecoration(
+                  // color: kBackgroundColor,
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: InkWell(
+                        onTap: _onSwitchTab,
+                        child: Container(
+                          padding: EdgeInsets.symmetric(vertical: 8.0),
+                          decoration: BoxDecoration(
+                            color: _selectedView == 'products'
+                                ? kBackgroundColor
+                                : kBackgroundColor.withOpacity(0.4),
+                            borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(10.0),
+                              bottomLeft: Radius.circular(10.0),
+                            ),
+                          ),
+                          child: Center(
+                              child: Text(
+                            'Products',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: SizeConfig.textScaleFactor * 16,
+                            ),
+                          )),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: InkWell(
+                        onTap: _onSwitchTab,
+                        child: Container(
+                          padding: EdgeInsets.symmetric(vertical: 8.0),
+                          decoration: BoxDecoration(
+                            color: _selectedView != 'products'
+                                ? kBackgroundColor
+                                : kBackgroundColor.withOpacity(0.4),
+                            borderRadius: BorderRadius.only(
+                              topRight: Radius.circular(10.0),
+                              bottomRight: Radius.circular(10.0),
+                            ),
+                          ),
+                          child: Center(
+                              child: Text(
+                            'Users',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: SizeConfig.textScaleFactor * 16,
+                            ),
+                          )),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
               Expanded(
-                child: _buildUserRatingsList(),
+                child: _selectedView == 'products'
+                    ? _buildProductRatingsList()
+                    : _buildUserRatingsList(),
               ),
             ],
           ),
@@ -107,13 +222,26 @@ class _UserRatingsScreenState extends State<UserRatingsScreen> {
     );
   }
 
-  _buildUserRatingsList() {
+  _onSwitchTab() {
+    setState(() {
+      _selectedView = _selectedView == 'products' ? 'users' : 'products';
+    });
+
+    if (_selectedView == 'products') {
+      _profileBloc.add(GetProductRatings(widget.user.userid!));
+    } else {
+      _profileBloc.add(GetUserRatings(widget.user.userid!));
+    }
+  }
+
+  Widget _buildProductRatingsList() {
+    print('PRODUCT RATINGS');
     return PagedListView<int, ProductReviewModel>(
       padding: EdgeInsets.symmetric(
         horizontal: 16.0,
         vertical: 10.0,
       ),
-      pagingController: _pagingController,
+      pagingController: _productPagingController,
       builderDelegate: PagedChildBuilderDelegate<ProductReviewModel>(
         itemBuilder: (context, rating, index) {
           return Container(
@@ -146,6 +274,102 @@ class _UserRatingsScreenState extends State<UserRatingsScreen> {
                         image: DecorationImage(
                           image: rating.image_url_t != null
                               ? NetworkImage(rating.image_url_t!)
+                              : AssetImage(
+                                      'assets/images/image_placeholder.jpg')
+                                  as ImageProvider<Object>,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 8.0),
+                    Expanded(
+                      child: Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 10.0),
+                            child: Text(
+                              rating.review != null && rating.review!.isNotEmpty
+                                  ? '"${rating.review}"'
+                                  : '-',
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                          Align(
+                            alignment: Alignment.center,
+                            child: RatingBar.builder(
+                              ignoreGestures: true,
+                              initialRating: rating.rating != null
+                                  ? rating.rating!.roundToDouble()
+                                  : 0,
+                              minRating: 0,
+                              direction: Axis.horizontal,
+                              allowHalfRating: true,
+                              itemCount: 5,
+                              itemSize: 20,
+                              tapOnlyMode: true,
+                              itemPadding:
+                                  EdgeInsets.symmetric(horizontal: 4.0),
+                              itemBuilder: (context, _) => Icon(
+                                Icons.star,
+                                color: Colors.amber,
+                              ),
+                              onRatingUpdate: (rating) {
+                                //
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildUserRatingsList() {
+    return PagedListView<int, UserReviewModel>(
+      padding: EdgeInsets.symmetric(
+        horizontal: 16.0,
+        vertical: 10.0,
+      ),
+      pagingController: _userPagingController,
+      builderDelegate: PagedChildBuilderDelegate<UserReviewModel>(
+        itemBuilder: (context, rating, index) {
+          return Container(
+            margin: EdgeInsets.only(bottom: 10.0),
+            padding: EdgeInsets.all(5.0),
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: Colors.grey,
+                ),
+              ),
+            ),
+            child: Column(
+              children: [
+                // Row(
+                //   children: [
+                //     Text(rating.username ?? ''),
+                //     Spacer(),
+                //     Text(timeago.format(rating. ?? DateTime.now())),
+                //   ],
+                // ),
+                SizedBox(height: 8.0),
+                Row(
+                  children: [
+                    Container(
+                      width: SizeConfig.screenWidth * .2,
+                      height: SizeConfig.screenWidth * .2,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        image: DecorationImage(
+                          image: rating.user_image_url != null
+                              ? NetworkImage(rating.user_image_url!)
                               : AssetImage(
                                       'assets/images/image_placeholder.jpg')
                                   as ImageProvider<Object>,

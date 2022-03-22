@@ -121,6 +121,18 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
               add(UpdateProductRating(event.review));
           }
 
+          if (event is GetUserReview) {
+            final review =
+                await _userRepo.getUserReview(event.userId, event.reviewerId);
+            emit(GetUserReviewSuccess(review));
+          }
+
+          if (event is GetProductReview) {
+            final review = await _productRepository.getProductReview(
+                event.productId, event.userId);
+            emit(GetProductReviewSuccess(review));
+          }
+
           if (event is UpdateProductRating) {
             final updated =
                 await _productRepository.updateProductReview(event.review);
@@ -182,6 +194,14 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
               } else
                 emit(BarterError('unable to counter offer'));
             }
+          }
+
+          if (event is GetUserReview) {
+            //
+          }
+
+          if (event is GetProductReview) {
+            //
           }
 
           if (event is UpdateBarterStatus) {

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:tapkat/utilities/constant_colors.dart';
 
 class CustomSearchBar extends StatefulWidget {
   final TextEditingController controller;
@@ -9,6 +8,7 @@ class CustomSearchBar extends StatefulWidget {
   final Function(String?)? onSubmitted;
   final EdgeInsetsGeometry? margin;
   final Color? backgroundColor;
+  final Color textColor;
 
   const CustomSearchBar({
     Key? key,
@@ -19,6 +19,7 @@ class CustomSearchBar extends StatefulWidget {
     this.onSubmitted,
     this.margin,
     this.backgroundColor,
+    this.textColor = Colors.black,
   }) : super(key: key);
 
   @override
@@ -35,12 +36,12 @@ class _CustomSearchBarState extends State<CustomSearchBar> {
           Expanded(
             child: Container(
               margin: widget.margin ??
-                  EdgeInsets.symmetric(vertical: 8.0, horizontal: 20.0),
-              padding: EdgeInsets.symmetric(horizontal: 16.0),
+                  EdgeInsets.symmetric(vertical: 3.0, horizontal: 20.0),
+              padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 0.0),
               width: double.infinity,
               decoration: BoxDecoration(
                 color: widget.backgroundColor ?? Colors.white,
-                borderRadius: BorderRadius.circular(15.0),
+                borderRadius: BorderRadius.circular(10.0),
               ),
               child: Row(
                 children: [
@@ -49,9 +50,13 @@ class _CustomSearchBarState extends State<CustomSearchBar> {
                       controller: widget.controller,
                       onEditingComplete: widget.onCompleted,
                       onFieldSubmitted: widget.onSubmitted,
+                      style: TextStyle(color: widget.textColor),
                       decoration: InputDecoration(
                         border: InputBorder.none,
                         hintText: 'What are you looking for?',
+                        isDense: true,
+                        hintStyle:
+                            TextStyle(color: widget.textColor.withOpacity(0.5)),
                       ),
                     ),
                   ),
@@ -65,7 +70,7 @@ class _CustomSearchBarState extends State<CustomSearchBar> {
                         : null,
                     child: Icon(
                       Icons.search,
-                      color: kBackgroundColor,
+                      color: widget.textColor,
                     ),
                   ),
                   Visibility(
@@ -74,7 +79,7 @@ class _CustomSearchBarState extends State<CustomSearchBar> {
                       onTap: widget.onPinTapped,
                       child: Icon(
                         Icons.location_pin,
-                        color: kBackgroundColor,
+                        color: widget.textColor,
                       ),
                     ),
                   ),

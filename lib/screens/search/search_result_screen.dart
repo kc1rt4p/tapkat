@@ -6,8 +6,12 @@ import 'package:flutter_progress_hud/flutter_progress_hud.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
+import 'package:tapkat/backend.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/schemas/product_markers_record.dart';
+import 'package:tapkat/schemas/user_likes_record.dart';
+import 'package:tapkat/screens/product/bloc/product_bloc.dart';
 import 'package:tapkat/screens/product/product_details_screen.dart';
 import 'package:tapkat/screens/search/bloc/search_bloc.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
@@ -23,11 +27,13 @@ class SearchResultScreen extends StatefulWidget {
   final String keyword;
   final String? category;
   final bool mapFirst;
+  final String userid;
   const SearchResultScreen({
     Key? key,
     required this.keyword,
     this.category,
     this.mapFirst = false,
+    required this.userid,
   }) : super(key: key);
 
   @override
@@ -51,8 +57,11 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
 
   ProductModel? lastProduct;
 
+  final _productBloc = ProductBloc();
+
   final _pagingController =
       PagingController<int, ProductModel>(firstPageKey: 0);
+  final _refreshController = RefreshController();
 
   @override
   void initState() {
@@ -96,7 +105,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
               });
             }
 
-            if (state is GetNextProductsSuccess) {
+            if (state is SearchNextProductsSuccess) {
               print('hey ${state.list.length}');
               if (state.list.isNotEmpty) {
                 lastProduct = state.list.last;
@@ -111,6 +120,9 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
             }
 
             if (state is SearchSuccess) {
+              _refreshController.refreshCompleted();
+
+              _pagingController.refresh();
               if (state.searchResults.isNotEmpty) {
                 lastProduct = state.searchResults.last;
                 searchResults.addAll(state.searchResults);
@@ -134,7 +146,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                 _pagingController.addPageRequestListener((pageKey) {
                   if (lastProduct != null) {
                     _searchBloc.add(
-                      GetNextProducts(
+                      SearchNextProducts(
                         keyword: _keyWordTextController.text.trim(),
                         lastProductId: lastProduct!.productid!,
                         startAfterVal: lastProduct!.price!.toString(),
@@ -145,121 +157,126 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
               }
             }
           },
-          child: Container(
-            width: SizeConfig.screenWidth,
-            child: Column(
-              children: [
-                CustomAppBar(label: 'Explore'),
-                Expanded(
-                  child: Container(
-                    child: Column(
-                      children: [
-                        CustomSearchBar(
-                          controller: _keyWordTextController,
-                          onSubmitted: (val) => _onSearchSubmitted(val),
-                          backgroundColor: Color(0xFF005F73).withOpacity(0.3),
-                        ),
-                        Container(
-                          margin: EdgeInsets.only(bottom: 8.0),
-                          padding: EdgeInsets.symmetric(horizontal: 20.0),
-                          child: Row(
-                            children: [
-                              Text(
-                                'Search Results',
-                                style: Style.subtitle2
-                                    .copyWith(color: kBackgroundColor),
-                              ),
-                              Spacer(),
-                              InkWell(
-                                onTap: _onSelectView,
-                                child: Container(
-                                  padding: EdgeInsets.all(8.0),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(10.0),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        offset: Offset(1, 1),
-                                        color: Colors.grey,
-                                      ),
-                                    ],
-                                  ),
-                                  child: Icon(
-                                    _selectedView != 'map'
-                                        ? FontAwesomeIcons.mapMarkedAlt
-                                        : FontAwesomeIcons.thLarge,
-                                    size: 16.0,
-                                    color: kBackgroundColor,
-                                  ),
-                                ),
-                              ),
-                            ],
+          child: SmartRefresher(
+            onRefresh: () => _searchBloc.add(InitializeSearch(
+                _keyWordTextController.text.trim(), widget.category)),
+            controller: _refreshController,
+            child: Container(
+              width: SizeConfig.screenWidth,
+              child: Column(
+                children: [
+                  CustomAppBar(label: 'Explore'),
+                  Expanded(
+                    child: Container(
+                      child: Column(
+                        children: [
+                          CustomSearchBar(
+                            controller: _keyWordTextController,
+                            onSubmitted: (val) => _onSearchSubmitted(val),
+                            backgroundColor: Color(0xFF005F73).withOpacity(0.3),
                           ),
-                        ),
-                        Expanded(
-                          child: Container(
-                            child: searchResults.isNotEmpty
-                                ? _selectedView == 'grid'
-                                    ? _buildGridView2()
-                                    : _buildMapView()
-                                : Container(
-                                    padding:
-                                        EdgeInsets.symmetric(horizontal: 30.0),
-                                    child: Center(
-                                      child: Text(
-                                        'No products found',
-                                        style: Style.subtitle2
-                                            .copyWith(color: Colors.grey),
-                                      ),
+                          Container(
+                            margin: EdgeInsets.only(bottom: 8.0),
+                            padding: EdgeInsets.symmetric(horizontal: 20.0),
+                            child: Row(
+                              children: [
+                                Text(
+                                  'Search Results',
+                                  style: Style.subtitle2
+                                      .copyWith(color: kBackgroundColor),
+                                ),
+                                Spacer(),
+                                InkWell(
+                                  onTap: _onSelectView,
+                                  child: Container(
+                                    padding: EdgeInsets.all(8.0),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(10.0),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          offset: Offset(1, 1),
+                                          color: Colors.grey,
+                                        ),
+                                      ],
+                                    ),
+                                    child: Icon(
+                                      _selectedView != 'map'
+                                          ? FontAwesomeIcons.mapMarkedAlt
+                                          : FontAwesomeIcons.thLarge,
+                                      size: 16.0,
+                                      color: kBackgroundColor,
                                     ),
                                   ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
+                          Expanded(
+                            child: Container(
+                              child: searchResults.isNotEmpty
+                                  ? _selectedView == 'grid'
+                                      ? _buildGridView2()
+                                      : _buildMapView()
+                                  : Container(
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: 30.0),
+                                      child: Center(
+                                        child: Text(
+                                          'No products found',
+                                          style: Style.subtitle2
+                                              .copyWith(color: Colors.grey),
+                                        ),
+                                      ),
+                                    ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-                // Container(
-                //   width: double.infinity,
-                //   padding:
-                //       EdgeInsets.symmetric(horizontal: 20.0, vertical: 5.0),
-                //   height: SizeConfig.screenHeight * .06,
-                //   color: kBackgroundColor,
-                //   child: Row(
-                //     mainAxisAlignment: MainAxisAlignment.center,
-                //     crossAxisAlignment: CrossAxisAlignment.center,
-                //     children: [
-                //       Expanded(
-                //         child: InkWell(
-                //           onTap: _onPrevTapped,
-                //           child: Container(
-                //             child: Center(
-                //                 child: Icon(
-                //               Icons.arrow_left,
-                //               size: 40.0,
-                //               color:
-                //                   currentPage == 0 ? Colors.grey : Colors.white,
-                //             )),
-                //           ),
-                //         ),
-                //       ),
-                //       Expanded(
-                //         child: InkWell(
-                //           onTap: _onNextTapped,
-                //           child: Container(
-                //             child: Center(
-                //                 child: Icon(
-                //               Icons.arrow_right,
-                //               size: 40.0,
-                //               color: Colors.white,
-                //             )),
-                //           ),
-                //         ),
-                //       ),
-                //     ],
-                //   ),
-                // ),
-              ],
+                  // Container(
+                  //   width: double.infinity,
+                  //   padding:
+                  //       EdgeInsets.symmetric(horizontal: 20.0, vertical: 5.0),
+                  //   height: SizeConfig.screenHeight * .06,
+                  //   color: kBackgroundColor,
+                  //   child: Row(
+                  //     mainAxisAlignment: MainAxisAlignment.center,
+                  //     crossAxisAlignment: CrossAxisAlignment.center,
+                  //     children: [
+                  //       Expanded(
+                  //         child: InkWell(
+                  //           onTap: _onPrevTapped,
+                  //           child: Container(
+                  //             child: Center(
+                  //                 child: Icon(
+                  //               Icons.arrow_left,
+                  //               size: 40.0,
+                  //               color:
+                  //                   currentPage == 0 ? Colors.grey : Colors.white,
+                  //             )),
+                  //           ),
+                  //         ),
+                  //       ),
+                  //       Expanded(
+                  //         child: InkWell(
+                  //           onTap: _onNextTapped,
+                  //           child: Container(
+                  //             child: Center(
+                  //                 child: Icon(
+                  //               Icons.arrow_right,
+                  //               size: 40.0,
+                  //               color: Colors.white,
+                  //             )),
+                  //           ),
+                  //         ),
+                  //       ),
+                  //     ],
+                  //   ),
+                  // ),
+                ],
+              ),
             ),
           ),
         ),
@@ -381,24 +398,61 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                   ? product.media!.first.url_t!
                   : product.media!.first.url!;
           }
-          print(thumbnail);
-          return BarterListItem(
-            height: SizeConfig.screenHeight * 0.23,
-            width: SizeConfig.screenWidth * 0.40,
-            itemName: product.productname ?? '',
-            itemPrice: (product.currency ?? '') +
-                (product.price != null
-                    ? product.price!.toStringAsFixed(2)
-                    : '0.00'),
-            imageUrl: thumbnail,
-            onTapped: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ProductDetailsScreen(
-                  ownItem: false,
-                  productId: product.productid ?? '',
-                ),
+          return Center(
+            child: StreamBuilder<List<UserLikesRecord?>>(
+              stream: queryUserLikesRecord(
+                queryBuilder: (userLikesRecord) => userLikesRecord
+                    .where('userid', isEqualTo: widget.userid)
+                    .where('productid', isEqualTo: product.productid),
+                singleRecord: true,
               ),
+              builder: (context, snapshot) {
+                bool liked = false;
+                UserLikesRecord? record;
+                if (snapshot.hasData) {
+                  if (snapshot.data != null && snapshot.data!.isNotEmpty) {
+                    record = snapshot.data!.first;
+                    if (record != null) {
+                      liked = record.liked ?? false;
+                    }
+                  }
+                }
+
+                return BarterListItem(
+                  height: SizeConfig.screenHeight * 0.22,
+                  width: SizeConfig.screenWidth * 0.40,
+                  liked: liked,
+                  itemName: product.productname ?? '',
+                  itemPrice: product.price != null
+                      ? product.price!.toStringAsFixed(2)
+                      : '0',
+                  imageUrl: thumbnail,
+                  onTapped: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ProductDetailsScreen(
+                        productId: product.productid ?? '',
+                      ),
+                    ),
+                  ),
+                  onLikeTapped: () {
+                    if (record != null) {
+                      final newData = createUserLikesRecordData(
+                        liked: !record.liked!,
+                      );
+
+                      record.reference!.update(newData);
+                      if (liked) {
+                        _productBloc.add(
+                          Unlike(product),
+                        );
+                      } else {
+                        _productBloc.add(AddLike(product));
+                      }
+                    }
+                  },
+                );
+              },
             ),
           );
         },

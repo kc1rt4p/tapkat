@@ -3,6 +3,7 @@ import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/repositories/product_repository.dart';
+import 'package:tapkat/screens/product/bloc/product_bloc.dart';
 import 'package:tapkat/services/auth_service.dart';
 
 part 'home_event.dart';
@@ -42,6 +43,12 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
           final userItems =
               await _productRepo.getFirstProducts('user', _user!.uid);
           emit(LoadedUserList(userItems));
+          add(LoadProductsInCategories());
+        }
+
+        if (event is LoadProductsInCategories) {
+          final list = await _productRepo.getAllCategoryProducts();
+          emit(LoadProductsInCategoriesSuccess(list));
         }
 
         if (event is LoadTrendingList) {

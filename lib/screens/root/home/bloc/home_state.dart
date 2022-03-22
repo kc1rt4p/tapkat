@@ -17,6 +17,12 @@ class LoadedUserList extends HomeState {
   LoadedUserList(this.yourItems);
 }
 
+class LoadProductsInCategoriesSuccess extends HomeState {
+  final List<Map<String, dynamic>> list;
+
+  LoadProductsInCategoriesSuccess(this.list);
+}
+
 class LoadedTrendingList extends HomeState {
   final List<ProductModel> trending;
 

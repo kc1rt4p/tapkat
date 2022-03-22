@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/models/request/product_review_resuest.dart';
 import 'package:tapkat/models/request/update_user.dart';
+import 'package:tapkat/models/request/user_review_request.dart';
 import 'package:tapkat/models/user.dart';
 import 'package:tapkat/repositories/product_repository.dart';
 import 'package:tapkat/repositories/user_repository.dart';
@@ -36,17 +37,27 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       }
 
       if (event is GetUserRatings) {
-        final list = await _productRepo.getProductRatings(userId: event.userId);
+        final list = await _userRepo.getUserReviews(null, event.userId);
         emit(GetUserRatingsSuccess(list));
       }
 
-      if (event is GetNextRatings) {
+      if (event is GetNextUserRatings) {
+        final list = await _userRepo.getNextUserReviews(
+            null, event.userId, event.lastUserId, event.startAfterVal);
+      }
+
+      if (event is GetProductRatings) {
+        final list = await _productRepo.getProductRatings(userId: event.userId);
+        emit(GetProductRatingsSuccess(list));
+      }
+
+      if (event is GetNextProductRatings) {
         final list = await _productRepo.getNextRatings(
           secondaryVal: event.lastProductId,
           startAfterVal: event.startAfterVal,
           userId: event.userId,
         );
-        emit(GetNextRatingsSuccess(list));
+        emit(GetNextProductRatingsSuccess(list));
       }
 
       if (event is UpdateUserPhoto) {

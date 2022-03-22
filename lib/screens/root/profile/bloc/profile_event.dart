@@ -27,14 +27,32 @@ class GetUserRatings extends ProfileEvent {
   GetUserRatings(this.userId);
 }
 
-class GetNextRatings extends ProfileEvent {
+class GetProductRatings extends ProfileEvent {
+  final String userId;
+
+  GetProductRatings(this.userId);
+}
+
+class GetNextProductRatings extends ProfileEvent {
   final String userId;
   final String lastProductId;
-  final double startAfterVal;
+  final String startAfterVal;
 
-  GetNextRatings({
+  GetNextProductRatings({
     required this.userId,
     required this.lastProductId,
+    required this.startAfterVal,
+  });
+}
+
+class GetNextUserRatings extends ProfileEvent {
+  final String userId;
+  final String lastUserId;
+  final String startAfterVal;
+
+  GetNextUserRatings({
+    required this.userId,
+    required this.lastUserId,
     required this.startAfterVal,
   });
 }

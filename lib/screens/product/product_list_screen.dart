@@ -7,6 +7,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart' as gmf;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:tapkat/backend.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/schemas/user_likes_record.dart';
@@ -55,6 +56,8 @@ class _ProductListScreenState extends State<ProductListScreen> {
   List<ProductModel> indicators = [];
 
   final _keywordTextController = TextEditingController();
+
+  final _refreshController = RefreshController();
 
   LatLng? googleMapsCenter;
   late GoogleMapController googleMapsController;
@@ -106,7 +109,6 @@ class _ProductListScreenState extends State<ProductListScreen> {
         child: BlocListener(
           bloc: _productBloc,
           listener: (context, state) {
-            print('CURRENT STATE');
             // if (state is ProductLoading) {
             //   ProgressHUD.of(context)!.show();
             // } else {
@@ -114,15 +116,6 @@ class _ProductListScreenState extends State<ProductListScreen> {
             // }
 
             if (state is GetFirstProductsSuccess) {
-              // setState(() {
-              //   currentPage = 0;
-              //   _list = state.list;
-              //   indicators.clear();
-              //   if (_list.isNotEmpty) {
-              //     indicators.add(_list.last);
-              //   }
-              // });
-
               if (state.list.isNotEmpty) {
                 _list.addAll(state.list);
 
@@ -141,13 +134,18 @@ class _ProductListScreenState extends State<ProductListScreen> {
                 _onSelectView();
               }
 
+              _refreshController.refreshCompleted();
+              _pagingController.refresh();
+
               _pagingController.addPageRequestListener((pageKey) {
                 if (lastProduct != null) {
                   _productBloc.add(
                     GetNextProducts(
                       listType: widget.listType,
                       lastProductId: lastProduct!.productid!,
-                      startAfterVal: lastProduct!.price!.toString(),
+                      startAfterVal: widget.listType != 'demand'
+                          ? lastProduct!.price!.toString()
+                          : lastProduct!.likes.toString(),
                       userId: widget.listType == 'user' ? widget.userId : '',
                     ),
                   );
@@ -284,87 +282,8 @@ class _ProductListScreenState extends State<ProductListScreen> {
                   child: Container(
                       child: _selectedView == 'grid'
                           ? _buildGridView2()
-                          : _buildMapView()
-                      // _list.isNotEmpty
-                      //     ?
-                      //     : Container(
-                      //         padding: EdgeInsets.symmetric(horizontal: 30.0),
-                      //         child: Center(
-                      //           child: Column(
-                      //             mainAxisAlignment: MainAxisAlignment.center,
-                      //             children: [
-                      //               Text(
-                      //                 'No products found',
-                      //                 style: Style.subtitle2
-                      //                     .copyWith(color: Colors.grey),
-                      //               ),
-                      //               SizedBox(height: 16.0),
-                      //               Visibility(
-                      //                 visible:
-                      //                     widget.showAdd && widget.ownListing,
-                      //                 child: Padding(
-                      //                   padding: const EdgeInsets.symmetric(
-                      //                       horizontal: 30.0),
-                      //                   child: CustomButton(
-                      //                     label: 'Add Product',
-                      //                     onTap: () => Navigator.push(
-                      //                       context,
-                      //                       MaterialPageRoute(
-                      //                         builder: (context) =>
-                      //                             ProductAddScreen(),
-                      //                       ),
-                      //                     ),
-                      //                   ),
-                      //                 ),
-                      //               ),
-                      //             ],
-                      //           ),
-                      //         ),
-                      //       ),
-                      ),
+                          : _buildMapView()),
                 ),
-                // Container(
-                //   width: double.infinity,
-                //   padding:
-                //       EdgeInsets.symmetric(horizontal: 20.0, vertical: 5.0),
-                //   height: SizeConfig.screenHeight * .06,
-                //   color: kBackgroundColor,
-                //   child: Row(
-                //     mainAxisAlignment: MainAxisAlignment.center,
-                //     crossAxisAlignment: CrossAxisAlignment.center,
-                //     children: [
-                //       Expanded(
-                //         child: InkWell(
-                //           onTap: _onPrevTapped,
-                //           child: Container(
-                //             child: Center(
-                //                 child: Icon(
-                //               Icons.arrow_left,
-                //               size: 40.0,
-                //               color:
-                //                   currentPage == 0 ? Colors.grey : Colors.white,
-                //             )),
-                //           ),
-                //         ),
-                //       ),
-                //       Expanded(
-                //         child: InkWell(
-                //           onTap: _onNextTapped,
-                //           child: Container(
-                //             child: Center(
-                //               child: Icon(
-                //                 Icons.arrow_right,
-                //                 size: 40.0,
-                //                 color:
-                //                     _list.isEmpty ? Colors.grey : Colors.white,
-                //               ),
-                //             ),
-                //           ),
-                //         ),
-                //       ),
-                //     ],
-                //   ),
-                // ),
               ],
             ),
           ),
@@ -382,6 +301,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
       context,
       MaterialPageRoute(
         builder: (context) => SearchResultScreen(
+          userid: widget.userId!,
           keyword: val,
         ),
       ),
@@ -389,100 +309,105 @@ class _ProductListScreenState extends State<ProductListScreen> {
   }
 
   Widget _buildGridView2() {
-    return PagedGridView<int, ProductModel>(
-      pagingController: _pagingController,
-      showNewPageProgressIndicatorAsGridChild: false,
-      showNewPageErrorIndicatorAsGridChild: false,
-      showNoMoreItemsIndicatorAsGridChild: false,
-      padding: EdgeInsets.symmetric(
-        horizontal: 16.0,
-        vertical: 10.0,
-      ),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        mainAxisSpacing: 16,
-        crossAxisCount: 2,
-      ),
-      builderDelegate: PagedChildBuilderDelegate<ProductModel>(
-        itemBuilder: (context, product, index) {
-          var thumbnail = '';
+    return SmartRefresher(
+      onRefresh: () => _productBloc
+          .add(GetFirstProducts(widget.listType, userId: widget.userId)),
+      controller: _refreshController,
+      child: PagedGridView<int, ProductModel>(
+        pagingController: _pagingController,
+        showNewPageProgressIndicatorAsGridChild: false,
+        showNewPageErrorIndicatorAsGridChild: false,
+        showNoMoreItemsIndicatorAsGridChild: false,
+        padding: EdgeInsets.symmetric(
+          horizontal: 16.0,
+          vertical: 10.0,
+        ),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          mainAxisSpacing: 16,
+          crossAxisCount: 2,
+        ),
+        builderDelegate: PagedChildBuilderDelegate<ProductModel>(
+          itemBuilder: (context, product, index) {
+            var thumbnail = '';
 
-          if (product.mediaPrimary != null &&
-              product.mediaPrimary!.url != null &&
-              product.mediaPrimary!.url!.isNotEmpty)
-            thumbnail = product.mediaPrimary!.url!;
+            if (product.mediaPrimary != null &&
+                product.mediaPrimary!.url != null &&
+                product.mediaPrimary!.url!.isNotEmpty)
+              thumbnail = product.mediaPrimary!.url!;
 
-          if (product.mediaPrimary != null &&
-              product.mediaPrimary!.url_t != null &&
-              product.mediaPrimary!.url_t!.isNotEmpty)
-            thumbnail = product.mediaPrimary!.url_t!;
+            if (product.mediaPrimary != null &&
+                product.mediaPrimary!.url_t != null &&
+                product.mediaPrimary!.url_t!.isNotEmpty)
+              thumbnail = product.mediaPrimary!.url_t!;
 
-          if (product.mediaPrimary == null ||
-              product.mediaPrimary!.url!.isEmpty &&
-                  product.mediaPrimary!.url_t!.isEmpty &&
-                  product.media != null &&
-                  product.media!.isNotEmpty)
-            thumbnail = product.media!.first.url_t != null
-                ? product.media!.first.url_t!
-                : product.media!.first.url!;
-          return Center(
-            child: StreamBuilder<List<UserLikesRecord?>>(
-                stream: queryUserLikesRecord(
-                  queryBuilder: (userLikesRecord) => userLikesRecord
-                      .where('userid', isEqualTo: widget.userId)
-                      .where('productid', isEqualTo: product.productid),
-                  singleRecord: true,
-                ),
-                builder: (context, snapshot) {
-                  bool liked = false;
-                  UserLikesRecord? record;
-                  if (snapshot.hasData) {
-                    if (snapshot.data != null && snapshot.data!.isNotEmpty) {
-                      record = snapshot.data!.first;
-                      if (record != null) {
-                        liked = record.liked ?? false;
-                      }
-                    }
-                  }
-
-                  return BarterListItem(
-                    height: SizeConfig.screenHeight * 0.22,
-                    width: SizeConfig.screenWidth * 0.40,
-                    hideLikeBtn: widget.ownListing,
-                    liked: liked,
-                    itemName: product.productname ?? '',
-                    itemPrice: product.price != null
-                        ? product.price!.toStringAsFixed(2)
-                        : '0',
-                    imageUrl: thumbnail,
-                    onTapped: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ProductDetailsScreen(
-                          productId: product.productid ?? '',
-                          ownItem: widget.ownListing ? true : false,
-                        ),
-                      ),
-                    ),
-                    onLikeTapped: () {
-                      if (record != null) {
-                        final newData = createUserLikesRecordData(
-                          liked: !record.liked!,
-                        );
-
-                        record.reference!.update(newData);
-                        if (liked) {
-                          _productBloc.add(
-                            Unlike(product),
-                          );
-                        } else {
-                          _productBloc.add(AddLike(product));
+            if (product.mediaPrimary == null ||
+                product.mediaPrimary!.url!.isEmpty &&
+                    product.mediaPrimary!.url_t!.isEmpty &&
+                    product.media != null &&
+                    product.media!.isNotEmpty)
+              thumbnail = product.media!.first.url_t != null
+                  ? product.media!.first.url_t!
+                  : product.media!.first.url!;
+            return Center(
+              child: StreamBuilder<List<UserLikesRecord?>>(
+                  stream: queryUserLikesRecord(
+                    queryBuilder: (userLikesRecord) => userLikesRecord
+                        .where('userid', isEqualTo: widget.userId)
+                        .where('productid', isEqualTo: product.productid),
+                    singleRecord: true,
+                  ),
+                  builder: (context, snapshot) {
+                    bool liked = false;
+                    UserLikesRecord? record;
+                    if (snapshot.hasData) {
+                      if (snapshot.data != null && snapshot.data!.isNotEmpty) {
+                        record = snapshot.data!.first;
+                        if (record != null) {
+                          liked = record.liked ?? false;
                         }
                       }
-                    },
-                  );
-                }),
-          );
-        },
+                    }
+
+                    return BarterListItem(
+                      height: SizeConfig.screenHeight * 0.22,
+                      width: SizeConfig.screenWidth * 0.40,
+                      hideLikeBtn: widget.ownListing,
+                      liked: liked,
+                      itemName: product.productname ?? '',
+                      itemPrice: product.price != null
+                          ? product.price!.toStringAsFixed(2)
+                          : '0',
+                      imageUrl: thumbnail,
+                      onTapped: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ProductDetailsScreen(
+                            productId: product.productid ?? '',
+                            ownItem: widget.ownListing ? true : false,
+                          ),
+                        ),
+                      ),
+                      onLikeTapped: () {
+                        if (record != null) {
+                          final newData = createUserLikesRecordData(
+                            liked: !record.liked!,
+                          );
+
+                          record.reference!.update(newData);
+                          if (liked) {
+                            _productBloc.add(
+                              Unlike(product),
+                            );
+                          } else {
+                            _productBloc.add(AddLike(product));
+                          }
+                        }
+                      },
+                    );
+                  }),
+            );
+          },
+        ),
       ),
     );
   }
@@ -722,41 +647,6 @@ class _ProductListScreenState extends State<ProductListScreen> {
         ),
       ],
     );
-  }
-
-  void _onNextTapped() {
-    print('next tapped, current page $currentPage');
-    if (_list.isEmpty) return;
-
-    _productBloc.add(
-      GetNextProducts(
-        listType: widget.listType,
-        lastProductId: _list.last.productid!,
-        startAfterVal: _list.last.price!.toString(),
-        userId: widget.listType == 'user' ? widget.userId : '',
-      ),
-    );
-
-    setState(() {
-      currentPage += 1;
-    });
-  }
-
-  void _onPrevTapped() {
-    if (currentPage < 1) return;
-
-    if (currentPage == 1) _productBloc.add(GetFirstProducts(widget.listType));
-
-    if (currentPage > 1) {
-      _productBloc.add(GetNextProducts(
-          listType: widget.listType,
-          lastProductId: indicators[currentPage - 2].productid!,
-          startAfterVal: indicators[currentPage - 2].price!.toString()));
-    }
-
-    setState(() {
-      currentPage -= 1;
-    });
   }
 
   _onSelectView() {

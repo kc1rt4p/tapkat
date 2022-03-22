@@ -87,7 +87,7 @@ class GetProductRatings extends ProductEvent {
 class GetNextRatings extends ProductEvent {
   final String productId;
   final String lastUserId;
-  final double startAfterVal;
+  final String startAfterVal;
 
   GetNextRatings(
       {required this.productId,

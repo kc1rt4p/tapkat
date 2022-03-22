@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_progress_hud/flutter_progress_hud.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:tapkat/backend.dart';
 import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
 import 'package:tapkat/models/product.dart';
@@ -47,6 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   User? _user;
   UserModel? _userModel;
+  final _refreshController = RefreshController();
 
   @override
   void initState() {
@@ -54,6 +56,12 @@ class _HomeScreenState extends State<HomeScreen> {
     _rootBloc = BlocProvider.of<RootBloc>(context);
     _authBloc.add(GetCurrentuser());
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _refreshController.dispose();
+    super.dispose();
   }
 
   @override
@@ -66,16 +74,10 @@ class _HomeScreenState extends State<HomeScreen> {
       child: MultiBlocListener(
         listeners: [
           BlocListener(
-            bloc: _productBloc,
+            bloc: _homeBloc,
             listener: (context, state) {
-              if (state is ProductLoading) {
-                ProgressHUD.of(context)!.show();
-              } else {
-                ProgressHUD.of(context)!.dismiss();
-              }
-
-              if (state is GetProductCategoriesSuccess) {
-                print('----- OHOY');
+              if (state is LoadProductsInCategoriesSuccess) {
+                _refreshController.refreshCompleted();
                 setState(() {
                   _categoryProducts = state.list;
                   if (_userInterests.isNotEmpty) {
@@ -91,11 +93,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   }
                 });
               }
-            },
-          ),
-          BlocListener(
-            bloc: _homeBloc,
-            listener: (context, state) {
               if (state is LoadedRecommendedList) {
                 setState(() {
                   _recommendedList = state.recommended;
@@ -121,8 +118,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   _myProductList
                       .sort((a, b) => a.productname!.compareTo(b.productname!));
                 });
-
-                _productBloc.add(GetProductCategories());
               }
 
               if (state is LoadingUserList) {
@@ -163,7 +158,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 _homeBloc.add(InitializeHomeScreen());
               }
             },
-            child: Container(),
           )
         ],
         child: Column(
@@ -181,137 +175,145 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             Expanded(
-              child: Container(
-                height: double.maxFinite,
-                width: double.infinity,
-                padding: EdgeInsets.fromLTRB(15.0, 15, 15.0, 0.0),
-                decoration: BoxDecoration(
-                  color: Color(0xFFEBFBFF),
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(30.0),
-                    topRight: Radius.circular(30.0),
+              child: SmartRefresher(
+                onRefresh: () => _homeBloc.add(InitializeHomeScreen()),
+                controller: _refreshController,
+                child: Container(
+                  height: double.maxFinite,
+                  width: double.infinity,
+                  padding: EdgeInsets.fromLTRB(15.0, 15, 15.0, 0.0),
+                  decoration: BoxDecoration(
+                    color: Color(0xFFEBFBFF),
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(30.0),
+                      topRight: Radius.circular(30.0),
+                    ),
                   ),
-                ),
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      BarterList(
-                        loading: _loadingRecoList,
-                        context: context,
-                        items: _recommendedList
-                            .map((product) => _buildProductItem(
-                                  product: product,
-                                ))
-                            .toList(),
-                        label: 'Recommended For You',
-                        onViewAllTapped: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ProductListScreen(
-                              listType: 'reco',
-                              showAdd: false,
-                            ),
-                          ),
-                        ),
-                        onMapBtnTapped: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ProductListScreen(
-                              listType: 'reco',
-                              showAdd: false,
-                              initialView: 'map',
-                            ),
-                          ),
-                        ),
-                      ),
-                      BarterList(
-                        loading: _loadingTrendingList,
-                        context: context,
-                        items: _trendingList
-                            .map((product) => _buildProductItem(
-                                  product: product,
-                                ))
-                            .toList(),
-                        label: 'What\'s Hot',
-                        onViewAllTapped: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ProductListScreen(
-                              listType: 'demand',
-                              showAdd: false,
-                            ),
-                          ),
-                        ),
-                        onMapBtnTapped: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ProductListScreen(
-                              listType: 'demand',
-                              showAdd: false,
-                              initialView: 'map',
-                            ),
-                          ),
-                        ),
-                      ),
-                      Visibility(
-                        visible:
-                            _myProductList.isNotEmpty || _loadingUserProducts,
-                        child: BarterList(
-                          loading: _loadingUserProducts,
-                          context: context,
-                          ownList: true,
-                          items: _myProductList
-                              .map((product) => _buildProductItem(
-                                    product: product,
-                                    hideLike: true,
-                                  ))
-                              .toList(),
-                          label: 'Your Items',
-                          smallItems: true,
-                          removeMargin: true,
-                          onViewAllTapped: () => _rootBloc.add(MoveTab(3)),
-                          removeMapBtn: true,
-                        ),
-                      ),
-                      SizedBox(height: 16.0),
-                      ..._categoryProducts.map((cat) {
-                        print(cat['code']);
-                        return BarterList(
-                          items: (cat['products'] as List<ProductModel>)
-                              .map((product) => _buildProductItem(
-                                    product: product,
-                                  ))
-                              .toList(),
-                          label: cat['name'] as String,
-                          context: context,
-                          onViewAllTapped: () {
-                            Navigator.push(
+                  child: SingleChildScrollView(
+                    child: Container(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          BarterList(
+                            loading: _loadingRecoList,
+                            context: context,
+                            items: _recommendedList
+                                .map((product) => _buildProductItem(
+                                      product: product,
+                                    ))
+                                .toList(),
+                            label: 'Recommended For You',
+                            onViewAllTapped: () => Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => SearchResultScreen(
-                                  keyword: '',
-                                  category: cat['code'],
+                                builder: (context) => ProductListScreen(
+                                  listType: 'reco',
+                                  showAdd: false,
                                 ),
                               ),
-                            );
-                          },
-                          onMapBtnTapped: () {
-                            Navigator.push(
+                            ),
+                            onMapBtnTapped: () => Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => SearchResultScreen(
-                                  keyword: '',
-                                  category: cat['code'],
-                                  mapFirst: true,
+                                builder: (context) => ProductListScreen(
+                                  listType: 'reco',
+                                  showAdd: false,
+                                  initialView: 'map',
                                 ),
                               ),
+                            ),
+                          ),
+                          BarterList(
+                            loading: _loadingTrendingList,
+                            context: context,
+                            items: _trendingList
+                                .map((product) => _buildProductItem(
+                                      product: product,
+                                    ))
+                                .toList(),
+                            label: 'What\'s Hot',
+                            onViewAllTapped: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ProductListScreen(
+                                  listType: 'demand',
+                                  showAdd: false,
+                                ),
+                              ),
+                            ),
+                            onMapBtnTapped: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ProductListScreen(
+                                  listType: 'demand',
+                                  showAdd: false,
+                                  initialView: 'map',
+                                ),
+                              ),
+                            ),
+                          ),
+                          Visibility(
+                            visible: _myProductList.isNotEmpty ||
+                                _loadingUserProducts,
+                            child: BarterList(
+                              loading: _loadingUserProducts,
+                              context: context,
+                              ownList: true,
+                              items: _myProductList
+                                  .map((product) => _buildProductItem(
+                                        product: product,
+                                        hideLike: true,
+                                      ))
+                                  .toList(),
+                              label: 'Your Items',
+                              smallItems: true,
+                              removeMargin: true,
+                              onViewAllTapped: () => _rootBloc.add(MoveTab(3)),
+                              removeMapBtn: true,
+                            ),
+                          ),
+                          SizedBox(height: 16.0),
+                          ..._categoryProducts.map((cat) {
+                            print(cat['code']);
+                            return BarterList(
+                              items: (cat['products'] as List<ProductModel>)
+                                  .map((product) => _buildProductItem(
+                                        product: product,
+                                      ))
+                                  .toList(),
+                              label: cat['name'] as String,
+                              context: context,
+                              onViewAllTapped: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => SearchResultScreen(
+                                      userid: _user!.uid,
+                                      keyword: '',
+                                      category: cat['code'],
+                                    ),
+                                  ),
+                                );
+                              },
+                              onMapBtnTapped: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => SearchResultScreen(
+                                      userid: _user!.uid,
+                                      keyword: '',
+                                      category: cat['code'],
+                                      mapFirst: true,
+                                    ),
+                                  ),
+                                );
+                              },
                             );
-                          },
-                        );
-                      }).toList(),
-                      SizedBox(height: 10.0),
-                    ],
+                          }).toList(),
+                          SizedBox(height: 10.0),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -358,8 +360,8 @@ class _HomeScreenState extends State<HomeScreen> {
         itemPrice:
             product.price != null ? product.price!.toStringAsFixed(2) : '0',
         imageUrl: thumbnail,
-        onTapped: () async {
-          await Navigator.push(
+        onTapped: () {
+          Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => ProductDetailsScreen(
@@ -368,8 +370,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           );
-
-          _homeBloc.add(LoadUserList());
         },
       );
     }
@@ -421,8 +421,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   : '0',
               imageUrl: thumbnail,
               datePosted: product.updated_time ?? null,
-              onTapped: () async {
-                await Navigator.push(
+              onTapped: () {
+                Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => ProductDetailsScreen(
@@ -431,8 +431,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                 );
-
-                _homeBloc.add(LoadRecommendedList());
               },
               onLikeTapped: () {
                 if (record != null) {
@@ -468,6 +466,7 @@ class _HomeScreenState extends State<HomeScreen> {
       context,
       MaterialPageRoute(
         builder: (context) => SearchResultScreen(
+          userid: _user!.uid,
           keyword: val,
         ),
       ),

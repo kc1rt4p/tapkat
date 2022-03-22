@@ -33,6 +33,73 @@ class UserRepository {
     return result.data['status'] == 'SUCCESS';
   }
 
+  Future<List<UserReviewModel>> getUserReviews(
+      String? userid, String? reviewerid) async {
+    var _body = {
+      'psk': psk,
+      'sortby': 'date',
+      'sortdirection': 'descending',
+      'productCount': 10,
+    };
+    if (userid != null) _body.addAll({'userid': userid});
+    if (reviewerid != null) _body.addAll({'reviewerid': reviewerid});
+    final result = await _apiService.post(
+      url: 'users/review/searchfirst',
+      body: _body,
+    );
+
+    if (result.data['status'] != 'SUCCESS') return [];
+
+    return (result.data['products'] as List<dynamic>)
+        .map((json) => UserReviewModel.fromJson(json))
+        .toList();
+  }
+
+  Future<List<UserReviewModel>> getNextUserReviews(
+    String? userid,
+    String? reviewerid,
+    String lastuserid,
+    String startAfterVal,
+  ) async {
+    var _body = {
+      'psk': psk,
+      'sortby': 'date',
+      'sortdirection': 'descending',
+      'productCount': 10,
+      'startafterval': startAfterVal,
+      'secondaryval': lastuserid,
+    };
+    if (userid != null) _body.addAll({'userid': userid});
+    if (reviewerid != null) _body.addAll({'reviewerid': reviewerid});
+    final result = await _apiService.post(
+      url: 'users/review/searchfirst',
+      body: _body,
+    );
+
+    if (result.data['status'] != 'SUCCESS') return [];
+
+    return (result.data['products'] as List<dynamic>)
+        .map((json) => UserReviewModel.fromJson(json))
+        .toList();
+  }
+
+  Future<UserReviewModel?> getUserReview(
+      String userId, String reviewerId) async {
+    final result = await _apiService.post(
+      url: 'users/review/get',
+      body: {
+        'psk': psk,
+        'userid': userId,
+        'reviewerid': reviewerId,
+      },
+    );
+
+    if (result.data['status'] == 'SUCCESS')
+      return UserReviewModel.fromJson(result.data['products']);
+
+    return null;
+  }
+
   Future<bool> updateUserReview(UserReviewModel review) async {
     final result = await _apiService.patch(
       url: 'users/review/update',

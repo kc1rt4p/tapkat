@@ -14,7 +14,6 @@ import 'package:tapkat/models/product_category.dart';
 import 'package:tapkat/models/product_type.dart';
 import 'package:tapkat/models/request/add_product_request.dart';
 import 'package:tapkat/screens/product/bloc/product_bloc.dart';
-import 'package:tapkat/screens/product/product_select_categories_screen.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/dialog_message.dart';
 import 'package:tapkat/utilities/size_config.dart';
@@ -291,6 +290,7 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
 
   void _onUpdateTapped() {
     var productRequest = ProductRequestModel.fromProduct(_product);
+    print('product request: ${productRequest.toJson()}');
     productRequest.productname = _nameTextController.text.trim();
     productRequest.productdesc = _descTextController.text.trim();
     productRequest.price = double.parse(_priceTextController.text.trim());
@@ -307,16 +307,16 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
 
     // _productBloc.add(EditProduct(productRequest));
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => SelectProductCategoryScreen(
-          productRequest: productRequest,
-          categories: _categories,
-          updating: true,
-        ),
-      ),
-    );
+    // Navigator.push(
+    //   context,
+    //   MaterialPageRoute(
+    //     builder: (context) => SelectProductCategoryScreen(
+    //       productRequest: productRequest,
+    //       categories: _categories,
+    //       updating: true,
+    //     ),
+    //   ),
+    // );
   }
 
   _onSelectOfferType(BuildContext context) async {

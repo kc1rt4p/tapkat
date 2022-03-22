@@ -90,6 +90,8 @@ class _BarterScreenState extends State<BarterScreen> {
   String? _currentUserRole;
   UserModel? _currentUserModel;
 
+  BarterProductModel? _productToReview;
+
   @override
   void setState(fn) {
     if (mounted) {
@@ -281,6 +283,15 @@ class _BarterScreenState extends State<BarterScreen> {
               ProgressHUD.of(context)!.show();
             } else {
               ProgressHUD.of(context)!.dismiss();
+            }
+
+            if (state is GetUserReviewSuccess) {
+              _onRateUser(state.review);
+            }
+
+            if (state is GetProductReviewSuccess) {
+              if (_productToReview != null)
+                _onRateProduct(state.review, _productToReview!);
             }
 
             if (state is AddUserReviewSuccess) {
@@ -1019,7 +1030,11 @@ class _BarterScreenState extends State<BarterScreen> {
                             top: 5.0,
                             right: 10.0,
                             child: InkWell(
-                              onTap: () => _onRateProduct(item),
+                              onTap: () {
+                                _productToReview = item;
+                                _barterBloc.add(GetProductReview(
+                                    item.productId!, _currentUser!.uid));
+                              },
                               child: Container(
                                 padding: EdgeInsets.all(5.0),
                                 decoration: BoxDecoration(
@@ -1191,11 +1206,12 @@ class _BarterScreenState extends State<BarterScreen> {
     );
   }
 
-  _onRateProduct(BarterProductModel item) async {
+  _onRateProduct(ProductReviewModel? review, BarterProductModel item) async {
     final rating = await showDialog(
       context: context,
       builder: (context) {
-        final _reviewTextController = TextEditingController();
+        final _reviewTextController =
+            TextEditingController(text: review != null ? review.review : '');
         num _rating = 0.0;
         return StatefulBuilder(
           builder: (context, StateSetter setState) {
@@ -1244,7 +1260,8 @@ class _BarterScreenState extends State<BarterScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         RatingBar.builder(
-                          initialRating: 0,
+                          initialRating:
+                              review != null ? review.rating!.toDouble() : 0.0,
                           minRating: 0,
                           direction: Axis.horizontal,
                           allowHalfRating: true,
@@ -1299,6 +1316,8 @@ class _BarterScreenState extends State<BarterScreen> {
         review: rating['review'] as String?,
       )));
     }
+
+    _productToReview = null;
   }
 
   bool _shouldShowAdd() {
@@ -1380,7 +1399,11 @@ class _BarterScreenState extends State<BarterScreen> {
           Visibility(
             visible: _barterRecord!.dealStatus == 'completed',
             child: GestureDetector(
-              onTap: _onRateUser,
+              onTap: () => _barterBloc.add(GetUserReview(
+                  _currentUserModel!.userid == _senderUserId
+                      ? _recipientUserId!
+                      : _senderUserId!,
+                  _currentUserModel!.userid!)),
               child: Text(
                 'Rate User',
                 style: TextStyle(
@@ -1396,7 +1419,7 @@ class _BarterScreenState extends State<BarterScreen> {
     );
   }
 
-  _onRateUser() async {
+  _onRateUser(UserReviewModel? review) async {
     final rating = await showDialog(
       barrierDismissible: false,
       context: context,
@@ -1435,7 +1458,7 @@ class _BarterScreenState extends State<BarterScreen> {
                 ),
                 SizedBox(height: 16.0),
                 RatingBar.builder(
-                  initialRating: 0,
+                  initialRating: review != null ? review.rating!.toDouble() : 0,
                   minRating: 0,
                   direction: Axis.horizontal,
                   allowHalfRating: true,

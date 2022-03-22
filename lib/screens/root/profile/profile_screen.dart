@@ -11,6 +11,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_api_headers/google_api_headers.dart';
 import 'package:google_maps_webservice/places.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
 import 'package:tapkat/models/location.dart';
 import 'package:tapkat/models/product.dart';
@@ -54,6 +55,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   PlaceDetails? _selectedLocation;
   final _locationTextController = TextEditingController();
   int currentPage = 0;
+
+  final _refreshController = RefreshController();
 
   ProductModel? lastProduct;
 
@@ -122,6 +125,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ', ' +
                           (_userModel!.country ?? '')
                       : '';
+
+                  _refreshController.refreshCompleted();
+                  _pagingController.refresh();
 
                   if (state.list.isNotEmpty) {
                     lastProduct = state.list.last;
@@ -194,153 +200,222 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   // ),
                 ),
                 Expanded(
-                  child: Container(
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-                    child: _user != null
-                        ? Column(
-                            children: [
-                              Container(
-                                width: double.infinity,
-                                decoration: BoxDecoration(
-                                  color: kBackgroundColor,
-                                  borderRadius: BorderRadius.circular(10.0),
-                                ),
-                                padding: EdgeInsets.symmetric(
-                                  vertical: 8.0,
-                                  horizontal: 10.0,
-                                ),
-                                child: Row(
-                                  children: [
-                                    Text(
-                                      'Info',
-                                      style: Style.subtitle2
-                                          .copyWith(color: Colors.white),
-                                    ),
-                                    Spacer(),
-                                    Visibility(
-                                      visible: editProfile,
-                                      child: Row(
-                                        children: [
-                                          GestureDetector(
-                                            onTap: () {
-                                              setState(() {
-                                                editProfile = !editProfile;
-                                              });
-                                            },
-                                            child: Icon(
-                                              FontAwesomeIcons.times,
-                                              color: Colors.white,
-                                              size: 18.0,
-                                            ),
-                                          ),
-                                          SizedBox(width: 10.0),
-                                          GestureDetector(
-                                            onTap: _onUpdateUserInfo,
-                                            child: Icon(
-                                              FontAwesomeIcons.solidSave,
-                                              color: Colors.white,
-                                              size: 18.0,
-                                            ),
-                                          ),
-                                        ],
+                  child: SmartRefresher(
+                    controller: _refreshController,
+                    onRefresh: () =>
+                        _profileBloc.add(InitializeProfileScreen()),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 20.0, vertical: 10.0),
+                      child: _user != null
+                          ? Column(
+                              children: [
+                                Container(
+                                  width: double.infinity,
+                                  decoration: BoxDecoration(
+                                    color: kBackgroundColor,
+                                    borderRadius: BorderRadius.circular(10.0),
+                                  ),
+                                  padding: EdgeInsets.symmetric(
+                                    vertical: 8.0,
+                                    horizontal: 10.0,
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Text(
+                                        'Info',
+                                        style: Style.subtitle2
+                                            .copyWith(color: Colors.white),
                                       ),
-                                    ),
-                                    GestureDetector(
-                                      onTap: _userModel != null
-                                          ? () async {
-                                              await Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      EditProfileScreen(
-                                                    user: _userModel!,
-                                                  ),
-                                                ),
-                                              );
-
-                                              _profileBloc.add(
-                                                  InitializeProfileScreen());
-                                            }
-                                          : () {},
-                                      child: Icon(
-                                        FontAwesomeIcons.solidEdit,
-                                        color: Colors.white,
-                                        size: 18.0,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16.0),
-                                child: Row(
-                                  children: [
-                                    _buildPhoto(),
-                                    Expanded(
-                                      child: Container(
-                                        margin: EdgeInsets.symmetric(
-                                          vertical: 10.0,
-                                        ),
-                                        width: double.infinity,
-                                        child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.center,
+                                      Spacer(),
+                                      Visibility(
+                                        visible: editProfile,
+                                        child: Row(
                                           children: [
-                                            _buildInfoItem(
-                                              label: 'Display name',
-                                              controller:
-                                                  _displayNameTextController,
-                                            ),
-                                            _buildInfoItem(
-                                              label: 'Email',
-                                              controller: _emailTextController,
-                                            ),
-                                            _buildInfoItem(
-                                              label: 'Phone number',
-                                              controller: _phoneTextController,
-                                            ),
-                                            _buildInfoItem(
-                                              label: 'Location',
-                                              controller:
-                                                  _locationTextController,
-                                              suffix: Icon(
-                                                FontAwesomeIcons.mapMarked,
-                                                color: kBackgroundColor,
-                                                size: 12.0,
+                                            GestureDetector(
+                                              onTap: () {
+                                                setState(() {
+                                                  editProfile = !editProfile;
+                                                });
+                                              },
+                                              child: Icon(
+                                                FontAwesomeIcons.times,
+                                                color: Colors.white,
+                                                size: 18.0,
                                               ),
-                                              onTap: _onSelectLocation,
-                                              readOnly: true,
+                                            ),
+                                            SizedBox(width: 10.0),
+                                            GestureDetector(
+                                              onTap: _onUpdateUserInfo,
+                                              child: Icon(
+                                                FontAwesomeIcons.solidSave,
+                                                color: Colors.white,
+                                                size: 18.0,
+                                              ),
                                             ),
                                           ],
                                         ),
                                       ),
-                                    ),
-                                  ],
+                                      GestureDetector(
+                                        onTap: _userModel != null
+                                            ? () async {
+                                                await Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        EditProfileScreen(
+                                                      user: _userModel!,
+                                                    ),
+                                                  ),
+                                                );
+
+                                                _profileBloc.add(
+                                                    InitializeProfileScreen());
+                                              }
+                                            : () {},
+                                        child: Icon(
+                                          FontAwesomeIcons.solidEdit,
+                                          color: Colors.white,
+                                          size: 18.0,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                              Expanded(
-                                child: Container(
-                                  width: double.infinity,
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16.0),
+                                  child: Row(
                                     children: [
-                                      InkWell(
-                                        onTap: () => Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                UserRatingsScreen(
-                                                    user: _userModel!),
+                                      _buildPhoto(),
+                                      Expanded(
+                                        child: Container(
+                                          margin: EdgeInsets.symmetric(
+                                            vertical: 10.0,
+                                          ),
+                                          width: double.infinity,
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.center,
+                                            children: [
+                                              _buildInfoItem(
+                                                label: 'Display name',
+                                                controller:
+                                                    _displayNameTextController,
+                                              ),
+                                              _buildInfoItem(
+                                                label: 'Email',
+                                                controller:
+                                                    _emailTextController,
+                                              ),
+                                              _buildInfoItem(
+                                                label: 'Phone number',
+                                                controller:
+                                                    _phoneTextController,
+                                              ),
+                                              _buildInfoItem(
+                                                label: 'Location',
+                                                controller:
+                                                    _locationTextController,
+                                                suffix: Icon(
+                                                  FontAwesomeIcons.mapMarked,
+                                                  color: kBackgroundColor,
+                                                  size: 12.0,
+                                                ),
+                                                onTap: _onSelectLocation,
+                                                readOnly: true,
+                                              ),
+                                            ],
                                           ),
                                         ),
-                                        child: Container(
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Container(
+                                    width: double.infinity,
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        InkWell(
+                                          onTap: () => Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  UserRatingsScreen(
+                                                      user: _userModel!),
+                                            ),
+                                          ),
+                                          child: Container(
+                                            width: double.infinity,
+                                            margin:
+                                                EdgeInsets.only(bottom: 12.0),
+                                            decoration: BoxDecoration(
+                                              color: kBackgroundColor,
+                                              borderRadius:
+                                                  BorderRadius.circular(10.0),
+                                            ),
+                                            padding: EdgeInsets.symmetric(
+                                              vertical: 8.0,
+                                              horizontal: 10.0,
+                                            ),
+                                            child: Row(
+                                              children: [
+                                                Text(
+                                                  'Reviewed Products & Users',
+                                                  style: Style.subtitle2
+                                                      .copyWith(
+                                                          color: Colors.white),
+                                                ),
+                                                Spacer(),
+                                                Icon(
+                                                  FontAwesomeIcons.chevronRight,
+                                                  color: Colors.white,
+                                                  size: 18.0,
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                        InkWell(
+                                          onTap: () {},
+                                          child: Container(
+                                            width: double.infinity,
+                                            margin:
+                                                EdgeInsets.only(bottom: 12.0),
+                                            decoration: BoxDecoration(
+                                              color: kBackgroundColor,
+                                              borderRadius:
+                                                  BorderRadius.circular(10.0),
+                                            ),
+                                            padding: EdgeInsets.symmetric(
+                                              vertical: 8.0,
+                                              horizontal: 10.0,
+                                            ),
+                                            child: Row(
+                                              children: [
+                                                Text(
+                                                  'My Reviews',
+                                                  style: Style.subtitle2
+                                                      .copyWith(
+                                                          color: Colors.white),
+                                                ),
+                                                Spacer(),
+                                                Icon(
+                                                  FontAwesomeIcons.chevronRight,
+                                                  color: Colors.white,
+                                                  size: 18.0,
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                        Container(
                                           width: double.infinity,
-                                          margin: EdgeInsets.only(bottom: 12.0),
                                           decoration: BoxDecoration(
                                             color: kBackgroundColor,
                                             borderRadius:
@@ -353,73 +428,46 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                           child: Row(
                                             children: [
                                               Text(
-                                                'Reviewed Products',
+                                                'Products',
                                                 style: Style.subtitle2.copyWith(
                                                     color: Colors.white),
                                               ),
                                               Spacer(),
-                                              Icon(
-                                                FontAwesomeIcons.chevronRight,
-                                                color: Colors.white,
-                                                size: 18.0,
+                                              GestureDetector(
+                                                onTap: () async {
+                                                  await Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          ProductAddScreen(),
+                                                    ),
+                                                  );
+
+                                                  _profileBloc.add(
+                                                      InitializeProfileScreen());
+                                                },
+                                                child: Icon(
+                                                  FontAwesomeIcons.plus,
+                                                  color: Colors.white,
+                                                  size: 18.0,
+                                                ),
                                               ),
                                             ],
                                           ),
                                         ),
-                                      ),
-                                      Container(
-                                        width: double.infinity,
-                                        decoration: BoxDecoration(
-                                          color: kBackgroundColor,
-                                          borderRadius:
-                                              BorderRadius.circular(10.0),
+                                        Expanded(
+                                          child: Container(
+                                            child: _buildGridView(),
+                                          ),
                                         ),
-                                        padding: EdgeInsets.symmetric(
-                                          vertical: 8.0,
-                                          horizontal: 10.0,
-                                        ),
-                                        child: Row(
-                                          children: [
-                                            Text(
-                                              'Products',
-                                              style: Style.subtitle2.copyWith(
-                                                  color: Colors.white),
-                                            ),
-                                            Spacer(),
-                                            GestureDetector(
-                                              onTap: () async {
-                                                await Navigator.push(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                    builder: (context) =>
-                                                        ProductAddScreen(),
-                                                  ),
-                                                );
-
-                                                _profileBloc.add(
-                                                    InitializeProfileScreen());
-                                              },
-                                              child: Icon(
-                                                FontAwesomeIcons.plus,
-                                                color: Colors.white,
-                                                size: 18.0,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      Expanded(
-                                        child: Container(
-                                          child: _buildGridView(),
-                                        ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ],
-                          )
-                        : Container(),
+                              ],
+                            )
+                          : Container(),
+                    ),
                   ),
                 ),
               ],

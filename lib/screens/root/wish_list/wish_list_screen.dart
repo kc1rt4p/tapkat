@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_progress_hud/flutter_progress_hud.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:tapkat/backend.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/schemas/user_likes_record.dart';
@@ -29,7 +30,7 @@ class _WishListScreenState extends State<WishListScreen> {
   final _wishListBloc = WishListBloc();
   final _productBloc = ProductBloc();
   final _keywordTextController = TextEditingController();
-
+  final _refreshController = RefreshController();
   bool _loading = true;
 
   @override
@@ -65,6 +66,7 @@ class _WishListScreenState extends State<WishListScreen> {
                 }
 
                 if (state is WishListInitialized) {
+                  _refreshController.refreshCompleted();
                   setState(() {
                     _list = state.list;
                     _user = state.user;
@@ -88,169 +90,176 @@ class _WishListScreenState extends State<WishListScreen> {
           ],
           child: Container(
             color: Color(0xFFEBFBFF),
-            child: Column(
-              children: [
-                CustomAppBar(
-                  label: 'Your Wish List',
-                  hideBack: true,
-                ),
-                CustomSearchBar(
-                  margin: EdgeInsets.symmetric(horizontal: 20.0),
-                  controller: _keywordTextController,
-                  backgroundColor: Color(0xFF005F73).withOpacity(0.3),
-                  onSubmitted: (val) => _onSearchSubmitted(val),
-                ),
-                Container(
-                  margin: EdgeInsets.symmetric(vertical: 8.0),
-                  padding: EdgeInsets.symmetric(horizontal: 20.0),
-                  child: Row(
-                    children: [
-                      Text('Sort by:'),
-                      SizedBox(width: 5.0),
-                      _buildSortOption(),
-                      SizedBox(width: 10.0),
-                      Expanded(
-                        child: Container(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 10.0, vertical: 5.0),
-                          decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(9.0),
-                              color: Colors.white),
-                          child: Center(
-                              child: Text(
-                            'Most Recent',
-                            style: TextStyle(
-                              fontSize: 12.0,
-                            ),
-                          )),
-                        ),
-                      ),
-                      SizedBox(width: 10.0),
-                      Expanded(
-                        child: Container(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 10.0, vertical: 5.0),
-                          decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(9.0),
-                              color: Colors.white),
-                          child: Row(
-                            children: [
-                              Text(
-                                'Price',
-                                style: TextStyle(
-                                  fontSize: 12.0,
-                                ),
+            child: SmartRefresher(
+              controller: _refreshController,
+              onRefresh: () => _wishListBloc.add(InitializeWishListScreen()),
+              child: Column(
+                children: [
+                  CustomAppBar(
+                    label: 'Your Wish List',
+                    hideBack: true,
+                  ),
+                  CustomSearchBar(
+                    margin: EdgeInsets.symmetric(horizontal: 20.0),
+                    controller: _keywordTextController,
+                    backgroundColor: Color(0xFF005F73).withOpacity(0.3),
+                    onSubmitted: (val) => _onSearchSubmitted(val),
+                  ),
+                  Container(
+                    margin: EdgeInsets.symmetric(vertical: 8.0),
+                    padding: EdgeInsets.symmetric(horizontal: 20.0),
+                    child: Row(
+                      children: [
+                        Text('Sort by:'),
+                        SizedBox(width: 5.0),
+                        _buildSortOption(),
+                        SizedBox(width: 10.0),
+                        Expanded(
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 10.0, vertical: 5.0),
+                            decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(9.0),
+                                color: Colors.white),
+                            child: Center(
+                                child: Text(
+                              'Most Recent',
+                              style: TextStyle(
+                                fontSize: 12.0,
                               ),
-                              Spacer(),
-                              Icon(
-                                Icons.keyboard_arrow_down,
-                                size: 14.0,
-                              )
-                            ],
+                            )),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  child: Container(
-                    child: _list.isNotEmpty
-                        ? GridView.count(
+                        SizedBox(width: 10.0),
+                        Expanded(
+                          child: Container(
                             padding: EdgeInsets.symmetric(
-                                horizontal: 10.0, vertical: 10.0),
-                            crossAxisCount: 2,
-                            shrinkWrap: true,
-                            mainAxisSpacing: 8.0,
-                            children: _list.map((product) {
-                              return Center(
-                                child: StreamBuilder<List<UserLikesRecord?>>(
-                                    stream: queryUserLikesRecord(
-                                      queryBuilder: (userLikesRecord) =>
-                                          userLikesRecord
-                                              .where('userid',
-                                                  isEqualTo: _user!.uid)
-                                              .where('productid',
-                                                  isEqualTo: product.productid),
-                                      singleRecord: true,
-                                    ),
-                                    builder: (context, snapshot) {
-                                      bool liked = false;
-                                      UserLikesRecord? record;
-                                      if (snapshot.hasData) {
-                                        if (snapshot.data != null &&
-                                            snapshot.data!.isNotEmpty) {
-                                          record = snapshot.data!.first;
-                                          if (record != null) {
-                                            liked = record.liked ?? false;
-                                          }
-                                        }
-                                      }
-
-                                      return BarterListItem(
-                                        height: SizeConfig.screenHeight * 0.23,
-                                        width: SizeConfig.screenWidth * 0.40,
-                                        liked: liked,
-                                        itemName: product.productname ?? '',
-                                        itemPrice: product.price != null
-                                            ? product.price!.toStringAsFixed(2)
-                                            : '0',
-                                        imageUrl: product.imgUrl ?? '',
-                                        onTapped: () => Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                ProductDetailsScreen(
-                                              productId:
-                                                  product.productid ?? '',
-                                            ),
-                                          ),
-                                        ),
-                                        onLikeTapped: () {
-                                          if (record != null) {
-                                            final newData =
-                                                createUserLikesRecordData(
-                                              liked: !record.liked!,
-                                            );
-
-                                            record.reference!.update(newData);
-
-                                            if (liked) {
-                                              _productBloc.add(
-                                                Unlike(product),
-                                              );
-                                            } else {
-                                              _productBloc
-                                                  .add(AddLike(product));
+                                horizontal: 10.0, vertical: 5.0),
+                            decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(9.0),
+                                color: Colors.white),
+                            child: Row(
+                              children: [
+                                Text(
+                                  'Price',
+                                  style: TextStyle(
+                                    fontSize: 12.0,
+                                  ),
+                                ),
+                                Spacer(),
+                                Icon(
+                                  Icons.keyboard_arrow_down,
+                                  size: 14.0,
+                                )
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: Container(
+                      child: _list.isNotEmpty
+                          ? GridView.count(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 10.0, vertical: 10.0),
+                              crossAxisCount: 2,
+                              shrinkWrap: true,
+                              mainAxisSpacing: 8.0,
+                              children: _list.map((product) {
+                                return Center(
+                                  child: StreamBuilder<List<UserLikesRecord?>>(
+                                      stream: queryUserLikesRecord(
+                                        queryBuilder: (userLikesRecord) =>
+                                            userLikesRecord
+                                                .where('userid',
+                                                    isEqualTo: _user!.uid)
+                                                .where('productid',
+                                                    isEqualTo:
+                                                        product.productid),
+                                        singleRecord: true,
+                                      ),
+                                      builder: (context, snapshot) {
+                                        bool liked = false;
+                                        UserLikesRecord? record;
+                                        if (snapshot.hasData) {
+                                          if (snapshot.data != null &&
+                                              snapshot.data!.isNotEmpty) {
+                                            record = snapshot.data!.first;
+                                            if (record != null) {
+                                              liked = record.liked ?? false;
                                             }
                                           }
-                                        },
-                                      );
-                                    }),
-                              );
-                            }).toList(),
-                          )
-                        : Visibility(
-                            visible: !_loading,
-                            child: Container(
-                              padding: EdgeInsets.symmetric(horizontal: 30.0),
-                              child: Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      'No products found',
-                                      style: Style.subtitle2
-                                          .copyWith(color: Colors.grey),
-                                    ),
-                                  ],
+                                        }
+
+                                        return BarterListItem(
+                                          height:
+                                              SizeConfig.screenHeight * 0.23,
+                                          width: SizeConfig.screenWidth * 0.40,
+                                          liked: liked,
+                                          itemName: product.productname ?? '',
+                                          itemPrice: product.price != null
+                                              ? product.price!
+                                                  .toStringAsFixed(2)
+                                              : '0',
+                                          imageUrl: product.imgUrl ?? '',
+                                          onTapped: () => Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  ProductDetailsScreen(
+                                                productId:
+                                                    product.productid ?? '',
+                                              ),
+                                            ),
+                                          ),
+                                          onLikeTapped: () {
+                                            if (record != null) {
+                                              final newData =
+                                                  createUserLikesRecordData(
+                                                liked: !record.liked!,
+                                              );
+
+                                              record.reference!.update(newData);
+
+                                              if (liked) {
+                                                _productBloc.add(
+                                                  Unlike(product),
+                                                );
+                                              } else {
+                                                _productBloc
+                                                    .add(AddLike(product));
+                                              }
+                                            }
+                                          },
+                                        );
+                                      }),
+                                );
+                              }).toList(),
+                            )
+                          : Visibility(
+                              visible: !_loading,
+                              child: Container(
+                                padding: EdgeInsets.symmetric(horizontal: 30.0),
+                                child: Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        'No products found',
+                                        style: Style.subtitle2
+                                            .copyWith(color: Colors.grey),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -267,6 +276,7 @@ class _WishListScreenState extends State<WishListScreen> {
       context,
       MaterialPageRoute(
         builder: (context) => SearchResultScreen(
+          userid: _user!.uid,
           keyword: val,
         ),
       ),

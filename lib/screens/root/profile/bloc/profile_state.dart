@@ -28,13 +28,25 @@ class ProfileLoading extends ProfileState {}
 class UpdateUserInfoSuccess extends ProfileState {}
 
 class GetUserRatingsSuccess extends ProfileState {
-  final List<ProductReviewModel> list;
+  final List<UserReviewModel> list;
 
   GetUserRatingsSuccess(this.list);
 }
 
-class GetNextRatingsSuccess extends ProfileState {
+class GetProductRatingsSuccess extends ProfileState {
   final List<ProductReviewModel> list;
 
-  GetNextRatingsSuccess(this.list);
+  GetProductRatingsSuccess(this.list);
+}
+
+class GetNextProductRatingsSuccess extends ProfileState {
+  final List<ProductReviewModel> list;
+
+  GetNextProductRatingsSuccess(this.list);
+}
+
+class GetNextUserRatingsSuccess extends ProfileState {
+  final List<UserReviewModel> list;
+
+  GetNextUserRatingsSuccess(this.list);
 }
