@@ -46,7 +46,7 @@ class _UserRatingsScreenState extends State<UserRatingsScreen> {
   @override
   void initState() {
     // TODO: implement initState
-    _profileBloc.add(GetProductRatings(widget.user.userid!));
+    _profileBloc.add(InitializeUserRatingsScreen(widget.user.userid!));
     super.initState();
   }
 
@@ -77,10 +77,10 @@ class _UserRatingsScreenState extends State<UserRatingsScreen> {
                 _userPagingController.appendLastPage([]);
               }
               _userPagingController.addPageRequestListener((pageKey) {
-                if (lastProductReview != null) {
+                if (lastUserReview != null) {
                   _profileBloc.add(
                     GetNextUserRatings(
-                      userId: lastProductReview!.userid!,
+                      userId: lastUserReview!.userid!,
                       startAfterVal: lastUserReview!.review_date!,
                       lastUserId: lastUserReview!.userid!,
                     ),
@@ -114,6 +114,7 @@ class _UserRatingsScreenState extends State<UserRatingsScreen> {
               } else {
                 _productPagingController.appendLastPage([]);
               }
+
               _productPagingController.addPageRequestListener((pageKey) {
                 if (lastProductReview != null) {
                   _profileBloc.add(
@@ -227,11 +228,13 @@ class _UserRatingsScreenState extends State<UserRatingsScreen> {
       _selectedView = _selectedView == 'products' ? 'users' : 'products';
     });
 
-    if (_selectedView == 'products') {
-      _profileBloc.add(GetProductRatings(widget.user.userid!));
-    } else {
-      _profileBloc.add(GetUserRatings(widget.user.userid!));
-    }
+    // if (_selectedView == 'products') {
+    //   // _productPagingController.refresh();
+    //   _profileBloc.add(GetProductRatings(widget.user.userid!));
+    // } else {
+    //   _userPagingController.refresh();
+    //   _profileBloc.add(GetUserRatings(widget.user.userid!));
+    // }
   }
 
   Widget _buildProductRatingsList() {
@@ -352,13 +355,13 @@ class _UserRatingsScreenState extends State<UserRatingsScreen> {
             ),
             child: Column(
               children: [
-                // Row(
-                //   children: [
-                //     Text(rating.username ?? ''),
-                //     Spacer(),
-                //     Text(timeago.format(rating. ?? DateTime.now())),
-                //   ],
-                // ),
+                Row(
+                  children: [
+                    Text(rating.username ?? ''),
+                    Spacer(),
+                    Text(timeago.format(DateTime.parse(rating.review_date!))),
+                  ],
+                ),
                 SizedBox(height: 8.0),
                 Row(
                   children: [
@@ -368,7 +371,8 @@ class _UserRatingsScreenState extends State<UserRatingsScreen> {
                       decoration: BoxDecoration(
                         color: Colors.white,
                         image: DecorationImage(
-                          image: rating.user_image_url != null
+                          image: rating.user_image_url != null &&
+                                  rating.user_image_url!.isNotEmpty
                               ? NetworkImage(rating.user_image_url!)
                               : AssetImage(
                                       'assets/images/image_placeholder.jpg')

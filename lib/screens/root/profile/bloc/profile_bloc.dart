@@ -36,8 +36,23 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
         }
       }
 
+      if (event is InitializeUserRatingsScreen) {
+        final list1 = await _userRepo.getUserReviews(null, event.userId);
+        emit(GetUserRatingsSuccess(list1));
+
+        final list2 =
+            await _productRepo.getProductRatings(userId: event.userId);
+        emit(GetProductRatingsSuccess(list2));
+      }
+
       if (event is GetUserRatings) {
         final list = await _userRepo.getUserReviews(null, event.userId);
+        emit(GetUserRatingsSuccess(list));
+      }
+
+      if (event is GetRatingsForUser) {
+        final list = await _userRepo.getUserReviews(event.userId, null);
+
         emit(GetUserRatingsSuccess(list));
       }
 

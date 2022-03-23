@@ -10,6 +10,7 @@ import 'package:tapkat/models/user.dart';
 import 'package:tapkat/schemas/user_likes_record.dart';
 import 'package:tapkat/screens/product/bloc/product_bloc.dart';
 import 'package:tapkat/screens/product/product_details_screen.dart';
+import 'package:tapkat/screens/reviews/user_review_list_screen.dart';
 import 'package:tapkat/screens/store/bloc/store_bloc.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/constants.dart';
@@ -140,31 +141,38 @@ class _StoreScreenState extends State<StoreScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
                   child: Column(
                     children: [
-                      Container(
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          color: kBackgroundColor,
-                          borderRadius: BorderRadius.circular(10.0),
-                        ),
-                        padding: EdgeInsets.symmetric(
-                          vertical: 6.0,
-                          horizontal: 10.0,
-                        ),
-                        child: Row(
-                          children: [
-                            Text(
-                              'User Reviews',
-                              style: Style.subtitle2.copyWith(
-                                color: Colors.white,
+                      InkWell(
+                        onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => UserReviewListScreen(
+                                    userId: widget.userId))),
+                        child: Container(
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: kBackgroundColor,
+                            borderRadius: BorderRadius.circular(10.0),
+                          ),
+                          padding: EdgeInsets.symmetric(
+                            vertical: 6.0,
+                            horizontal: 10.0,
+                          ),
+                          child: Row(
+                            children: [
+                              Text(
+                                'User Reviews',
+                                style: Style.subtitle2.copyWith(
+                                  color: Colors.white,
+                                ),
                               ),
-                            ),
-                            Spacer(),
-                            Icon(
-                              FontAwesomeIcons.chevronRight,
-                              color: Colors.white,
-                              size: 14.0,
-                            ),
-                          ],
+                              Spacer(),
+                              Icon(
+                                FontAwesomeIcons.chevronRight,
+                                color: Colors.white,
+                                size: 14.0,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                       Row(
@@ -373,7 +381,7 @@ class _StoreScreenState extends State<StoreScreen> {
                         : product.media!.first.url!;
 
                   return BarterListItem(
-                    height: SizeConfig.screenHeight * 0.22,
+                    height: SizeConfig.screenHeight * 0.21,
                     width: SizeConfig.screenWidth * 0.40,
                     liked: liked,
                     itemName: product.productname ?? '',

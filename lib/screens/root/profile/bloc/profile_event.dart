@@ -33,6 +33,18 @@ class GetProductRatings extends ProfileEvent {
   GetProductRatings(this.userId);
 }
 
+class GetRatingsForUser extends ProfileEvent {
+  final String userId;
+
+  GetRatingsForUser(this.userId);
+}
+
+class InitializeUserRatingsScreen extends ProfileEvent {
+  final String userId;
+
+  InitializeUserRatingsScreen(this.userId);
+}
+
 class GetNextProductRatings extends ProfileEvent {
   final String userId;
   final String lastProductId;

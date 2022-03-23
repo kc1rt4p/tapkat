@@ -20,6 +20,7 @@ import 'package:tapkat/models/user.dart';
 import 'package:tapkat/screens/product/bloc/product_bloc.dart';
 import 'package:tapkat/screens/product/product_add_screen.dart';
 import 'package:tapkat/screens/product/product_details_screen.dart';
+import 'package:tapkat/screens/reviews/user_review_list_screen.dart';
 import 'package:tapkat/screens/root/profile/bloc/profile_bloc.dart';
 import 'package:tapkat/screens/root/profile/edit_profile_screen.dart';
 import 'package:tapkat/screens/root/profile/user_ratings_screen.dart';
@@ -382,7 +383,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                           ),
                                         ),
                                         InkWell(
-                                          onTap: () {},
+                                          onTap: () => Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      UserReviewListScreen(
+                                                          userId: _userModel!
+                                                              .userid!))),
                                           child: Container(
                                             width: double.infinity,
                                             margin:
@@ -544,7 +551,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 : product.media!.first.url!;
           return Center(
             child: BarterListItem(
-              height: SizeConfig.screenHeight * 0.215,
+              height: SizeConfig.screenHeight * 0.20,
               width: SizeConfig.screenWidth * 0.4,
               hideLikeBtn: true,
               itemName: product.productname ?? '',

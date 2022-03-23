@@ -299,6 +299,11 @@ class _BarterScreenState extends State<BarterScreen> {
                   message: 'Your User Review has been submitted');
             }
 
+            if (state is RateProductSuccess) {
+              DialogMessage.show(context,
+                  message: 'Your Product Review has been submitted');
+            }
+
             if (state is UpdateUserReviewSuccess) {
               DialogMessage.show(context,
                   message: 'Your User Review has been updated');
@@ -629,10 +634,6 @@ class _BarterScreenState extends State<BarterScreen> {
 
                 if (state is SendMessageSuccess) {
                   _messageTextController.clear();
-                }
-
-                if (state is RateProductSuccess) {
-                  //
                 }
 
                 if (state is BarterChatInitialized) {
@@ -1212,7 +1213,7 @@ class _BarterScreenState extends State<BarterScreen> {
       builder: (context) {
         final _reviewTextController =
             TextEditingController(text: review != null ? review.review : '');
-        num _rating = 0.0;
+        num _rating = review != null ? review.rating ?? 0 : 0.0;
         return StatefulBuilder(
           builder: (context, StateSetter setState) {
             return Dialog(
@@ -1312,6 +1313,8 @@ class _BarterScreenState extends State<BarterScreen> {
         productid: item.productId,
         productname: item.productName,
         image_url_t: item.imgUrl,
+        userid: _currentUserModel!.userid,
+        display_name: _currentUserModel!.display_name,
         rating: rating['rating'] + 0.0,
         review: rating['review'] as String?,
       )));
@@ -1420,78 +1423,98 @@ class _BarterScreenState extends State<BarterScreen> {
   }
 
   _onRateUser(UserReviewModel? review) async {
+    final _reviewTextController = TextEditingController();
+    num _rating = 0;
+    if (review != null) {
+      _reviewTextController.text = review.review ?? '';
+      _rating = review.rating ?? 0;
+    }
+
+    print(_recipientUserId);
+    print(_currentUserModel!.userid);
+
     final rating = await showDialog(
       barrierDismissible: false,
       context: context,
       builder: (context) {
-        final _reviewTextController = TextEditingController();
-        num _rating = 0;
-        return Dialog(
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(26.0),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        'Rate User',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: kBackgroundColor,
-                          fontSize: SizeConfig.textScaleFactor * 15.0,
+        return StatefulBuilder(
+          builder: (context, setState) => Dialog(
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(26.0),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Rate User',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: kBackgroundColor,
+                            fontSize: SizeConfig.textScaleFactor * 15.0,
+                          ),
                         ),
                       ),
-                    ),
-                    GestureDetector(
-                      onTap: () => Navigator.pop(context),
-                      child: Icon(
-                        Icons.close,
-                        color: kBackgroundColor,
+                      GestureDetector(
+                        onTap: () => Navigator.pop(context),
+                        child: Icon(
+                          Icons.close,
+                          color: kBackgroundColor,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 16.0),
-                RatingBar.builder(
-                  initialRating: review != null ? review.rating!.toDouble() : 0,
-                  minRating: 0,
-                  direction: Axis.horizontal,
-                  allowHalfRating: true,
-                  itemCount: 5,
-                  itemSize: 20,
-                  itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
-                  itemBuilder: (context, _) => Icon(
-                    Icons.star,
-                    color: Colors.amber,
+                    ],
                   ),
-                  onRatingUpdate: (rating) {
-                    _rating = rating;
-                  },
-                ),
-                SizedBox(height: 8.0),
-                CustomTextFormField(
-                  label: 'Review',
-                  hintText: 'Write a user review',
-                  controller: _reviewTextController,
-                  textColor: kBackgroundColor,
-                  maxLines: 3,
-                ),
-                CustomButton(
-                  bgColor: kBackgroundColor,
-                  label: 'SUBMIT',
-                  onTap: () {
-                    Navigator.pop(context, {
-                      'rating': _rating,
-                      'review': _reviewTextController.text.trim(),
-                    });
-                  },
-                ),
-              ],
+                  SizedBox(height: 16.0),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      RatingBar.builder(
+                        initialRating:
+                            review != null ? review.rating!.toDouble() : 0,
+                        minRating: 0,
+                        direction: Axis.horizontal,
+                        allowHalfRating: true,
+                        itemCount: 5,
+                        itemSize: 20,
+                        itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
+                        itemBuilder: (context, _) => Icon(
+                          Icons.star,
+                          color: Colors.amber,
+                        ),
+                        onRatingUpdate: (rating) {
+                          setState(() {
+                            _rating = rating;
+                          });
+                        },
+                      ),
+                      Text(_rating.toStringAsFixed(1),
+                          style: TextStyle(fontSize: 16.0)),
+                    ],
+                  ),
+                  SizedBox(height: 8.0),
+                  CustomTextFormField(
+                    label: 'Review',
+                    hintText: 'Write a user review',
+                    controller: _reviewTextController,
+                    textColor: kBackgroundColor,
+                    maxLines: 3,
+                  ),
+                  CustomButton(
+                    bgColor: kBackgroundColor,
+                    label: 'SUBMIT',
+                    onTap: () {
+                      Navigator.pop(context, {
+                        'rating': _rating,
+                        'review': _reviewTextController.text.trim(),
+                      });
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
         );
@@ -1501,15 +1524,14 @@ class _BarterScreenState extends State<BarterScreen> {
     if (rating != null) {
       _barterBloc.add(AddUserReview(
         UserReviewModel(
-            rating: rating['rating'] as double,
-            review: rating['review'] as String?,
-            reviewerid: _currentUserModel!.userid,
-            user_image_url: _currentUserModel!.photo_url,
-            reviewername: _currentUserModel!.display_name,
-            userid: _currentUserModel!.userid == _senderUserId
-                ? _recipientUserId
-                : _senderUserId,
-            username: _recipientName),
+          rating: rating['rating'] as double,
+          review: rating['review'] as String?,
+          reviewerid: _currentUserModel!.userid,
+          user_image_url: _currentUserModel!.photo_url,
+          reviewername: _currentUserModel!.display_name,
+          userid: _recipientUserId,
+          username: _recipientName,
+        ),
       ));
     }
   }

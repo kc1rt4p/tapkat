@@ -135,7 +135,6 @@ class _ProductListScreenState extends State<ProductListScreen> {
               }
 
               _refreshController.refreshCompleted();
-              _pagingController.refresh();
 
               _pagingController.addPageRequestListener((pageKey) {
                 if (lastProduct != null) {
@@ -149,6 +148,8 @@ class _ProductListScreenState extends State<ProductListScreen> {
                       userId: widget.listType == 'user' ? widget.userId : '',
                     ),
                   );
+                } else {
+                  _pagingController.refresh();
                 }
               });
             }
@@ -369,7 +370,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                     }
 
                     return BarterListItem(
-                      height: SizeConfig.screenHeight * 0.22,
+                      height: SizeConfig.screenHeight * 0.21,
                       width: SizeConfig.screenWidth * 0.40,
                       hideLikeBtn: widget.ownListing,
                       liked: liked,

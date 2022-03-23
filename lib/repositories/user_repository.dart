@@ -105,10 +105,7 @@ class UserRepository {
       url: 'users/review/update',
       body: {
         'psk': psk,
-        'userid': review.userid,
-        'reviewerid': review.reviewerid,
-        'rating': review.rating,
-        'review': review.review,
+        ...review.toJson(),
       },
     );
 

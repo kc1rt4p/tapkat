@@ -26,7 +26,7 @@ class UserReviewModel {
         user_image_url: json['user_image_url'] as String?,
         reviewerid: json['reviewerid'] as String?,
         reviewername: json['reviewername'] as String?,
-        rating: json['rating'] as double?,
+        rating: json['rating'] + 0.0 as double?,
         review: json['review'] as String?,
         review_date: json['review_date'] as String?);
   }
