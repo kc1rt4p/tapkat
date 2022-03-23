@@ -12,3 +12,12 @@ class InitializeStoreScreen extends StoreEvent {
 
   InitializeStoreScreen(this.userId);
 }
+
+class GetFirstTopStores extends StoreEvent {}
+
+class GetNextTopStores extends StoreEvent {
+  final String lastUserId;
+  final num lastUserRating;
+
+  GetNextTopStores({required this.lastUserId, required this.lastUserRating});
+}

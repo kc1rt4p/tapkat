@@ -146,7 +146,7 @@ class _UserRatingsScreenState extends State<UserRatingsScreen> {
           child: Column(
             children: [
               CustomAppBar(
-                label: 'User Ratings',
+                label: 'Reviewed Products & Users',
               ),
               Container(
                 margin: EdgeInsets.only(top: 16.0, left: 16.0, right: 16.0),

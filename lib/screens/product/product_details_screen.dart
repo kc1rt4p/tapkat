@@ -914,7 +914,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                 : 'https://storage.googleapis.com/map-surf-assets/noimage.jpg'),
             initialScale: PhotoViewComputedScale.contained * 0.8,
             heroAttributes: PhotoViewHeroAttributes(
-                tag: _product!.productid! + index.toString()),
+                tag: _product!.productid! +
+                    index.toString() +
+                    DateTime.now().toIso8601String()),
           );
         },
         onPageChanged: (index) {

@@ -121,23 +121,6 @@ class _UserReviewListScreenState extends State<UserReviewListScreen> {
                 SizedBox(height: 8.0),
                 Row(
                   children: [
-                    Container(
-                      width: SizeConfig.screenWidth * .2,
-                      height: SizeConfig.screenWidth * .2,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        image: DecorationImage(
-                          image: rating.user_image_url != null &&
-                                  rating.user_image_url!.isNotEmpty
-                              ? NetworkImage(rating.user_image_url!)
-                              : AssetImage(
-                                      'assets/images/image_placeholder.jpg')
-                                  as ImageProvider<Object>,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: 8.0),
                     Expanded(
                       child: Column(
                         children: [

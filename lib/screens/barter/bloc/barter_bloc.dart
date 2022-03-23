@@ -140,6 +140,8 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
           }
 
           if (event is AddUserReview) {
+            final userToReview = await _userRepo.getUser(event.review.userid!);
+            event.review.user_image_url = userToReview!.photo_url!;
             final added = await _userRepo.addUserReview(event.review);
 
             if (added) {

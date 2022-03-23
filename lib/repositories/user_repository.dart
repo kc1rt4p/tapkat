@@ -3,6 +3,7 @@ import 'package:http_parser/http_parser.dart';
 import 'package:mime_type/mime_type.dart';
 import 'package:tapkat/models/request/update_user.dart';
 import 'package:tapkat/models/request/user_review_request.dart';
+import 'package:tapkat/models/store.dart';
 import 'package:tapkat/models/user.dart';
 import 'package:tapkat/services/http/api_service.dart';
 import 'package:tapkat/utilities/constants.dart';
@@ -52,6 +53,41 @@ class UserRepository {
 
     return (result.data['products'] as List<dynamic>)
         .map((json) => UserReviewModel.fromJson(json))
+        .toList();
+  }
+
+  Future<List<StoreModel>> getFirstTopStores() async {
+    final result = await _apiService.post(
+      url: 'users/top/searchfirst',
+      body: {
+        "psk": psk,
+        "itemcount": productCount,
+      },
+    );
+
+    if (result.data['status'] != 'SUCCESS') return [];
+
+    return (result.data['users'] as List<dynamic>)
+        .map((json) => StoreModel.fromJson(json))
+        .toList();
+  }
+
+  Future<List<StoreModel>> getNextTopStores(
+      String lastUserId, num lastUserRating) async {
+    final result = await _apiService.post(
+      url: 'users/top/searchfirst',
+      body: {
+        "psk": psk,
+        "itemcount": productCount,
+        "startafterval": lastUserRating,
+        "userId": lastUserId,
+      },
+    );
+
+    if (result.data['status'] != 'SUCCESS') return [];
+
+    return (result.data['users'] as List<dynamic>)
+        .map((json) => StoreModel.fromJson(json))
         .toList();
   }
 

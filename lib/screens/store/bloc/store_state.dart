@@ -22,3 +22,17 @@ class StoreError extends StoreState {
 
   StoreError(this.message);
 }
+
+class GetFirstTopStoresSuccess extends StoreState {
+  final List<StoreModel> list;
+
+  GetFirstTopStoresSuccess(this.list);
+}
+
+class GetNextTopStoresSuccess extends StoreState {
+  final List<StoreModel> list;
+
+  GetNextTopStoresSuccess(
+    this.list,
+  );
+}

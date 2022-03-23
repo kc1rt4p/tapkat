@@ -1527,7 +1527,6 @@ class _BarterScreenState extends State<BarterScreen> {
           rating: rating['rating'] as double,
           review: rating['review'] as String?,
           reviewerid: _currentUserModel!.userid,
-          user_image_url: _currentUserModel!.photo_url,
           reviewername: _currentUserModel!.display_name,
           userid: _recipientUserId,
           username: _recipientName,

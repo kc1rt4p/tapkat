@@ -18,3 +18,5 @@ class LoadTrendingList extends HomeEvent {}
 class LoadUserList extends HomeEvent {}
 
 class LoadProductsInCategories extends HomeEvent {}
+
+class LoadTopStores extends HomeEvent {}

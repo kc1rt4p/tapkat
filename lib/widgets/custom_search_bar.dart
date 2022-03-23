@@ -9,6 +9,7 @@ class CustomSearchBar extends StatefulWidget {
   final EdgeInsetsGeometry? margin;
   final Color? backgroundColor;
   final Color textColor;
+  final String? hintText;
 
   const CustomSearchBar({
     Key? key,
@@ -20,6 +21,7 @@ class CustomSearchBar extends StatefulWidget {
     this.margin,
     this.backgroundColor,
     this.textColor = Colors.black,
+    this.hintText = 'What are you looking for?',
   }) : super(key: key);
 
   @override
@@ -53,7 +55,7 @@ class _CustomSearchBarState extends State<CustomSearchBar> {
                       style: TextStyle(color: widget.textColor),
                       decoration: InputDecoration(
                         border: InputBorder.none,
-                        hintText: 'What are you looking for?',
+                        hintText: widget.hintText,
                         isDense: true,
                         hintStyle:
                             TextStyle(color: widget.textColor.withOpacity(0.5)),

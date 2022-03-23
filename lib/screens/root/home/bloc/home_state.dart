@@ -29,6 +29,12 @@ class LoadedTrendingList extends HomeState {
   LoadedTrendingList(this.trending);
 }
 
+class LoadTopStoresSuccess extends HomeState {
+  final List<StoreModel> topStoreItems;
+
+  LoadTopStoresSuccess(this.topStoreItems);
+}
+
 class LoadedRecommendedList extends HomeState {
   final List<ProductModel> recommended;
 

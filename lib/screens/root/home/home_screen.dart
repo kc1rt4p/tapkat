@@ -1,11 +1,14 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_progress_hud/flutter_progress_hud.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:tapkat/backend.dart';
 import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
 import 'package:tapkat/models/product.dart';
+import 'package:tapkat/models/store.dart';
 import 'package:tapkat/models/user.dart';
 import 'package:tapkat/schemas/user_likes_record.dart';
 import 'package:tapkat/screens/product/bloc/product_bloc.dart';
@@ -14,6 +17,8 @@ import 'package:tapkat/screens/product/product_list_screen.dart';
 import 'package:tapkat/screens/root/bloc/root_bloc.dart';
 import 'package:tapkat/screens/root/home/bloc/home_bloc.dart';
 import 'package:tapkat/screens/search/search_result_screen.dart';
+import 'package:tapkat/screens/store/component/store_list_item.dart';
+import 'package:tapkat/screens/store/store_list_screen.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/widgets/barter_list.dart';
@@ -35,6 +40,7 @@ class _HomeScreenState extends State<HomeScreen> {
   List<ProductModel> _recommendedList = [];
   List<ProductModel> _trendingList = [];
   List<ProductModel> _myProductList = [];
+  List<StoreModel> _topStoreList = [];
 
   List<String> _userInterests = [];
 
@@ -45,6 +51,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _loadingRecoList = false;
   bool _loadingTrendingList = false;
   bool _loadingUserProducts = false;
+  bool _loadingTopStores = false;
 
   User? _user;
   UserModel? _userModel;
@@ -96,8 +103,6 @@ class _HomeScreenState extends State<HomeScreen> {
               if (state is LoadedRecommendedList) {
                 setState(() {
                   _recommendedList = state.recommended;
-                  _recommendedList
-                      .sort((a, b) => a.productname!.compareTo(b.productname!));
                   _loadingRecoList = false;
                 });
               }
@@ -105,8 +110,6 @@ class _HomeScreenState extends State<HomeScreen> {
               if (state is LoadedTrendingList) {
                 setState(() {
                   _trendingList = state.trending;
-                  _trendingList
-                      .sort((a, b) => a.productname!.compareTo(b.productname!));
                   _loadingTrendingList = false;
                 });
               }
@@ -115,8 +118,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 setState(() {
                   _loadingUserProducts = false;
                   _myProductList = state.yourItems;
-                  _myProductList
-                      .sort((a, b) => a.productname!.compareTo(b.productname!));
+                });
+              }
+
+              if (state is LoadTopStoresSuccess) {
+                setState(() {
+                  _topStoreList = state.topStoreItems;
                 });
               }
 
@@ -239,6 +246,30 @@ class _HomeScreenState extends State<HomeScreen> {
                                   listType: 'demand',
                                   showAdd: false,
                                 ),
+                              ),
+                            ),
+                            onMapBtnTapped: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ProductListScreen(
+                                  listType: 'demand',
+                                  showAdd: false,
+                                  initialView: 'map',
+                                ),
+                              ),
+                            ),
+                          ),
+                          BarterList(
+                            loading: _loadingTopStores,
+                            context: context,
+                            items: _topStoreList
+                                .map((store) => StoreListItem(store))
+                                .toList(),
+                            label: 'Top Stores',
+                            onViewAllTapped: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => StoreListScreen(),
                               ),
                             ),
                             onMapBtnTapped: () => Navigator.push(

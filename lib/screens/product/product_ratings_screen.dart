@@ -241,6 +241,7 @@ class _ProductRatingsScreenState extends State<ProductRatingsScreen> {
       builderDelegate: PagedChildBuilderDelegate<ProductReviewModel>(
         itemBuilder: (context, rating, index) {
           return Container(
+            margin: EdgeInsets.only(bottom: 10.0),
             decoration: BoxDecoration(
               border: Border(
                 bottom: BorderSide(
@@ -266,28 +267,31 @@ class _ProductRatingsScreenState extends State<ProductRatingsScreen> {
                       ? '"${rating.review}"'
                       : '-'),
                 ),
-                Align(
-                  alignment: Alignment.bottomRight,
-                  child: RatingBar.builder(
-                    ignoreGestures: true,
-                    initialRating: rating.rating != null
-                        ? rating.rating!.roundToDouble()
-                        : 0,
-                    minRating: 0,
-                    direction: Axis.horizontal,
-                    allowHalfRating: true,
-                    itemCount: 5,
-                    itemSize: 20,
-                    tapOnlyMode: true,
-                    itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
-                    itemBuilder: (context, _) => Icon(
-                      Icons.star,
-                      color: Colors.amber,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    RatingBar.builder(
+                      ignoreGestures: true,
+                      initialRating: rating.rating != null
+                          ? rating.rating!.roundToDouble()
+                          : 0,
+                      minRating: 0,
+                      direction: Axis.horizontal,
+                      allowHalfRating: true,
+                      itemCount: 5,
+                      itemSize: 20,
+                      tapOnlyMode: true,
+                      itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
+                      itemBuilder: (context, _) => Icon(
+                        Icons.star,
+                        color: Colors.amber,
+                      ),
+                      onRatingUpdate: (rating) {
+                        //
+                      },
                     ),
-                    onRatingUpdate: (rating) {
-                      //
-                    },
-                  ),
+                    Text(rating.rating!.toStringAsFixed(1)),
+                  ],
                 ),
               ],
             ),
