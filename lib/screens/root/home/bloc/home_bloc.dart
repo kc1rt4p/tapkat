@@ -36,6 +36,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
           emit(LoadingRecommendedList());
           emit(LoadingUserList());
           emit(LoadingTrendingList());
+          emit(LoadingTopStoreList());
           final recommendedList =
               await _productRepo.getFirstProducts('reco', _user!.uid);
           emit(LoadedRecommendedList(recommendedList));

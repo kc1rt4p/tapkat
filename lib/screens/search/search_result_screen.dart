@@ -165,7 +165,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
               width: SizeConfig.screenWidth,
               child: Column(
                 children: [
-                  CustomAppBar(label: 'Explore'),
+                  CustomAppBar(label: 'Browse Products'),
                   Expanded(
                     child: Container(
                       child: Column(

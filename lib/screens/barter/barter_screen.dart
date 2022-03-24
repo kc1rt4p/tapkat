@@ -29,6 +29,7 @@ import 'package:tapkat/widgets/barter_list_item.dart';
 import 'package:tapkat/widgets/custom_button.dart';
 import 'package:tapkat/widgets/custom_textformfield.dart';
 
+import '../product/product_details_screen.dart';
 import 'bloc/barter_bloc.dart';
 
 class BarterScreen extends StatefulWidget {
@@ -1024,6 +1025,16 @@ class _BarterScreenState extends State<BarterScreen> {
                                   item.imgUrl!.isNotEmpty
                               ? item.imgUrl!
                               : 'https://storage.googleapis.com/map-surf-assets/noimage.jpg',
+                          onTapped: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ProductDetailsScreen(
+                                  productId: item.productId ?? '',
+                                ),
+                              ),
+                            );
+                          },
                         ),
                         Visibility(
                           visible: _barterRecord!.dealStatus == 'completed',
@@ -1150,6 +1161,17 @@ class _BarterScreenState extends State<BarterScreen> {
                                   item.imgUrl!.isNotEmpty
                               ? item.imgUrl!
                               : 'https://storage.googleapis.com/map-surf-assets/noimage.jpg',
+                          onTapped: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ProductDetailsScreen(
+                                  productId: item.productId ?? '',
+                                  ownItem: true,
+                                ),
+                              ),
+                            );
+                          },
                         ),
                         Visibility(
                           visible: _shouldShowAdd(),
@@ -1290,7 +1312,7 @@ class _BarterScreenState extends State<BarterScreen> {
                     CustomButton(
                       enabled: _rating > 0,
                       bgColor: kBackgroundColor,
-                      label: 'SUBMIT',
+                      label: review == null ? 'SUBMIT' : 'UPDATE',
                       onTap: () {
                         Navigator.pop(context, {
                           'rating': _rating,
@@ -1505,7 +1527,7 @@ class _BarterScreenState extends State<BarterScreen> {
                   ),
                   CustomButton(
                     bgColor: kBackgroundColor,
-                    label: 'SUBMIT',
+                    label: review == null ? 'SUBMIT' : 'UPDATE',
                     onTap: () {
                       Navigator.pop(context, {
                         'rating': _rating,

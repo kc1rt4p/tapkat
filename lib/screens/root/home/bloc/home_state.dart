@@ -35,6 +35,8 @@ class LoadTopStoresSuccess extends HomeState {
   LoadTopStoresSuccess(this.topStoreItems);
 }
 
+class LoadingTopStoreList extends HomeState {}
+
 class LoadedRecommendedList extends HomeState {
   final List<ProductModel> recommended;
 

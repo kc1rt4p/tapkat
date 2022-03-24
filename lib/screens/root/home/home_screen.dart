@@ -19,6 +19,7 @@ import 'package:tapkat/screens/root/home/bloc/home_bloc.dart';
 import 'package:tapkat/screens/search/search_result_screen.dart';
 import 'package:tapkat/screens/store/component/store_list_item.dart';
 import 'package:tapkat/screens/store/store_list_screen.dart';
+import 'package:tapkat/screens/store/store_screen.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/widgets/barter_list.dart';
@@ -66,12 +67,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   @override
-  void dispose() {
-    _refreshController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
     return ProgressHUD(
@@ -100,6 +95,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   }
                 });
               }
+
               if (state is LoadedRecommendedList) {
                 setState(() {
                   _recommendedList = state.recommended;
@@ -123,7 +119,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
               if (state is LoadTopStoresSuccess) {
                 setState(() {
+                  _loadingTopStores = false;
                   _topStoreList = state.topStoreItems;
+                });
+              }
+
+              if (state is LoadingTopStoreList) {
+                setState(() {
+                  _loadingTopStores = true;
                 });
               }
 
@@ -263,7 +266,18 @@ class _HomeScreenState extends State<HomeScreen> {
                             loading: _loadingTopStores,
                             context: context,
                             items: _topStoreList
-                                .map((store) => StoreListItem(store))
+                                .map((store) => InkWell(
+                                      onTap: () => Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => StoreScreen(
+                                            userId: store.userid!,
+                                            userName: store.display_name!,
+                                          ),
+                                        ),
+                                      ),
+                                      child: StoreListItem(store),
+                                    ))
                                 .toList(),
                             label: 'Top Stores',
                             onViewAllTapped: () => Navigator.push(
