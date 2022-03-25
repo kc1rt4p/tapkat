@@ -252,7 +252,7 @@ class _BarterScreenState extends State<BarterScreen> {
           backgroundColor: Colors.white,
           barrierEnabled: false,
           child: SlidingUpPanel(
-            maxHeight: SizeConfig.screenHeight * 0.74,
+            maxHeight: SizeConfig.screenHeight * 0.70,
             controller: _panelController,
             isDraggable: false,
             onPanelClosed: () {
@@ -405,9 +405,9 @@ class _BarterScreenState extends State<BarterScreen> {
                           : _barterRecord!.userid1!;
                     }
 
-                    // _recipientName = _recipientName.length > 10
-                    //     ? _recipientName.substring(0, 7) + '...'
-                    //     : _recipientName;
+                    _recipientName = _recipientName.length > 12
+                        ? _recipientName.substring(0, 7) + '...'
+                        : _recipientName;
                   });
                 }
               });
@@ -1652,95 +1652,97 @@ class _BarterScreenState extends State<BarterScreen> {
     );
 
     return Container(
-      height: SizeConfig.screenHeight * 0.2,
+      height: SizeConfig.screenHeight * 0.23,
       width: double.infinity,
       padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
-      child: SingleChildScrollView(
-        child: Column(
-          children: [
-            InkWell(
-              onTap: () => _panelController.close(),
-              child: Container(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Expanded(
-                      child: Container(
-                        height: SizeConfig.screenHeight * 0.1,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Expanded(
-                              child: wantWidgets.isNotEmpty
-                                  ? Directionality(
-                                      textDirection: TextDirection.ltr,
-                                      child: GridView.count(
-                                        scrollDirection: Axis.horizontal,
-                                        padding:
-                                            EdgeInsets.symmetric(vertical: 2.0),
-                                        mainAxisSpacing: 5.0,
-                                        crossAxisCount: 1,
-                                        reverse: true,
-                                        children: wantWidgets,
-                                      ),
-                                    )
-                                  : Container(),
-                            ),
-                            SizedBox(height: 5.0),
-                            Text(
-                                'Cash: \$ ${_remoteUserOfferedCash ?? '0.00'}'),
-                          ],
+      child: Center(
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              InkWell(
+                onTap: () => _panelController.close(),
+                child: Container(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Expanded(
+                        child: Container(
+                          height: SizeConfig.screenHeight * 0.1,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Expanded(
+                                child: wantWidgets.isNotEmpty
+                                    ? Directionality(
+                                        textDirection: TextDirection.ltr,
+                                        child: GridView.count(
+                                          scrollDirection: Axis.horizontal,
+                                          padding: EdgeInsets.symmetric(
+                                              vertical: 2.0),
+                                          mainAxisSpacing: 5.0,
+                                          crossAxisCount: 1,
+                                          reverse: true,
+                                          children: wantWidgets,
+                                        ),
+                                      )
+                                    : Container(),
+                              ),
+                              SizedBox(height: 5.0),
+                              Text(
+                                  'Cash: \$ ${_remoteUserOfferedCash ?? '0.00'}'),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.fromLTRB(10.0, 0.0, 10.0, 17.0),
-                      child: Icon(
-                        Icons.sync_alt_outlined,
-                        size: 25.0,
-                        color: kBackgroundColor,
-                      ),
-                    ),
-                    Expanded(
-                      child: Container(
-                        height: SizeConfig.screenHeight * 0.1,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              child: offerWidgets.isNotEmpty
-                                  ? Directionality(
-                                      textDirection: TextDirection.rtl,
-                                      child: GridView.count(
-                                        scrollDirection: Axis.horizontal,
-                                        padding:
-                                            EdgeInsets.symmetric(vertical: 2.0),
-                                        mainAxisSpacing: 5.0,
-                                        crossAxisCount: 1,
-                                        reverse: true,
-                                        children: offerWidgets,
-                                      ),
-                                    )
-                                  : Container(),
-                            ),
-                            SizedBox(height: 5.0),
-                            Text(
-                                'Cash: \$ ${_currentUserOfferedCash ?? '0.00'}'),
-                          ],
+                      Padding(
+                        padding: EdgeInsets.fromLTRB(10.0, 0.0, 10.0, 17.0),
+                        child: Icon(
+                          Icons.sync_alt_outlined,
+                          size: 25.0,
+                          color: kBackgroundColor,
                         ),
                       ),
-                    ),
-                  ],
+                      Expanded(
+                        child: Container(
+                          height: SizeConfig.screenHeight * 0.1,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: offerWidgets.isNotEmpty
+                                    ? Directionality(
+                                        textDirection: TextDirection.rtl,
+                                        child: GridView.count(
+                                          scrollDirection: Axis.horizontal,
+                                          padding: EdgeInsets.symmetric(
+                                              vertical: 2.0),
+                                          mainAxisSpacing: 5.0,
+                                          crossAxisCount: 1,
+                                          reverse: true,
+                                          children: offerWidgets,
+                                        ),
+                                      )
+                                    : Container(),
+                              ),
+                              SizedBox(height: 5.0),
+                              Text(
+                                  'Cash: \$ ${_currentUserOfferedCash ?? '0.00'}'),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            SizedBox(height: 8.0),
-            Row(
-              children: _buildUserButtons(true),
-            ),
-          ],
+              SizedBox(height: 8.0),
+              Row(
+                children: _buildUserButtons(true),
+              ),
+            ],
+          ),
         ),
       ),
     );
