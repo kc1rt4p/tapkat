@@ -503,8 +503,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   _onSearchSubmitted(String? val) {
-    if (val == null || val.isEmpty) return;
-
     _keywordTextController.clear();
 
     Navigator.push(
@@ -512,7 +510,9 @@ class _HomeScreenState extends State<HomeScreen> {
       MaterialPageRoute(
         builder: (context) => SearchResultScreen(
           userid: _user!.uid,
-          keyword: val,
+          keyword: val == null || val.isEmpty
+              ? ''
+              : _keywordTextController.text.trim(),
         ),
       ),
     );

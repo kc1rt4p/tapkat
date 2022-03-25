@@ -42,35 +42,37 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       }
 
       if (event is SignUp) {
-        final user = await authService.createAccountWithEmail(
-          event.context,
-          event.email,
-          event.password,
-        );
-
-        if (user != null) {
-          final usersCreateData = createUsersRecordData(
-            email: event.email,
-            displayName: event.username,
-            phoneNumber: event.mobileNumber,
-            location: LatLng(event.location.geometry!.location.lat,
-                event.location.geometry!.location.lng),
+        try {
+          final user = await authService.createAccountWithEmail(
+            event.context,
+            event.email,
+            event.password,
           );
 
-          await UsersRecord.collection.doc(user.uid).update(usersCreateData);
+          if (user != null) {
+            final usersCreateData = createUsersRecordData(
+              email: event.email,
+              displayName: event.username,
+              phoneNumber: event.mobileNumber,
+              location: LatLng(event.location.geometry!.location.lat,
+                  event.location.geometry!.location.lng),
+            );
 
-          authService.currentUser = TapkatFirebaseUser(user);
-          currentUser = user;
+            await UsersRecord.collection.doc(user.uid).update(usersCreateData);
 
-          final userModel = await userRepo.getUser(user.uid);
-          if (userModel != null) {
-            currentUserModel = userModel;
-            authService.currentUserModel = userModel;
+            authService.currentUser = TapkatFirebaseUser(user);
+            currentUser = user;
+
+            final userModel = await userRepo.getUser(user.uid);
+            if (userModel != null) {
+              currentUserModel = userModel;
+              authService.currentUserModel = userModel;
+            }
+
+            emit(ShowSignUpPhoto());
           }
-
-          emit(ShowSignUpPhoto());
-        } else {
-          emit(AuthError('Error signing up'));
+        } on FirebaseAuthException catch (e) {
+          emit(AuthError(e.message ?? e.toString()));
         }
       }
 

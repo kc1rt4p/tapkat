@@ -390,13 +390,11 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
           );
         });
 
-    if (category != null) {
-      setState(() {
-        _selectedCategory = category;
-      });
-      _searchBloc.add(InitializeSearch(_keyWordTextController.text.trim(),
-          _selectedCategory != null ? _selectedCategory!.code : ''));
-    }
+    setState(() {
+      _selectedCategory = category;
+    });
+    _searchBloc.add(InitializeSearch(_keyWordTextController.text.trim(),
+        _selectedCategory != null ? _selectedCategory!.code : ''));
   }
 
   _buildMapView() {
@@ -668,10 +666,10 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
   }
 
   _onSearchSubmitted(String? val) {
-    if (val == null || val.isEmpty) return;
     lastProduct = null;
     _pagingController.refresh();
-    _searchBloc.add(
-        InitializeSearch(_keyWordTextController.text.trim(), widget.category));
+    _searchBloc.add(InitializeSearch(
+        val == null || val.isEmpty ? '' : _keyWordTextController.text.trim(),
+        widget.category));
   }
 }

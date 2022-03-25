@@ -8,17 +8,21 @@ import 'package:flutter_google_places/flutter_google_places.dart';
 import 'package:flutter_progress_hud/flutter_progress_hud.dart';
 import 'package:google_api_headers/google_api_headers.dart';
 import 'package:google_maps_webservice/places.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:tapkat/models/location.dart';
 import 'package:tapkat/models/user.dart';
 import 'package:tapkat/screens/root/profile/bloc/profile_bloc.dart';
 import 'package:tapkat/screens/root/profile/interests_selection_screen.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/constants.dart';
+import 'package:tapkat/utilities/dialog_message.dart';
 import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/utilities/upload_media.dart';
 import 'package:tapkat/widgets/custom_app_bar.dart';
 import 'package:tapkat/widgets/custom_button.dart';
 import 'package:tapkat/widgets/custom_textformfield.dart';
+import 'package:geocoding/geocoding.dart' as geoCoding;
+import 'package:geolocator/geolocator.dart' as geoLocator;
 
 class EditProfileScreen extends StatefulWidget {
   final UserModel user;
@@ -43,6 +47,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   PlaceDetails? _selectedLocation;
 
   late UserModel _userModel;
+
+  geoCoding.Placemark? _currentUserLoc;
+  geoLocator.Position? _currentUserPosition;
 
   @override
   void initState() {
@@ -122,13 +129,38 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             controller: _emailTextController,
                             color: kBackgroundColor,
                           ),
-                          CustomTextFormField(
-                            label: 'Location',
-                            isReadOnly: true,
-                            hintText: '',
-                            controller: _locationTextController,
-                            onTap: _onSelectLocation,
-                            color: kBackgroundColor,
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Expanded(
+                                child: CustomTextFormField(
+                                  label: 'Location',
+                                  isReadOnly: true,
+                                  hintText: '',
+                                  controller: _locationTextController,
+                                  onTap: _onSelectLocation,
+                                  color: kBackgroundColor,
+                                  removeMargin: true,
+                                ),
+                              ),
+                              SizedBox(width: 6.0),
+                              InkWell(
+                                onTap: _onUseMyLocation,
+                                child: Container(
+                                  width: 45.0,
+                                  height: 45.0,
+                                  decoration: BoxDecoration(
+                                    color: kBackgroundColor,
+                                    borderRadius: BorderRadius.circular(10.0),
+                                  ),
+                                  child: Icon(
+                                    Icons.my_location,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -309,5 +341,65 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         ),
       ],
     );
+  }
+
+  _onUseMyLocation() {
+    DialogMessage.show(
+      context,
+      message: 'Do you want to use your current lcoation?',
+      firstButtonClicked: _loadUserLocation,
+      buttonText: 'Yes',
+      secondButtonText: 'No',
+    );
+  }
+
+  _loadUserLocation() async {
+    if (await Permission.location.isDenied) return;
+    if (!(await geoLocator.GeolocatorPlatform.instance
+        .isLocationServiceEnabled())) return;
+    final userLoc = await geoLocator.Geolocator.getCurrentPosition();
+    List<geoCoding.Placemark> placemarks = await geoCoding
+        .placemarkFromCoordinates(userLoc.latitude, userLoc.longitude);
+    if (placemarks.isNotEmpty) {
+      placemarks.forEach((placemark) => print(placemark.toJson()));
+      setState(() {
+        _currentUserLoc = placemarks.first;
+        _currentUserPosition = userLoc;
+        _selectedLocation = PlaceDetails(
+          placeId: '',
+          name: _currentUserLoc!.name ?? '',
+          geometry: Geometry(
+            location: Location(
+              lat: _currentUserPosition!.latitude,
+              lng: _currentUserPosition!.longitude,
+            ),
+          ),
+          addressComponents: [
+            AddressComponent(
+              longName: _currentUserLoc!.street ?? '',
+              types: [],
+              shortName: '',
+            ),
+            AddressComponent(
+              longName: _currentUserLoc!.locality ?? '',
+              types: [],
+              shortName: '',
+            ),
+            AddressComponent(
+              longName: _currentUserLoc!.subAdministrativeArea ?? '',
+              types: [],
+              shortName: '',
+            ),
+            AddressComponent(
+              longName: _currentUserLoc!.country ?? '',
+              types: [],
+              shortName: '',
+            ),
+          ],
+        );
+        _locationTextController.text =
+            '${_currentUserLoc!.street ?? ''}, ${_currentUserLoc!.locality ?? ''}, ${_currentUserLoc!.subAdministrativeArea ?? ''}, ${_currentUserLoc!.country ?? ''}';
+      });
+    }
   }
 }

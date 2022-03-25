@@ -34,18 +34,13 @@ class AuthService {
 
   Future<User?> signInOrCreateAccount(
       Future<UserCredential?> Function() signInFunc) async {
-    try {
-      final userCredential = await signInFunc();
-      if (userCredential != null) {
-        await maybeCreateUser(userCredential.user!);
-        return userCredential.user!;
-      }
-
-      return null;
-    } on FirebaseAuthException catch (e) {
-      print('error creating user: ${e.toString()}');
-      return null;
+    final userCredential = await signInFunc();
+    if (userCredential != null) {
+      await maybeCreateUser(userCredential.user!);
+      return userCredential.user!;
     }
+
+    return null;
   }
 
   Future<User?> getCurrentUser() async {

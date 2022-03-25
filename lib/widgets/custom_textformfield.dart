@@ -17,6 +17,7 @@ class CustomTextFormField extends StatefulWidget {
   final int maxLines;
   final TextInputType? keyboardType;
   final List<TextInputFormatter>? inputFormatters;
+  final bool removeMargin;
 
   const CustomTextFormField({
     Key? key,
@@ -34,6 +35,7 @@ class CustomTextFormField extends StatefulWidget {
     this.maxLines = 1,
     this.keyboardType,
     this.inputFormatters,
+    this.removeMargin = false,
   }) : super(key: key);
 
   @override
@@ -131,7 +133,7 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
             ),
           ),
         ),
-        SizedBox(height: 16.0),
+        widget.removeMargin ? Container() : SizedBox(height: 16.0),
       ],
     );
   }

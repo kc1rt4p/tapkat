@@ -13,6 +13,7 @@ import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
 import 'package:tapkat/screens/signup/photo_selection_screen.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/constants.dart';
+import 'package:tapkat/utilities/dialog_message.dart';
 import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/utilities/upload_media.dart';
 import 'package:tapkat/widgets/custom_app_bar.dart';
@@ -75,6 +76,11 @@ class _InitialSignUpScreenState extends State<InitialSignUpScreen> {
               if (photo != null) {
                 _authBloc.add(SaveUserPhoto(context, photo));
               }
+            }
+
+            if (state is AuthError) {
+              DialogMessage.show(context,
+                  title: 'Error', message: state.message);
             }
           },
           child: Container(

@@ -63,7 +63,7 @@ class _BarterListState extends State<BarterList> {
                             child: Container(
                               padding: EdgeInsets.fromLTRB(6.0, 3.0, 3.0, 3.0),
                               decoration: BoxDecoration(
-                                color: Color(0xFF94D2BD),
+                                color: kBackgroundColor,
                                 borderRadius: BorderRadius.circular(10.0),
                                 boxShadow: [
                                   BoxShadow(
@@ -101,7 +101,7 @@ class _BarterListState extends State<BarterList> {
                             child: Container(
                               padding: EdgeInsets.all(8.0),
                               decoration: BoxDecoration(
-                                color: Color(0xFF94D2BD),
+                                color: kBackgroundColor,
                                 borderRadius: BorderRadius.circular(10.0),
                                 boxShadow: [
                                   BoxShadow(

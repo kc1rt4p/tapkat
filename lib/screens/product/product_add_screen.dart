@@ -21,6 +21,7 @@ import 'package:tapkat/models/request/add_product_request.dart';
 import 'package:tapkat/screens/product/bloc/product_bloc.dart';
 import 'package:tapkat/screens/product/product_select_categories_screen.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
+import 'package:tapkat/utilities/constants.dart';
 import 'package:tapkat/utilities/dialog_message.dart';
 import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/utilities/style.dart';
@@ -54,9 +55,6 @@ class _ProductAddScreenState extends State<ProductAddScreen> {
   PlaceDetails? _selectedLocation;
 
   final _formKey = GlobalKey<FormState>();
-  final iOSGoogleMapsApiKey = 'AIzaSyBCyNgeJDA8_nwdGrPf5ecuIsVFRXSF0mQ';
-  final androidGoogleMapsApiKey = 'AIzaSyAH4fWM5IbEO0X-Txkm6HNsFAQ3KOfW20I';
-  final webGoogleMapsApiKey = 'AIzaSyAzPjfTTLzdfp-56tarHguvLXgdw7QAGkg';
 
   User? _user;
   int _currentCarouselIndex = 0;

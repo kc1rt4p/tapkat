@@ -104,6 +104,7 @@ class _StoreListScreenState extends State<StoreListScreen> {
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   mainAxisSpacing: 16,
                   crossAxisCount: 2,
+                  crossAxisSpacing: 10.0,
                 ),
                 builderDelegate: PagedChildBuilderDelegate<StoreModel>(
                   itemBuilder: (context, store, index) => StoreListItem(store),
