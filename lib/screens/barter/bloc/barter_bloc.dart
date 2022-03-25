@@ -235,41 +235,41 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
               ));
 
               // update products' status
-              final barterProducts =
-                  await _barterRepository.getBarterProducts(event.barterId);
+              // final barterProducts =
+              //     await _barterRepository.getBarterProducts(event.barterId);
 
-              if (barterProducts.isNotEmpty &&
-                  barterRecord.dealStatus != 'new') {
-                final productsToUpdate = barterProducts
-                    .where((bProduct) => !bProduct.productId!.contains('cash'));
+              // if (barterProducts.isNotEmpty &&
+              //     barterRecord.dealStatus != 'new') {
+              //   final productsToUpdate = barterProducts
+              //       .where((bProduct) => !bProduct.productId!.contains('cash'));
 
-                for (var product in productsToUpdate) {
-                  final productModel =
-                      await _productRepository.getProduct(product.productId!);
+              //   for (var product in productsToUpdate) {
+              //     final productModel =
+              //         await _productRepository.getProduct(product.productId!);
 
-                  var updatedData =
-                      ProductRequestModel.fromProduct(productModel);
+              //     var updatedData =
+              //         ProductRequestModel.fromProduct(productModel);
 
-                  switch (event.status) {
-                    case 'accepted':
-                      updatedData.status = 'reserved';
-                      break;
-                    case 'completed':
-                      updatedData.status = 'sold';
-                      if (product.userId == senderUserId) {
-                        updatedData.acquired_by = recipientUserId;
-                      } else {
-                        updatedData.acquired_by = senderUserId;
-                      }
+              //     switch (event.status) {
+              //       case 'accepted':
+              //         updatedData.status = 'reserved';
+              //         break;
+              //       case 'completed':
+              //         updatedData.status = 'sold';
+              //         if (product.userId == senderUserId) {
+              //           updatedData.acquired_by = recipientUserId;
+              //         } else {
+              //           updatedData.acquired_by = senderUserId;
+              //         }
 
-                      break;
-                    default:
-                      updatedData.status = 'available';
-                  }
+              //         break;
+              //       default:
+              //         updatedData.status = 'available';
+              //     }
 
-                  await _productRepository.updateProduct(updatedData);
-                }
-              }
+              //     await _productRepository.updateProduct(updatedData);
+              //   }
+              // }
             }
             emit(UpdateBarterStatusSuccess());
           }

@@ -14,7 +14,9 @@ import 'package:tapkat/models/product_category.dart';
 import 'package:tapkat/models/product_type.dart';
 import 'package:tapkat/models/request/add_product_request.dart';
 import 'package:tapkat/screens/product/bloc/product_bloc.dart';
+import 'package:tapkat/screens/product/product_select_categories_screen.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
+import 'package:tapkat/utilities/constants.dart';
 import 'package:tapkat/utilities/dialog_message.dart';
 import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/utilities/style.dart';
@@ -55,9 +57,11 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
   final _offerTypeTextController = TextEditingController();
   final _descTextController = TextEditingController();
   final _locationTextController = TextEditingController();
+  final _statusTextController = TextEditingController();
   List<ProductCategoryModel> _categories = [];
   List<ProductTypeModel> _types = [];
   int _initialTypeIndex = 0;
+  String _selectedStatus = 'available';
 
   @override
   void initState() {
@@ -66,7 +70,8 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
     _selectedOfferType = _product.type;
     _init();
     _productBloc.add(InitializeAddUpdateProduct());
-
+    _selectedStatus =
+        _product.status != null ? _product.status!.toLowerCase() : 'available';
     super.initState();
   }
 
@@ -181,6 +186,7 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
                                 val != null && val.isEmpty ? 'Required' : null,
                             keyboardType: TextInputType.number,
                           ),
+
                           Container(
                             width: double.infinity,
                             margin: EdgeInsets.only(bottom: 16.0),
@@ -265,6 +271,61 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
                             validator: (val) =>
                                 val != null && val.isEmpty ? 'Required' : null,
                           ),
+                          Container(
+                            width: double.infinity,
+                            margin: EdgeInsets.only(bottom: 16.0),
+                            padding: EdgeInsets.symmetric(
+                                vertical: 10.0, horizontal: 10.0),
+                            decoration: BoxDecoration(
+                              color: kBackgroundColor,
+                              borderRadius: BorderRadius.circular(12.0),
+                              border: Border.all(
+                                color: kBackgroundColor,
+                              ),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Status',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                SizedBox(height: 12.0),
+                                Center(
+                                  child: ToggleSwitch(
+                                    initialLabelIndex: productStatusList
+                                        .map((s) => s.toLowerCase())
+                                        .toList()
+                                        .indexOf(_selectedStatus),
+                                    inactiveBgColor: kBackgroundColor,
+                                    minWidth: SizeConfig.screenWidth * 0.27,
+                                    activeFgColor: Colors.black,
+                                    inactiveFgColor: Colors.white,
+                                    borderColor: [Color(0xFFEBFBFF)],
+                                    totalSwitches: productStatusList.length,
+                                    fontSize: SizeConfig.textScaleFactor * 13,
+                                    labels: productStatusList
+                                        .map((pt) => pt.toUpperCase())
+                                        .toList(),
+                                    onToggle: (index) {
+                                      setState(() {
+                                        _selectedStatus =
+                                            productStatusList[index ?? 0];
+                                      });
+                                      print(productStatusList
+                                          .map((s) => s.toLowerCase())
+                                          .toList()
+                                          .indexOf(_product.status != null
+                                              ? _product.status!.toLowerCase()
+                                              : _selectedStatus));
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -294,6 +355,7 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
     productRequest.productname = _nameTextController.text.trim();
     productRequest.productdesc = _descTextController.text.trim();
     productRequest.price = double.parse(_priceTextController.text.trim());
+    productRequest.status = _selectedStatus;
 
     if (_selectedLocation != null) {
       productRequest.address =
@@ -301,22 +363,26 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
       productRequest.city = _selectedLocation!.addressComponents[1]!.longName;
       productRequest.country =
           _selectedLocation!.addressComponents.last!.longName;
+      productRequest.location!.latitude =
+          _selectedLocation!.geometry!.location.lat;
+      productRequest.location!.longitude =
+          _selectedLocation!.geometry!.location.lng;
     }
 
     if (_selectedOfferType != null) productRequest.type = _selectedOfferType;
 
-    // _productBloc.add(EditProduct(productRequest));
+    _productBloc.add(EditProduct(productRequest));
 
-    // Navigator.push(
-    //   context,
-    //   MaterialPageRoute(
-    //     builder: (context) => SelectProductCategoryScreen(
-    //       productRequest: productRequest,
-    //       categories: _categories,
-    //       updating: true,
-    //     ),
-    //   ),
-    // );
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SelectProductCategoryScreen(
+          productRequest: productRequest,
+          categories: _categories,
+          updating: true,
+        ),
+      ),
+    );
   }
 
   _onSelectOfferType(BuildContext context) async {

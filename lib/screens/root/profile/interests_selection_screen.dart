@@ -238,6 +238,7 @@ class _InterestSelectionScreenState extends State<InterestSelectionScreen> {
       city: _user.city,
       address: _user.address,
       country: _user.country,
+      location: _user.location,
     );
 
     _profileBloc.add(UpdateUserInfo(user));

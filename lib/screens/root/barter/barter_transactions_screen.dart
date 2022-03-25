@@ -37,8 +37,7 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
   StreamSubscription<List<BarterRecordModel>>? _byYouStream;
   StreamSubscription<List<BarterRecordModel>>? _fromOthersStream;
 
-  String _initiatedView = 'open';
-  String _offersView = 'open';
+  String _view = 'open';
 
   @override
   void initState() {
@@ -76,6 +75,36 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
               CustomAppBar(
                 label: 'Your Barters',
                 hideBack: true,
+              ),
+              SizedBox(height: 10.0),
+              ToggleSwitch(
+                activeBgColor: [kBackgroundColor],
+                initialLabelIndex: _view == 'open' ? 0 : 1,
+                minWidth: SizeConfig.screenWidth * 0.4,
+                minHeight: 25.0,
+                borderColor: [Color(0xFFEBFBFF)],
+                totalSwitches: 2,
+                customTextStyles: [
+                  TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: SizeConfig.textScaleFactor * 15,
+                    color: Colors.white,
+                  ),
+                  TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: SizeConfig.textScaleFactor * 15,
+                    color: Colors.white,
+                  ),
+                ],
+                labels: [
+                  'OPEN',
+                  'COMPLETED',
+                ],
+                onToggle: (index) {
+                  setState(() {
+                    _view = index == 0 ? 'open' : 'completed';
+                  });
+                },
               ),
               Expanded(
                 child: BlocListener(
@@ -197,36 +226,15 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                                   fontSize: 20.0,
                                 ),
                               ),
-                              Center(
-                                child: ToggleSwitch(
-                                  activeBgColor: [kBackgroundColor],
-                                  initialLabelIndex:
-                                      _initiatedView == 'open' ? 0 : 1,
-                                  minWidth: SizeConfig.screenWidth * 0.3,
-                                  minHeight: 25.0,
-                                  borderColor: [Color(0xFFEBFBFF)],
-                                  totalSwitches: 2,
-                                  labels: [
-                                    'Open',
-                                    'Completed',
-                                  ],
-                                  onToggle: (index) {
-                                    setState(() {
-                                      _initiatedView =
-                                          index == 0 ? 'open' : 'completed';
-                                    });
-                                  },
-                                ),
-                              ),
                               SizedBox(height: 10.0),
                               Expanded(
-                                child: (_initiatedView == 'open'
+                                child: (_view == 'open'
                                             ? openInitiatedList
                                             : completedInitiatedList)
                                         .isNotEmpty
                                     ? SingleChildScrollView(
                                         child: _buildListContainer(
-                                            _initiatedView == 'open'
+                                            _view == 'open'
                                                 ? openInitiatedList
                                                 : completedInitiatedList),
                                       )
@@ -262,39 +270,16 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                                 fontSize: 20.0,
                               ),
                             ),
-                            Center(
-                              child: ToggleSwitch(
-                                initialLabelIndex:
-                                    _offersView == 'open' ? 0 : 1,
-                                minWidth: SizeConfig.screenWidth * 0.3,
-                                minHeight: 25.0,
-                                borderColor: [Color(0xFFEBFBFF)],
-                                activeBgColor: [kBackgroundColor],
-                                totalSwitches: 2,
-                                labels: [
-                                  'Open',
-                                  'Completed',
-                                ],
-                                onToggle: (index) {
-                                  print(index);
-                                  setState(() {
-                                    _offersView =
-                                        index == 0 ? 'open' : 'completed';
-                                  });
-                                },
-                              ),
-                            ),
                             SizedBox(height: 10.0),
                             Expanded(
-                              child: (_offersView == 'open'
+                              child: (_view == 'open'
                                           ? openOffersList
                                           : completedOffersList)
                                       .isNotEmpty
                                   ? SingleChildScrollView(
-                                      child: _buildListContainer(
-                                          _offersView == 'open'
-                                              ? openOffersList
-                                              : completedOffersList),
+                                      child: _buildListContainer(_view == 'open'
+                                          ? openOffersList
+                                          : completedOffersList),
                                     )
                                   : Center(
                                       child: Text('No offers found'),

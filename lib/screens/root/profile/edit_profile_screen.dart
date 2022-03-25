@@ -8,6 +8,7 @@ import 'package:flutter_google_places/flutter_google_places.dart';
 import 'package:flutter_progress_hud/flutter_progress_hud.dart';
 import 'package:google_api_headers/google_api_headers.dart';
 import 'package:google_maps_webservice/places.dart';
+import 'package:tapkat/models/location.dart';
 import 'package:tapkat/models/user.dart';
 import 'package:tapkat/screens/root/profile/bloc/profile_bloc.dart';
 import 'package:tapkat/screens/root/profile/interests_selection_screen.dart';
@@ -163,6 +164,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                 ? _selectedLocation!
                                     .addressComponents.last!.longName
                                 : null;
+                        user.location = LocationModel(
+                          longitude: _selectedLocation!.geometry!.location.lng,
+                          latitude: _selectedLocation!.geometry!.location.lat,
+                        );
                       }
 
                       Navigator.push(

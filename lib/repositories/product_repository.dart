@@ -285,7 +285,7 @@ class ProductRepository {
   }
 
   Future<List<ProductModel>> getFirstProducts(String listType,
-      [String? userid]) async {
+      [String? userid, num? lat, num? lng]) async {
     final response = await _apiService.post(
       url: 'products/$listType/searchfirst',
       body: listType != 'demand'
@@ -300,6 +300,11 @@ class ProductRepository {
               'psk': psk,
               'userid': userid,
               'productcount': productCount,
+              'radius': 1000,
+              'location': {
+                '_latitude': lat,
+                '_longitude': lng,
+              },
             },
       // params: userid != null
       //     ? {

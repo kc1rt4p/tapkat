@@ -62,8 +62,12 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         }
 
         if (event is LoadTrendingList) {
-          final trendingList =
-              await _productRepo.getFirstProducts('demand', _user!.uid);
+          final _userModel = await _userRepo.getUser(_user!.uid);
+          final trendingList = await _productRepo.getFirstProducts(
+              'demand',
+              _user!.uid,
+              _userModel!.location!.latitude,
+              _userModel.location!.longitude);
           emit(LoadedTrendingList(trendingList));
           add(LoadUserList());
         }

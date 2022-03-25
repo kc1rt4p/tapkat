@@ -16,3 +16,9 @@ enum ProductListType {
   demand,
   user,
 }
+
+const List<String> productStatusList = [
+  'available',
+  'reserved',
+  'completed',
+];

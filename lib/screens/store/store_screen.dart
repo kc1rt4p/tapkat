@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_progress_hud/flutter_progress_hud.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/models/user.dart';
+import 'package:tapkat/schemas/product_markers_record.dart';
 import 'package:tapkat/schemas/user_likes_record.dart';
 import 'package:tapkat/screens/product/bloc/product_bloc.dart';
 import 'package:tapkat/screens/product/product_details_screen.dart';
@@ -19,6 +21,7 @@ import 'package:tapkat/utilities/style.dart';
 import 'package:tapkat/widgets/barter_list_item.dart';
 import 'package:tapkat/widgets/custom_app_bar.dart';
 import 'package:tapkat/widgets/custom_search_bar.dart';
+import 'package:tapkat/widgets/tapkat_map.dart';
 
 import '../../backend.dart';
 
@@ -40,6 +43,7 @@ class _StoreScreenState extends State<StoreScreen> {
   int currentPage = 0;
 
   List<ProductModel> indicators = [];
+  List<ProductMarkersRecord?> productMarkers = [];
 
   String storeOwnerName = '';
   UserModel? _storeOwner;
@@ -50,6 +54,11 @@ class _StoreScreenState extends State<StoreScreen> {
 
   final _pagingController =
       PagingController<int, ProductModel>(firstPageKey: 0);
+
+  LatLng? googleMapsCenter;
+  late GoogleMapController googleMapsController;
+
+  String _selectedView = 'grid';
 
   @override
   void initState() {
@@ -187,25 +196,25 @@ class _StoreScreenState extends State<StoreScreen> {
                           ),
                           SizedBox(width: 10.0),
                           InkWell(
-                            onTap: () {},
+                            onTap: _onSelectView,
                             child: Container(
-                              padding: EdgeInsets.all(10.0),
+                              padding: EdgeInsets.all(8.0),
                               decoration: BoxDecoration(
-                                color: kBackgroundColor,
+                                color: Colors.white,
                                 borderRadius: BorderRadius.circular(10.0),
                                 boxShadow: [
                                   BoxShadow(
-                                    offset: Offset(0, 0.5),
-                                    blurRadius: 0.5,
-                                    spreadRadius: 0.5,
-                                    color: Color(0xFF005F73).withOpacity(0.3),
+                                    offset: Offset(1, 1),
+                                    color: Colors.grey,
                                   ),
                                 ],
                               ),
                               child: Icon(
-                                FontAwesomeIcons.solidMap,
-                                size: 14.0,
-                                color: Colors.white,
+                                _selectedView != 'map'
+                                    ? FontAwesomeIcons.mapMarkedAlt
+                                    : FontAwesomeIcons.thLarge,
+                                size: 16.0,
+                                color: kBackgroundColor,
                               ),
                             ),
                           ),
@@ -227,14 +236,6 @@ class _StoreScreenState extends State<StoreScreen> {
                           }
 
                           if (state is GetFirstProductsSuccess) {
-                            // setState(() {
-                            //   currentPage = 0;
-                            //   _list = state.list;
-                            //   indicators.clear();
-                            //   if (_list.isNotEmpty) {
-                            //     indicators.add(_list.last);
-                            //   }
-                            // });
                             _refreshController.refreshCompleted();
                             _pagingController.refresh();
                             if (state.list.isNotEmpty) {
@@ -266,16 +267,8 @@ class _StoreScreenState extends State<StoreScreen> {
                           }
 
                           if (state is GetProductsSuccess) {
-                            // setState(() {
-                            //   _list = state.list;
-
-                            //   indicators.add(_list.last);
-                            // });
-
-                            // indicators.asMap().forEach((key, value) =>
-                            //     print('==== page : ${value.productid}'));
-
                             if (state.list.isNotEmpty) {
+                              _list.addAll(state.list);
                               lastProduct = state.list.last;
                               if (state.list.length == productCount) {
                                 _pagingController.appendPage(
@@ -312,7 +305,10 @@ class _StoreScreenState extends State<StoreScreen> {
                         },
                       ),
                     ],
-                    child: Container(child: _buildGridView()),
+                    child: Container(
+                        child: _selectedView == 'grid'
+                            ? _buildGridView()
+                            : _buildMapView()),
                   ),
                 ),
               ],
@@ -320,6 +316,166 @@ class _StoreScreenState extends State<StoreScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  _onSelectView() {
+    setState(() {
+      _selectedView = _selectedView == 'grid' ? 'map' : 'grid';
+    });
+  }
+
+  _buildMapView() {
+    return Container(
+      child: TapkatGoogleMap(
+        onCameraIdle: (latLng) => googleMapsCenter = latLng,
+        initialLocation: googleMapsCenter ?? LatLng(1.3631246, 103.8325137),
+        onMapCreated: (controller) {
+          googleMapsController = controller;
+        },
+        markers: _list
+            .map(
+              (product) => TapkatMarker(
+                  product.productid!,
+                  LatLng(
+                    product.address != null && product.address!.location != null
+                        ? product.address!.location!.latitude!.toDouble()
+                        : 0.00,
+                    product.address != null && product.address!.location != null
+                        ? product.address!.location!.longitude!.toDouble()
+                        : 0.00,
+                  ),
+                  () => _onMarkerTapped(product),
+                  product),
+            )
+            .toList(),
+      ),
+    );
+  }
+
+  Future<dynamic> _onMarkerTapped(ProductModel product) async {
+    print(product.address!.toJson());
+    await showModalBottomSheet(
+      isScrollControlled: true,
+      backgroundColor: Color(0x79FFFFFF),
+      barrierColor: Color(0x99000000),
+      context: context,
+      builder: (context) {
+        return Container(
+          color: Colors.white,
+          padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: SizeConfig.screenWidth * .2,
+                    height: SizeConfig.screenWidth * .2,
+                    decoration: BoxDecoration(
+                      image: DecorationImage(
+                        image: product.mediaPrimary != null
+                            ? NetworkImage(product.mediaPrimary!.url!)
+                            : AssetImage('assets/images/image_placeholder.jpg')
+                                as ImageProvider<Object>,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 12.0),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          product.productname ?? '',
+                          style: Style.subtitle2.copyWith(
+                            color: kBackgroundColor,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(height: 8.0),
+                        Text(
+                          product.price == null
+                              ? ''
+                              : '\$ ${product.price!.toStringAsFixed(2)}',
+                          style: Style.subtitle2.copyWith(
+                            color: kBackgroundColor,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(height: 8.0),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.location_pin,
+                              size: 20.0,
+                              color: Colors.red,
+                            ),
+                            Text(
+                              product.address!.address!.isNotEmpty
+                                  ? product.address!.address!
+                                  : 'No address',
+                              style: Style.subtitle2
+                                  .copyWith(color: kBackgroundColor),
+                            )
+                          ],
+                        ),
+                        SizedBox(height: 8.0),
+                        Row(
+                          children: [
+                            ...List.generate(5, (i) {
+                              return Padding(
+                                padding:
+                                    EdgeInsets.only(right: i != 5 ? 5.0 : 0.0),
+                                child: Icon(
+                                  i <
+                                          (product.rating != null
+                                              ? product.rating!.round()
+                                              : 0)
+                                      ? Icons.star
+                                      : Icons.star_border,
+                                  color: Color(0xFFFFC107),
+                                  size: 20.0,
+                                ),
+                              );
+                            }),
+                            Text(
+                              product.rating != null
+                                  ? product.rating!.toStringAsFixed(1)
+                                  : '0',
+                              style: TextStyle(fontSize: 16.0),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(width: 10.0),
+                  InkWell(
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ProductDetailsScreen(
+                          productId: product.productid ?? '',
+                        ),
+                      ),
+                    ),
+                    child: Container(
+                      child: Icon(
+                        Icons.chevron_right,
+                        color: kBackgroundColor,
+                        size: 30.0,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
