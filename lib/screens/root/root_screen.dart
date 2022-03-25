@@ -31,7 +31,7 @@ class _RootScreenState extends State<RootScreen> {
 
   final _rootBloc = RootBloc();
 
-  final _currentVerDate = DateTime(2022, 3, 24, 9);
+  final _currentVerDate = DateTime(2022, 3, 25, 11);
 
   @override
   void initState() {
