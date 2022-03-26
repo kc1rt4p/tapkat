@@ -162,6 +162,18 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
           emit(GetProductsSuccess(result));
         }
 
+        if (event is GetCategories) {
+          emit(ProductLoading());
+          final data = await _productRepo.getProductRefData();
+
+          if (data != null) {
+            final a = (data['categories'] as List<ProductCategoryModel>)
+                .where((pc) => pc.type == 'PT1')
+                .toList();
+            emit(GetCategoriesSuccess(a));
+          }
+        }
+
         if (event is AddRating) {
           if (_user != null) {
             final result = await _productRepo.addRating(

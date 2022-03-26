@@ -17,6 +17,8 @@ class SaveProduct extends ProductEvent {
   });
 }
 
+class GetCategories extends ProductEvent {}
+
 class AddProductImage extends ProductEvent {
   final String productId;
   final List<SelectedMedia> media;

@@ -8,6 +8,7 @@ import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:tapkat/backend.dart';
 import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
 import 'package:tapkat/models/product.dart';
+import 'package:tapkat/models/product_category.dart';
 import 'package:tapkat/models/store.dart';
 import 'package:tapkat/models/user.dart';
 import 'package:tapkat/schemas/user_likes_record.dart';
@@ -57,11 +58,14 @@ class _HomeScreenState extends State<HomeScreen> {
   User? _user;
   UserModel? _userModel;
   final _refreshController = RefreshController();
+  bool _loadingCatProducts = false;
+  List<Map<String, dynamic>> _categories = [];
 
   @override
   void initState() {
     _authBloc = BlocProvider.of<AuthBloc>(context);
     _rootBloc = BlocProvider.of<RootBloc>(context);
+    _productBloc.add(GetCategories());
     _authBloc.add(GetCurrentuser());
     super.initState();
   }
@@ -76,23 +80,62 @@ class _HomeScreenState extends State<HomeScreen> {
       child: MultiBlocListener(
         listeners: [
           BlocListener(
+            bloc: _productBloc,
+            listener: (context, state) {
+              if (state is ProductLoading) {
+                setState(() {
+                  _loadingCatProducts = true;
+                });
+              }
+
+              if (state is GetCategoriesSuccess) {
+                setState(() {
+                  state.list.forEach((cat) {
+                    _categories.add({
+                      'code': cat.code,
+                      'name': cat.name,
+                    });
+                  });
+                });
+              }
+            },
+            child: Container(),
+          ),
+          BlocListener(
             bloc: _homeBloc,
             listener: (context, state) {
               if (state is LoadProductsInCategoriesSuccess) {
                 _refreshController.refreshCompleted();
                 setState(() {
                   _categoryProducts = state.list;
+
+                  _categoryProducts.forEach((catList) {
+                    print(catList);
+                    final index = _categories
+                        .indexWhere((cat) => cat['code'] == catList['code']);
+                    print(index);
+                    if (index > -1) {
+                      _categories[index].addAll({
+                        'products': catList['products'],
+                      });
+                    }
+                  });
+
                   if (_userInterests.isNotEmpty) {
                     _userInterests.forEach((ui) {
-                      final catIndex = _categoryProducts
-                          .indexWhere((cp) => cp['code'] == ui);
+                      final catIndex =
+                          _categories.indexWhere((cp) => cp['code'] == ui);
                       if (catIndex > 0) {
-                        final cat = _categoryProducts[catIndex];
-                        _categoryProducts.removeAt(catIndex);
-                        _categoryProducts.insert(0, cat);
+                        final cat = _categories[catIndex];
+                        _categories.removeAt(catIndex);
+                        _categories.insert(0, cat);
                       }
                     });
                   }
+                });
+
+                setState(() {
+                  _loadingCatProducts = false;
                 });
               }
 
@@ -318,14 +361,17 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ),
                           SizedBox(height: 16.0),
-                          ..._categoryProducts.map((cat) {
-                            print(cat['code']);
+                          ..._categories.map((cat) {
+                            print(cat);
                             return BarterList(
-                              items: (cat['products'] as List<ProductModel>)
-                                  .map((product) => _buildProductItem(
-                                        product: product,
-                                      ))
-                                  .toList(),
+                              loading: _loadingCatProducts,
+                              items: cat['products'] != null
+                                  ? (cat['products'] as List<ProductModel>)
+                                      .map((product) => _buildProductItem(
+                                            product: product,
+                                          ))
+                                      .toList()
+                                  : [],
                               label: cat['name'] as String,
                               context: context,
                               onViewAllTapped: () {
