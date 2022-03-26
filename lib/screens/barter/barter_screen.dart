@@ -50,7 +50,7 @@ class _BarterScreenState extends State<BarterScreen> {
   final unsaveProductsStorage = new LocalStorage('unsaved_products.json');
   ProductModel? _product;
 
-  late AuthBloc _authBloc;
+  final _authBloc = AuthBloc();
   final _barterBloc = BarterBloc();
 
   List<BarterProductModel> origCurrentUserOffers = [];
@@ -102,7 +102,6 @@ class _BarterScreenState extends State<BarterScreen> {
 
   @override
   void initState() {
-    _authBloc = BlocProvider.of<AuthBloc>(context);
     _authBloc.add(GetCurrentuser());
 
     if (widget.product != null) {
@@ -425,9 +424,11 @@ class _BarterScreenState extends State<BarterScreen> {
                     _origRemoteUserOfferedCash = null;
                   });
                   list.forEach((bProduct) {
-                    print(bProduct.toJson());
                     if (bProduct.productId!.contains('cash')) {
-                      if (_currentUser!.uid == _senderUserId) {
+                      print('sender user id: ${_senderUserId}');
+                      print('recipient user id: ${_recipientUserId}');
+                      print(bProduct.toJson());
+                      if (bProduct.userId == _currentUser!.uid) {
                         setState(() {
                           _currentUserOfferedCashModel = bProduct;
                         });
@@ -1566,7 +1567,7 @@ class _BarterScreenState extends State<BarterScreen> {
         InkWell(
           onTap: () {
             if (_barterRecord!.dealStatus != 'sold') {
-              _showAddCashDialog('participant');
+              _showAddCashDialog('recipient');
             }
           },
           child: Container(
@@ -1893,7 +1894,9 @@ class _BarterScreenState extends State<BarterScreen> {
         _barterBloc.add(
           AddCashOffer(
             barterId: _barterRecord!.barterId!,
-            userId: _barterRecord!.userid2!,
+            userId: _currentUser!.uid == _senderUserId
+                ? _recipientUserId!
+                : _senderUserId!,
             amount: _remoteUserOfferedCash!,
             currency: 'PHP',
           ),
@@ -2040,6 +2043,7 @@ class _BarterScreenState extends State<BarterScreen> {
   }
 
   _showRemoteUserItems() {
+    print(remoteUserItems.length);
     showMaterialModalBottomSheet(
       isDismissible: false,
       context: context,
@@ -2084,11 +2088,11 @@ class _BarterScreenState extends State<BarterScreen> {
                             item.mediaPrimary!.url_t!.isNotEmpty)
                           thumbnail = item.mediaPrimary!.url_t!;
 
-                        if (item.mediaPrimary == null ||
+                        if (item.mediaPrimary != null &&
                             item.mediaPrimary!.url!.isEmpty &&
-                                item.mediaPrimary!.url_t!.isEmpty &&
-                                item.media != null &&
-                                item.media!.isNotEmpty)
+                            item.mediaPrimary!.url_t!.isEmpty &&
+                            item.media != null &&
+                            item.media!.isNotEmpty)
                           thumbnail = item.media!.first.url_t != null
                               ? item.media!.first.url_t!
                               : item.media!.first.url!;
@@ -2226,8 +2230,8 @@ class _BarterScreenState extends State<BarterScreen> {
                       Expanded(
                         child: CustomButton(
                           label: _remoteUserOfferedCash != null
-                              ? 'Edit ${_currentUserRole == 'sender' ? 'Requested' : 'Offered'} Cash'
-                              : '${_currentUserRole == 'sender' ? 'Request' : 'Offer'} Cash',
+                              ? 'Edit Requested Cash'
+                              : 'Request Cash',
                           bgColor: Color(0xFFBB3F03),
                           textColor: Colors.white,
                           onTap: () {
@@ -2249,27 +2253,16 @@ class _BarterScreenState extends State<BarterScreen> {
   }
 
   _showAddCashDialog(String from) async {
-    if (from == 'participant') {
-      if (_currentUserRole == 'recipient') {
-        amounTextController.text = _currentUserOfferedCash != null
-            ? _currentUserOfferedCash.toString()
-            : '';
-      } else {
-        amounTextController.text = _remoteUserOfferedCash != null
-            ? _remoteUserOfferedCash.toString()
-            : '';
-      }
+    if (from == 'recipient') {
+      amounTextController.text = _remoteUserOfferedCash != null
+          ? _remoteUserOfferedCash.toString()
+          : '';
     } else {
-      if (_currentUserRole == 'recipient') {
-        amounTextController.text = _remoteUserOfferedCash != null
-            ? _remoteUserOfferedCash.toString()
-            : '';
-      } else {
-        amounTextController.text = _currentUserOfferedCash != null
-            ? _currentUserOfferedCash.toString()
-            : '';
-      }
+      amounTextController.text = _currentUserOfferedCash != null
+          ? _currentUserOfferedCash.toString()
+          : '';
     }
+
     final _cFormKey = GlobalKey<FormState>();
     var amount = await showDialog(
       context: context,
@@ -2283,7 +2276,7 @@ class _BarterScreenState extends State<BarterScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  from == 'participant' ? 'Request Cash' : 'Offer Cash',
+                  from == 'recipient' ? 'Request Cash' : 'Offer Cash',
                   style: Style.subtitle1.copyWith(color: kBackgroundColor),
                 ),
                 SizedBox(height: 10.0),
@@ -2341,18 +2334,10 @@ class _BarterScreenState extends State<BarterScreen> {
       amount = amount as num;
 
       setState(() {
-        if (from == 'participant') {
-          if (_currentUserRole == 'recipient') {
-            _currentUserOfferedCash = amount;
-          } else {
-            _remoteUserOfferedCash = amount;
-          }
+        if (from == 'recipient') {
+          _remoteUserOfferedCash = amount;
         } else {
-          if (_currentUserRole == 'recipient') {
-            _remoteUserOfferedCash = amount;
-          } else {
-            _currentUserOfferedCash = amount;
-          }
+          _currentUserOfferedCash = amount;
         }
       });
     }

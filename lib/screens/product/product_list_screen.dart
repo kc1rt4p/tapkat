@@ -69,6 +69,8 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
   ProductModel? lastProduct;
 
+  bool _loading = false;
+
   @override
   void initState() {
     _setTitle();
@@ -109,11 +111,15 @@ class _ProductListScreenState extends State<ProductListScreen> {
         child: BlocListener(
           bloc: _productBloc,
           listener: (context, state) {
-            // if (state is ProductLoading) {
-            //   ProgressHUD.of(context)!.show();
-            // } else {
-            //   ProgressHUD.of(context)!.dismiss();
-            // }
+            if (state is ProductLoading) {
+              setState(() {
+                _loading = true;
+              });
+            } else {
+              setState(() {
+                _loading = false;
+              });
+            }
 
             if (state is GetFirstProductsSuccess) {
               if (state.list.isNotEmpty) {
