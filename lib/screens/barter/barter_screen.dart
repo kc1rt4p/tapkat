@@ -1452,8 +1452,6 @@ class _BarterScreenState extends State<BarterScreen> {
       _reviewTextController.text = review.review ?? '';
       _rating = review.rating ?? 0;
     }
-
-    print(_recipientUserId);
     print(_currentUserModel!.userid);
 
     final rating = await showDialog(
@@ -1551,7 +1549,9 @@ class _BarterScreenState extends State<BarterScreen> {
           review: rating['review'] as String?,
           reviewerid: _currentUserModel!.userid,
           reviewername: _currentUserModel!.display_name,
-          userid: _recipientUserId,
+          userid: _recipientUserId == _currentUserModel!.userid
+              ? _senderUserId
+              : _recipientUserId,
           username: _recipientName,
         ),
       ));
@@ -2349,7 +2349,7 @@ class _BarterScreenState extends State<BarterScreen> {
     });
   }
 
-  _add_currentUserOfferedCashItems(List<BarterProductModel> items) {
+  _add_currentUserOfferedItems(List<BarterProductModel> items) {
     setState(() {
       currentUserOffers.addAll(items);
     });
@@ -2377,9 +2377,7 @@ class _BarterScreenState extends State<BarterScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   _buildBarterList(
-                    label: _currentUserRole == 'sender'
-                        ? 'Select from your store'
-                        : 'Request items from $_recipientName',
+                    label: 'Select from your store',
                     labelAction: GestureDetector(
                       onTap: () => Navigator.pop(context),
                       child: Icon(
@@ -2388,6 +2386,7 @@ class _BarterScreenState extends State<BarterScreen> {
                       ),
                     ),
                     items: currentUserItems.map((item) {
+                      print('-==== ${item.toJson()}');
                       var thumbnail = '';
 
                       if (item.mediaPrimary != null &&
@@ -2521,7 +2520,7 @@ class _BarterScreenState extends State<BarterScreen> {
                           bgColor: kBackgroundColor,
                           textColor: Colors.white,
                           onTap: () {
-                            _add_currentUserOfferedCashItems(selectedItems
+                            _add_currentUserOfferedItems(selectedItems
                                 .map((item) =>
                                     BarterProductModel.fromProductModel(item))
                                 .toList());

@@ -31,7 +31,7 @@ class _RootScreenState extends State<RootScreen> {
 
   final _rootBloc = RootBloc();
 
-  final _currentVerDate = DateTime(2022, 3, 26, 4);
+  final _currentVerDate = DateTime(2022, 3, 28, 9);
 
   @override
   void initState() {
@@ -111,13 +111,12 @@ class _RootScreenState extends State<RootScreen> {
       ),
     );
 
-    print('OLRYT!');
-
     setState(() {
       _currentIndex = 1;
     });
 
     Future.delayed(Duration(milliseconds: 100), () {
+      print('current index: _currentIndex');
       setState(() {
         _currentIndex = 3;
       });

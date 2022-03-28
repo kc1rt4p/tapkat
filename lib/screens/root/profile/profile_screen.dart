@@ -560,7 +560,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   : '0',
               imageUrl: thumbnail,
               onTapped: () async {
-                await Navigator.push(
+                final changed = await Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => ProductDetailsScreen(
@@ -569,6 +569,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
                 );
+
+                print('changed value: $changed');
+
+                if (changed == true) {
+                  _profileBloc.add(InitializeProfileScreen());
+                }
               },
             ),
           );

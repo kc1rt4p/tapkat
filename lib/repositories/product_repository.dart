@@ -215,25 +215,29 @@ class ProductRepository {
     String? userId,
     required String lastProductId,
     required String startAfterVal,
+    List<String>? interests,
   }) async {
+    var body = {
+      'psk': psk,
+      'userid': userId,
+      'productcount': productCount,
+    };
+
+    if (listType == 'demand') {
+      body.addAll({
+        'radius': 1000,
+      });
+    } else {
+      body.addAll({
+        'sortBy': 'price',
+        'startafterval': double.parse(startAfterVal),
+        'productid': lastProductId,
+      });
+    }
+
     final response = await _apiService.post(
       url: 'products/$listType/searchset',
-      body: listType != 'demand'
-          ? {
-              'psk': psk,
-              'userid': userId,
-              'productcount': productCount,
-              'sortby': 'price',
-              'startafterval': double.parse(startAfterVal),
-              'productid': lastProductId,
-            }
-          : {
-              'psk': psk,
-              'userid': userId,
-              'productcount': productCount,
-              'startafterval': int.parse(startAfterVal),
-              'productid': lastProductId,
-            },
+      body: body,
     );
 
     if (response.data['status'] == 'FAIL') return [];
@@ -285,27 +289,33 @@ class ProductRepository {
   }
 
   Future<List<ProductModel>> getFirstProducts(String listType,
-      [String? userid, num? lat, num? lng]) async {
+      [String? userid, num? lat, num? lng, List<String>? interests]) async {
+    var body = {
+      'psk': psk,
+      'userid': userid,
+      'productcount': productCount,
+    };
+    if (listType == 'demand') {
+      body.addAll({
+        'radius': 1000,
+        'location': {
+          '_latitude': lat,
+          '_longitude': lng,
+        },
+      });
+    } else {
+      body.addAll({
+        'sortby': 'price',
+        'sortdirection': listType == 'reco' ? 'ascending' : 'descending',
+      });
+
+      if (listType == 'reco' && interests != null) {
+        body.addAll({'interests': interests});
+      }
+    }
     final response = await _apiService.post(
       url: 'products/$listType/searchfirst',
-      body: listType != 'demand'
-          ? {
-              'psk': psk,
-              'userid': userid,
-              'productcount': productCount,
-              'sortby': 'price',
-              'sortdirection': listType == 'reco' ? 'ascending' : 'descending',
-            }
-          : {
-              'psk': psk,
-              'userid': userid,
-              'productcount': productCount,
-              'radius': 1000,
-              'location': {
-                '_latitude': lat,
-                '_longitude': lng,
-              },
-            },
+      body: body,
       // params: userid != null
       //     ? {
       //         'userid': userid,

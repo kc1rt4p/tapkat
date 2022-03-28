@@ -56,3 +56,9 @@ class LoadingRecommendedList extends HomeState {}
 class LoadingTrendingList extends HomeState {}
 
 class LoadingUserList extends HomeState {}
+
+class TestHeaderSuccess extends HomeState {
+  final String msg;
+
+  TestHeaderSuccess(this.msg);
+}

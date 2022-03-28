@@ -9,6 +9,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
 import 'package:tapkat/screens/signup/initial_screen.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
+import 'package:tapkat/utilities/dialog_message.dart';
 import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/utilities/style.dart';
 import 'package:tapkat/widgets/custom_button.dart';
@@ -53,7 +54,8 @@ class _LoginScreenState extends State<LoginScreen> {
             }
 
             if (state is AuthError) {
-              print('error in login: ${state.message}');
+              DialogMessage.show(context,
+                  title: 'Error', message: state.message);
             }
           },
           child: Container(

@@ -112,7 +112,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                     await DialogMessage.show(context,
                         message: 'The product has been deleted.');
 
-                    Navigator.pop(context);
+                    Navigator.pop(context, true);
                   }
 
                   if (state is GetProductDetailsSuccess) {
@@ -824,7 +824,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                         ),
                         Spacer(),
                         GestureDetector(
-                          onTap: () => Navigator.pop(context),
+                          onTap: () => Navigator.pop(context, false),
                           child: Icon(Icons.close),
                         ),
                       ],

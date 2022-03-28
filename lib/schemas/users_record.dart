@@ -26,6 +26,9 @@ abstract class UsersRecord implements Built<UsersRecord, UsersRecordBuilder> {
   @BuiltValueField(wireName: 'phone_number')
   String? get phoneNumber;
 
+  String? country;
+  String? city;
+  String? address;
   LatLng? get location;
 
   @BuiltValueField(wireName: kDocumentReferenceField)
@@ -63,6 +66,9 @@ Map<String, dynamic> createUsersRecordData({
   DateTime? createdTime,
   String? phoneNumber,
   LatLng? location,
+  String? country,
+  String? city,
+  String? address,
 }) =>
     serializers.toFirestore(
         UsersRecord.serializer,

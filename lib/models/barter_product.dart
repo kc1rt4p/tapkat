@@ -22,12 +22,32 @@ class BarterProductModel {
   });
 
   factory BarterProductModel.fromProductModel(ProductModel product) {
+    var thumbnail = '';
+
+    if (product.mediaPrimary != null &&
+        product.mediaPrimary!.url != null &&
+        product.mediaPrimary!.url!.isNotEmpty)
+      thumbnail = product.mediaPrimary!.url!;
+
+    if (product.mediaPrimary != null &&
+        product.mediaPrimary!.url_t != null &&
+        product.mediaPrimary!.url_t!.isNotEmpty)
+      thumbnail = product.mediaPrimary!.url_t!;
+
+    if (product.mediaPrimary == null ||
+        product.mediaPrimary!.url!.isEmpty &&
+            product.mediaPrimary!.url_t!.isEmpty &&
+            product.media != null &&
+            product.media!.isNotEmpty)
+      thumbnail = product.media!.first.url_t != null
+          ? product.media!.first.url_t!
+          : product.media!.first.url!;
     return BarterProductModel(
       productId: product.productid,
       userId: product.userid,
       productName: product.productname,
       price: product.price,
-      imgUrl: product.mediaPrimary != null ? product.mediaPrimary!.url : '',
+      imgUrl: thumbnail,
       currency: product.currency,
     );
   }

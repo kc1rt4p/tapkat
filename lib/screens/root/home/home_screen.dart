@@ -220,9 +220,18 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: EdgeInsets.only(top: SizeConfig.paddingTop),
               child: Column(
                 children: [
-                  CustomSearchBar(
-                    controller: _keywordTextController,
-                    onSubmitted: (val) => _onSearchSubmitted(val),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: CustomSearchBar(
+                          controller: _keywordTextController,
+                          onSubmitted: (val) => _onSearchSubmitted(val),
+                        ),
+                      ),
+                      TextButton(
+                          onPressed: () => _homeBloc.add(TestHeader()),
+                          child: Text('Test Header')),
+                    ],
                   ),
                 ],
               ),

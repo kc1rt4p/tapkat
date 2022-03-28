@@ -169,7 +169,7 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                             openOffersList = fromOthersList
                                 .where((br) => br.dealStatus != 'completed')
                                 .toList();
-                            completedOffersList = completedOffersList
+                            completedOffersList = fromOthersList
                                 .where((br) => br.dealStatus == 'completed')
                                 .toList();
                           } else {

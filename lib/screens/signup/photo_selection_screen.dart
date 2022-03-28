@@ -195,8 +195,9 @@ class _SignUpPhotoSelectionScreenState
                           label: 'Save & Continue',
                           onTap: () {
                             print('save/continue');
-                            BlocProvider.of<AuthBloc>(context)
-                                .add(SaveUserPhoto(context, _selectedMedia!));
+                            if (_selectedMedia != null)
+                              BlocProvider.of<AuthBloc>(context)
+                                  .add(SaveUserPhoto(context, _selectedMedia!));
                           },
                         ),
                         CustomButton(

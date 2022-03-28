@@ -1,9 +1,11 @@
 import 'package:bloc/bloc.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/models/store.dart';
 import 'package:tapkat/models/user.dart';
+import 'package:tapkat/repositories/auth_repository.dart';
 import 'package:tapkat/repositories/product_repository.dart';
 import 'package:tapkat/repositories/user_repository.dart';
 import 'package:tapkat/services/auth_service.dart';
@@ -16,12 +18,15 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     final _authService = AuthService();
     final _productRepo = ProductRepository();
     final _userRepo = UserRepository();
+    final _authRepo = AuthRepository();
     User? _user;
+    UserModel? _userModel;
     on<HomeEvent>((event, emit) async {
       emit(HomeLoading());
 
       try {
         _user = await _authService.getCurrentUser();
+        _userModel = await _userRepo.getUser(_user!.uid);
 
         if (event is GetUserFavorites) {
           if (_user != null) {
@@ -37,8 +42,18 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
           emit(LoadingUserList());
           emit(LoadingTrendingList());
           emit(LoadingTopStoreList());
-          final recommendedList =
-              await _productRepo.getFirstProducts('reco', _user!.uid);
+
+          final recommendedList = await _productRepo.getFirstProducts(
+            'reco',
+            _user!.uid,
+            null,
+            null,
+            _userModel != null &&
+                    _userModel!.interests != null &&
+                    _userModel!.interests!.isNotEmpty
+                ? _userModel!.interests
+                : null,
+          );
           emit(LoadedRecommendedList(recommendedList));
           add(LoadTrendingList());
         }
@@ -59,6 +74,16 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         if (event is LoadProductsInCategories) {
           final list = await _productRepo.getAllCategoryProducts();
           emit(LoadProductsInCategoriesSuccess(list));
+        }
+
+        if (event is TestHeader) {
+          DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+          AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+          final devInfo = await deviceInfo.deviceInfo;
+          final result = await _authRepo.testHeader(
+              userid: _user!.uid,
+              deviceid: androidInfo.androidId!,
+              time: DateTime.now().millisecondsSinceEpoch.toString());
         }
 
         if (event is LoadTrendingList) {

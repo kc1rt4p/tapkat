@@ -11,11 +11,16 @@ class ApiService {
   ApiService._();
   ApiService();
   Future<Response> get(
-      {required String url, Map<String, dynamic>? body}) async {
+      {required String url,
+      Map<String, dynamic>? headers,
+      Map<String, dynamic>? body}) async {
     return await _safeFetch(
       () => _dio.get(
         url,
         queryParameters: body,
+        options: Options(
+          headers: headers,
+        ),
       ),
     );
   }

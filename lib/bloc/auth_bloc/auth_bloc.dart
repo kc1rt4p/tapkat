@@ -4,6 +4,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_webservice/places.dart';
+import 'package:tapkat/models/location.dart';
+import 'package:tapkat/models/request/update_user.dart';
 import 'package:tapkat/models/user.dart';
 import 'package:tapkat/repositories/user_repository.dart';
 import 'package:tapkat/schemas/users_record.dart';
@@ -50,15 +52,31 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           );
 
           if (user != null) {
-            final usersCreateData = createUsersRecordData(
+            final _location = event.location;
+
+            final updateUser = UpdateUserModel(
+              userid: user.uid,
               email: event.email,
-              displayName: event.username,
-              phoneNumber: event.mobileNumber,
-              location: LatLng(event.location.geometry!.location.lat,
-                  event.location.geometry!.location.lng),
+              display_name: event.username,
+              phone_number: event.mobileNumber,
+              location: LocationModel(
+                latitude: event.location.geometry!.location.lat,
+                longitude: event.location.geometry!.location.lng,
+              ),
+              address: _location.addressComponents[0] != null
+                  ? _location.addressComponents[0]!.longName
+                  : null,
+              city: _location.addressComponents[1] != null
+                  ? _location.addressComponents[1]!.longName
+                  : null,
+              country: _location.addressComponents.last != null
+                  ? _location.addressComponents.last!.longName
+                  : null,
             );
 
-            await UsersRecord.collection.doc(user.uid).update(usersCreateData);
+            await UsersRecord.collection
+                .doc(user.uid)
+                .update(updateUser.toJson());
 
             authService.currentUser = TapkatFirebaseUser(user);
             currentUser = user;
@@ -106,14 +124,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           ScaffoldMessenger.of(event.context).hideCurrentSnackBar();
 
           if (downloadUrl != null) {
-            final usersUpdateData = createUsersRecordData(
-              photoUrl: downloadUrl,
-            );
-
             final userRef =
                 UsersRecord.collection.doc(authService.currentUser!.user!.uid);
 
-            await userRef.update(usersUpdateData);
+            await userRef.update({"photo_url": downloadUrl});
 
             emit(SaveUserPhotoSuccess());
 
@@ -144,20 +158,22 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       }
 
       if (event is SignInWithEmail) {
-        final user = await authService.signInWithEmail(
-            event.context, event.email, event.password);
-        if (user != null) {
-          print('success sign in');
-          currentUser = user;
-          authService.currentUser = TapkatFirebaseUser(user);
-          final userModel = await userRepo.getUser(user.uid);
-          if (userModel != null) {
-            currentUserModel = userModel;
-            authService.currentUserModel = userModel;
+        try {
+          final user = await authService.signInWithEmail(
+              event.context, event.email, event.password);
+          if (user != null) {
+            print('success sign in');
+            currentUser = user;
+            authService.currentUser = TapkatFirebaseUser(user);
+            final userModel = await userRepo.getUser(user.uid);
+            if (userModel != null) {
+              currentUserModel = userModel;
+              authService.currentUserModel = userModel;
+            }
+            emit(AuthSignedIn(user));
           }
-          emit(AuthSignedIn(user));
-        } else {
-          emit(AuthError(''));
+        } on FirebaseAuthException catch (e) {
+          emit(AuthError(e.message ?? e.toString()));
         }
       }
 
