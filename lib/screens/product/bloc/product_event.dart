@@ -38,12 +38,14 @@ class GetNextProducts extends ProductEvent {
   final String? userId;
   final String lastProductId;
   final String startAfterVal;
+  final LocationModel? location;
 
   GetNextProducts({
     required this.listType,
     required this.lastProductId,
     required this.startAfterVal,
     this.userId,
+    this.location,
   });
 }
 

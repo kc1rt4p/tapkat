@@ -116,7 +116,7 @@ class _RootScreenState extends State<RootScreen> {
     });
 
     Future.delayed(Duration(milliseconds: 100), () {
-      print('current index: _currentIndex');
+      print('current index: $_currentIndex');
       setState(() {
         _currentIndex = 3;
       });

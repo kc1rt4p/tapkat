@@ -218,22 +218,9 @@ class _HomeScreenState extends State<HomeScreen> {
             Container(
               color: kBackgroundColor,
               padding: EdgeInsets.only(top: SizeConfig.paddingTop),
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: CustomSearchBar(
-                          controller: _keywordTextController,
-                          onSubmitted: (val) => _onSearchSubmitted(val),
-                        ),
-                      ),
-                      TextButton(
-                          onPressed: () => _homeBloc.add(TestHeader()),
-                          child: Text('Test Header')),
-                    ],
-                  ),
-                ],
+              child: CustomSearchBar(
+                controller: _keywordTextController,
+                onSubmitted: (val) => _onSearchSubmitted(val),
               ),
             ),
             Expanded(
@@ -454,7 +441,7 @@ class _HomeScreenState extends State<HomeScreen> {
         height: SizeConfig.screenHeight * 0.165,
         width: SizeConfig.screenWidth * 0.27,
         fontSize: SizeConfig.textScaleFactor * 9,
-        hideLikeBtn: true,
+        hideLikeBtn: product.userid == _userModel!.userid,
         itemName: product.productname ?? '',
         datePosted: product.updated_time ?? null,
         itemPrice:

@@ -171,6 +171,8 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
                   _newBarterRecord.userid2Role == 'sender'
                       ? 'recipient'
                       : 'sender';
+              _newBarterRecord.userid1Name = _barterRecord.userid2Name;
+              _newBarterRecord.userid2Name = _barterRecord.userid1Name;
               _newBarterRecord.dealDate = DateTime.now();
               _newBarterRecord.u2P1Id = event.product.productId;
               _newBarterRecord.u2P1Name = event.product.productName;

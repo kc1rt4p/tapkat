@@ -7,6 +7,7 @@ import 'package:image/image.dart';
 import 'package:mime_type/mime_type.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:tapkat/models/decode_param.dart';
+import 'package:tapkat/models/location.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/models/product_category.dart';
 import 'package:tapkat/models/product_type.dart';
@@ -214,8 +215,9 @@ class ProductRepository {
     required String listType,
     String? userId,
     required String lastProductId,
-    required String startAfterVal,
+    required dynamic startAfterVal,
     List<String>? interests,
+    LocationModel? location,
   }) async {
     var body = {
       'psk': psk,
@@ -227,6 +229,12 @@ class ProductRepository {
       body.addAll({
         'radius': 1000,
       });
+      if (location != null) {
+        body.addAll({
+          'startafterval': startAfterVal,
+          ...location.toJson(),
+        });
+      }
     } else {
       body.addAll({
         'sortBy': 'price',
