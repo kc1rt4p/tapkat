@@ -140,7 +140,7 @@ class _BarterListState extends State<BarterList> {
                     ),
                   ),
                 )
-              : widget.items.isNotEmpty
+              : widget.items.isNotEmpty && !widget.loading
                   ? Container(
                       width: double.infinity,
                       margin: EdgeInsets.only(top: 10.0),

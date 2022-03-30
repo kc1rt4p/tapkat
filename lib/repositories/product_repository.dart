@@ -306,11 +306,16 @@ class ProductRepository {
     if (listType == 'demand') {
       body.addAll({
         'radius': 1000,
-        'location': {
-          '_latitude': lat,
-          '_longitude': lng,
-        },
       });
+
+      if (lat != null && lng != null) {
+        body.addAll({
+          'location': {
+            '_latitude': lat,
+            '_longitude': lng,
+          },
+        });
+      }
     } else {
       body.addAll({
         'sortby': 'price',

@@ -1,5 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:tapkat/models/location.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/models/product_category.dart';
@@ -11,6 +12,8 @@ import 'package:tapkat/repositories/product_repository.dart';
 import 'package:tapkat/repositories/user_repository.dart';
 import 'package:tapkat/services/auth_service.dart';
 import 'package:tapkat/utilities/upload_media.dart';
+import 'package:geocoding/geocoding.dart' as geoCoding;
+import 'package:geolocator/geolocator.dart' as geoLocator;
 
 part 'product_event.dart';
 part 'product_state.dart';
@@ -136,11 +139,32 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
 
         if (event is GetFirstProducts) {
           emit(ProductLoading());
+
+          LocationModel? _location;
+
+          if (await Permission.location.isGranted &&
+              await geoLocator.GeolocatorPlatform.instance
+                  .isLocationServiceEnabled()) {
+            final userLoc = await geoLocator.Geolocator.getCurrentPosition();
+            _location = LocationModel(
+              longitude: userLoc.longitude,
+              latitude: userLoc.latitude,
+            );
+          }
+
           final result = await _productRepo.getFirstProducts(
             event.listType,
             event.userId,
-            _userModel!.location!.latitude,
-            _userModel.location!.longitude,
+            _location != null
+                ? _location.latitude
+                : _userModel!.location != null
+                    ? _userModel.location!.latitude
+                    : null,
+            _location != null
+                ? _location.longitude
+                : _userModel!.location != null
+                    ? _userModel.location!.longitude
+                    : null,
           );
 
           emit(GetFirstProductsSuccess(result));
@@ -156,6 +180,16 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
 
         if (event is GetNextProducts) {
           emit(ProductLoading());
+          LocationModel? _location;
+          if (await Permission.location.isGranted &&
+              await geoLocator.GeolocatorPlatform.instance
+                  .isLocationServiceEnabled()) {
+            final userLoc = await geoLocator.Geolocator.getCurrentPosition();
+            _location = LocationModel(
+              longitude: userLoc.longitude,
+              latitude: userLoc.latitude,
+            );
+          }
           final result = await _productRepo.getNextProducts(
             listType: event.listType,
             lastProductId: event.lastProductId,
@@ -164,7 +198,9 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
                 : _authService.currentUserModel!.location,
             userId: event.listType == 'user' ? event.userId : '',
             location: event.listType == 'demand'
-                ? _authService.currentUserModel!.location
+                ? (_location != null
+                    ? _location
+                    : _authService.currentUserModel!.location)
                 : null,
           );
 
