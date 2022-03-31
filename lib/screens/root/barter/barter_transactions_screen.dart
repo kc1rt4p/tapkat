@@ -236,7 +236,8 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                                         child: _buildListContainer(
                                             _view == 'open'
                                                 ? openInitiatedList
-                                                : completedInitiatedList),
+                                                : completedInitiatedList,
+                                            'For'),
                                       )
                                     : Center(
                                         child: Text('No barters found'),
@@ -277,9 +278,11 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                                           : completedOffersList)
                                       .isNotEmpty
                                   ? SingleChildScrollView(
-                                      child: _buildListContainer(_view == 'open'
-                                          ? openOffersList
-                                          : completedOffersList),
+                                      child: _buildListContainer(
+                                          _view == 'open'
+                                              ? openOffersList
+                                              : completedOffersList,
+                                          'From'),
                                     )
                                   : Center(
                                       child: Text('No offers found'),
@@ -299,7 +302,7 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
     );
   }
 
-  Container _buildListContainer(List<BarterRecordModel> list) {
+  Container _buildListContainer(List<BarterRecordModel> list, String prefix) {
     return Container(
         width: double.infinity,
         child: SingleChildScrollView(
@@ -308,10 +311,9 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: list.map(
               (barter) {
-                var name =
-                    barter.userid2Name != null && barter.userid2Name!.isNotEmpty
-                        ? barter.userid2Name!
-                        : barter.userid2!;
+                var name = prefix.toLowerCase() == 'from'
+                    ? barter.userid1Name!
+                    : barter.userid2Name!;
                 if (name.length > 10) {
                   name = name.substring(0, 10) + '...';
                 }
@@ -329,7 +331,7 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                                 color: Colors.black,
                               ),
                               children: [
-                                TextSpan(text: 'For '),
+                                TextSpan(text: '$prefix '),
                                 TextSpan(
                                   text: name,
                                   style: TextStyle(
