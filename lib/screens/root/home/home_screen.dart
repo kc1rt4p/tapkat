@@ -50,10 +50,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final _keywordTextController = TextEditingController();
 
-  bool _loadingRecoList = false;
-  bool _loadingTrendingList = false;
-  bool _loadingUserProducts = false;
-  bool _loadingTopStores = false;
+  bool _loadingRecoList = true;
+  bool _loadingTrendingList = true;
+  bool _loadingUserProducts = true;
+  bool _loadingTopStores = true;
 
   User? _user;
   UserModel? _userModel;
