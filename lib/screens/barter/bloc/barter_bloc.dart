@@ -8,6 +8,7 @@ import 'package:tapkat/models/product.dart';
 import 'package:tapkat/models/request/add_product_request.dart';
 import 'package:tapkat/models/request/product_review_resuest.dart';
 import 'package:tapkat/models/request/user_review_request.dart';
+import 'package:tapkat/models/user.dart';
 import 'package:tapkat/repositories/barter_repository.dart';
 import 'package:tapkat/repositories/product_repository.dart';
 import 'package:tapkat/repositories/user_repository.dart';
@@ -24,14 +25,15 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
     final _barterRepository = BarterRepository();
     final _userRepo = UserRepository();
     User? _user;
+    UserModel? _userModel;
     on<BarterEvent>((event, emit) async {
       print('current event: $event');
       emit(BarterLoading());
 
       try {
         _user = await _authService.getCurrentUser();
-
         if (_user != null) {
+          _userModel = await _userRepo.getUser(_user!.uid);
           if (event is InitializeBarter) {
             print('=== barter id: ${event.barterData.barterId}');
             var _barterRecord = await _barterRepository
@@ -366,9 +368,6 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
           }
 
           if (event is SendMessage) {
-            final user = await _userRepo.getUser(_user!.uid);
-            event.message.userId = _user!.uid;
-            event.message.userName = user!.display_name;
             event.message.dateCreated = DateTime.now();
             final sent = await _barterRepository.addMessage(event.message);
             if (!sent) {

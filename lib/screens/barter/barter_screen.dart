@@ -381,13 +381,17 @@ class _BarterScreenState extends State<BarterScreen> {
                     if (_barterRecord!.userid1Role == 'sender') {
                       _senderUserId = _barterRecord!.userid1;
                       _recipientUserId = _barterRecord!.userid2;
-                      _recipientName = _barterRecord!.userid2Name!;
-                      _currentUserRole = 'sender';
                     } else {
                       _senderUserId = _barterRecord!.userid2;
-                      _recipientName = _barterRecord!.userid1Name!;
                       _recipientUserId = _barterRecord!.userid1;
-                      _currentUserRole = 'recipient';
+                    }
+
+                    if (_currentUserModel!.userid == _barterRecord!.userid1) {
+                      _currentUserRole = _barterRecord!.userid1Role;
+                      _recipientName = _barterRecord!.userid2Name!;
+                    } else {
+                      _currentUserRole = _barterRecord!.userid2Role;
+                      _recipientName = _barterRecord!.userid1Name!;
                     }
 
                     _recipientName = _recipientName.length > 12
@@ -2555,6 +2559,8 @@ class _BarterScreenState extends State<BarterScreen> {
         ChatMessageModel(
           barterId: _barterId,
           message: _messageTextController.text.trim(),
+          userId: _currentUserModel!.userid,
+          userName: _currentUserModel!.display_name,
         ),
       ),
     );

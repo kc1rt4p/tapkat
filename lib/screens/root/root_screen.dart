@@ -1,3 +1,4 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
@@ -11,6 +12,10 @@ import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/size_config.dart';
 
 import 'bloc/root_bloc.dart';
+
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  print('background msg: ${message.toString()}');
+}
 
 class RootScreen extends StatefulWidget {
   const RootScreen({Key? key}) : super(key: key);
@@ -36,7 +41,29 @@ class _RootScreenState extends State<RootScreen> {
   @override
   void initState() {
     Permission.location.request();
+    initNotifications();
     super.initState();
+  }
+
+  initNotifications() async {
+    final _firebaseMessaging = FirebaseMessaging.instance;
+    NotificationSettings settings = await _firebaseMessaging.requestPermission(
+      alert: true,
+      announcement: false,
+      badge: true,
+      carPlay: false,
+      criticalAlert: false,
+      provisional: false,
+      sound: true,
+    );
+
+    print('=====TOKEN: ${await _firebaseMessaging.getToken()}');
+
+    FirebaseMessaging.onMessage.listen((remoteMessage) {
+      print('Foreground Message: ${remoteMessage.toString()}');
+    });
+
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   }
 
   @override
