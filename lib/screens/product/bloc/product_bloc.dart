@@ -12,7 +12,6 @@ import 'package:tapkat/repositories/product_repository.dart';
 import 'package:tapkat/repositories/user_repository.dart';
 import 'package:tapkat/services/auth_service.dart';
 import 'package:tapkat/utilities/upload_media.dart';
-import 'package:geocoding/geocoding.dart' as geoCoding;
 import 'package:geolocator/geolocator.dart' as geoLocator;
 
 part 'product_event.dart';
@@ -165,6 +164,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
                 : _userModel!.location != null
                     ? _userModel.location!.longitude
                     : null,
+            event.listType == 'reco' ? _userModel!.interests : null,
           );
 
           emit(GetFirstProductsSuccess(result));
@@ -193,14 +193,10 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
           final result = await _productRepo.getNextProducts(
             listType: event.listType,
             lastProductId: event.lastProductId,
-            startAfterVal: _authService.currentUserModel!.location == null
-                ? event.startAfterVal
-                : _authService.currentUserModel!.location,
+            startAfterVal: event.startAfterVal,
             userId: event.listType == 'user' ? event.userId : '',
             location: event.listType == 'demand'
-                ? (_location != null
-                    ? _location
-                    : _authService.currentUserModel!.location)
+                ? (_location != null ? _location : _userModel!.location)
                 : null,
           );
 
@@ -273,6 +269,14 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
             final result = await _productRepo.likeProduct(
               productRequest: ProductRequestModel(
                 productid: event.product.productid,
+                price: event.product.price,
+                productname: event.product.productname,
+                image_url: event.product.mediaPrimary != null
+                    ? (event.product.mediaPrimary!.url_t != null ||
+                            event.product.mediaPrimary!.url_t!.isNotEmpty)
+                        ? event.product.mediaPrimary!.url_t!
+                        : ''
+                    : '',
               ),
               userId: _user.uid,
               like: 1,

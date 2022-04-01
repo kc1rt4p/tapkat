@@ -955,7 +955,10 @@ class _BarterScreenState extends State<BarterScreen> {
           children: [
             _buildBarterStatus(),
             _buildBarterList(
-              label: 'You will receive:',
+              label: _barterRecord != null &&
+                      _barterRecord!.dealStatus != 'completed'
+                  ? 'You will receive:'
+                  : 'You have received:',
               items: [
                 _remoteUserOfferedCash != null
                     ? Stack(
@@ -1088,7 +1091,10 @@ class _BarterScreenState extends State<BarterScreen> {
               showAddBtn: _shouldShowAdd(),
             ),
             _buildBarterList(
-              label: 'You will send:',
+              label: _barterRecord != null &&
+                      _barterRecord!.dealStatus != 'completed'
+                  ? 'You will send:'
+                  : 'You have sent:',
               labelAction: Text(
                 '${currentUserOffers.length} Item(s)',
               ),

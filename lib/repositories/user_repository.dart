@@ -72,6 +72,46 @@ class UserRepository {
         .toList();
   }
 
+  Future<List<LikedStoreModel>> getUserLikedStores(String likerId) async {
+    final result = await _apiService.post(
+      url: 'users/storelikes/searchfirst',
+      body: {
+        'psk': psk,
+        'likerid': likerId,
+        'itemcount': productCount,
+      },
+    );
+
+    if (result.data['status'] != 'SUCCESS') return [];
+
+    return (result.data['like_list'] as List<dynamic>)
+        .map((json) => LikedStoreModel.fromJson(json))
+        .toList();
+  }
+
+  Future<List<StoreModel>> getNextUserLikedStores({
+    required String likerId,
+    required String startAfterVal,
+    required String lastStoreId,
+  }) async {
+    final result = await _apiService.post(
+      url: 'users/storelikes/searchfirst',
+      body: {
+        'psk': psk,
+        'likerid': likerId,
+        'itemcount': productCount,
+        'startafterval': startAfterVal,
+        'userid': lastStoreId,
+      },
+    );
+
+    if (result.data['status'] != 'SUCCESS') return [];
+
+    return (result.data['users'] as List<dynamic>)
+        .map((json) => StoreModel.fromJson(json))
+        .toList();
+  }
+
   Future<List<StoreModel>> getNextTopStores(
       String lastUserId, num lastUserRating) async {
     final result = await _apiService.post(
@@ -89,6 +129,26 @@ class UserRepository {
     return (result.data['users'] as List<dynamic>)
         .map((json) => StoreModel.fromJson(json))
         .toList();
+  }
+
+  Future<bool> addLikeToStore({
+    required UserModel user,
+    required String likerId,
+    required int val,
+  }) async {
+    final result = await _apiService.post(
+      url: 'users/store/like',
+      body: {
+        "psk": psk,
+        "userid": user.userid,
+        "username": user.display_name,
+        "user_image_url": user.photo_url,
+        "likerid": likerId,
+        "like": val,
+      },
+    );
+
+    return (result.data['status'] == 'SUCCESS');
   }
 
   Future<List<UserReviewModel>> getNextUserReviews(

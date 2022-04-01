@@ -11,8 +11,12 @@ class StoreInitial extends StoreState {}
 
 class InitializedStoreScreen extends StoreState {
   final UserModel user;
+  final Stream<StoreLikeModel?> storeLikeStream;
 
-  InitializedStoreScreen(this.user);
+  InitializedStoreScreen({
+    required this.user,
+    required this.storeLikeStream,
+  });
 }
 
 class LoadingStore extends StoreState {}
@@ -36,3 +40,5 @@ class GetNextTopStoresSuccess extends StoreState {
     this.list,
   );
 }
+
+class EditUserLikeSuccess extends StoreState {}

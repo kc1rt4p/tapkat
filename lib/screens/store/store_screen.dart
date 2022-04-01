@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -7,6 +9,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:tapkat/models/product.dart';
+import 'package:tapkat/models/store_like.dart';
 import 'package:tapkat/models/user.dart';
 import 'package:tapkat/schemas/product_markers_record.dart';
 import 'package:tapkat/schemas/user_likes_record.dart';
@@ -16,6 +19,7 @@ import 'package:tapkat/screens/reviews/user_review_list_screen.dart';
 import 'package:tapkat/screens/store/bloc/store_bloc.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/constants.dart';
+import 'package:tapkat/utilities/dialog_message.dart';
 import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/utilities/style.dart';
 import 'package:tapkat/widgets/barter_list_item.dart';
@@ -60,11 +64,18 @@ class _StoreScreenState extends State<StoreScreen> {
 
   String _selectedView = 'grid';
 
+  Stream<StoreLikeModel?>? _storeLikeStream;
+
   @override
   void initState() {
     _storeBloc.add(InitializeStoreScreen(widget.userId));
 
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   @override
@@ -106,16 +117,6 @@ class _StoreScreenState extends State<StoreScreen> {
                                         text: storeOwnerName),
                                   ),
                                   _buildInfoItem(
-                                    label: 'Email',
-                                    controller: TextEditingController(
-                                        text: _storeOwner!.email ?? ''),
-                                  ),
-                                  _buildInfoItem(
-                                    label: 'Phone number',
-                                    controller: TextEditingController(
-                                        text: _storeOwner!.phone_number ?? ''),
-                                  ),
-                                  _buildInfoItem(
                                     label: 'Location',
                                     controller: TextEditingController(
                                         text: (_storeOwner!.address != null &&
@@ -132,6 +133,63 @@ class _StoreScreenState extends State<StoreScreen> {
                                       color: kBackgroundColor,
                                       size: 12.0,
                                     ),
+                                  ),
+                                  SizedBox(height: 12.0),
+                                  StreamBuilder<StoreLikeModel?>(
+                                    stream: _storeLikeStream,
+                                    builder: (context, snapshot) {
+                                      print('streaming store like');
+                                      bool liked = false;
+                                      if (snapshot.hasData) {
+                                        print('---= ${snapshot.data}');
+                                        liked = true;
+                                      }
+                                      return InkWell(
+                                        onTap: liked
+                                            ? null
+                                            : () => _storeBloc.add(
+                                                  EditUserLike(
+                                                    user: _storeOwner!,
+                                                    likeCount: 1,
+                                                  ),
+                                                ),
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            color: kBackgroundColor,
+                                            borderRadius:
+                                                BorderRadius.circular(6.0),
+                                          ),
+                                          padding: EdgeInsets.symmetric(
+                                              vertical: 5.0),
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Icon(
+                                                Icons.library_add_check,
+                                                size:
+                                                    SizeConfig.textScaleFactor *
+                                                        13,
+                                                color: Colors.white,
+                                              ),
+                                              SizedBox(width: 5.0),
+                                              Text(
+                                                liked
+                                                    ? 'Added to Liked Stores'
+                                                    : 'Like Store',
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: SizeConfig
+                                                          .textScaleFactor *
+                                                      15,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    },
                                   ),
                                 ],
                               ),
@@ -242,8 +300,7 @@ class _StoreScreenState extends State<StoreScreen> {
                             } else {
                               _pagingController.appendLastPage(state.list);
                             }
-                            print(
-                                'lastrProduct name: ${lastProduct!.productname}');
+
                             _pagingController.addPageRequestListener((pageKey) {
                               if (lastProduct != null) {
                                 _productBloc.add(
@@ -292,9 +349,17 @@ class _StoreScreenState extends State<StoreScreen> {
                           setState(() {
                             _storeOwner = state.user;
                             storeOwnerName = _storeOwner!.display_name!;
+                            _storeLikeStream = state.storeLikeStream;
                           });
                           _productBloc.add(
                               GetFirstProducts('user', userId: widget.userId));
+                        }
+
+                        if (state is EditUserLikeSuccess) {
+                          DialogMessage.show(
+                            context,
+                            message: 'You followed this store!',
+                          );
                         }
                       },
                     ),
@@ -578,7 +643,6 @@ class _StoreScreenState extends State<StoreScreen> {
     required String label,
     required TextEditingController controller,
     Widget? suffix,
-    Function()? onTap,
   }) {
     return Container(
       margin: EdgeInsets.only(bottom: 3.0),

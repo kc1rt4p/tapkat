@@ -18,8 +18,25 @@ class WishListError extends WishListState {
 }
 
 class WishListInitialized extends WishListState {
-  final List<ProductModel> list;
+  final List<LikedProductModel> productList;
+  final List<LikedStoreModel> storeList;
   final User user;
 
-  WishListInitialized(this.list, this.user);
+  WishListInitialized({
+    required this.productList,
+    required this.storeList,
+    required this.user,
+  });
+}
+
+class GetNextLikedItemsSuccess extends WishListState {
+  final List<ProductModel> productList;
+
+  GetNextLikedItemsSuccess(this.productList);
+}
+
+class GetNextFollowedStoresSuccess extends WishListState {
+  final List<StoreModel> storeList;
+
+  GetNextFollowedStoresSuccess(this.storeList);
 }

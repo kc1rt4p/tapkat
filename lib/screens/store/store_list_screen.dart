@@ -4,6 +4,7 @@ import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:tapkat/models/store.dart';
 import 'package:tapkat/screens/store/bloc/store_bloc.dart';
 import 'package:tapkat/screens/store/component/store_list_item.dart';
+import 'package:tapkat/screens/store/store_screen.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/constants.dart';
 import 'package:tapkat/widgets/custom_app_bar.dart';
@@ -104,10 +105,20 @@ class _StoreListScreenState extends State<StoreListScreen> {
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   mainAxisSpacing: 16,
                   crossAxisCount: 2,
-                  crossAxisSpacing: 10.0,
                 ),
                 builderDelegate: PagedChildBuilderDelegate<StoreModel>(
-                  itemBuilder: (context, store, index) => StoreListItem(store),
+                  itemBuilder: (context, store, index) => StoreListItem(
+                    store,
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => StoreScreen(
+                          userId: store.userid!,
+                          userName: store.display_name!,
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),

@@ -13,6 +13,7 @@ import 'package:tapkat/models/product_category.dart';
 import 'package:tapkat/models/product_type.dart';
 import 'package:tapkat/models/request/add_product_request.dart';
 import 'package:tapkat/models/request/product_review_resuest.dart';
+import 'package:tapkat/models/store_like.dart';
 import 'package:tapkat/models/upload_product_image_response.dart';
 import 'package:tapkat/services/http/api_service.dart';
 import 'package:tapkat/utilities/constants.dart';
@@ -27,12 +28,31 @@ void decodeIsolate(DecodeParam param) {
 class ProductRepository {
   final _apiService = ApiService();
 
-  Future<List<ProductModel>> getUserFavourites(String userId) async {
-    final response = await _apiService.get(
-      url: 'users/likes/$userId',
-    );
+  Future<List<LikedProductModel>> getUserFavourites(String userId) async {
+    final response =
+        await _apiService.post(url: 'users/likes/searchfirst', body: {
+      "psk": psk,
+      "userid": userId,
+      "productcount": productCount,
+    });
 
     if (response.data['status'] != 'SUCCESS') return [];
+
+    return (response.data['like_list'] as List<dynamic>)
+        .map((json) => LikedProductModel.fromJson(json))
+        .toList();
+  }
+
+  Future<List<ProductModel>> getnextuserFavourites(
+      String userId, String lastProductId, String lastProductDate) async {
+    final response =
+        await _apiService.post(url: 'users/likes/searchset', body: {
+      "psk": psk,
+      "userid": userId,
+      "productcount": productCount,
+      "startaferval": lastProductDate,
+      "productid": lastProductId,
+    });
 
     return (response.data['like_list'] as List<dynamic>)
         .map((json) => ProductModel.fromJson(json))
@@ -471,12 +491,15 @@ class ProductRepository {
   }) async {
     // final _productRef = FirebaseFirestore.instance.collection('user_likes');
     final response = await _apiService.post(
-      url: 'products/update/${productRequest.productid}',
+      url: 'products/like',
       body: {
         'psk': psk,
         'productid': productRequest.productid,
+        'productname': productRequest.productname,
         'userid': userId,
         'like': like,
+        'price': productRequest.price,
+        'image_url': productRequest.image_url,
       },
     );
     print(response.data['status']);

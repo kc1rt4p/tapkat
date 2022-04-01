@@ -8,3 +8,19 @@ abstract class WishListEvent extends Equatable {
 }
 
 class InitializeWishListScreen extends WishListEvent {}
+
+class GetNextLikedItems extends WishListEvent {
+  final String lastProductId;
+  final String lastProductDate;
+
+  GetNextLikedItems(
+      {required this.lastProductId, required this.lastProductDate});
+}
+
+class GetNextFollowedStores extends WishListEvent {
+  final String lastStoreId;
+  final String lastStoreDate;
+
+  GetNextFollowedStores(
+      {required this.lastStoreId, required this.lastStoreDate});
+}

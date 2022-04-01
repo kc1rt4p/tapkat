@@ -21,3 +21,13 @@ class GetNextTopStores extends StoreEvent {
 
   GetNextTopStores({required this.lastUserId, required this.lastUserRating});
 }
+
+class EditUserLike extends StoreEvent {
+  final UserModel user;
+  final int likeCount;
+
+  EditUserLike({
+    required this.user,
+    required this.likeCount,
+  });
+}

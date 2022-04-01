@@ -18,6 +18,7 @@ import 'package:tapkat/screens/product/product_list_screen.dart';
 import 'package:tapkat/screens/root/bloc/root_bloc.dart';
 import 'package:tapkat/screens/root/home/bloc/home_bloc.dart';
 import 'package:tapkat/screens/search/search_result_screen.dart';
+import 'package:tapkat/screens/store/bloc/store_bloc.dart';
 import 'package:tapkat/screens/store/component/store_list_item.dart';
 import 'package:tapkat/screens/store/store_list_screen.dart';
 import 'package:tapkat/screens/store/store_screen.dart';
@@ -37,6 +38,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final _homeBloc = HomeBloc();
   final _productBloc = ProductBloc();
+  final _storeBloc = StoreBloc();
   late RootBloc _rootBloc;
   late AuthBloc _authBloc;
   List<ProductModel> _recommendedList = [];
@@ -110,10 +112,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   _categoryProducts = state.list;
 
                   _categoryProducts.forEach((catList) {
-                    print(catList);
                     final index = _categories
                         .indexWhere((cat) => cat['code'] == catList['code']);
-                    print(index);
                     if (index > -1) {
                       _categories[index].addAll({
                         'products': catList['products'],
@@ -315,7 +315,19 @@ class _HomeScreenState extends State<HomeScreen> {
                                           ),
                                         ),
                                       ),
-                                      child: StoreListItem(store),
+                                      child: StoreListItem(
+                                        store,
+                                        onLikeTapped: () => _storeBloc.add(
+                                          EditUserLike(
+                                            likeCount: 1,
+                                            user: UserModel(
+                                              userid: store.userid,
+                                              display_name: store.display_name,
+                                              photo_url: store.photo_url,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
                                     ))
                                 .toList(),
                             label: 'Top Stores',
@@ -358,7 +370,6 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           SizedBox(height: 16.0),
                           ..._categories.map((cat) {
-                            print(cat);
                             return BarterList(
                               loading: _loadingCatProducts,
                               items: cat['products'] != null

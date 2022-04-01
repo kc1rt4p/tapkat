@@ -2,6 +2,8 @@ import 'package:bloc/bloc.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:tapkat/models/location.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/models/store.dart';
 import 'package:tapkat/models/user.dart';
@@ -9,6 +11,8 @@ import 'package:tapkat/repositories/auth_repository.dart';
 import 'package:tapkat/repositories/product_repository.dart';
 import 'package:tapkat/repositories/user_repository.dart';
 import 'package:tapkat/services/auth_service.dart';
+
+import 'package:geolocator/geolocator.dart' as geoLocator;
 
 part 'home_event.dart';
 part 'home_state.dart';
@@ -26,16 +30,8 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
       try {
         _user = await _authService.getCurrentUser();
-        _userModel = await _userRepo.getUser(_user!.uid);
-
-        if (event is GetUserFavorites) {
-          if (_user != null) {
-            final _userLikedItems =
-                await _productRepo.getUserFavourites(_user!.uid);
-
-            emit(GetUserFavoritesSuccess(_userLikedItems));
-          }
-        }
+        _userModel = _authService.currentUserModel ??
+            await _userRepo.getUser(_user!.uid);
 
         if (event is LoadRecommendedList) {
           emit(LoadingRecommendedList());
@@ -88,11 +84,31 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
         if (event is LoadTrendingList) {
           final _userModel = await _userRepo.getUser(_user!.uid);
+          LocationModel? _location;
+
+          if (await Permission.location.isGranted &&
+              await geoLocator.GeolocatorPlatform.instance
+                  .isLocationServiceEnabled()) {
+            final userLoc = await geoLocator.Geolocator.getCurrentPosition();
+            _location = LocationModel(
+              longitude: userLoc.longitude,
+              latitude: userLoc.latitude,
+            );
+          }
           final trendingList = await _productRepo.getFirstProducts(
-              'demand',
-              _user!.uid,
-              _userModel!.location!.latitude,
-              _userModel.location!.longitude);
+            'demand',
+            _user!.uid,
+            _location != null
+                ? _location.latitude
+                : _userModel!.location != null
+                    ? _userModel.location!.latitude
+                    : null,
+            _location != null
+                ? _location.longitude
+                : _userModel!.location != null
+                    ? _userModel.location!.longitude
+                    : null,
+          );
           emit(LoadedTrendingList(trendingList));
           add(LoadUserList());
         }
