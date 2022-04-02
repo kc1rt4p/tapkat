@@ -47,15 +47,9 @@ class _RootScreenState extends State<RootScreen> {
 
   initNotifications() async {
     final _firebaseMessaging = FirebaseMessaging.instance;
-    NotificationSettings settings = await _firebaseMessaging.requestPermission(
-      alert: true,
-      announcement: false,
-      badge: true,
-      carPlay: false,
-      criticalAlert: false,
-      provisional: false,
-      sound: true,
-    );
+    final settings = await _firebaseMessaging.requestPermission();
+
+    if (settings.authorizationStatus != AuthorizationStatus.authorized) return;
 
     print('=====TOKEN: ${await _firebaseMessaging.getToken()}');
 
