@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -62,6 +63,8 @@ class _HomeScreenState extends State<HomeScreen> {
   final _refreshController = RefreshController();
   bool _loadingCatProducts = false;
   List<Map<String, dynamic>> _categories = [];
+
+  final barterRef = FirebaseFirestore.instance.collection('userstore_likes');
 
   @override
   void initState() {
@@ -304,32 +307,56 @@ class _HomeScreenState extends State<HomeScreen> {
                           BarterList(
                             loading: _loadingTopStores,
                             context: context,
-                            items: _topStoreList
-                                .map((store) => InkWell(
-                                      onTap: () => Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => StoreScreen(
-                                            userId: store.userid!,
-                                            userName: store.display_name!,
-                                          ),
+                            items: _topStoreList.map((store) {
+                              return Center(
+                                child: StreamBuilder<
+                                        QuerySnapshot<Map<String, dynamic>>>(
+                                    stream: barterRef
+                                        .where('userid',
+                                            isEqualTo: store.userid)
+                                        .where('likerid',
+                                            isEqualTo: _userModel!.userid)
+                                        .snapshots(),
+                                    builder: (context, snapshot) {
+                                      bool liked = false;
+
+                                      print(snapshot.data);
+
+                                      if (snapshot.data != null) {
+                                        if (snapshot.data!.docs.isNotEmpty)
+                                          liked = true;
+                                      }
+
+                                      return StoreListItem(
+                                        StoreModel(
+                                          display_name: store.display_name,
+                                          userid: store.userid,
+                                          photo_url: store.photo_url,
                                         ),
-                                      ),
-                                      child: StoreListItem(
-                                        store,
+                                        liked: liked,
                                         onLikeTapped: () => _storeBloc.add(
                                           EditUserLike(
-                                            likeCount: 1,
                                             user: UserModel(
-                                              userid: store.userid,
                                               display_name: store.display_name,
+                                              userid: store.userid,
                                               photo_url: store.photo_url,
+                                            ),
+                                            likeCount: liked ? -1 : 1,
+                                          ),
+                                        ),
+                                        onTap: () => Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => StoreScreen(
+                                              userId: store.userid!,
+                                              userName: store.display_name!,
                                             ),
                                           ),
                                         ),
-                                      ),
-                                    ))
-                                .toList(),
+                                      );
+                                    }),
+                              );
+                            }).toList(),
                             label: 'Top Stores',
                             onViewAllTapped: () => Navigator.push(
                               context,

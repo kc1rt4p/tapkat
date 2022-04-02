@@ -11,7 +11,7 @@ class StoreInitial extends StoreState {}
 
 class InitializedStoreScreen extends StoreState {
   final UserModel user;
-  final Stream<StoreLikeModel?> storeLikeStream;
+  final Stream<QuerySnapshot<Map<String, dynamic>>> storeLikeStream;
 
   InitializedStoreScreen({
     required this.user,

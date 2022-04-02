@@ -5,7 +5,7 @@ import 'package:tapkat/models/store.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/size_config.dart';
 
-class StoreListItem extends StatelessWidget {
+class StoreListItem extends StatefulWidget {
   final StoreModel store;
   final Function()? onLikeTapped;
   final Function()? onTap;
@@ -19,11 +19,16 @@ class StoreListItem extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  State<StoreListItem> createState() => _StoreListItemState();
+}
+
+class _StoreListItemState extends State<StoreListItem> {
+  @override
   Widget build(BuildContext context) {
     return Stack(
       children: [
         InkWell(
-          onTap: onTap,
+          onTap: widget.onTap,
           child: Container(
             height: SizeConfig.screenHeight * 0.22,
             width: SizeConfig.screenWidth * 0.40,
@@ -43,9 +48,9 @@ class StoreListItem extends StatelessWidget {
               children: [
                 Expanded(
                   flex: 5,
-                  child: store.photo_url!.isNotEmpty
+                  child: widget.store.photo_url!.isNotEmpty
                       ? CachedNetworkImage(
-                          imageUrl: store.photo_url!,
+                          imageUrl: widget.store.photo_url!,
                           imageBuilder: (context, imageProvider) => Container(
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.only(
@@ -110,7 +115,7 @@ class StoreListItem extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          store.display_name ?? '',
+                          widget.store.display_name ?? '',
                           textAlign: TextAlign.center,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
@@ -118,7 +123,7 @@ class StoreListItem extends StatelessWidget {
                             fontWeight: FontWeight.w600,
                           ),
                         ),
-                        store.rating != null
+                        widget.store.rating != null
                             ? Column(
                                 children: [
                                   SizedBox(
@@ -127,9 +132,11 @@ class StoreListItem extends StatelessWidget {
                                     children: [
                                       RatingBar.builder(
                                         ignoreGestures: true,
-                                        initialRating: store.rating != null
-                                            ? store.rating!.roundToDouble()
-                                            : 0,
+                                        initialRating:
+                                            widget.store.rating != null
+                                                ? widget.store.rating!
+                                                    .roundToDouble()
+                                                : 0,
                                         minRating: 0,
                                         direction: Axis.horizontal,
                                         allowHalfRating: true,
@@ -146,7 +153,8 @@ class StoreListItem extends StatelessWidget {
                                           //
                                         },
                                       ),
-                                      Text(store.rating!.toStringAsFixed(1)),
+                                      Text(widget.store.rating!
+                                          .toStringAsFixed(1)),
                                     ],
                                   ),
                                 ],
@@ -172,9 +180,11 @@ class StoreListItem extends StatelessWidget {
                 size: 28,
               ),
               GestureDetector(
-                onTap: onLikeTapped,
+                onTap: widget.onLikeTapped,
                 child: Icon(
-                  liked ? Icons.thumb_up_alt : Icons.thumb_up_alt_outlined,
+                  widget.liked
+                      ? Icons.thumb_up_alt
+                      : Icons.thumb_up_alt_outlined,
                   color: kBackgroundColor,
                 ),
               ),

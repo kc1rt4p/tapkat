@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:tapkat/models/store.dart';
 import 'package:tapkat/models/store_like.dart';
@@ -21,12 +22,13 @@ class StoreBloc extends Bloc<StoreEvent, StoreState> {
       emit(LoadingStore());
       try {
         final _user = await _authService.getCurrentUser();
+        final _userModel = await _userRepo.getUser(_user!.uid);
         if (event is InitializeStoreScreen) {
-          final user = await _userRepo.getUser(event.userId);
           final likeStream =
-              _storeRepo.streamStoreLike(event.userId, _user!.uid);
+              _storeRepo.streamStoreLike(event.userId, _user.uid);
+          final store = await _userRepo.getUser(event.userId);
           emit(InitializedStoreScreen(
-            user: user!,
+            user: store!,
             storeLikeStream: likeStream,
           ));
         }
@@ -45,7 +47,7 @@ class StoreBloc extends Bloc<StoreEvent, StoreState> {
         if (event is EditUserLike) {
           final updated = await _userRepo.addLikeToStore(
             user: event.user,
-            likerId: _user!.uid,
+            likerId: _user.uid,
             val: event.likeCount,
           );
           emit(EditUserLikeSuccess());

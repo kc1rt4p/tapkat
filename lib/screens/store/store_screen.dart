@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_progress_hud/flutter_progress_hud.dart';
@@ -64,7 +65,9 @@ class _StoreScreenState extends State<StoreScreen> {
 
   String _selectedView = 'grid';
 
-  Stream<StoreLikeModel?>? _storeLikeStream;
+  Stream<QuerySnapshot<Map<String, dynamic>>>? _storeLikeStream;
+
+  bool _isFollowing = false;
 
   @override
   void initState() {
@@ -135,24 +138,25 @@ class _StoreScreenState extends State<StoreScreen> {
                                     ),
                                   ),
                                   SizedBox(height: 12.0),
-                                  StreamBuilder<StoreLikeModel?>(
+                                  StreamBuilder<
+                                      QuerySnapshot<Map<String, dynamic>>>(
                                     stream: _storeLikeStream,
                                     builder: (context, snapshot) {
-                                      print('streaming store like');
                                       bool liked = false;
-                                      if (snapshot.hasData) {
-                                        print('---= ${snapshot.data}');
-                                        liked = true;
+
+                                      print(snapshot.data);
+
+                                      if (snapshot.data != null) {
+                                        if (snapshot.data!.docs.isNotEmpty)
+                                          liked = true;
                                       }
                                       return InkWell(
-                                        onTap: liked
-                                            ? null
-                                            : () => _storeBloc.add(
-                                                  EditUserLike(
-                                                    user: _storeOwner!,
-                                                    likeCount: 1,
-                                                  ),
-                                                ),
+                                        onTap: () => _storeBloc.add(
+                                          EditUserLike(
+                                            user: _storeOwner!,
+                                            likeCount: liked ? -1 : 1,
+                                          ),
+                                        ),
                                         child: Container(
                                           decoration: BoxDecoration(
                                             color: kBackgroundColor,
@@ -174,9 +178,7 @@ class _StoreScreenState extends State<StoreScreen> {
                                               ),
                                               SizedBox(width: 5.0),
                                               Text(
-                                                liked
-                                                    ? 'Added to Liked Stores'
-                                                    : 'Like Store',
+                                                liked ? 'Following' : 'Follow',
                                                 style: TextStyle(
                                                   color: Colors.white,
                                                   fontWeight: FontWeight.bold,
@@ -351,6 +353,15 @@ class _StoreScreenState extends State<StoreScreen> {
                             storeOwnerName = _storeOwner!.display_name!;
                             _storeLikeStream = state.storeLikeStream;
                           });
+
+                          _storeLikeStream!.listen((snapshot) {
+                            setState(() {
+                              if (snapshot.docs.isNotEmpty)
+                                _isFollowing = true;
+                              else
+                                _isFollowing = false;
+                            });
+                          });
                           _productBloc.add(
                               GetFirstProducts('user', userId: widget.userId));
                         }
@@ -358,7 +369,8 @@ class _StoreScreenState extends State<StoreScreen> {
                         if (state is EditUserLikeSuccess) {
                           DialogMessage.show(
                             context,
-                            message: 'You followed this store!',
+                            message:
+                                'You ${_isFollowing ? 'followed' : 'unfollowed'} this store!',
                           );
                         }
                       },
