@@ -40,8 +40,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
           children: [
             CustomAppBar(
               label: 'Email Verification',
-              onBackTapped: () => Navigator.pushReplacement(context,
-                  MaterialPageRoute(builder: (context) => LoginScreen())),
+              onBackTapped: () => _authBloc.add(SignOut()),
             ),
             Expanded(
               child: Container(

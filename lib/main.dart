@@ -107,7 +107,8 @@ class _MyAppState extends State<MyApp> {
                 if (snapshot.hasData) {
                   if (snapshot.data != null) {
                     final user = snapshot.data;
-                    if (user!.emailVerified) {
+                    print(user!.displayName);
+                    if (user.emailVerified) {
                       return RootScreen();
                     } else {
                       return EmailVerificationScreen();

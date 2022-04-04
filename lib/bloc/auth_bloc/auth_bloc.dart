@@ -162,6 +162,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
       if (event is SignInWithEmail) {
         try {
+          signOut();
           final user = await authService.signInWithEmail(
               event.context, event.email, event.password);
           if (user != null) {
