@@ -36,6 +36,7 @@ class AuthService {
       Future<UserCredential?> Function() signInFunc) async {
     final userCredential = await signInFunc();
     if (userCredential != null) {
+      FirebaseAuth.instance.currentUser!.sendEmailVerification();
       await maybeCreateUser(userCredential.user!);
       return userCredential.user!;
     }
@@ -50,6 +51,10 @@ class AuthService {
   Future<User?> signInAnonymously() async {
     final signInFunc = () => FirebaseAuth.instance.signInAnonymously();
     return signInOrCreateAccount(signInFunc);
+  }
+
+  Future<void> resendEmail() async {
+    FirebaseAuth.instance.currentUser!.sendEmailVerification();
   }
 
   Future maybeCreateUser(User user) async {

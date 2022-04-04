@@ -43,6 +43,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             authService.currentUser!.user!, authService.currentUserModel));
       }
 
+      if (event is ResendEmail) {
+        authService.resendEmail();
+        emit(ResendEmailSuccess());
+      }
+
       if (event is SignUp) {
         try {
           final user = await authService.createAccountWithEmail(
@@ -103,12 +108,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         if (event is SignInGoogle) {
           final user = await authService.signInWithGoogle();
           if (user != null) {
-            emit(AuthSignedIn(user));
             final userModel = await userRepo.getUser(user.uid);
             if (userModel != null) {
               currentUserModel = userModel;
               authService.currentUserModel = userModel;
             }
+
+            emit(AuthSignedIn(user));
           }
         }
 
@@ -141,8 +147,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       }
 
       if (event is SkipSignUpPhoto) {
-        print('asd');
-        print('user: ${authService.currentUser!.user!.uid}');
         if (authService.currentUser != null) {
           emit(AuthSignedIn(authService.currentUser!.user!));
           // emit(ShowSignUpSocialMedia());
@@ -150,7 +154,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       }
 
       if (event is SkipSignUpSocialMedia) {
-        print('haha');
         if (authService.currentUser != null) {
           emit(AuthSignedIn(authService.currentUser!.user!));
           // emit(ShowSignUpSocialMedia());

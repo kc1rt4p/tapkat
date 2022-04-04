@@ -11,6 +11,8 @@ class InitializeAuth extends AuthEvent {}
 
 class SignInAsGuest extends AuthEvent {}
 
+class ResendEmail extends AuthEvent {}
+
 class SignInWithEmail extends AuthEvent {
   final String email;
   final String password;
