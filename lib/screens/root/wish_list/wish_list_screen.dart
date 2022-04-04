@@ -9,11 +9,13 @@ import 'package:tapkat/backend.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/models/store.dart';
 import 'package:tapkat/models/store_like.dart';
+import 'package:tapkat/models/user.dart';
 import 'package:tapkat/schemas/user_likes_record.dart';
 import 'package:tapkat/screens/product/bloc/product_bloc.dart';
 import 'package:tapkat/screens/product/product_details_screen.dart';
 import 'package:tapkat/screens/root/wish_list/bloc/wish_list_bloc.dart';
 import 'package:tapkat/screens/search/search_result_screen.dart';
+import 'package:tapkat/screens/store/bloc/store_bloc.dart';
 import 'package:tapkat/screens/store/component/store_list_item.dart';
 import 'package:tapkat/screens/store/store_screen.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
@@ -35,6 +37,7 @@ class _WishListScreenState extends State<WishListScreen> {
   List<ProductModel> _list = [];
   User? _user;
   final _wishListBloc = WishListBloc();
+  final _storeBloc = StoreBloc();
   final _productBloc = ProductBloc();
   final _keywordTextController = TextEditingController();
   final _refreshController = RefreshController();
@@ -156,6 +159,13 @@ class _WishListScreenState extends State<WishListScreen> {
                 }
               },
             ),
+            BlocListener(
+              bloc: _storeBloc,
+              listener: (context, state) {
+                // TODO: implement listener
+              },
+              child: Container(),
+            )
           ],
           child: Container(
             color: Color(0xFFEBFBFF),
@@ -234,30 +244,36 @@ class _WishListScreenState extends State<WishListScreen> {
       builderDelegate: PagedChildBuilderDelegate<LikedStoreModel>(
         itemBuilder: (context, store, index) {
           return Center(
-            child: StreamBuilder<LikedStoreModel?>(
+            child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
                 stream: barterRef
                     .where('userid', isEqualTo: store.userid)
                     .where('likerid', isEqualTo: _user!.uid)
-                    .snapshots()
-                    .map((docSnapshot) {
-                  if (docSnapshot.docs.isNotEmpty) {
-                    final doc = docSnapshot.docs.first;
-                    return LikedStoreModel.fromJson(doc.data());
-                  }
-
-                  return null;
-                }),
+                    .snapshots(),
                 builder: (context, snapshot) {
-                  final _store = snapshot.data;
                   bool liked = false;
 
-                  if (_store != null) liked = true;
+                  print(snapshot.data);
+
+                  if (snapshot.data != null) {
+                    if (snapshot.data!.docs.isNotEmpty) liked = true;
+                  }
 
                   return StoreListItem(
                     StoreModel(
                       display_name: store.username,
                       userid: store.userid,
                       photo_url: store.user_image_url,
+                    ),
+                    liked: liked,
+                    onLikeTapped: () => _storeBloc.add(
+                      EditUserLike(
+                        user: UserModel(
+                          display_name: store.username,
+                          userid: store.userid,
+                          photo_url: store.user_image_url,
+                        ),
+                        likeCount: liked ? -1 : 1,
+                      ),
                     ),
                     onTap: () => Navigator.push(
                       context,
