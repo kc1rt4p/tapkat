@@ -33,10 +33,13 @@ class AuthService {
           (user) => currentUser = TapkatFirebaseUser(user));
 
   Future<User?> signInOrCreateAccount(
-      Future<UserCredential?> Function() signInFunc) async {
+      Future<UserCredential?> Function() signInFunc,
+      {bool registering = false}) async {
     final userCredential = await signInFunc();
     if (userCredential != null) {
-      FirebaseAuth.instance.currentUser!.sendEmailVerification();
+      if (registering) {
+        FirebaseAuth.instance.currentUser!.sendEmailVerification();
+      }
       await maybeCreateUser(userCredential.user!);
       return userCredential.user!;
     }

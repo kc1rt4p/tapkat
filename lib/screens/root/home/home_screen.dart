@@ -320,8 +320,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                     builder: (context, snapshot) {
                                       bool liked = false;
 
-                                      print(snapshot.data);
-
                                       if (snapshot.data != null) {
                                         if (snapshot.data!.docs.isNotEmpty)
                                           liked = true;
