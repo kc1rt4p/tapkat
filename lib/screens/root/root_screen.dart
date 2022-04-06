@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
+import 'package:tapkat/screens/product/bloc/product_bloc.dart';
 import 'package:tapkat/screens/product/product_add_screen.dart';
 import 'package:tapkat/screens/root/barter/barter_transactions_screen.dart';
 import 'package:tapkat/screens/root/home/home_screen.dart';
@@ -10,6 +12,7 @@ import 'package:tapkat/screens/root/profile/profile_screen.dart';
 import 'package:tapkat/screens/root/wish_list/wish_list_screen.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/size_config.dart';
+import 'package:tapkat/utilities/application.dart' as application;
 
 import 'bloc/root_bloc.dart';
 
@@ -35,13 +38,15 @@ class _RootScreenState extends State<RootScreen> {
   int _currentIndex = 0;
 
   final _rootBloc = RootBloc();
+  final _productBloc = ProductBloc();
+  final _authBloc = AuthBloc();
 
-  final _currentVerDate = DateTime(2022, 4, 4, 9);
+  final _currentVerDate = DateTime(2022, 4, 6, 4);
 
   @override
   void initState() {
     Permission.location.request();
-    initNotifications();
+    _authBloc.add(GetCurrentuser());
     super.initState();
   }
 
@@ -51,7 +56,12 @@ class _RootScreenState extends State<RootScreen> {
 
     if (settings.authorizationStatus != AuthorizationStatus.authorized) return;
 
-    print('=====TOKEN: ${await _firebaseMessaging.getToken()}');
+    final permissionStatus = await Permission.notification.status;
+    if (permissionStatus.isDenied) return;
+
+    if (application.currentUserModel!.pushtoken == null) {
+      _rootBloc.add(UpdateUserToken());
+    }
 
     FirebaseMessaging.onMessage.listen((remoteMessage) {
       print('Foreground Message: ${remoteMessage.toString()}');
@@ -66,18 +76,40 @@ class _RootScreenState extends State<RootScreen> {
     SizeConfig().init(context);
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      body: BlocProvider(
-        create: (context) => _rootBloc,
-        child: BlocListener(
-          bloc: _rootBloc,
-          listener: (context, state) {
-            print('current root bloc state: $state');
-            if (state is MoveToTab) {
-              setState(() {
-                _currentIndex = state.index;
-              });
-            }
-          },
+      body: MultiBlocProvider(
+        providers: [
+          BlocProvider(
+            create: (context) => _rootBloc,
+          ),
+          BlocProvider(
+            create: (context) => _productBloc,
+          ),
+        ],
+        child: MultiBlocListener(
+          listeners: [
+            BlocListener(
+              bloc: _rootBloc,
+              listener: (context, state) {
+                if (state is MoveToTab) {
+                  setState(() {
+                    _currentIndex = state.index;
+                  });
+                }
+
+                if (state is UpdateUserTokenSuccess) {
+                  print('=== UPDATED USER TOKEN!!');
+                }
+              },
+            ),
+            BlocListener(
+              bloc: _authBloc,
+              listener: (context, state) {
+                if (state is GetCurrentUsersuccess) {
+                  initNotifications();
+                }
+              },
+            )
+          ],
           child: Container(
             color: kBackgroundColor,
             child: Column(
@@ -137,7 +169,6 @@ class _RootScreenState extends State<RootScreen> {
     });
 
     Future.delayed(Duration(milliseconds: 100), () {
-      print('current index: $_currentIndex');
       setState(() {
         _currentIndex = 3;
       });

@@ -21,6 +21,8 @@ class SignInGoogleSuccess extends AuthState {
   SignInGoogleSuccess(this.user);
 }
 
+class UpdatePushAlertSuccess extends AuthState {}
+
 class ResendEmailSuccess extends AuthState {}
 
 class AuthSignedOut extends AuthState {}

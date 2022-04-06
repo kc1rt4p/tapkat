@@ -12,3 +12,5 @@ class MoveTab extends RootEvent {
 
   MoveTab(this.index);
 }
+
+class UpdateUserToken extends RootEvent {}

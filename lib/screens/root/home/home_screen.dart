@@ -4,12 +4,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_progress_hud/flutter_progress_hud.dart';
-import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:tapkat/backend.dart';
 import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
 import 'package:tapkat/models/product.dart';
-import 'package:tapkat/models/product_category.dart';
 import 'package:tapkat/models/store.dart';
 import 'package:tapkat/models/user.dart';
 import 'package:tapkat/schemas/user_likes_record.dart';
@@ -28,6 +26,8 @@ import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/widgets/barter_list.dart';
 import 'package:tapkat/widgets/barter_list_item.dart';
 import 'package:tapkat/widgets/custom_search_bar.dart';
+
+import 'package:tapkat/utilities/application.dart' as application;
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -315,7 +315,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                         .where('userid',
                                             isEqualTo: store.userid)
                                         .where('likerid',
-                                            isEqualTo: _userModel!.userid)
+                                            isEqualTo:
+                                                application.currentUser!.uid)
                                         .snapshots(),
                                     builder: (context, snapshot) {
                                       bool liked = false;
@@ -331,17 +332,18 @@ class _HomeScreenState extends State<HomeScreen> {
                                           userid: store.userid,
                                           photo_url: store.photo_url,
                                         ),
-                                        liked: liked,
-                                        onLikeTapped: () => _storeBloc.add(
-                                          EditUserLike(
-                                            user: UserModel(
-                                              display_name: store.display_name,
-                                              userid: store.userid,
-                                              photo_url: store.photo_url,
-                                            ),
-                                            likeCount: liked ? -1 : 1,
-                                          ),
-                                        ),
+                                        // liked: liked,
+                                        // onLikeTapped: () => _storeBloc.add(
+                                        //   EditUserLike(
+                                        //     user: UserModel(
+                                        //       display_name: store.display_name,
+                                        //       userid: store.userid,
+                                        //       photo_url: store.photo_url,
+                                        //     ),
+                                        //     likeCount: liked ? -1 : 1,
+                                        //   ),
+                                        // ),
+                                        removeLike: true,
                                         onTap: () => Navigator.push(
                                           context,
                                           MaterialPageRoute(
@@ -451,38 +453,13 @@ class _HomeScreenState extends State<HomeScreen> {
       {required ProductModel product,
       bool hideLike = false,
       UserLikesRecord? record}) {
-    var thumbnail = '';
-
-    if (product.mediaPrimary != null &&
-        product.mediaPrimary!.url != null &&
-        product.mediaPrimary!.url!.isNotEmpty)
-      thumbnail = product.mediaPrimary!.url!;
-
-    if (product.mediaPrimary != null &&
-        product.mediaPrimary!.url_t != null &&
-        product.mediaPrimary!.url_t!.isNotEmpty)
-      thumbnail = product.mediaPrimary!.url_t!;
-
-    if (product.mediaPrimary != null &&
-        product.mediaPrimary!.url!.isEmpty &&
-        product.mediaPrimary!.url_t!.isEmpty &&
-        product.media != null &&
-        product.media!.isNotEmpty)
-      thumbnail = product.media!.first.url_t != null
-          ? product.media!.first.url_t!
-          : product.media!.first.url!;
-
     if (hideLike) {
       return BarterListItem(
+        product: product,
         height: SizeConfig.screenHeight * 0.165,
         width: SizeConfig.screenWidth * 0.27,
         fontSize: SizeConfig.textScaleFactor * 9,
-        hideLikeBtn: product.userid == _userModel!.userid,
-        itemName: product.productname ?? '',
-        datePosted: product.updated_time ?? null,
-        itemPrice:
-            product.price != null ? product.price!.toStringAsFixed(2) : '0',
-        imageUrl: thumbnail,
+        hideLikeBtn: product.userid == application.currentUserModel!.userid,
         onTapped: () {
           Navigator.push(
             context,
@@ -493,6 +470,14 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           );
+        },
+        onLikeTapped: (val) {
+          print('---===== $val');
+          if (val.isNegative) {
+            _productBloc.add(AddLike(product));
+          } else {
+            _productBloc.add(Unlike(product));
+          }
         },
       );
     }
@@ -506,74 +491,33 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       builder: (context, snapshot) {
         bool liked = false;
-        UserLikesRecord? record;
         if (snapshot.hasData) {
-          if (snapshot.data != null && snapshot.data!.isNotEmpty) {
-            record = snapshot.data!.first;
-            if (record != null) {
-              liked = record.liked ?? false;
-            }
-          }
+          if (snapshot.data != null) if (snapshot.data!.isNotEmpty)
+            liked = true;
+          else
+            liked = false;
         }
 
-        return StreamBuilder<List<UserLikesRecord?>>(
-          stream: queryUserLikesRecord(
-            queryBuilder: (userLikesRecord) => userLikesRecord
-                .where('userid', isEqualTo: _user!.uid)
-                .where('productid', isEqualTo: product.productid),
-            singleRecord: true,
-          ),
-          builder: (context, snapshot) {
-            bool liked = false;
-            UserLikesRecord? record;
-            if (snapshot.hasData) {
-              if (snapshot.data != null && snapshot.data!.isNotEmpty) {
-                record = snapshot.data!.first;
-                if (record != null) {
-                  liked = record.liked ?? false;
-                }
-              }
-            }
-
-            return BarterListItem(
-              likeLeftMargin: SizeConfig.safeBlockHorizontal * 3,
-              liked: liked,
-              itemName: product.productname ?? '',
-              itemPrice: product.price != null
-                  ? product.price!.toStringAsFixed(2)
-                  : '0',
-              imageUrl: thumbnail,
-              datePosted: product.updated_time ?? null,
-              onTapped: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ProductDetailsScreen(
-                      productId: product.productid ?? '',
-                      ownItem: false,
-                    ),
-                  ),
-                );
-              },
-              onLikeTapped: () {
-                if (record != null) {
-                  final newData = createUserLikesRecordData(
-                    liked: !record.liked!,
-                  );
-
-                  record.reference!.update(newData);
-                  if (liked) {
-                    _productBloc.add(
-                      Unlike(product),
-                    );
-                  } else {
-                    _productBloc.add(AddLike(product));
-                  }
-                } else {
-                  _productBloc.add(AddLike(product));
-                }
-              },
+        return BarterListItem(
+          product: product,
+          likeLeftMargin: SizeConfig.safeBlockHorizontal * 3,
+          onTapped: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ProductDetailsScreen(
+                  productId: product.productid ?? '',
+                  ownItem: false,
+                ),
+              ),
             );
+          },
+          onLikeTapped: (val) {
+            if (val.isNegative) {
+              _productBloc.add(AddLike(product));
+            } else {
+              _productBloc.add(Unlike(product));
+            }
           },
         );
       },

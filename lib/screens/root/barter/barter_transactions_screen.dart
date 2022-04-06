@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_progress_hud/flutter_progress_hud.dart';
 import 'package:tapkat/models/barter_record_model.dart';
+import 'package:tapkat/models/media_primary_model.dart';
+import 'package:tapkat/models/product.dart';
 import 'package:tapkat/screens/barter/barter_screen.dart';
 import 'package:tapkat/screens/barter/bloc/barter_bloc.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
@@ -343,12 +345,19 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                           ),
                           SizedBox(height: 8.0),
                           BarterListItem(
+                            product: ProductModel(
+                              productid: barter.u2P1Id!,
+                              productname: barter.u2P1Name ?? '',
+                              price: barter.u2P1Price != null
+                                  ? barter.u2P1Price!
+                                  : 0.00,
+                              mediaPrimary: MediaPrimaryModel(
+                                type: 'image',
+                                url_t: barter.u2P1Image,
+                                url: barter.u2P1Image,
+                              ),
+                            ),
                             hideLikeBtn: true,
-                            itemName: barter.u2P1Name ?? '',
-                            itemPrice: barter.u2P1Price != null
-                                ? barter.u2P1Price!.toStringAsFixed(2)
-                                : '0.00',
-                            imageUrl: barter.u2P1Image ?? '',
                             onTapped: () {
                               Navigator.push(
                                 context,

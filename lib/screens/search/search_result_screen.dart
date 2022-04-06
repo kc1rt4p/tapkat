@@ -8,6 +8,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:tapkat/backend.dart';
+import 'package:tapkat/models/media_primary_model.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/models/product_category.dart';
 import 'package:tapkat/schemas/product_markers_record.dart';
@@ -618,14 +619,9 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                   }
 
                   return BarterListItem(
+                    product: product,
                     height: SizeConfig.screenHeight * 0.22,
                     width: SizeConfig.screenWidth * 0.40,
-                    liked: liked,
-                    itemName: product.productname ?? '',
-                    itemPrice: product.price != null
-                        ? product.price!.toStringAsFixed(2)
-                        : '0',
-                    imageUrl: thumbnail,
                     onTapped: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -634,20 +630,11 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                         ),
                       ),
                     ),
-                    onLikeTapped: () {
-                      if (record != null) {
-                        final newData = createUserLikesRecordData(
-                          liked: !record.liked!,
-                        );
-
-                        record.reference!.update(newData);
-                        if (liked) {
-                          _productBloc.add(
-                            Unlike(product),
-                          );
-                        } else {
-                          _productBloc.add(AddLike(product));
-                        }
+                    onLikeTapped: (val) {
+                      if (val.isNegative) {
+                        _productBloc.add(AddLike(product));
+                      } else {
+                        _productBloc.add(Unlike(product));
                       }
                     },
                   );

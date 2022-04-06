@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:mime_type/mime_type.dart';
 import 'package:tapkat/models/request/update_user.dart';
@@ -8,6 +9,7 @@ import 'package:tapkat/models/user.dart';
 import 'package:tapkat/services/http/api_service.dart';
 import 'package:tapkat/utilities/constants.dart';
 import 'package:tapkat/utilities/upload_media.dart';
+import 'package:tapkat/utilities/application.dart' as application;
 
 class UserRepository {
   final _apiService = ApiService();
@@ -20,6 +22,28 @@ class UserRepository {
     if (result.data['status'] != 'SUCCESS') return null;
 
     return UserModel.fromJson(result.data['user']);
+  }
+
+  Future<bool> updateUserFCMToken() async {
+    final updated = await _apiService
+        .patch(url: 'users/${application.currentUser!.uid}', body: {
+      'psk': psk,
+      'userid': application.currentUser!.uid,
+      'regtoken': await FirebaseMessaging.instance.getToken(),
+    });
+
+    return updated.data['status'] == 'SUCCESS';
+  }
+
+  Future<bool> updatePushAlert(bool enable) async {
+    final updated = await _apiService
+        .patch(url: 'users/${application.currentUser!.uid}', body: {
+      'psk': psk,
+      'userid': application.currentUser!.uid,
+      'pushalert': enable ? 'Y' : 'N',
+    });
+
+    return updated.data['status'] == 'SUCCESS';
   }
 
   Future<bool> addUserReview(UserReviewModel review) async {

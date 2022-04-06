@@ -13,6 +13,8 @@ import 'package:tapkat/utilities/constants.dart';
 import 'package:tapkat/widgets/custom_app_bar.dart';
 import 'package:tapkat/widgets/custom_search_bar.dart';
 
+import 'package:tapkat/utilities/application.dart' as application;
+
 class StoreListScreen extends StatefulWidget {
   const StoreListScreen({Key? key}) : super(key: key);
 
@@ -137,7 +139,9 @@ class _StoreListScreenState extends State<StoreListScreen> {
                       child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
                           stream: barterRef
                               .where('userid', isEqualTo: store.userid)
-                              .where('likerid', isEqualTo: _userModel!.userid)
+                              .where('likerid',
+                                  isEqualTo:
+                                      application.currentUserModel!.userid)
                               .snapshots(),
                           builder: (context, snapshot) {
                             bool liked = false;

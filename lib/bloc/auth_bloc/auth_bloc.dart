@@ -11,6 +11,7 @@ import 'package:tapkat/repositories/user_repository.dart';
 import 'package:tapkat/schemas/users_record.dart';
 import 'package:tapkat/services/auth_service.dart';
 import 'package:tapkat/services/firebase.dart';
+import 'package:tapkat/utilities/application.dart' as application;
 import 'package:tapkat/utilities/auth_util.dart';
 import 'package:tapkat/utilities/upload_media.dart';
 
@@ -21,31 +22,38 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final authService = AuthService();
   final userRepo = UserRepository();
 
-  User? currentUser;
-  UserModel? currentUserModel;
   AuthBloc() : super(AuthInitial()) {
     on<AuthEvent>((event, emit) async {
       emit(AuthLoading());
-      print('new event: $event');
       if (event is InitializeAuth) {
         emit(AuthInitialized(authService.tapkatFirebaseUserStream()));
       }
 
       if (event is GetCurrentuser) {
         final _user = FirebaseAuth.instance.currentUser;
+        application.currentUser = _user;
         if (_user != null) {
-          final userModel = await userRepo.getUser(_user.uid);
-          authService.currentUserModel = userModel;
-          authService.currentUser = TapkatFirebaseUser(_user);
+          application.currentUserModel =
+              application.currentUserModel ?? await userRepo.getUser(_user.uid);
         }
 
         emit(GetCurrentUsersuccess(
-            authService.currentUser!.user!, authService.currentUserModel));
+            application.currentUser!, application.currentUserModel));
       }
 
       if (event is ResendEmail) {
         authService.resendEmail();
         emit(ResendEmailSuccess());
+      }
+
+      if (event is UpdatePushAlert) {
+        final updated = await userRepo.updatePushAlert(event.enable);
+        final updatedToken = await userRepo.updateUserFCMToken();
+        if (updated && updatedToken) {
+          application.currentUserModel =
+              await userRepo.getUser(application.currentUser!.uid);
+          emit(UpdatePushAlertSuccess());
+        }
       }
 
       if (event is SignUp) {
@@ -57,6 +65,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           );
 
           if (user != null) {
+            application.currentUser = user;
             final _location = event.location;
 
             final updateUser = UpdateUserModel(
@@ -83,13 +92,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
                 .doc(user.uid)
                 .update(updateUser.toJson());
 
-            authService.currentUser = TapkatFirebaseUser(user);
-            currentUser = user;
-
             final userModel = await userRepo.getUser(user.uid);
             if (userModel != null) {
-              currentUserModel = userModel;
-              authService.currentUserModel = userModel;
+              application.currentUserModel = userModel;
             }
 
             emit(ShowSignUpPhoto());
@@ -108,10 +113,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         if (event is SignInGoogle) {
           final user = await authService.signInWithGoogle();
           if (user != null) {
+            application.currentUser = user;
             final userModel = await userRepo.getUser(user.uid);
             if (userModel != null) {
-              currentUserModel = userModel;
-              authService.currentUserModel = userModel;
+              application.currentUserModel = userModel;
             }
 
             emit(AuthSignedIn(user));
@@ -167,12 +172,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
               event.context, event.email, event.password);
           if (user != null) {
             print('success sign in');
-            currentUser = user;
+            application.currentUser = user;
             authService.currentUser = TapkatFirebaseUser(user);
             final userModel = await userRepo.getUser(user.uid);
             if (userModel != null) {
-              currentUserModel = userModel;
-              authService.currentUserModel = userModel;
+              application.currentUserModel = userModel;
             }
             emit(AuthSignedIn(user));
           }

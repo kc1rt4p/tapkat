@@ -25,6 +25,12 @@ class SignInWithEmail extends AuthEvent {
   });
 }
 
+class UpdatePushAlert extends AuthEvent {
+  final bool enable;
+
+  UpdatePushAlert(this.enable);
+}
+
 class SignInGoogle extends AuthEvent {}
 
 class SignInFacebook extends AuthEvent {}

@@ -9,10 +9,9 @@ import 'package:tapkat/models/request/add_product_request.dart';
 import 'package:tapkat/models/request/product_review_resuest.dart';
 import 'package:tapkat/models/upload_product_image_response.dart';
 import 'package:tapkat/repositories/product_repository.dart';
-import 'package:tapkat/repositories/user_repository.dart';
-import 'package:tapkat/services/auth_service.dart';
 import 'package:tapkat/utilities/upload_media.dart';
 import 'package:geolocator/geolocator.dart' as geoLocator;
+import 'package:tapkat/utilities/application.dart' as application;
 
 part 'product_event.dart';
 part 'product_state.dart';
@@ -20,13 +19,11 @@ part 'product_state.dart';
 class ProductBloc extends Bloc<ProductEvent, ProductState> {
   ProductBloc() : super(ProductInitial()) {
     final _productRepo = ProductRepository();
-    final _authService = AuthService();
-    final _userRepo = UserRepository();
 
     on<ProductEvent>((event, emit) async {
       try {
-        final _user = await _authService.getCurrentUser();
-        final _userModel = await _userRepo.getUser(_user!.uid);
+        final _user = application.currentUser;
+        final _userModel = application.currentUserModel;
         if (event is SaveProduct) {
           emit(ProductLoading());
 
@@ -64,7 +61,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
 
           if (event.media.isNotEmpty) {
             final upload = await _productRepo.addProductImages(
-              userId: _user.uid,
+              userId: _user!.uid,
               productId: productId,
               images: event.media,
             );
@@ -81,14 +78,14 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
         if (event is DeleteImages) {
           emit(ProductLoading());
           final result = await _productRepo.deleteImages(
-              event.imgUrls, _user.uid, event.productId);
+              event.imgUrls, _user!.uid, event.productId);
 
           if (result) emit(DeleteImagesSuccess(event.imgUrls));
         }
 
         if (event is EditProduct) {
           emit(ProductLoading());
-          event.product.userid = _user.uid;
+          event.product.userid = _user!.uid;
           final result = await _productRepo.updateProduct(event.product);
 
           if (result) emit(EditProductSuccess());
@@ -98,7 +95,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
           emit(ProductLoading());
           final result = await _productRepo.addProductImages(
             productId: event.productId,
-            userId: _user.uid,
+            userId: _user!.uid,
             images: event.media,
           );
           if (result != null) emit(AddProductImageSuccess(result));
@@ -274,7 +271,8 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
                 image_url: event.product.mediaPrimary != null
                     ? (event.product.mediaPrimary!.url_t != null ||
                             event.product.mediaPrimary!.url_t!.isNotEmpty)
-                        ? event.product.mediaPrimary!.url_t!
+                        ? event.product.mediaPrimary!.url_t ??
+                            event.product.mediaPrimary!.url
                         : ''
                     : '',
               ),

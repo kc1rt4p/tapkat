@@ -10,11 +10,13 @@ class StoreListItem extends StatefulWidget {
   final Function()? onLikeTapped;
   final Function()? onTap;
   final bool liked;
+  final bool removeLike;
   const StoreListItem(
     this.store, {
     Key? key,
     this.onLikeTapped,
     this.liked = false,
+    this.removeLike = false,
     this.onTap,
   }) : super(key: key);
 
@@ -168,27 +170,30 @@ class _StoreListItemState extends State<StoreListItem> {
             ),
           ),
         ),
-        Positioned(
-          top: 5,
-          right: SizeConfig.safeBlockHorizontal * 2,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              Icon(
-                Icons.thumb_up_alt,
-                color: Colors.white,
-                size: 28,
-              ),
-              GestureDetector(
-                onTap: widget.onLikeTapped,
-                child: Icon(
-                  widget.liked
-                      ? Icons.thumb_up_alt
-                      : Icons.thumb_up_alt_outlined,
-                  color: kBackgroundColor,
+        Visibility(
+          visible: !widget.removeLike,
+          child: Positioned(
+            top: 5,
+            right: SizeConfig.safeBlockHorizontal * 2,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Icon(
+                  Icons.thumb_up_alt,
+                  color: Colors.white,
+                  size: 28,
                 ),
-              ),
-            ],
+                GestureDetector(
+                  onTap: widget.onLikeTapped,
+                  child: Icon(
+                    widget.liked
+                        ? Icons.thumb_up_alt
+                        : Icons.thumb_up_alt_outlined,
+                    color: kBackgroundColor,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ],

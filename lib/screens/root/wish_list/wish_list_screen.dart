@@ -6,7 +6,9 @@ import 'package:flutter_progress_hud/flutter_progress_hud.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:tapkat/backend.dart';
+import 'package:tapkat/models/media_primary_model.dart';
 import 'package:tapkat/models/product.dart';
+import 'package:tapkat/models/request/add_product_request.dart';
 import 'package:tapkat/models/store.dart';
 import 'package:tapkat/models/store_like.dart';
 import 'package:tapkat/models/user.dart';
@@ -91,8 +93,14 @@ class _WishListScreenState extends State<WishListScreen> {
                 //   });
                 // }
 
+                if (state is AddLikeSuccess) {
+                  _wishListBloc.add(InitializeWishListScreen());
+                }
+
                 if (state is WishListInitialized) {
                   _refreshController.refreshCompleted();
+                  _productPagingController.refresh();
+                  _storePagingController.refresh();
                   setState(() {
                     _user = state.user;
                   });
@@ -151,7 +159,7 @@ class _WishListScreenState extends State<WishListScreen> {
               },
             ),
             BlocListener(
-              bloc: _productBloc,
+              bloc: BlocProvider.of<ProductBloc>(context),
               listener: (context, state) {
                 print('current wish list state: $state');
                 if (state is UnlikeSuccess) {
@@ -162,64 +170,67 @@ class _WishListScreenState extends State<WishListScreen> {
             BlocListener(
               bloc: _storeBloc,
               listener: (context, state) {
-                // TODO: implement listener
+                if (state is EditUserLikeSuccess) {
+                  _wishListBloc.add(InitializeWishListScreen());
+                }
               },
               child: Container(),
             )
           ],
           child: Container(
             color: Color(0xFFEBFBFF),
-            child: SmartRefresher(
-              controller: _refreshController,
-              onRefresh: () => _wishListBloc.add(InitializeWishListScreen()),
-              child: Column(
-                children: [
-                  CustomAppBar(
-                    label: 'Your Wish List',
-                    hideBack: true,
-                  ),
-                  CustomSearchBar(
-                    margin: EdgeInsets.symmetric(horizontal: 20.0),
-                    controller: _keywordTextController,
-                    backgroundColor: Color(0xFF005F73).withOpacity(0.3),
-                    onSubmitted: (val) => _onSearchSubmitted(val),
-                  ),
-                  ToggleSwitch(
-                    activeBgColor: [kBackgroundColor],
-                    initialLabelIndex: _selectedView == 'products' ? 0 : 1,
-                    minWidth: SizeConfig.screenWidth * 0.4,
-                    minHeight: 25.0,
-                    borderColor: [Color(0xFFEBFBFF)],
-                    totalSwitches: 2,
-                    customTextStyles: [
-                      TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: SizeConfig.textScaleFactor * 15,
-                        color: Colors.white,
-                      ),
-                      TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: SizeConfig.textScaleFactor * 15,
-                        color: Colors.white,
-                      ),
-                    ],
-                    labels: [
-                      'Liked Items',
-                      'Followed Stores',
-                    ],
-                    onToggle: (index) {
-                      setState(() {
-                        _selectedView = index == 0 ? 'products' : 'stores';
-                      });
-                    },
-                  ),
-                  Expanded(
+            child: Column(
+              children: [
+                CustomAppBar(
+                  label: 'Your Wish List',
+                  hideBack: true,
+                ),
+                CustomSearchBar(
+                  margin: EdgeInsets.symmetric(horizontal: 20.0),
+                  controller: _keywordTextController,
+                  backgroundColor: Color(0xFF005F73).withOpacity(0.3),
+                  onSubmitted: (val) => _onSearchSubmitted(val),
+                ),
+                ToggleSwitch(
+                  activeBgColor: [kBackgroundColor],
+                  initialLabelIndex: _selectedView == 'products' ? 0 : 1,
+                  minWidth: SizeConfig.screenWidth * 0.4,
+                  minHeight: 25.0,
+                  borderColor: [Color(0xFFEBFBFF)],
+                  totalSwitches: 2,
+                  customTextStyles: [
+                    TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: SizeConfig.textScaleFactor * 15,
+                      color: Colors.white,
+                    ),
+                    TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: SizeConfig.textScaleFactor * 15,
+                      color: Colors.white,
+                    ),
+                  ],
+                  labels: [
+                    'Liked Items',
+                    'Followed Stores',
+                  ],
+                  onToggle: (index) {
+                    setState(() {
+                      _selectedView = index == 0 ? 'products' : 'stores';
+                    });
+                  },
+                ),
+                Expanded(
+                  child: SmartRefresher(
+                    controller: _refreshController,
+                    onRefresh: () =>
+                        _wishListBloc.add(InitializeWishListScreen()),
                     child: _selectedView == 'products'
                         ? _buildLikedItems()
                         : _buildFollowedStores(),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
@@ -309,76 +320,47 @@ class _WishListScreenState extends State<WishListScreen> {
       builderDelegate: PagedChildBuilderDelegate<LikedProductModel>(
         itemBuilder: (context, product, index) {
           return Center(
-            child: StreamBuilder<List<UserLikesRecord?>>(
-                stream: queryUserLikesRecord(
-                  queryBuilder: (userLikesRecord) => userLikesRecord
-                      .where('userid', isEqualTo: _user!.uid)
-                      .where('productid', isEqualTo: product.productid),
-                  singleRecord: true,
+            child: BarterListItem(
+              height: SizeConfig.screenHeight * 0.21,
+              width: SizeConfig.screenWidth * 0.40,
+              likeLeftMargin: SizeConfig.safeBlockHorizontal * 2,
+              product: ProductModel(
+                productid: product.productid,
+                productname: product.productname,
+                price: product.price,
+                mediaPrimary: MediaPrimaryModel(
+                  type: 'image',
+                  url: product.image_url,
+                  url_t: product.image_url,
                 ),
-                builder: (context, snapshot) {
-                  bool liked = false;
-                  UserLikesRecord? record;
-                  if (snapshot.hasData) {
-                    if (snapshot.data != null && snapshot.data!.isNotEmpty) {
-                      record = snapshot.data!.first;
-                      if (record != null) {
-                        liked = record.liked ?? false;
-                      }
-                    }
-                  }
-
-                  return BarterListItem(
-                    height: SizeConfig.screenHeight * 0.21,
-                    width: SizeConfig.screenWidth * 0.40,
-                    liked: liked,
-                    likeLeftMargin: SizeConfig.safeBlockHorizontal * 2,
-                    itemName: product.productname ?? '',
-                    itemPrice: product.price != null
-                        ? product.price!.toStringAsFixed(2)
-                        : '0',
-                    imageUrl: product.image_url ?? '',
-                    onTapped: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ProductDetailsScreen(
-                          productId: product.productid ?? '',
-                          ownItem: false,
-                        ),
-                      ),
-                    ),
-                    onLikeTapped: () {
-                      if (record != null) {
-                        final newData = createUserLikesRecordData(
-                          liked: !record.liked!,
-                        );
-
-                        record.reference!.update(newData);
-                        if (liked) {
-                          _productBloc.add(
-                            Unlike(ProductModel(
-                              productname: product.productname,
-                              price: product.price,
-                              productid: product.productid,
-                              imgUrl: product.image_url,
-                            )),
-                          );
-                        } else {
-                          _productBloc.add(
-                            AddLike(
-                              ProductModel(
-                                productname: product.productname,
-                                price: product.price,
-                                productid: product.productid,
-                                imgUrl: product.image_url,
-                              ),
-                            ),
-                          );
-                        }
-                      }
-                    },
-                  );
-                }),
+              ),
+              onTapped: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ProductDetailsScreen(
+                    productId: product.productid ?? '',
+                    ownItem: false,
+                  ),
+                ),
+              ),
+              onLikeTapped: (val) {
+                final _prod = ProductModel(
+                  productid: product.productid,
+                  productname: product.productname,
+                  price: product.price,
+                  mediaPrimary: MediaPrimaryModel(
+                    type: 'image',
+                    url: product.image_url,
+                    url_t: product.image_url,
+                  ),
+                );
+                if (val.isNegative) {
+                  _productBloc.add(AddLike(_prod));
+                } else {
+                  _productBloc.add(Unlike(_prod));
+                }
+              },
+            ),
           );
         },
       ),

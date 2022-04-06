@@ -14,3 +14,5 @@ class MoveToTab extends RootState {
 
   MoveToTab(this.index);
 }
+
+class UpdateUserTokenSuccess extends RootState {}

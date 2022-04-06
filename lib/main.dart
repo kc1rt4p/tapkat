@@ -62,10 +62,11 @@ class _MyAppState extends State<MyApp> {
               print('current auth state: $state');
               if (state is AuthInitialized) {
                 _userStream = state.stream.listen((user) {
-                  print('=====USER: ${user.user!.emailVerified}');
-                  setState(() {
-                    _user = user;
-                  });
+                  if (user.user != null) {
+                    setState(() {
+                      _user = user;
+                    });
+                  }
                 });
               }
 

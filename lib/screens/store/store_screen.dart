@@ -610,14 +610,9 @@ class _StoreScreenState extends State<StoreScreen> {
                           : product.media!.first.url!;
 
                     return BarterListItem(
+                      product: product,
                       height: SizeConfig.screenHeight * 0.21,
                       width: SizeConfig.screenWidth * 0.40,
-                      liked: liked,
-                      itemName: product.productname ?? '',
-                      itemPrice: product.price != null
-                          ? product.price!.toStringAsFixed(2)
-                          : '0',
-                      imageUrl: thumbnail,
                       onTapped: () => Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -626,20 +621,11 @@ class _StoreScreenState extends State<StoreScreen> {
                           ),
                         ),
                       ),
-                      onLikeTapped: () {
-                        if (record != null) {
-                          final newData = createUserLikesRecordData(
-                            liked: !record.liked!,
-                          );
-
-                          record.reference!.update(newData);
-                          if (liked) {
-                            _productBloc.add(
-                              Unlike(product),
-                            );
-                          } else {
-                            _productBloc.add(AddLike(product));
-                          }
+                      onLikeTapped: (val) {
+                        if (val.isNegative) {
+                          _productBloc.add(AddLike(product));
+                        } else {
+                          _productBloc.add(Unlike(product));
                         }
                       },
                     );

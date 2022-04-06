@@ -60,7 +60,7 @@ class ProductRequestModel {
       country: product.address!.country ?? '',
       postcode: product.address!.postCode ?? '',
       category: product.category ?? '',
-      image_url: product.mediaPrimary!.url ?? '',
+      image_url: product.mediaPrimary!.url ?? product.mediaPrimary!.url_t ?? '',
       media_type: product.mediaPrimary!.type ?? '',
       location: product.address!.location ?? null,
       price: product.price ?? 0,

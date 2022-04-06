@@ -13,6 +13,7 @@ import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
 import 'package:tapkat/models/barter_product.dart';
 import 'package:tapkat/models/barter_record_model.dart';
 import 'package:tapkat/models/chat_message.dart';
+import 'package:tapkat/models/media_primary_model.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/models/request/product_review_resuest.dart';
 import 'package:tapkat/models/request/user_review_request.dart';
@@ -1007,16 +1008,19 @@ class _BarterScreenState extends State<BarterScreen> {
                     child: Stack(
                       children: [
                         BarterListItem(
+                          product: ProductModel(
+                            productid: item.productId!,
+                            productname: item.productName,
+                            mediaPrimary: MediaPrimaryModel(
+                              type: 'image',
+                              url: item.imgUrl != null &&
+                                      item.imgUrl!.isNotEmpty
+                                  ? item.imgUrl!
+                                  : 'https://storage.googleapis.com/map-surf-assets/noimage.jpg',
+                            ),
+                            price: item.price != null ? item.price! : 0.00,
+                          ),
                           hideLikeBtn: true,
-                          itemName: item.productName ?? '',
-                          itemPrice: (item.currency ?? '\$') +
-                              (item.price != null
-                                  ? ' ${item.price!.toStringAsFixed(2)}'
-                                  : '0.00'),
-                          imageUrl: item.imgUrl != null &&
-                                  item.imgUrl!.isNotEmpty
-                              ? item.imgUrl!
-                              : 'https://storage.googleapis.com/map-surf-assets/noimage.jpg',
                           onTapped: () {
                             Navigator.push(
                               context,
@@ -1146,16 +1150,19 @@ class _BarterScreenState extends State<BarterScreen> {
                     child: Stack(
                       children: [
                         BarterListItem(
+                          product: ProductModel(
+                            productid: item.productId!,
+                            productname: item.productName,
+                            mediaPrimary: MediaPrimaryModel(
+                              type: 'image',
+                              url: item.imgUrl != null &&
+                                      item.imgUrl!.isNotEmpty
+                                  ? item.imgUrl!
+                                  : 'https://storage.googleapis.com/map-surf-assets/noimage.jpg',
+                            ),
+                            price: item.price != null ? item.price! : 0.00,
+                          ),
                           hideLikeBtn: true,
-                          itemName: item.productName ?? '',
-                          itemPrice: (item.currency ?? '\$') +
-                              (item.price != null
-                                  ? ' ${item.price!.toStringAsFixed(2)}'
-                                  : '0.00'),
-                          imageUrl: item.imgUrl != null &&
-                                  item.imgUrl!.isNotEmpty
-                              ? item.imgUrl!
-                              : 'https://storage.googleapis.com/map-surf-assets/noimage.jpg',
                           onTapped: () {
                             Navigator.push(
                               context,
@@ -2096,13 +2103,8 @@ class _BarterScreenState extends State<BarterScreen> {
                             Container(
                               margin: EdgeInsets.only(right: 8.0, bottom: 5.0),
                               child: BarterListItem(
+                                product: item,
                                 hideLikeBtn: true,
-                                itemName: item.productname ?? '',
-                                itemPrice: (item.currency != null
-                                        ? item.currency!
-                                        : '\$') +
-                                    (' ${item.price!.toStringAsFixed(2)}'),
-                                imageUrl: thumbnail,
                                 onTapped: () {
                                   if (remoteUserOffers.any((product) =>
                                       product.productId == item.productid))
@@ -2380,41 +2382,14 @@ class _BarterScreenState extends State<BarterScreen> {
                       ),
                     ),
                     items: currentUserItems.map((item) {
-                      print('-==== ${item.toJson()}');
-                      var thumbnail = '';
-
-                      if (item.mediaPrimary != null &&
-                          item.mediaPrimary!.url != null &&
-                          item.mediaPrimary!.url!.isNotEmpty)
-                        thumbnail = item.mediaPrimary!.url!;
-
-                      if (item.mediaPrimary != null &&
-                          item.mediaPrimary!.url_t != null &&
-                          item.mediaPrimary!.url_t!.isNotEmpty)
-                        thumbnail = item.mediaPrimary!.url_t!;
-
-                      if (item.mediaPrimary == null ||
-                          item.mediaPrimary!.url!.isEmpty &&
-                              item.mediaPrimary!.url_t!.isEmpty &&
-                              item.media != null &&
-                              item.media!.isNotEmpty)
-                        thumbnail = item.media!.first.url_t != null
-                            ? item.media!.first.url_t!
-                            : item.media!.first.url!;
                       return Stack(
                         alignment: Alignment.topCenter,
                         children: [
                           Container(
                             margin: EdgeInsets.only(right: 8.0, bottom: 5.0),
                             child: BarterListItem(
+                              product: item,
                               hideLikeBtn: true,
-                              itemName: item.productname ?? '',
-                              itemPrice: (item.currency != null &&
-                                          item.currency!.isNotEmpty
-                                      ? item.currency!
-                                      : '\$') +
-                                  (' ${item.price!.toStringAsFixed(2)}'),
-                              imageUrl: thumbnail,
                               onTapped: () {
                                 if (!selectedItems.any((want) =>
                                     want.productid == item.productid)) {

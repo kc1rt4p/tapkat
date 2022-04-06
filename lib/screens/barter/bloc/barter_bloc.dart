@@ -10,10 +10,12 @@ import 'package:tapkat/models/request/product_review_resuest.dart';
 import 'package:tapkat/models/request/user_review_request.dart';
 import 'package:tapkat/models/user.dart';
 import 'package:tapkat/repositories/barter_repository.dart';
+import 'package:tapkat/repositories/notification_repository.dart';
 import 'package:tapkat/repositories/product_repository.dart';
 import 'package:tapkat/repositories/user_repository.dart';
 import 'package:tapkat/schemas/barter_record.dart';
 import 'package:tapkat/services/auth_service.dart';
+import 'package:tapkat/utilities/application.dart' as application;
 
 part 'barter_event.dart';
 part 'barter_state.dart';
@@ -26,14 +28,15 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
     final _userRepo = UserRepository();
     User? _user;
     UserModel? _userModel;
+    final _notifRepo = NotificationRepository();
     on<BarterEvent>((event, emit) async {
       print('current event: $event');
       emit(BarterLoading());
 
       try {
-        _user = await _authService.getCurrentUser();
+        _user = application.currentUser;
         if (_user != null) {
-          _userModel = await _userRepo.getUser(_user!.uid);
+          _userModel = application.currentUserModel;
           if (event is InitializeBarter) {
             print('=== barter id: ${event.barterData.barterId}');
             var _barterRecord = await _barterRepository
@@ -196,6 +199,16 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
                   dateCreated: DateTime.now(),
                 ));
 
+                _notifRepo.sendNotification(
+                  body:
+                      '${application.currentUserModel!.display_name} sent a Counter Offer',
+                  title: 'Counter Offer',
+                  receiver: _newBarterRecord.userid1 == _user!.uid
+                      ? _newBarterRecord.userid2!
+                      : _newBarterRecord.userid1!,
+                  sender: _user!.uid,
+                );
+
                 emit(UpdateBarterStatusSuccess());
               } else
                 emit(BarterError('unable to counter offer'));
@@ -237,6 +250,16 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
                 message: 'Offer ${event.status.toUpperCase()}',
                 dateCreated: DateTime.now(),
               ));
+
+              _notifRepo.sendNotification(
+                body:
+                    '${application.currentUserModel!.display_name} updated barter to ${event.status.toLowerCase()}.',
+                title: 'Barter Updated',
+                receiver: barterRecord.userid1 == _user!.uid
+                    ? barterRecord.userid2!
+                    : barterRecord.userid1!,
+                sender: _user!.uid,
+              );
 
               // update products' status
               // final barterProducts =
@@ -369,10 +392,22 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
 
           if (event is SendMessage) {
             event.message.dateCreated = DateTime.now();
+            final _barterRecord = await _barterRepository
+                .getBarterRecord(event.message.barterId!);
             final sent = await _barterRepository.addMessage(event.message);
+
             if (!sent) {
               emit(BarterError('Unable to send message'));
             } else {
+              _notifRepo.sendNotification(
+                body:
+                    '${application.currentUserModel!.display_name} sent you a message.',
+                title: 'Barter Chat',
+                receiver: _barterRecord!.userid1 == _user!.uid
+                    ? _barterRecord.userid2!
+                    : _barterRecord.userid1!,
+                sender: application.currentUser!.uid,
+              );
               emit(SendMessageSuccess());
             }
           }

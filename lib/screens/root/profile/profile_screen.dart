@@ -551,14 +551,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 : product.media!.first.url!;
           return Center(
             child: BarterListItem(
+              product: product,
               height: SizeConfig.screenHeight * 0.20,
               width: SizeConfig.screenWidth * 0.4,
               hideLikeBtn: true,
-              itemName: product.productname ?? '',
-              itemPrice: product.price != null
-                  ? product.price!.toStringAsFixed(2)
-                  : '0',
-              imageUrl: thumbnail,
               onTapped: () async {
                 final changed = await Navigator.push(
                   context,
@@ -574,6 +570,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                 if (changed == true) {
                   _profileBloc.add(InitializeProfileScreen());
+                }
+              },
+              onLikeTapped: (val) {
+                if (val.isNegative) {
+                  _productBloc.add(AddLike(product));
+                } else {
+                  _productBloc.add(Unlike(product));
                 }
               },
             ),

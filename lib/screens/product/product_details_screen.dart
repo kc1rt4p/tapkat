@@ -34,6 +34,7 @@ import 'package:tapkat/widgets/custom_app_bar.dart';
 import 'package:tapkat/widgets/custom_button.dart';
 import 'package:tapkat/widgets/tapkat_map.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:tapkat/utilities/application.dart' as application;
 
 class ProductDetailsScreen extends StatefulWidget {
   final String productId;
@@ -83,9 +84,12 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
 
   @override
   void initState() {
-    _authBloc.add(GetCurrentuser());
+    _productBloc.add(GetProductDetails(widget.productId));
     _loadUserLocation();
+
     super.initState();
+    _user = application.currentUser;
+    _userModel = application.currentUserModel;
   }
 
   @override
@@ -130,19 +134,19 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   }
                 },
               ),
-              BlocListener(
-                bloc: _authBloc,
-                listener: (context, state) {
-                  print('current auth state: $state');
-                  if (state is GetCurrentUsersuccess) {
-                    setState(() {
-                      _user = state.user;
-                      _userModel = state.userModel;
-                    });
-                    _productBloc.add(GetProductDetails(widget.productId));
-                  }
-                },
-              ),
+              // BlocListener(
+              //   bloc: _authBloc,
+              //   listener: (context, state) {
+              //     print('current auth state: $state');
+              //     if (state is GetCurrentUsersuccess) {
+              //       setState(() {
+              //         _user = state.user;
+              //         _userModel = state.userModel;
+              //       });
+              //       _productBloc.add(GetProductDetails(widget.productId));
+              //     }
+              //   },
+              // ),
             ],
             child: Container(
               child: Column(
@@ -554,86 +558,65 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                               visible: !widget
                                                                   .ownItem,
                                                               child: StreamBuilder<
-                                                                      List<
-                                                                          UserLikesRecord?>>(
-                                                                  stream:
-                                                                      queryUserLikesRecord(
-                                                                    queryBuilder: (userLikesRecord) => userLikesRecord
-                                                                        .where(
-                                                                            'userid',
-                                                                            isEqualTo: _user!
-                                                                                .uid)
-                                                                        .where(
-                                                                            'productid',
-                                                                            isEqualTo:
-                                                                                _product!.productid),
-                                                                    singleRecord:
-                                                                        true,
-                                                                  ),
-                                                                  builder: (context,
-                                                                      snapshot) {
-                                                                    print(
-                                                                        '=== snapshot= ${snapshot.data}');
-                                                                    bool liked =
-                                                                        false;
-                                                                    UserLikesRecord?
-                                                                        record;
-                                                                    if (snapshot
-                                                                        .hasData) {
-                                                                      if (snapshot.data !=
-                                                                              null &&
-                                                                          snapshot
-                                                                              .data!
-                                                                              .isNotEmpty) {
-                                                                        record = snapshot
-                                                                            .data!
-                                                                            .first;
-                                                                        if (record !=
-                                                                            null) {
-                                                                          liked =
-                                                                              record.liked ?? false;
-                                                                          print(
-                                                                              '==== $record');
-                                                                        }
+                                                                  List<
+                                                                      UserLikesRecord?>>(
+                                                                stream:
+                                                                    queryUserLikesRecord(
+                                                                  queryBuilder: (userLikesRecord) => userLikesRecord
+                                                                      .where(
+                                                                          'userid',
+                                                                          isEqualTo: _user!
+                                                                              .uid)
+                                                                      .where(
+                                                                          'productid',
+                                                                          isEqualTo:
+                                                                              _product!.productid),
+                                                                  singleRecord:
+                                                                      true,
+                                                                ),
+                                                                builder: (context,
+                                                                    snapshot) {
+                                                                  print(
+                                                                      '=== snapshot= ${snapshot.data}');
+                                                                  bool liked =
+                                                                      false;
+                                                                  if (snapshot
+                                                                      .hasData) {
+                                                                    if (snapshot.data != null) if (snapshot
+                                                                        .data!
+                                                                        .isNotEmpty)
+                                                                      liked =
+                                                                          true;
+                                                                    else
+                                                                      liked =
+                                                                          false;
+                                                                  }
+
+                                                                  return GestureDetector(
+                                                                    onTap: () {
+                                                                      if (liked) {
+                                                                        _productBloc
+                                                                            .add(
+                                                                          Unlike(
+                                                                              _product!),
+                                                                        );
+                                                                      } else {
+                                                                        _productBloc
+                                                                            .add(AddLike(_product!));
                                                                       }
-                                                                    }
-
-                                                                    return GestureDetector(
-                                                                      onTap:
-                                                                          () {
-                                                                        if (record !=
-                                                                            null) {
-                                                                          final newData =
-                                                                              createUserLikesRecordData(
-                                                                            liked:
-                                                                                !record.liked!,
-                                                                          );
-
-                                                                          record
-                                                                              .reference!
-                                                                              .update(newData);
-                                                                          if (liked) {
-                                                                            _productBloc.add(
-                                                                              Unlike(_product!),
-                                                                            );
-                                                                          } else {
-                                                                            _productBloc.add(AddLike(_product!));
-                                                                          }
-                                                                        } else {
-                                                                          _productBloc
-                                                                              .add(AddLike(_product!));
-                                                                        }
-                                                                      },
-                                                                      child:
-                                                                          Icon(
-                                                                        liked
-                                                                            ? FontAwesomeIcons.solidHeart
-                                                                            : FontAwesomeIcons.heart,
-                                                                        color: Color(
-                                                                            0xFF94D2BD),
-                                                                      ),
-                                                                    );
-                                                                  }),
+                                                                    },
+                                                                    child: Icon(
+                                                                      liked
+                                                                          ? FontAwesomeIcons
+                                                                              .solidHeart
+                                                                          : FontAwesomeIcons
+                                                                              .heart,
+                                                                      color: Color(
+                                                                          0xFF94D2BD),
+                                                                    ),
+                                                                  );
+                                                                },
+                                                              ),
                                                             )
                                                           : Container(),
                                                       SizedBox(width: 5.0),
