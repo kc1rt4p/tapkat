@@ -2,6 +2,9 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:localstorage/localstorage.dart';
+import 'package:notification_permissions/notification_permissions.dart'
+    as notif;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
 import 'package:tapkat/screens/product/bloc/product_bloc.dart';
@@ -17,7 +20,8 @@ import 'package:tapkat/utilities/application.dart' as application;
 import 'bloc/root_bloc.dart';
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  print('background msg: ${message.toString()}');
+  print(
+      '*****###***** *****###***** background message: ${message.toString()} *****###***** *****###*****');
 }
 
 class RootScreen extends StatefulWidget {
@@ -43,6 +47,8 @@ class _RootScreenState extends State<RootScreen> {
 
   final _currentVerDate = DateTime(2022, 4, 7, 2);
 
+  final _appConfig = new LocalStorage('app_config.json');
+
   @override
   void initState() {
     Permission.location.request();
@@ -52,19 +58,37 @@ class _RootScreenState extends State<RootScreen> {
 
   initNotifications() async {
     final _firebaseMessaging = FirebaseMessaging.instance;
-    final settings = await _firebaseMessaging.requestPermission();
+    final _firstLoginDate = await _appConfig.getItem('first_login_date');
 
-    if (settings.authorizationStatus != AuthorizationStatus.authorized) return;
+    if (_firstLoginDate == null) {
+      final permissionStatus =
+          await notif.NotificationPermissions.requestNotificationPermissions();
+      await _appConfig.setItem(
+          'first_login_date', DateTime.now().millisecondsSinceEpoch.toString());
 
-    final permissionStatus = await Permission.notification.status;
-    if (permissionStatus.isDenied) return;
+      final settings = await _firebaseMessaging.requestPermission(
+        alert: true,
+        announcement: false,
+        badge: true,
+        carPlay: false,
+        criticalAlert: false,
+        provisional: false,
+        sound: true,
+      );
 
-    if (application.currentUserModel!.pushtoken == null) {
+      if (settings.authorizationStatus != AuthorizationStatus.authorized)
+        return;
+
+      if (permissionStatus == PermissionStatus.denied) return;
+    }
+
+    if (application.currentUserModel!.pushalert == null) {
       _rootBloc.add(UpdateUserToken());
     }
 
     FirebaseMessaging.onMessage.listen((remoteMessage) {
-      print('Foreground Message: ${remoteMessage.toString()}');
+      print(
+          '*****###***** *****###***** Foreground Message: ${remoteMessage.toString()} *****###***** *****###*****');
     });
 
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);

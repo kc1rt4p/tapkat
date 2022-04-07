@@ -10,7 +10,7 @@ class UserModel {
   String? country;
   String? postcode;
   String? photo_url;
-  String? pushtoken;
+  String? pushalert;
   String? regtoken;
   List<String>? interests;
   LocationModel? location;
@@ -25,7 +25,7 @@ class UserModel {
     this.country,
     this.postcode,
     this.photo_url,
-    this.pushtoken,
+    this.pushalert,
     this.regtoken,
     this.interests,
     this.location,
@@ -42,7 +42,7 @@ class UserModel {
       country: json['country'] as String?,
       postcode: json['postcode'] as String?,
       photo_url: json['photo_url'] as String?,
-      pushtoken: json['pushtoken'] as String?,
+      pushalert: json['pushalert'] as String?,
       regtoken: json['regtoken'] as String?,
       interests: json['interests'] != null
           ? (json['interests'] as List<dynamic>)
@@ -66,7 +66,7 @@ class UserModel {
       'country': this.country,
       'postcode': this.postcode,
       'photo_url': this.photo_url,
-      'pushtoken': this.pushtoken,
+      'pushalert': this.pushalert,
       'regtoken': this.regtoken,
       'interests': this.interests,
       'location': this.location,

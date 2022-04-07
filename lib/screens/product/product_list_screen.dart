@@ -356,48 +356,28 @@ class _ProductListScreenState extends State<ProductListScreen> {
                   ? product.media!.first.url_t!
                   : product.media!.first.url!;
             return Center(
-              child: StreamBuilder<List<UserLikesRecord?>>(
-                  stream: queryUserLikesRecord(
-                    queryBuilder: (userLikesRecord) => userLikesRecord
-                        .where('userid', isEqualTo: widget.userId)
-                        .where('productid', isEqualTo: product.productid),
-                    singleRecord: true,
+              child: BarterListItem(
+                height: SizeConfig.screenHeight * 0.21,
+                width: SizeConfig.screenWidth * 0.40,
+                hideLikeBtn: widget.ownListing,
+                product: product,
+                onTapped: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ProductDetailsScreen(
+                      productId: product.productid ?? '',
+                      ownItem: widget.ownListing ? true : false,
+                    ),
                   ),
-                  builder: (context, snapshot) {
-                    bool liked = false;
-                    UserLikesRecord? record;
-                    if (snapshot.hasData) {
-                      if (snapshot.data != null && snapshot.data!.isNotEmpty) {
-                        record = snapshot.data!.first;
-                        if (record != null) {
-                          liked = record.liked ?? false;
-                        }
-                      }
-                    }
-
-                    return BarterListItem(
-                      height: SizeConfig.screenHeight * 0.21,
-                      width: SizeConfig.screenWidth * 0.40,
-                      hideLikeBtn: widget.ownListing,
-                      product: product,
-                      onTapped: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ProductDetailsScreen(
-                            productId: product.productid ?? '',
-                            ownItem: widget.ownListing ? true : false,
-                          ),
-                        ),
-                      ),
-                      onLikeTapped: (val) {
-                        if (val.isNegative) {
-                          _productBloc.add(AddLike(product));
-                        } else {
-                          _productBloc.add(Unlike(product));
-                        }
-                      },
-                    );
-                  }),
+                ),
+                onLikeTapped: (val) {
+                  if (val.isNegative) {
+                    _productBloc.add(AddLike(product));
+                  } else {
+                    _productBloc.add(Unlike(product));
+                  }
+                },
+              ),
             );
           },
         ),

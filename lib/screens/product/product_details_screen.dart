@@ -594,6 +594,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
 
                                                                   return GestureDetector(
                                                                     onTap: () {
+                                                                      // _productBloc.add(
+                                                                      //     AddLike(
+                                                                      //         _product!));
                                                                       if (liked) {
                                                                         _productBloc
                                                                             .add(

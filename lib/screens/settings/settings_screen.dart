@@ -1,7 +1,6 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/dialog_message.dart';
@@ -10,6 +9,8 @@ import 'package:tapkat/utilities/style.dart';
 import 'package:tapkat/widgets/custom_app_bar.dart';
 import 'package:toggle_switch/toggle_switch.dart';
 import 'package:tapkat/utilities/application.dart' as application;
+import 'package:notification_permissions/notification_permissions.dart'
+    as notif;
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({Key? key}) : super(key: key);
@@ -27,11 +28,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void initState() {
     _authBloc = BlocProvider.of<AuthBloc>(context);
     super.initState();
-    pushNotif = application.currentUserModel!.pushtoken != null
-        ? application.currentUserModel!.pushtoken == 'Y'
-            ? 1
-            : 0
-        : 0;
+    initNotification();
+  }
+
+  initNotification() async {
+    final permission =
+        await notif.NotificationPermissions.requestNotificationPermissions();
+    setState(() {
+      pushNotif = permission == notif.PermissionStatus.denied
+          ? 0
+          : application.currentUserModel!.pushalert == 'Y'
+              ? 1
+              : 0;
+    });
   }
 
   @override
@@ -119,12 +128,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
           });
 
           final settings = await FirebaseMessaging.instance.requestPermission();
+          final permissionStatus = await notif.NotificationPermissions
+              .requestNotificationPermissions();
 
-          if (settings.authorizationStatus != AuthorizationStatus.authorized)
-            return;
-
-          final permissionStatus = await Permission.notification.status;
-          if (permissionStatus.isDenied) return;
+          if (settings.authorizationStatus != AuthorizationStatus.authorized ||
+              permissionStatus == notif.PermissionStatus.denied) return;
 
           _authBloc.add(UpdatePushAlert(pushNotif == 1));
         },
