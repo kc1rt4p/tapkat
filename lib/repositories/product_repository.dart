@@ -18,6 +18,7 @@ import 'package:tapkat/models/upload_product_image_response.dart';
 import 'package:tapkat/services/http/api_service.dart';
 import 'package:tapkat/utilities/constants.dart';
 import 'package:tapkat/utilities/upload_media.dart';
+import 'package:tapkat/utilities/application.dart' as application;
 
 void decodeIsolate(DecodeParam param) {
   var image = decodeImage(param.file.readAsBytesSync())!;
@@ -435,6 +436,7 @@ class ProductRepository {
       'sortby': 'price',
       'sortdirection': 'ascending',
       'productcount': productCount,
+      'userid': application.currentUser!.uid,
     };
     if (keyword.length > 0) _body.addAll({'keywords': keyword});
     if (category != null) _body.addAll({'category': category});
