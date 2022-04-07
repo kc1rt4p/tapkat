@@ -200,9 +200,8 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
                 ));
 
                 _notifRepo.sendNotification(
-                  body:
-                      '${application.currentUserModel!.display_name} sent a Counter Offer',
-                  title: 'Counter Offer',
+                  body: 'Offer SUBMITTED (Counter Offer)',
+                  title: application.currentUser!.displayName!,
                   receiver: _newBarterRecord.userid1 == _user!.uid
                       ? _newBarterRecord.userid2!
                       : _newBarterRecord.userid1!,
@@ -252,9 +251,8 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
               ));
 
               _notifRepo.sendNotification(
-                body:
-                    '${application.currentUserModel!.display_name} updated barter to ${event.status.toLowerCase()}.',
-                title: 'Barter Updated',
+                body: 'Offer ${event.status.toUpperCase()}',
+                title: application.currentUserModel!.display_name!,
                 receiver: barterRecord.userid1 == _user!.uid
                     ? barterRecord.userid2!
                     : barterRecord.userid1!,
@@ -400,9 +398,8 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
               emit(BarterError('Unable to send message'));
             } else {
               _notifRepo.sendNotification(
-                body:
-                    '${application.currentUserModel!.display_name} sent you a message.',
-                title: 'Barter Chat',
+                body: event.message.message ?? '',
+                title: application.currentUser!.displayName!,
                 receiver: _barterRecord!.userid1 == _user!.uid
                     ? _barterRecord.userid2!
                     : _barterRecord.userid1!,

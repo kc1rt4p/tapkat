@@ -263,18 +263,34 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
 
         if (event is AddLike) {
           if (_user != null) {
+            final product = event.product;
+            var thumbnail = '';
+
+            if (product.mediaPrimary != null &&
+                product.mediaPrimary!.url != null &&
+                product.mediaPrimary!.url!.isNotEmpty)
+              thumbnail = product.mediaPrimary!.url!;
+
+            if (product.mediaPrimary != null &&
+                product.mediaPrimary!.url_t != null &&
+                product.mediaPrimary!.url_t!.isNotEmpty)
+              thumbnail = product.mediaPrimary!.url_t!;
+
+            if (product.mediaPrimary != null) {
+              if (product.mediaPrimary!.url!.isEmpty &&
+                  product.mediaPrimary!.url_t!.isEmpty &&
+                  product.media != null &&
+                  product.media!.isNotEmpty)
+                thumbnail = product.media!.first.url_t != null
+                    ? product.media!.first.url_t!
+                    : product.media!.first.url!;
+            }
             final result = await _productRepo.likeProduct(
               productRequest: ProductRequestModel(
                 productid: event.product.productid,
                 price: event.product.price,
                 productname: event.product.productname,
-                image_url: event.product.mediaPrimary != null
-                    ? (event.product.mediaPrimary!.url_t != null ||
-                            event.product.mediaPrimary!.url_t!.isNotEmpty)
-                        ? event.product.mediaPrimary!.url_t ??
-                            event.product.mediaPrimary!.url
-                        : ''
-                    : '',
+                image_url: thumbnail,
               ),
               userId: _user.uid,
               like: 1,

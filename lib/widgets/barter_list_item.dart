@@ -63,15 +63,11 @@ class _BarterListItemState extends State<BarterListItem> {
         if (snapshot.hasData) {
           if (snapshot.data != null && snapshot.data!.isNotEmpty) {
             final _product = snapshot.data!.first;
-            print('records found: ${snapshot.data!.length}');
-            print('-=-=-=-${_product.toString()}');
             if (_product != null) {
               liked = true;
             }
           }
         }
-
-        print('---===\n ${product.toJson()}');
 
         var thumbnail = '';
 

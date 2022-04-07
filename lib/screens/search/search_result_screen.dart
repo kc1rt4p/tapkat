@@ -599,45 +599,24 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                     : product.media!.first.url!;
             }
             return Center(
-              child: StreamBuilder<List<UserLikesRecord?>>(
-                stream: queryUserLikesRecord(
-                  queryBuilder: (userLikesRecord) => userLikesRecord
-                      .where('userid', isEqualTo: widget.userid)
-                      .where('productid', isEqualTo: product.productid),
-                  singleRecord: true,
-                ),
-                builder: (context, snapshot) {
-                  bool liked = false;
-                  UserLikesRecord? record;
-                  if (snapshot.hasData) {
-                    if (snapshot.data != null && snapshot.data!.isNotEmpty) {
-                      record = snapshot.data!.first;
-                      if (record != null) {
-                        liked = record.liked ?? false;
-                      }
-                    }
-                  }
-
-                  return BarterListItem(
-                    product: product,
-                    height: SizeConfig.screenHeight * 0.22,
-                    width: SizeConfig.screenWidth * 0.40,
-                    onTapped: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ProductDetailsScreen(
-                          productId: product.productid ?? '',
-                        ),
-                      ),
+              child: BarterListItem(
+                product: product,
+                height: SizeConfig.screenHeight * 0.22,
+                width: SizeConfig.screenWidth * 0.40,
+                onTapped: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ProductDetailsScreen(
+                      productId: product.productid ?? '',
                     ),
-                    onLikeTapped: (val) {
-                      if (val.isNegative) {
-                        _productBloc.add(AddLike(product));
-                      } else {
-                        _productBloc.add(Unlike(product));
-                      }
-                    },
-                  );
+                  ),
+                ),
+                onLikeTapped: (val) {
+                  if (val.isNegative) {
+                    _productBloc.add(AddLike(product));
+                  } else {
+                    _productBloc.add(Unlike(product));
+                  }
                 },
               ),
             );

@@ -202,7 +202,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 setState(() {
                   _user = state.user;
                   _userModel = state.userModel;
-                  print('-=-=-=-= $_userModel');
                 });
 
                 if (_userModel != null &&
@@ -482,52 +481,34 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     }
 
-    return StreamBuilder<List<UserLikesRecord?>>(
-      stream: queryUserLikesRecord(
-        queryBuilder: (userLikesRecord) => userLikesRecord
-            .where('userid', isEqualTo: _user!.uid)
-            .where('productid', isEqualTo: product.productid),
-        singleRecord: true,
-      ),
-      builder: (context, snapshot) {
-        bool liked = false;
-        if (snapshot.hasData) {
-          if (snapshot.data != null) if (snapshot.data!.isNotEmpty)
-            liked = true;
-          else
-            liked = false;
-        }
-
-        return BarterListItem(
-          product: product,
-          likeLeftMargin: SizeConfig.safeBlockHorizontal * 3,
-          onTapped: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ProductDetailsScreen(
-                  productId: product.productid ?? '',
-                  ownItem: false,
-                ),
+    return Center(
+      child: BarterListItem(
+        product: product,
+        likeLeftMargin: SizeConfig.safeBlockHorizontal * 3,
+        onTapped: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ProductDetailsScreen(
+                productId: product.productid ?? '',
+                ownItem: false,
               ),
-            );
-          },
-          onLikeTapped: (val) {
-            if (val.isNegative) {
-              _productBloc.add(AddLike(product));
-            } else {
-              _productBloc.add(Unlike(product));
-            }
-          },
-        );
-      },
+            ),
+          );
+        },
+        onLikeTapped: (val) {
+          if (val.isNegative) {
+            _productBloc.add(AddLike(product));
+          } else {
+            _productBloc.add(Unlike(product));
+          }
+        },
+      ),
     );
   }
 
-  _onSearchSubmitted(String? val) {
-    _keywordTextController.clear();
-
-    Navigator.push(
+  _onSearchSubmitted(String? val) async {
+    await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => SearchResultScreen(
@@ -538,5 +519,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
+
+    _keywordTextController.clear();
   }
 }

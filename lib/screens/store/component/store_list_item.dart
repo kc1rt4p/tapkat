@@ -9,7 +9,7 @@ class StoreListItem extends StatefulWidget {
   final StoreModel store;
   final Function()? onLikeTapped;
   final Function()? onTap;
-  final bool liked;
+  final bool? liked;
   final bool removeLike;
   const StoreListItem(
     this.store, {
@@ -186,7 +186,7 @@ class _StoreListItemState extends State<StoreListItem> {
                 GestureDetector(
                   onTap: widget.onLikeTapped,
                   child: Icon(
-                    widget.liked
+                    widget.liked != null && widget.liked!
                         ? Icons.thumb_up_alt
                         : Icons.thumb_up_alt_outlined,
                     color: kBackgroundColor,

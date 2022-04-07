@@ -144,11 +144,13 @@ class _StoreScreenState extends State<StoreScreen> {
                                     builder: (context, snapshot) {
                                       bool liked = false;
 
-                                      print(snapshot.data);
-
                                       if (snapshot.data != null) {
-                                        if (snapshot.data!.docs.isNotEmpty)
+                                        if (snapshot.data!.docs.isNotEmpty) {
                                           liked = true;
+                                          _isFollowing = true;
+                                        }
+                                      } else {
+                                        _isFollowing = false;
                                       }
                                       return InkWell(
                                         onTap: () => _storeBloc.add(
@@ -291,8 +293,6 @@ class _StoreScreenState extends State<StoreScreen> {
                         }
 
                         if (state is GetFirstProductsSuccess) {
-                          _refreshController.refreshCompleted();
-                          _pagingController.refresh();
                           if (state.list.isNotEmpty) {
                             _list.addAll(state.list);
                             lastProduct = state.list.last;
@@ -347,7 +347,8 @@ class _StoreScreenState extends State<StoreScreen> {
                         }
 
                         if (state is InitializedStoreScreen) {
-                          print(state.user.toJson());
+                          _refreshController.refreshCompleted();
+                          _pagingController.refresh();
                           setState(() {
                             _storeOwner = state.user;
                             storeOwnerName = _storeOwner!.display_name!;
@@ -370,7 +371,7 @@ class _StoreScreenState extends State<StoreScreen> {
                           DialogMessage.show(
                             context,
                             message:
-                                'You ${_isFollowing ? 'followed' : 'unfollowed'} this store!',
+                                'You ${_isFollowing ? 'unfollowed' : 'followed'} this store!',
                           );
                         }
                       },
@@ -424,7 +425,6 @@ class _StoreScreenState extends State<StoreScreen> {
   }
 
   Future<dynamic> _onMarkerTapped(ProductModel product) async {
-    print(product.address!.toJson());
     await showModalBottomSheet(
       isScrollControlled: true,
       backgroundColor: Color(0x79FFFFFF),

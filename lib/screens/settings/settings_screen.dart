@@ -83,26 +83,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               'Off',
                               'On',
                             ],
-                            onToggle: (index) async {
-                              if (index != null) {
-                                setState(() {
-                                  pushNotif = index;
-                                });
-
-                                final settings = await FirebaseMessaging
-                                    .instance
-                                    .requestPermission();
-
-                                if (settings.authorizationStatus !=
-                                    AuthorizationStatus.authorized) return;
-
-                                final permissionStatus =
-                                    await Permission.notification.status;
-                                if (permissionStatus.isDenied) return;
-
-                                _authBloc.add(UpdatePushAlert(pushNotif == 1));
-                              }
-                            },
+                            onToggle: _onPushNotif,
                           ),
                         ],
                       ),
@@ -122,6 +103,40 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
       ),
     );
+  }
+
+  _onPushNotif(int? index) async {
+    if (index != null) {
+      DialogMessage.show(
+        context,
+        title: 'Push Notification',
+        message:
+            'Are you sure you want to turn ${index == 1 ? 'on' : 'off'} notifications?',
+        buttonText: 'Yes',
+        firstButtonClicked: () async {
+          setState(() {
+            pushNotif = index;
+          });
+
+          final settings = await FirebaseMessaging.instance.requestPermission();
+
+          if (settings.authorizationStatus != AuthorizationStatus.authorized)
+            return;
+
+          final permissionStatus = await Permission.notification.status;
+          if (permissionStatus.isDenied) return;
+
+          _authBloc.add(UpdatePushAlert(pushNotif == 1));
+        },
+        secondButtonText: 'No',
+        secondButtonClicked: () {
+          setState(() {
+            pushNotif = 0;
+          });
+        },
+        hideClose: true,
+      );
+    }
   }
 
   _onSignOut() {

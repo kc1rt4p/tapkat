@@ -159,7 +159,7 @@ class _WishListScreenState extends State<WishListScreen> {
               },
             ),
             BlocListener(
-              bloc: BlocProvider.of<ProductBloc>(context),
+              bloc: _productBloc,
               listener: (context, state) {
                 print('current wish list state: $state');
                 if (state is UnlikeSuccess) {
@@ -255,48 +255,23 @@ class _WishListScreenState extends State<WishListScreen> {
       builderDelegate: PagedChildBuilderDelegate<LikedStoreModel>(
         itemBuilder: (context, store, index) {
           return Center(
-            child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-                stream: barterRef
-                    .where('userid', isEqualTo: store.userid)
-                    .where('likerid', isEqualTo: _user!.uid)
-                    .snapshots(),
-                builder: (context, snapshot) {
-                  bool liked = false;
-
-                  print(snapshot.data);
-
-                  if (snapshot.data != null) {
-                    if (snapshot.data!.docs.isNotEmpty) liked = true;
-                  }
-
-                  return StoreListItem(
-                    StoreModel(
-                      display_name: store.username,
-                      userid: store.userid,
-                      photo_url: store.user_image_url,
-                    ),
-                    liked: liked,
-                    onLikeTapped: () => _storeBloc.add(
-                      EditUserLike(
-                        user: UserModel(
-                          display_name: store.username,
-                          userid: store.userid,
-                          photo_url: store.user_image_url,
-                        ),
-                        likeCount: liked ? -1 : 1,
-                      ),
-                    ),
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => StoreScreen(
-                          userId: store.userid!,
-                          userName: store.username!,
-                        ),
-                      ),
-                    ),
-                  );
-                }),
+            child: StoreListItem(
+              StoreModel(
+                display_name: store.username,
+                userid: store.userid,
+                photo_url: store.user_image_url,
+              ),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => StoreScreen(
+                    userId: store.userid!,
+                    userName: store.username!,
+                  ),
+                ),
+              ),
+              removeLike: true,
+            ),
           );
         },
       ),
@@ -355,8 +330,10 @@ class _WishListScreenState extends State<WishListScreen> {
                   ),
                 );
                 if (val.isNegative) {
+                  print('liking');
                   _productBloc.add(AddLike(_prod));
                 } else {
+                  print('unliking');
                   _productBloc.add(Unlike(_prod));
                 }
               },
