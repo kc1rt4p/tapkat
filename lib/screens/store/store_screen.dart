@@ -349,6 +349,7 @@ class _StoreScreenState extends State<StoreScreen> {
                         if (state is InitializedStoreScreen) {
                           _refreshController.refreshCompleted();
                           _pagingController.refresh();
+                          _list.clear();
                           setState(() {
                             _storeOwner = state.user;
                             storeOwnerName = _storeOwner!.display_name!;

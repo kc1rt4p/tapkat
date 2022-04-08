@@ -29,6 +29,7 @@ import 'package:tapkat/utilities/style.dart';
 import 'package:tapkat/widgets/barter_list_item.dart';
 import 'package:tapkat/widgets/custom_button.dart';
 import 'package:tapkat/widgets/custom_textformfield.dart';
+import 'package:tapkat/utilities/application.dart' as application;
 
 import '../product/product_details_screen.dart';
 import 'bloc/barter_bloc.dart';
@@ -558,6 +559,7 @@ class _BarterScreenState extends State<BarterScreen> {
                     onTap: () async {
                       if (!_panelClosed) {
                         _panelController.close();
+                        application.chatOpened = false;
                         return;
                       }
                       final exit = await _onWillPop();
@@ -577,25 +579,30 @@ class _BarterScreenState extends State<BarterScreen> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  GestureDetector(
-                    onTap: () {
-                      if (_barterId != null) {
-                        DialogMessage.show(
-                          context,
-                          title: 'Delete Barter',
-                          message:
-                              'Are you sure you want to delete this Barter?',
-                          buttonText: 'Yes',
-                          firstButtonClicked: () =>
-                              _barterBloc.add(DeleteBarter(_barterId!)),
-                          secondButtonText: 'No',
-                          hideClose: true,
-                        );
-                      }
-                    },
-                    child: FaIcon(
-                      Icons.delete_forever,
-                      color: Colors.white,
+                  Visibility(
+                    visible: _barterRecord != null &&
+                        ['new', 'completed', 'rejected', 'withdrawn']
+                            .contains(_barterRecord!.dealStatus),
+                    child: GestureDetector(
+                      onTap: () {
+                        if (_barterId != null) {
+                          DialogMessage.show(
+                            context,
+                            title: 'Delete Barter',
+                            message:
+                                'Are you sure you want to delete this Barter?',
+                            buttonText: 'Yes',
+                            firstButtonClicked: () =>
+                                _barterBloc.add(DeleteBarter(_barterId!)),
+                            secondButtonText: 'No',
+                            hideClose: true,
+                          );
+                        }
+                      },
+                      child: FaIcon(
+                        Icons.delete_forever,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ],
@@ -675,7 +682,10 @@ class _BarterScreenState extends State<BarterScreen> {
                               child: Padding(
                                 padding: const EdgeInsets.all(8.0),
                                 child: InkWell(
-                                  onTap: () => _panelController.close(),
+                                  onTap: () {
+                                    _panelController.close();
+                                    application.chatOpened = false;
+                                  },
                                   child: Container(
                                     child: Icon(
                                       Icons.close,
@@ -917,7 +927,10 @@ class _BarterScreenState extends State<BarterScreen> {
             label: 'Chat',
             bgColor: kBackgroundColor,
             textColor: Colors.white,
-            onTap: () => _panelController.open(),
+            onTap: () {
+              _panelController.open();
+              application.chatOpened = true;
+            },
             removeMargin: true,
           ),
         ),
@@ -1662,7 +1675,10 @@ class _BarterScreenState extends State<BarterScreen> {
           child: Column(
             children: [
               InkWell(
-                onTap: () => _panelController.close(),
+                onTap: () {
+                  _panelController.close();
+                  application.chatOpened = false;
+                },
                 child: Container(
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -1929,8 +1945,7 @@ class _BarterScreenState extends State<BarterScreen> {
       case 'withdrawn':
       case 'revoked':
         if (_currentUserRole == 'recipient') {
-          _barterBloc
-              .add(CounterOffer(_barterRecord!.barterId!, remoteUserOffers[0]));
+          _barterBloc.add(CounterOffer(_barterRecord!.barterId!, null));
         } else {
           _barterBloc
               .add(UpdateBarterStatus(_barterRecord!.barterId!, 'submitted'));

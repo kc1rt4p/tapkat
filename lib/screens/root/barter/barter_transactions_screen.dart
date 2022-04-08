@@ -400,21 +400,25 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                         ),
                       ),
                     ),
-                    Positioned(
-                      top: 30.0,
-                      right: 20,
-                      child: InkWell(
-                        onTap: () =>
-                            _onDeletebarter('Barter', barter.barterId!),
-                        child: Container(
-                          padding: EdgeInsets.all(3.0),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.red,
-                          ),
-                          child: Icon(
-                            Icons.close,
-                            color: Colors.white,
+                    Visibility(
+                      visible: ['new', 'completed', 'rejected', 'withdrawn']
+                          .contains(barter.dealStatus),
+                      child: Positioned(
+                        top: 30.0,
+                        right: 20,
+                        child: InkWell(
+                          onTap: () =>
+                              _onDeletebarter('Barter', barter.barterId!),
+                          child: Container(
+                            padding: EdgeInsets.all(3.0),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.red,
+                            ),
+                            child: Icon(
+                              Icons.close,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                       ),

@@ -5,3 +5,5 @@ import 'package:tapkat/models/user.dart';
 
 User? currentUser;
 UserModel? currentUserModel;
+
+bool chatOpened = false;

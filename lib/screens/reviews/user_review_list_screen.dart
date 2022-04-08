@@ -1,9 +1,11 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:tapkat/models/request/user_review_request.dart';
 import 'package:tapkat/screens/root/profile/bloc/profile_bloc.dart';
+import 'package:tapkat/screens/store/store_screen.dart';
 import 'package:tapkat/utilities/constants.dart';
 import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/widgets/custom_app_bar.dart';
@@ -99,70 +101,100 @@ class _UserReviewListScreenState extends State<UserReviewListScreen> {
       pagingController: _userPagingController,
       builderDelegate: PagedChildBuilderDelegate<UserReviewModel>(
         itemBuilder: (context, rating, index) {
-          return Container(
-            margin: EdgeInsets.only(bottom: 10.0),
-            padding: EdgeInsets.all(5.0),
-            decoration: BoxDecoration(
-              border: Border(
-                bottom: BorderSide(
-                  color: Colors.grey,
+          return InkWell(
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => StoreScreen(
+                  userId: rating.reviewerid!,
+                  userName: rating.reviewername!,
                 ),
               ),
             ),
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    Text(rating.reviewername ?? ''),
-                    Spacer(),
-                    Text(timeago.format(DateTime.parse(rating.review_date!))),
-                  ],
+            child: Container(
+              margin: EdgeInsets.only(bottom: 10.0),
+              padding: EdgeInsets.all(5.0),
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(
+                    color: Colors.grey,
+                  ),
                 ),
-                SizedBox(height: 8.0),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 10.0),
-                            child: Text(
-                              rating.review != null && rating.review!.isNotEmpty
-                                  ? '"${rating.review}"'
-                                  : '-',
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                          Align(
-                            alignment: Alignment.center,
-                            child: RatingBar.builder(
-                              ignoreGestures: true,
-                              initialRating: rating.rating != null
-                                  ? rating.rating!.roundToDouble()
-                                  : 0,
-                              minRating: 0,
-                              direction: Axis.horizontal,
-                              allowHalfRating: true,
-                              itemCount: 5,
-                              itemSize: 20,
-                              tapOnlyMode: true,
-                              itemPadding:
-                                  EdgeInsets.symmetric(horizontal: 4.0),
-                              itemBuilder: (context, _) => Icon(
-                                Icons.star,
-                                color: Colors.amber,
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Text(rating.reviewername ?? ''),
+                      Spacer(),
+                      Text(timeago.format(DateTime.parse(rating.review_date!))),
+                    ],
+                  ),
+                  SizedBox(height: 8.0),
+                  Row(
+                    children: [
+                      // Container(
+                      //   width: SizeConfig.screenWidth * .3,
+                      //   height: SizeConfig.screenWidth * .3,
+                      //   decoration: BoxDecoration(
+                      //     color: Colors.white,
+                      //     image: DecorationImage(
+                      //       image: rating.user_image_url != null &&
+                      //               rating.user_image_url!.isNotEmpty
+                      //           ? CachedNetworkImageProvider(
+                      //               rating.user_image_url!)
+                      //           : AssetImage(
+                      //                   'assets/images/image_placeholder.jpg')
+                      //               as ImageProvider<Object>,
+                      //       fit: BoxFit.cover,
+                      //     ),
+                      //   ),
+                      // ),
+                      Expanded(
+                        child: Column(
+                          children: [
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 10.0),
+                              child: Text(
+                                rating.review != null &&
+                                        rating.review!.isNotEmpty
+                                    ? '"${rating.review}"'
+                                    : '-',
+                                textAlign: TextAlign.center,
                               ),
-                              onRatingUpdate: (rating) {
-                                //
-                              },
                             ),
-                          ),
-                        ],
+                            Align(
+                              alignment: Alignment.center,
+                              child: RatingBar.builder(
+                                ignoreGestures: true,
+                                initialRating: rating.rating != null
+                                    ? rating.rating!.roundToDouble()
+                                    : 0,
+                                minRating: 0,
+                                direction: Axis.horizontal,
+                                allowHalfRating: true,
+                                itemCount: 5,
+                                itemSize: 20,
+                                tapOnlyMode: true,
+                                itemPadding:
+                                    EdgeInsets.symmetric(horizontal: 4.0),
+                                itemBuilder: (context, _) => Icon(
+                                  Icons.star,
+                                  color: Colors.amber,
+                                ),
+                                onRatingUpdate: (rating) {
+                                  //
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              ],
+                    ],
+                  ),
+                ],
+              ),
             ),
           );
         },

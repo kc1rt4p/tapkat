@@ -80,20 +80,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   .copyWith(color: kBackgroundColor),
                             ),
                           ),
-                          ToggleSwitch(
-                            initialLabelIndex: pushNotif,
-                            minWidth: 50,
-                            minHeight: 20.0,
-                            totalSwitches: 2,
-                            activeBgColor: [kBackgroundColor],
-                            inactiveFgColor: kBackgroundColor,
-                            cornerRadius: 5.0,
-                            labels: [
-                              'Off',
-                              'On',
-                            ],
-                            onToggle: _onPushNotif,
+                          Switch(
+                            value: pushNotif == 1,
+                            onChanged: _onPushNotif,
+                            activeColor: kBackgroundColor,
                           ),
+                          // ToggleSwitch(
+                          //   initialLabelIndex: pushNotif,
+                          //   minWidth: 50,
+                          //   minHeight: 20.0,
+                          //   totalSwitches: 2,
+                          //   activeBgColor: [kBackgroundColor],
+                          //   inactiveFgColor: kBackgroundColor,
+                          //   cornerRadius: 5.0,
+                          //   labels: [
+                          //     'Off',
+                          //     'On',
+                          //   ],
+                          //   changeOnTap: false,
+                          //   onToggle: _onPushNotif,
+                          // ),
                         ],
                       ),
                     ),
@@ -114,37 +120,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  _onPushNotif(int? index) async {
-    if (index != null) {
-      DialogMessage.show(
-        context,
-        title: 'Push Notification',
-        message:
-            'Are you sure you want to turn ${index == 1 ? 'on' : 'off'} notifications?',
-        buttonText: 'Yes',
-        firstButtonClicked: () async {
-          setState(() {
-            pushNotif = index;
-          });
+  _onPushNotif(bool enable) async {
+    DialogMessage.show(
+      context,
+      title: 'Push Notification',
+      message:
+          'Are you sure you want to turn ${enable ? 'on' : 'off'} notifications?',
+      buttonText: 'Yes',
+      firstButtonClicked: () async {
+        setState(() {
+          pushNotif = enable ? 1 : 0;
+        });
 
-          final settings = await FirebaseMessaging.instance.requestPermission();
-          final permissionStatus = await notif.NotificationPermissions
-              .requestNotificationPermissions();
+        final settings = await FirebaseMessaging.instance.requestPermission();
+        final permissionStatus = await notif.NotificationPermissions
+            .requestNotificationPermissions();
 
-          if (settings.authorizationStatus != AuthorizationStatus.authorized ||
-              permissionStatus == notif.PermissionStatus.denied) return;
+        if (settings.authorizationStatus != AuthorizationStatus.authorized ||
+            permissionStatus == notif.PermissionStatus.denied) return;
 
-          _authBloc.add(UpdatePushAlert(pushNotif == 1));
-        },
-        secondButtonText: 'No',
-        secondButtonClicked: () {
-          setState(() {
-            pushNotif = 0;
-          });
-        },
-        hideClose: true,
-      );
-    }
+        _authBloc.add(UpdatePushAlert(pushNotif == 1));
+      },
+      secondButtonText: 'No',
+      secondButtonClicked: () {
+        setState(() {
+          pushNotif = 0;
+        });
+      },
+      hideClose: true,
+    );
   }
 
   _onSignOut() {

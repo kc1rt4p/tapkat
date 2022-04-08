@@ -67,5 +67,11 @@
             android:name="flutterEmbedding"
             android:value="2" />
         <meta-data android:name="com.google.android.geo.API_KEY" android:value="AIzaSyAH4fWM5IbEO0X-Txkm6HNsFAQ3KOfW20I"/>
+
+        <meta-data android:name = "com.google.firebase.messaging.default_notification_icon"
+          android:resource = "@drawable/ic_stat_notif_icon"/>
+          <meta-data
+android:name="com.google.firebase.messaging.default_notification_color"
+android:resource="@color/colorPrimary" />
     </application>
 </manifest>

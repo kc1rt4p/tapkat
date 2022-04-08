@@ -83,6 +83,7 @@ dependencies:
   device_info_plus: ^3.2.2
   firebase_messaging: ^11.2.11
   notification_permissions: ^0.6.1
+  flutter_local_notifications: ^9.4.0
 
 dev_dependencies:
   build_runner: ^2.1.2

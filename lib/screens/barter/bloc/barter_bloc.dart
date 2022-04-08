@@ -176,15 +176,15 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
                   _newBarterRecord.userid2Role == 'sender'
                       ? 'recipient'
                       : 'sender';
-              _newBarterRecord.userid1Name = _barterRecord.userid2Name;
-              _newBarterRecord.userid2Name = _barterRecord.userid1Name;
               _newBarterRecord.dealDate = DateTime.now();
-              _newBarterRecord.u2P1Id = event.product.productId;
-              _newBarterRecord.u2P1Name = event.product.productName;
-              _newBarterRecord.u2P1Price = event.product.price != null
-                  ? double.parse(event.product.price.toString())
-                  : 0;
-              _newBarterRecord.u2P1Image = event.product.imgUrl;
+              if (event.product != null) {
+                _newBarterRecord.u2P1Id = event.product!.productId;
+                _newBarterRecord.u2P1Name = event.product!.productName;
+                _newBarterRecord.u2P1Price = event.product!.price != null
+                    ? double.parse(event.product!.price.toString())
+                    : 0;
+                _newBarterRecord.u2P1Image = event.product!.imgUrl;
+              }
               _newBarterRecord.dealStatus = 'submitted';
 
               final updated =
@@ -201,7 +201,7 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
 
                 _notifRepo.sendNotification(
                   body: 'Offer SUBMITTED (Counter Offer)',
-                  title: application.currentUser!.displayName!,
+                  title: application.currentUserModel!.display_name!,
                   receiver: _newBarterRecord.userid1 == _user!.uid
                       ? _newBarterRecord.userid2!
                       : _newBarterRecord.userid1!,
@@ -212,14 +212,6 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
               } else
                 emit(BarterError('unable to counter offer'));
             }
-          }
-
-          if (event is GetUserReview) {
-            //
-          }
-
-          if (event is GetProductReview) {
-            //
           }
 
           if (event is UpdateBarterStatus) {
@@ -399,11 +391,12 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
             } else {
               _notifRepo.sendNotification(
                 body: event.message.message ?? '',
-                title: application.currentUser!.displayName!,
-                receiver: _barterRecord!.userid1 == _user!.uid
+                title: application.currentUserModel!.display_name!,
+                receiver: _barterRecord!.userid1 ==
+                        application.currentUserModel!.userid
                     ? _barterRecord.userid2!
                     : _barterRecord.userid1!,
-                sender: application.currentUser!.uid,
+                sender: application.currentUserModel!.userid!,
               );
               emit(SendMessageSuccess());
             }

@@ -1,6 +1,7 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:intl/intl.dart';
 import 'package:localstorage/localstorage.dart';
 import 'package:notification_permissions/notification_permissions.dart'
@@ -19,9 +20,23 @@ import 'package:tapkat/utilities/application.dart' as application;
 
 import 'bloc/root_bloc.dart';
 
+FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
+// initialise the plugin. app_icon needs to be a added as a drawable resource to the Android head project
+const AndroidInitializationSettings initializationSettingsAndroid =
+    AndroidInitializationSettings('ic_stat_notif_icon');
+final IOSInitializationSettings initializationSettingsIOS =
+    IOSInitializationSettings(onDidReceiveLocalNotification: (a, b, c, d) {});
+final MacOSInitializationSettings initializationSettingsMacOS =
+    MacOSInitializationSettings();
+final InitializationSettings initializationSettings = InitializationSettings(
+    android: initializationSettingsAndroid,
+    iOS: initializationSettingsIOS,
+    macOS: initializationSettingsMacOS);
+
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print(
-      '*****###***** *****###***** background message: ${message.toString()} *****###***** *****###*****');
+      '*****###***** *****###***** background message: ${message.notification!.body.toString()} *****###***** *****###*****');
 }
 
 class RootScreen extends StatefulWidget {
@@ -56,40 +71,63 @@ class _RootScreenState extends State<RootScreen> {
     super.initState();
   }
 
+  Future<void> _firebaseMessagingForegroundHandler(
+      RemoteMessage message) async {
+    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+        AndroidNotificationDetails(
+      'tapkat-2022',
+      'tapkat_barter',
+      channelDescription: 'your channel description',
+      importance: Importance.max,
+      priority: Priority.high,
+      ticker: 'ticker',
+      icon: 'ic_stat_notif_icon',
+      color: kBackgroundColor,
+    );
+    const NotificationDetails platformChannelSpecifics =
+        NotificationDetails(android: androidPlatformChannelSpecifics);
+
+    if (!application.chatOpened) {
+      await flutterLocalNotificationsPlugin.show(0, message.notification!.title,
+          message.notification!.body, platformChannelSpecifics,
+          payload: '');
+    } else
+      return;
+  }
+
   initNotifications() async {
     final _firebaseMessaging = FirebaseMessaging.instance;
     final _firstLoginDate = await _appConfig.getItem('first_login_date');
-
+    final permissionStatus =
+        await notif.NotificationPermissions.requestNotificationPermissions();
+    final settings = await _firebaseMessaging.requestPermission(
+      alert: true,
+      announcement: false,
+      badge: true,
+      carPlay: false,
+      criticalAlert: false,
+      provisional: false,
+      sound: true,
+    );
     if (_firstLoginDate == null) {
-      final permissionStatus =
-          await notif.NotificationPermissions.requestNotificationPermissions();
       await _appConfig.setItem(
           'first_login_date', DateTime.now().millisecondsSinceEpoch.toString());
 
-      final settings = await _firebaseMessaging.requestPermission(
-        alert: true,
-        announcement: false,
-        badge: true,
-        carPlay: false,
-        criticalAlert: false,
-        provisional: false,
-        sound: true,
-      );
-
-      if (settings.authorizationStatus != AuthorizationStatus.authorized)
-        return;
-
-      if (permissionStatus == PermissionStatus.denied) return;
+      if (application.currentUserModel!.pushalert == null) {
+        _rootBloc.add(UpdateUserToken());
+      }
     }
 
-    if (application.currentUserModel!.pushalert == null) {
-      _rootBloc.add(UpdateUserToken());
-    }
+    if (permissionStatus == PermissionStatus.denied ||
+        settings.authorizationStatus != AuthorizationStatus.authorized) return;
 
-    FirebaseMessaging.onMessage.listen((remoteMessage) {
-      print(
-          '*****###***** *****###***** Foreground Message: ${remoteMessage.toString()} *****###***** *****###*****');
-    });
+    print(
+        '----------= PUSH ALERT: ${application.currentUserModel!.pushalert} =-----------');
+
+    await flutterLocalNotificationsPlugin.initialize(initializationSettings,
+        onSelectNotification: (val) {});
+
+    FirebaseMessaging.onMessage.listen(_firebaseMessagingForegroundHandler);
 
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   }

@@ -238,7 +238,7 @@ class _BarterListItemState extends State<BarterListItem> {
                           : null,
                       child: Icon(
                         liked ? Icons.favorite : Icons.favorite_outline,
-                        color: Colors.red,
+                        color: liked ? Colors.red : Colors.black,
                       ),
                     ),
                   ],

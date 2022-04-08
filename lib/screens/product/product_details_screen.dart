@@ -52,7 +52,6 @@ class ProductDetailsScreen extends StatefulWidget {
 
 class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   final _productBloc = ProductBloc();
-  final _authBloc = AuthBloc();
   int _currentCarouselIndex = 0;
   Map<String, dynamic>? mappedProductDetails;
   ProductModel? _product;
@@ -97,237 +96,244 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
     SizeConfig().init(context);
     return Scaffold(
       body: ProgressHUD(
-          indicatorColor: kBackgroundColor,
-          backgroundColor: Colors.white,
-          barrierEnabled: false,
-          child: MultiBlocListener(
-            listeners: [
-              BlocListener(
-                bloc: _productBloc,
-                listener: (context, state) async {
-                  print('----- current details state: $state');
-                  // if (state is ProductLoading) {
-                  //   ProgressHUD.of(context)!.show();
-                  // } else {
-                  //   ProgressHUD.of(context)!.dismiss();
-                  // }
+        indicatorColor: kBackgroundColor,
+        backgroundColor: Colors.white,
+        barrierEnabled: false,
+        child: MultiBlocListener(
+          listeners: [
+            BlocListener(
+              bloc: _productBloc,
+              listener: (context, state) async {
+                print('----- current details state: $state');
+                // if (state is ProductLoading) {
+                //   ProgressHUD.of(context)!.show();
+                // } else {
+                //   ProgressHUD.of(context)!.dismiss();
+                // }
 
-                  if (state is DeleteProductSuccess) {
-                    await DialogMessage.show(context,
-                        message: 'The product has been deleted.');
+                if (state is DeleteProductSuccess) {
+                  await DialogMessage.show(context,
+                      message: 'The product has been deleted.');
 
-                    Navigator.pop(context, true);
-                  }
+                  Navigator.pop(context, true);
+                }
 
-                  if (state is GetProductDetailsSuccess) {
-                    _refreshController.refreshCompleted();
-                    setState(() {
-                      _product = state.product;
-                    });
-                    print('===== product status: ${_product!.toJson()}');
-                  }
+                if (state is GetProductDetailsSuccess) {
+                  _refreshController.refreshCompleted();
+                  setState(() {
+                    _product = state.product;
+                  });
+                  print('===== product status: ${_product!.toJson()}');
+                }
 
-                  if (state is AddLikeSuccess ||
-                      state is AddRatingSuccess ||
-                      state is UnlikeSuccess) {
-                    _productBloc.add(GetProductDetails(widget.productId));
-                  }
-                },
-              ),
-              // BlocListener(
-              //   bloc: _authBloc,
-              //   listener: (context, state) {
-              //     print('current auth state: $state');
-              //     if (state is GetCurrentUsersuccess) {
-              //       setState(() {
-              //         _user = state.user;
-              //         _userModel = state.userModel;
-              //       });
-              //       _productBloc.add(GetProductDetails(widget.productId));
-              //     }
-              //   },
-              // ),
-            ],
-            child: Container(
-              child: Column(
-                children: [
-                  CustomAppBar(
-                    label: 'Product Details',
-                  ),
-                  Expanded(
-                    child: SmartRefresher(
-                      controller: _refreshController,
-                      onRefresh: () =>
-                          _productBloc.add(GetProductDetails(widget.productId)),
-                      child: Container(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              color: Colors.grey,
-                              child: Stack(
-                                alignment: Alignment.center,
-                                children: [
-                                  _product != null
-                                      ? _buildPhotos()
-                                      : Container(
-                                          height: SizeConfig.screenHeight * .35,
-                                          width: double.infinity,
-                                          decoration: BoxDecoration(
-                                            image: DecorationImage(
-                                              fit: BoxFit.cover,
-                                              image: AssetImage(
-                                                  'assets/images/image_placeholder.jpg'),
+                if (state is AddLikeSuccess ||
+                    state is AddRatingSuccess ||
+                    state is UnlikeSuccess) {
+                  _productBloc.add(GetProductDetails(widget.productId));
+                }
+              },
+            ),
+            // BlocListener(
+            //   bloc: _authBloc,
+            //   listener: (context, state) {
+            //     print('current auth state: $state');
+            //     if (state is GetCurrentUsersuccess) {
+            //       setState(() {
+            //         _user = state.user;
+            //         _userModel = state.userModel;
+            //       });
+            //       _productBloc.add(GetProductDetails(widget.productId));
+            //     }
+            //   },
+            // ),
+          ],
+          child: Container(
+            child: Column(
+              children: [
+                CustomAppBar(
+                  label: 'Product Details',
+                ),
+                Expanded(
+                  child: SmartRefresher(
+                    controller: _refreshController,
+                    onRefresh: () =>
+                        _productBloc.add(GetProductDetails(widget.productId)),
+                    child: Container(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            color: Colors.grey,
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                _product != null
+                                    ? _buildPhotos()
+                                    : Container(
+                                        height: SizeConfig.screenHeight * .35,
+                                        width: double.infinity,
+                                        decoration: BoxDecoration(
+                                          image: DecorationImage(
+                                            fit: BoxFit.cover,
+                                            image: AssetImage(
+                                                'assets/images/image_placeholder.jpg'),
+                                          ),
+                                        ),
+                                      ),
+                                _product != null
+                                    ? Visibility(
+                                        visible: _product!.media != null,
+                                        child: Positioned(
+                                          bottom: 8,
+                                          child: Container(
+                                            width: SizeConfig.screenWidth,
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: _product!.media!
+                                                  .asMap()
+                                                  .keys
+                                                  .map((key) {
+                                                return Container(
+                                                  margin:
+                                                      _product!.media!.length <
+                                                              5
+                                                          ? EdgeInsets.only(
+                                                              right: 8.0)
+                                                          : null,
+                                                  height:
+                                                      _currentCarouselIndex !=
+                                                              key
+                                                          ? 8.0
+                                                          : 9.0,
+                                                  width:
+                                                      _currentCarouselIndex !=
+                                                              key
+                                                          ? 8.0
+                                                          : 9.0,
+                                                  decoration: BoxDecoration(
+                                                    color:
+                                                        _currentCarouselIndex ==
+                                                                key
+                                                            ? Colors.white
+                                                            : Colors
+                                                                .grey.shade400,
+                                                    shape: BoxShape.circle,
+                                                  ),
+                                                );
+                                              }).toList(),
                                             ),
                                           ),
                                         ),
-                                  _product != null
-                                      ? Visibility(
-                                          visible: _product!.media != null,
-                                          child: Positioned(
-                                            bottom: 8,
-                                            child: Container(
-                                              width: SizeConfig.screenWidth,
-                                              child: Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: _product!.media!
-                                                    .asMap()
-                                                    .keys
-                                                    .map((key) {
-                                                  return Container(
-                                                    margin: _product!
-                                                                .media!.length <
-                                                            5
-                                                        ? EdgeInsets.only(
-                                                            right: 8.0)
-                                                        : null,
-                                                    height:
-                                                        _currentCarouselIndex !=
-                                                                key
-                                                            ? 8.0
-                                                            : 9.0,
-                                                    width:
-                                                        _currentCarouselIndex !=
-                                                                key
-                                                            ? 8.0
-                                                            : 9.0,
-                                                    decoration: BoxDecoration(
-                                                      color:
-                                                          _currentCarouselIndex ==
-                                                                  key
-                                                              ? Colors.white
-                                                              : Colors.grey
-                                                                  .shade400,
-                                                      shape: BoxShape.circle,
-                                                    ),
-                                                  );
-                                                }).toList(),
-                                              ),
-                                            ),
-                                          ),
-                                        )
-                                      : Container(),
-                                ],
-                              ),
+                                      )
+                                    : Container(),
+                              ],
                             ),
-                            Expanded(
-                              child: Container(
-                                padding: EdgeInsets.symmetric(
-                                  vertical: 16.0,
-                                  horizontal: 20.0,
-                                ),
-                                child: SingleChildScrollView(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Container(
-                                        margin: EdgeInsets.only(bottom: 16.0),
-                                        child: Row(
-                                          children: [
-                                            Expanded(
-                                              child: Text(
-                                                _product != null &&
-                                                        _product!.productname!
-                                                            .isNotEmpty
-                                                    ? _product!.productname!
-                                                    : '',
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                                style: Style.subtitle1.copyWith(
-                                                    color: Colors.black,
-                                                    fontSize: SizeConfig
-                                                            .textScaleFactor *
-                                                        18),
-                                              ),
-                                            ),
-                                            Visibility(
-                                              visible: _product != null &&
-                                                  _product!.status != null &&
-                                                  _product!.status!
-                                                          .toLowerCase() !=
-                                                      'available',
-                                              child: Text(
-                                                '(${_product != null && _product!.status != null && _product!.status!.toLowerCase() != 'available' ? _product!.status!.toUpperCase() : 'AVAILABLE'})',
-                                                style: Style.fieldText.copyWith(
-                                                  fontWeight: FontWeight.bold,
+                          ),
+                          Expanded(
+                            child: Container(
+                              padding: EdgeInsets.symmetric(
+                                vertical: 16.0,
+                                horizontal: 20.0,
+                              ),
+                              child: SingleChildScrollView(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Container(
+                                      margin: EdgeInsets.only(bottom: 16.0),
+                                      child: Row(
+                                        children: [
+                                          Expanded(
+                                            child: Text(
+                                              _product != null &&
+                                                      _product!.productname!
+                                                          .isNotEmpty
+                                                  ? _product!.productname!
+                                                  : '',
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: Style.subtitle1.copyWith(
+                                                  color: Colors.black,
                                                   fontSize: SizeConfig
                                                           .textScaleFactor *
-                                                      15,
-                                                  color: Colors.red.shade400,
-                                                ),
+                                                      18),
+                                            ),
+                                          ),
+                                          Visibility(
+                                            visible: _product != null &&
+                                                _product!.status != null &&
+                                                _product!.status!
+                                                        .toLowerCase() !=
+                                                    'available',
+                                            child: Text(
+                                              '(${_product != null && _product!.status != null && _product!.status!.toLowerCase() != 'available' ? _product!.status!.toUpperCase() : 'AVAILABLE'})',
+                                              style: Style.fieldText.copyWith(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize:
+                                                    SizeConfig.textScaleFactor *
+                                                        15,
+                                                color: Colors.red.shade400,
                                               ),
                                             ),
-                                          ],
-                                        ),
-                                      ), // Item Description
-                                      Container(
-                                        child: Row(
-                                          children: [
-                                            Expanded(
-                                              flex: 1,
-                                              child: Text(
-                                                _product != null &&
-                                                        _product!.price !=
-                                                            null &&
-                                                        _product!.currency !=
-                                                            null
-                                                    ? '${_product!.currency!} ${_product!.price!.toStringAsFixed(2)}'
-                                                    : '',
-                                                style: TextStyle(
-                                                  color: kBackgroundColor,
-                                                  fontFamily: 'Poppins',
-                                                  fontSize: SizeConfig
-                                                          .textScaleFactor *
-                                                      18,
-                                                  fontWeight: FontWeight.w500,
-                                                ),
+                                          ),
+                                        ],
+                                      ),
+                                    ), // Item Description
+                                    Container(
+                                      child: Row(
+                                        children: [
+                                          Expanded(
+                                            flex: 1,
+                                            child: Text(
+                                              _product != null &&
+                                                      _product!.price != null &&
+                                                      _product!.currency != null
+                                                  ? '${_product!.currency!} ${_product!.price!.toStringAsFixed(2)}'
+                                                  : '',
+                                              style: TextStyle(
+                                                color: kBackgroundColor,
+                                                fontFamily: 'Poppins',
+                                                fontSize:
+                                                    SizeConfig.textScaleFactor *
+                                                        18,
+                                                fontWeight: FontWeight.w500,
                                               ),
                                             ),
-                                            SizedBox(width: 16.0),
-                                            InkWell(
-                                              onTap: () => Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                    builder: (context) =>
-                                                        ProductRatingsScreen(
-                                                            product:
-                                                                _product!)),
-                                              ),
+                                          ),
+                                          SizedBox(width: 16.0),
+                                          Visibility(
+                                            visible: !widget.ownItem,
+                                            child: InkWell(
+                                              onTap: () {
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: ((context) =>
+                                                        StoreScreen(
+                                                          userId:
+                                                              _product!.userid!,
+                                                          userName:
+                                                              _product!.userid!,
+                                                        )),
+                                                  ),
+                                                );
+                                              },
                                               child: Container(
+                                                margin:
+                                                    EdgeInsets.only(left: 8.0),
                                                 padding: EdgeInsets.symmetric(
                                                     horizontal: 20.0,
                                                     vertical: 10.0),
                                                 decoration: BoxDecoration(
-                                                  color: kBackgroundColor,
+                                                  color: Color(0xFFBB3F03),
                                                   borderRadius:
                                                       BorderRadius.circular(
                                                           9.0),
                                                 ),
                                                 child: Center(
                                                   child: Text(
-                                                    'View Ratings',
+                                                    'View Store',
                                                     overflow:
                                                         TextOverflow.ellipsis,
                                                     style: TextStyle(
@@ -340,149 +346,104 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                 ),
                                               ),
                                             ),
-                                            Visibility(
-                                              visible: !widget.ownItem,
-                                              child: InkWell(
-                                                onTap: () {
-                                                  Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                      builder: ((context) =>
-                                                          StoreScreen(
-                                                            userId: _product!
-                                                                .userid!,
-                                                            userName: _product!
-                                                                .userid!,
-                                                          )),
-                                                    ),
-                                                  );
-                                                },
-                                                child: Container(
-                                                  margin: EdgeInsets.only(
-                                                      left: 8.0),
-                                                  padding: EdgeInsets.symmetric(
-                                                      horizontal: 20.0,
-                                                      vertical: 10.0),
-                                                  decoration: BoxDecoration(
-                                                    color: Color(0xFFBB3F03),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            9.0),
-                                                  ),
-                                                  child: Center(
-                                                    child: Text(
-                                                      'View Store',
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                      style: TextStyle(
-                                                        color: Colors.white,
-                                                        fontSize: 12.0,
-                                                        fontWeight:
-                                                            FontWeight.w600,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: EdgeInsets.symmetric(
+                                        vertical: 10.0,
+                                      ),
+                                      child: Divider(
+                                        thickness: 0.3,
+                                        color: kBackgroundColor,
+                                      ),
+                                    ),
+                                    InkWell(
+                                      onTap: _onMapViewTapped,
+                                      child: Container(
+                                        margin: EdgeInsets.only(bottom: 6.0),
+                                        child: Row(
+                                          children: [
+                                            Icon(
+                                              Icons.location_pin,
+                                              size: 16.0,
+                                            ),
+                                            Text(
+                                              _product != null &&
+                                                      _product!
+                                                          .address!
+                                                          .address!
+                                                          .isNotEmpty &&
+                                                      _product!.address!.city !=
+                                                          null &&
+                                                      _product!.address!
+                                                              .country !=
+                                                          null
+                                                  ? '${_product!.address!.city}, ${_product!.address!.country}'
+                                                  : '',
+                                              overflow: TextOverflow.ellipsis,
+                                              style: TextStyle(
+                                                fontSize: 14.0,
+                                                fontWeight: FontWeight.w600,
                                               ),
                                             ),
+                                            Spacer(),
+                                            _product != null &&
+                                                    _product!.address != null &&
+                                                    _product!.address!
+                                                            .location !=
+                                                        null &&
+                                                    _currentUserPosition != null
+                                                ? Text(
+                                                    '${calculateDistance(
+                                                      _product!.address!
+                                                          .location!.latitude,
+                                                      _product!.address!
+                                                          .location!.longitude,
+                                                      _currentUserPosition !=
+                                                              null
+                                                          ? _currentUserPosition!
+                                                              .latitude
+                                                          : _userModel!
+                                                              .location!
+                                                              .latitude,
+                                                      _currentUserPosition !=
+                                                              null
+                                                          ? _currentUserPosition!
+                                                              .longitude
+                                                          : _userModel!
+                                                              .location!
+                                                              .longitude,
+                                                    ).toStringAsFixed(2)}km away',
+                                                  )
+                                                : Container(),
                                           ],
                                         ),
                                       ),
-                                      Padding(
-                                        padding: EdgeInsets.symmetric(
-                                          vertical: 10.0,
-                                        ),
-                                        child: Divider(
-                                          thickness: 0.3,
-                                          color: kBackgroundColor,
-                                        ),
-                                      ),
-                                      InkWell(
-                                        onTap: _onMapViewTapped,
-                                        child: Container(
-                                          margin: EdgeInsets.only(bottom: 6.0),
-                                          child: Row(
-                                            children: [
-                                              Icon(
-                                                Icons.location_pin,
-                                                size: 16.0,
-                                              ),
-                                              Text(
-                                                _product != null &&
-                                                        _product!
-                                                            .address!
-                                                            .address!
-                                                            .isNotEmpty &&
-                                                        _product!.address!
-                                                                .city !=
-                                                            null &&
-                                                        _product!.address!
-                                                                .country !=
-                                                            null
-                                                    ? '${_product!.address!.city}, ${_product!.address!.country}'
-                                                    : '',
-                                                overflow: TextOverflow.ellipsis,
-                                                style: TextStyle(
-                                                  fontSize: 14.0,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                              ),
-                                              Spacer(),
-                                              _product != null &&
-                                                      _product!.address !=
-                                                          null &&
-                                                      _product!.address!
-                                                              .location !=
-                                                          null &&
-                                                      _currentUserPosition !=
-                                                          null
-                                                  ? Text(
-                                                      '${calculateDistance(
-                                                        _product!.address!
-                                                            .location!.latitude,
-                                                        _product!
-                                                            .address!
-                                                            .location!
-                                                            .longitude,
-                                                        _currentUserPosition !=
-                                                                null
-                                                            ? _currentUserPosition!
-                                                                .latitude
-                                                            : _userModel!
-                                                                .location!
-                                                                .latitude,
-                                                        _currentUserPosition !=
-                                                                null
-                                                            ? _currentUserPosition!
-                                                                .longitude
-                                                            : _userModel!
-                                                                .location!
-                                                                .longitude,
-                                                      ).toStringAsFixed(2)}km away',
-                                                    )
-                                                  : Container(),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      Container(
-                                        child: Row(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.end,
-                                          children: [
-                                            Expanded(
-                                              child: _product != null
-                                                  ? Row(
-                                                      children: [
-                                                        Expanded(
-                                                          child:
-                                                              RatingBar.builder(
-                                                            ignoreGestures: _product!
-                                                                        .acquired_by ==
-                                                                    null &&
-                                                                _product!
-                                                                        .acquired_by !=
-                                                                    _user!.uid,
+                                    ),
+                                    Container(
+                                      child: Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.end,
+                                        children: [
+                                          Expanded(
+                                            child: _product != null
+                                                ? InkWell(
+                                                    onTap: () => Navigator.push(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                          builder: (context) =>
+                                                              ProductRatingsScreen(
+                                                                  product:
+                                                                      _product!)),
+                                                    ),
+                                                    child: Container(
+                                                      child: Row(
+                                                        children: [
+                                                          RatingBar.builder(
+                                                            ignoreGestures:
+                                                                true,
                                                             initialRating: _product!
                                                                         .rating !=
                                                                     null
@@ -496,7 +457,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                             allowHalfRating:
                                                                 true,
                                                             itemCount: 5,
-                                                            itemSize: 20,
+                                                            itemSize: SizeConfig
+                                                                    .textScaleFactor *
+                                                                13,
                                                             tapOnlyMode: true,
                                                             itemPadding: EdgeInsets
                                                                 .symmetric(
@@ -510,226 +473,228 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                                   Colors.amber,
                                                             ),
                                                             onRatingUpdate:
-                                                                (rating) {
-                                                              if (_product!
-                                                                          .userid !=
-                                                                      _user!
-                                                                          .uid &&
-                                                                  _product!
-                                                                          .acquired_by ==
-                                                                      _user!
-                                                                          .uid) {
-                                                                print('hey');
-                                                                _productBloc.add(
-                                                                    AddRating(
-                                                                        _product!,
-                                                                        rating));
-                                                              }
-                                                            },
+                                                                (rating) {},
+                                                            // onRatingUpdate:
+                                                            //     (rating) {
+                                                            //   if (_product!
+                                                            //               .userid !=
+                                                            //           _user!
+                                                            //               .uid &&
+                                                            //       _product!
+                                                            //               .acquired_by ==
+                                                            //           _user!
+                                                            //               .uid) {
+                                                            //     _productBloc.add(
+                                                            //         AddRating(
+                                                            //             _product!,
+                                                            //             rating));
+                                                            //   }
+                                                            // },
                                                           ),
-                                                        ),
-                                                        Text(
-                                                          _product != null &&
-                                                                  _product!
-                                                                          .rating !=
-                                                                      null
-                                                              ? _product!
-                                                                  .rating!
-                                                                  .toStringAsFixed(
-                                                                      1)
-                                                              : '0',
-                                                          style: TextStyle(
-                                                              fontSize: 16.0),
-                                                        ),
-                                                      ],
-                                                    )
-                                                  : Container(),
-                                            ),
-                                            Expanded(
-                                              child: Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.end,
-                                                children: [
-                                                  Row(
-                                                    children: [
-                                                      _user != null &&
-                                                              _product != null
-                                                          ? Visibility(
-                                                              visible: !widget
-                                                                  .ownItem,
-                                                              child: StreamBuilder<
-                                                                  List<
-                                                                      UserLikesRecord?>>(
-                                                                stream:
-                                                                    queryUserLikesRecord(
-                                                                  queryBuilder: (userLikesRecord) => userLikesRecord
-                                                                      .where(
-                                                                          'userid',
-                                                                          isEqualTo: _user!
-                                                                              .uid)
-                                                                      .where(
-                                                                          'productid',
-                                                                          isEqualTo:
-                                                                              _product!.productid),
-                                                                  singleRecord:
-                                                                      true,
-                                                                ),
-                                                                builder: (context,
-                                                                    snapshot) {
-                                                                  print(
-                                                                      '=== snapshot= ${snapshot.data}');
-                                                                  bool liked =
-                                                                      false;
-                                                                  if (snapshot
-                                                                      .hasData) {
-                                                                    if (snapshot.data != null) if (snapshot
-                                                                        .data!
-                                                                        .isNotEmpty)
-                                                                      liked =
-                                                                          true;
-                                                                    else
-                                                                      liked =
-                                                                          false;
-                                                                  }
-
-                                                                  return GestureDetector(
-                                                                    onTap: () {
-                                                                      // _productBloc.add(
-                                                                      //     AddLike(
-                                                                      //         _product!));
-                                                                      if (liked) {
-                                                                        _productBloc
-                                                                            .add(
-                                                                          Unlike(
-                                                                              _product!),
-                                                                        );
-                                                                      } else {
-                                                                        _productBloc
-                                                                            .add(AddLike(_product!));
-                                                                      }
-                                                                    },
-                                                                    child: Icon(
-                                                                      liked
-                                                                          ? FontAwesomeIcons
-                                                                              .solidHeart
-                                                                          : FontAwesomeIcons
-                                                                              .heart,
-                                                                      color: Color(
-                                                                          0xFF94D2BD),
-                                                                    ),
-                                                                  );
-                                                                },
+                                                          SizedBox(width: 8.0),
+                                                          Text(
+                                                            _product != null &&
+                                                                    _product!
+                                                                            .rating !=
+                                                                        null
+                                                                ? _product!
+                                                                    .rating!
+                                                                    .toStringAsFixed(
+                                                                        1)
+                                                                : '0',
+                                                            style: TextStyle(
+                                                                fontSize: 16.0),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  )
+                                                : Container(),
+                                          ),
+                                          Expanded(
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.end,
+                                              children: [
+                                                Row(
+                                                  children: [
+                                                    _user != null &&
+                                                            _product != null
+                                                        ? Visibility(
+                                                            visible: _product!
+                                                                    .userid !=
+                                                                application
+                                                                    .currentUserModel!
+                                                                    .userid,
+                                                            child: StreamBuilder<
+                                                                List<
+                                                                    UserLikesRecord?>>(
+                                                              stream:
+                                                                  queryUserLikesRecord(
+                                                                queryBuilder: (userLikesRecord) => userLikesRecord
+                                                                    .where(
+                                                                        'userid',
+                                                                        isEqualTo:
+                                                                            _user!
+                                                                                .uid)
+                                                                    .where(
+                                                                        'productid',
+                                                                        isEqualTo:
+                                                                            _product!.productid),
+                                                                singleRecord:
+                                                                    true,
                                                               ),
-                                                            )
-                                                          : Container(),
-                                                      SizedBox(width: 5.0),
-                                                      Visibility(
-                                                        visible:
-                                                            !widget.ownItem,
-                                                        child: Text(_product !=
-                                                                    null &&
-                                                                _product!
-                                                                        .likes !=
-                                                                    null
-                                                            ? _product!.likes!
-                                                                .toString()
-                                                            : '0'),
-                                                      ),
-                                                      SizedBox(width: 20.0),
-                                                      Icon(
-                                                        FontAwesomeIcons.share,
-                                                        color:
-                                                            Color(0xFF94D2BD),
-                                                      ),
-                                                      SizedBox(width: 20.0),
-                                                      Icon(
-                                                        FontAwesomeIcons
-                                                            .solidCommentDots,
-                                                        color:
-                                                            Color(0xFF94D2BD),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ],
-                                              ),
+                                                              builder: (context,
+                                                                  snapshot) {
+                                                                print(
+                                                                    '=== snapshot= ${snapshot.data}');
+                                                                bool liked =
+                                                                    false;
+                                                                if (snapshot
+                                                                    .hasData) {
+                                                                  if (snapshot.data != null) if (snapshot
+                                                                      .data!
+                                                                      .isNotEmpty)
+                                                                    liked =
+                                                                        true;
+                                                                  else
+                                                                    liked =
+                                                                        false;
+                                                                }
+
+                                                                return GestureDetector(
+                                                                  onTap: () {
+                                                                    // _productBloc.add(
+                                                                    //     AddLike(
+                                                                    //         _product!));
+                                                                    if (liked) {
+                                                                      _productBloc
+                                                                          .add(
+                                                                        Unlike(
+                                                                            _product!),
+                                                                      );
+                                                                    } else {
+                                                                      _productBloc.add(
+                                                                          AddLike(
+                                                                              _product!));
+                                                                    }
+                                                                  },
+                                                                  child: Icon(
+                                                                    liked
+                                                                        ? FontAwesomeIcons
+                                                                            .solidHeart
+                                                                        : FontAwesomeIcons
+                                                                            .heart,
+                                                                    color: Color(
+                                                                        0xFF94D2BD),
+                                                                  ),
+                                                                );
+                                                              },
+                                                            ),
+                                                          )
+                                                        : Container(),
+                                                    SizedBox(width: 5.0),
+                                                    Visibility(
+                                                      visible: !widget.ownItem,
+                                                      child: Text(_product !=
+                                                                  null &&
+                                                              _product!.likes !=
+                                                                  null
+                                                          ? _product!.likes!
+                                                              .toString()
+                                                          : '0'),
+                                                    ),
+                                                    SizedBox(width: 20.0),
+                                                    Icon(
+                                                      FontAwesomeIcons.share,
+                                                      color: Color(0xFF94D2BD),
+                                                    ),
+                                                    SizedBox(width: 20.0),
+                                                    Icon(
+                                                      FontAwesomeIcons
+                                                          .solidCommentDots,
+                                                      color: Color(0xFF94D2BD),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
                                             ),
-                                          ],
-                                        ),
+                                          ),
+                                        ],
                                       ),
-                                      Padding(
+                                    ),
+                                    Padding(
+                                      padding: EdgeInsets.symmetric(
+                                        vertical: 10.0,
+                                      ),
+                                      child: Divider(
+                                        thickness: 0.6,
+                                        color: kBackgroundColor,
+                                      ),
+                                    ),
+                                    Container(
+                                      padding: EdgeInsets.only(bottom: 16.0),
+                                      width: double.infinity,
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Container(
+                                            margin:
+                                                EdgeInsets.only(bottom: 16.0),
+                                            child: Text(
+                                              'Product Description',
+                                              style: Style.subtitle2,
+                                            ),
+                                          ),
+                                          Container(
+                                            child: Text(_product != null &&
+                                                    _product!.productdesc !=
+                                                        null
+                                                ? _product!.productdesc!
+                                                : '0'),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    _product != null
+                                        ? Text(
+                                            'Last updated ${timeago.format(_product!.updated_time ?? DateTime.now())}.')
+                                        : Container(),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          _product != null
+                              ? _product!.userid != application.currentUser!.uid
+                                  ? Visibility(
+                                      visible:
+                                          (_product!.status!.toLowerCase() !=
+                                                  'sold' &&
+                                              _product!.status!.toLowerCase() !=
+                                                  'reserved'),
+                                      child: Container(
                                         padding: EdgeInsets.symmetric(
-                                          vertical: 10.0,
-                                        ),
-                                        child: Divider(
-                                          thickness: 0.6,
-                                          color: kBackgroundColor,
-                                        ),
-                                      ),
-                                      Container(
-                                        padding: EdgeInsets.only(bottom: 16.0),
-                                        width: double.infinity,
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Container(
-                                              margin:
-                                                  EdgeInsets.only(bottom: 16.0),
-                                              child: Text(
-                                                'Product Description',
-                                                style: Style.subtitle2,
+                                            horizontal: 20.0, vertical: 5),
+                                        child: CustomButton(
+                                          label: 'BARTER',
+                                          onTap: () {
+                                            print(
+                                                '=====-==== ${_product!.toJson()}');
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    BarterScreen(
+                                                        product: _product!),
                                               ),
-                                            ),
-                                            Container(
-                                              child: Text(_product != null &&
-                                                      _product!.productdesc !=
-                                                          null
-                                                  ? _product!.productdesc!
-                                                  : '0'),
-                                            ),
-                                          ],
+                                            );
+                                          },
                                         ),
                                       ),
-                                      _product != null
-                                          ? Text(
-                                              'Last updated ${timeago.format(_product!.updated_time ?? DateTime.now())}.')
-                                          : Container(),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                            SizedBox(height: 8.0),
-                            Visibility(
-                              visible: !widget.ownItem &&
-                                  _product != null &&
-                                  _product!.userid != _user!.uid &&
-                                  (_product!.status!.toLowerCase() != 'sold' &&
-                                      _product!.status!.toLowerCase() !=
-                                          'reserved'),
-                              child: Container(
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 20.0, vertical: 8.0),
-                                child: CustomButton(
-                                  label: 'BARTER',
-                                  onTap: () {
-                                    print('=====-==== ${_product!.toJson()}');
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            BarterScreen(product: _product!),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                            ),
-                            _product != null && _user != null
-                                ? Visibility(
-                                    visible: widget.ownItem &&
-                                        _user!.uid == _product!.userid,
-                                    child: Container(
+                                    )
+                                  : Container(
                                       padding: EdgeInsets.symmetric(
                                           horizontal: 20.0, vertical: 8.0),
                                       child: Row(
@@ -765,18 +730,18 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                           ),
                                         ],
                                       ),
-                                    ),
-                                  )
-                                : Container(),
-                          ],
-                        ),
+                                    )
+                              : Container(),
+                        ],
                       ),
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          )),
+          ),
+        ),
+      ),
     );
   }
 
