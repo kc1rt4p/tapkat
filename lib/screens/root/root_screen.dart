@@ -60,7 +60,7 @@ class _RootScreenState extends State<RootScreen> {
   final _productBloc = ProductBloc();
   final _authBloc = AuthBloc();
 
-  final _currentVerDate = DateTime(2022, 4, 7, 11);
+  final _currentVerDate = DateTime(2022, 4, 8, 9);
 
   final _appConfig = new LocalStorage('app_config.json');
 
