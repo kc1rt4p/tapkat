@@ -520,53 +520,48 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                   children: [
                                                     _user != null &&
                                                             _product != null
-                                                        ? Visibility(
-                                                            visible: _product!
-                                                                    .userid !=
-                                                                application
-                                                                    .currentUserModel!
-                                                                    .userid,
-                                                            child: StreamBuilder<
-                                                                List<
-                                                                    UserLikesRecord?>>(
-                                                              stream:
-                                                                  queryUserLikesRecord(
-                                                                queryBuilder: (userLikesRecord) => userLikesRecord
-                                                                    .where(
-                                                                        'userid',
-                                                                        isEqualTo:
-                                                                            _user!
-                                                                                .uid)
-                                                                    .where(
-                                                                        'productid',
-                                                                        isEqualTo:
-                                                                            _product!.productid),
-                                                                singleRecord:
-                                                                    true,
-                                                              ),
-                                                              builder: (context,
-                                                                  snapshot) {
-                                                                print(
-                                                                    '=== snapshot= ${snapshot.data}');
-                                                                bool liked =
-                                                                    false;
-                                                                if (snapshot
-                                                                    .hasData) {
-                                                                  if (snapshot.data != null) if (snapshot
-                                                                      .data!
-                                                                      .isNotEmpty)
-                                                                    liked =
-                                                                        true;
-                                                                  else
-                                                                    liked =
-                                                                        false;
-                                                                }
+                                                        ? StreamBuilder<
+                                                            List<
+                                                                UserLikesRecord?>>(
+                                                            stream:
+                                                                queryUserLikesRecord(
+                                                              queryBuilder: (userLikesRecord) => userLikesRecord
+                                                                  .where(
+                                                                      'userid',
+                                                                      isEqualTo:
+                                                                          _user!
+                                                                              .uid)
+                                                                  .where(
+                                                                      'productid',
+                                                                      isEqualTo:
+                                                                          _product!
+                                                                              .productid),
+                                                              singleRecord:
+                                                                  true,
+                                                            ),
+                                                            builder: (context,
+                                                                snapshot) {
+                                                              print(
+                                                                  '=== snapshot= ${snapshot.data}');
+                                                              bool liked =
+                                                                  false;
+                                                              if (snapshot
+                                                                  .hasData) {
+                                                                if (snapshot.data != null) if (snapshot
+                                                                    .data!
+                                                                    .isNotEmpty)
+                                                                  liked = true;
+                                                                else
+                                                                  liked = false;
+                                                              }
 
-                                                                return GestureDetector(
-                                                                  onTap: () {
-                                                                    // _productBloc.add(
-                                                                    //     AddLike(
-                                                                    //         _product!));
+                                                              return GestureDetector(
+                                                                onTap: () {
+                                                                  if (_product!
+                                                                          .userid !=
+                                                                      application
+                                                                          .currentUser!
+                                                                          .uid) {
                                                                     if (liked) {
                                                                       _productBloc
                                                                           .add(
@@ -578,32 +573,28 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                                           AddLike(
                                                                               _product!));
                                                                     }
-                                                                  },
-                                                                  child: Icon(
-                                                                    liked
-                                                                        ? FontAwesomeIcons
-                                                                            .solidHeart
-                                                                        : FontAwesomeIcons
-                                                                            .heart,
-                                                                    color: Color(
-                                                                        0xFF94D2BD),
-                                                                  ),
-                                                                );
-                                                              },
-                                                            ),
+                                                                  }
+                                                                },
+                                                                child: Icon(
+                                                                  liked
+                                                                      ? FontAwesomeIcons
+                                                                          .solidHeart
+                                                                      : FontAwesomeIcons
+                                                                          .heart,
+                                                                  color: Color(
+                                                                      0xFF94D2BD),
+                                                                ),
+                                                              );
+                                                            },
                                                           )
                                                         : Container(),
                                                     SizedBox(width: 5.0),
-                                                    Visibility(
-                                                      visible: !widget.ownItem,
-                                                      child: Text(_product !=
-                                                                  null &&
-                                                              _product!.likes !=
-                                                                  null
-                                                          ? _product!.likes!
-                                                              .toString()
-                                                          : '0'),
-                                                    ),
+                                                    Text(_product != null &&
+                                                            _product!.likes !=
+                                                                null
+                                                        ? _product!.likes!
+                                                            .toString()
+                                                        : '0'),
                                                     SizedBox(width: 20.0),
                                                     Icon(
                                                       FontAwesomeIcons.share,
