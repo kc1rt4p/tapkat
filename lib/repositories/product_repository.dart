@@ -253,7 +253,7 @@ class ProductRepository {
       if (location != null) {
         body.addAll({
           'startafterval': startAfterVal,
-          ...location.toJson(),
+          'location': location.toJson(),
         });
       }
     } else {
@@ -303,6 +303,7 @@ class ProductRepository {
       'category': category,
       'sortdirection': 'ascending',
       'productcount': productCount,
+      'location': application.currentUserLocation!.toJson(),
     };
 
     final response = await _apiService.post(
