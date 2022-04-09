@@ -438,7 +438,7 @@ class ProductRepository {
       'sortdirection': 'ascending',
       'productcount': productCount,
       'userid': application.currentUser!.uid,
-      ...location.toJson(),
+      'location': location.toJson(),
     };
     if (keyword.length > 0) _body.addAll({'keywords': keyword});
     if (category != null) _body.addAll({'category': category});
