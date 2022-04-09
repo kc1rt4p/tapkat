@@ -120,6 +120,11 @@ class _StoreScreenState extends State<StoreScreen> {
                                         text: storeOwnerName),
                                   ),
                                   _buildInfoItem(
+                                    label: 'Followers',
+                                    controller: TextEditingController(
+                                        text: _storeOwner!.likes.toString()),
+                                  ),
+                                  _buildInfoItem(
                                     label: 'Location',
                                     controller: TextEditingController(
                                         text: (_storeOwner!.address != null &&
@@ -147,6 +152,7 @@ class _StoreScreenState extends State<StoreScreen> {
                                       if (snapshot.data != null) {
                                         if (snapshot.data!.docs.isNotEmpty) {
                                           liked = true;
+
                                           _isFollowing = true;
                                         }
                                       } else {
@@ -369,6 +375,7 @@ class _StoreScreenState extends State<StoreScreen> {
                         }
 
                         if (state is EditUserLikeSuccess) {
+                          _storeBloc.add(InitializeStoreScreen(widget.userId));
                           DialogMessage.show(
                             context,
                             message:
@@ -689,9 +696,34 @@ class _StoreScreenState extends State<StoreScreen> {
               fit: BoxFit.cover,
             ),
           ),
-          height: SizeConfig.screenWidth * .24,
-          width: SizeConfig.screenWidth * .24,
+          height: SizeConfig.screenWidth * .25,
+          width: SizeConfig.screenWidth * .25,
         ),
+        // Container(
+        //   height: SizeConfig.textScaleFactor * 15,
+        //   width: SizeConfig.textScaleFactor * 15,
+        //   decoration: BoxDecoration(
+        //     color: Colors.white,
+        //     shape: BoxShape.circle,
+        //   ),
+        //   child: Center(
+        //     child: Stack(
+        //       alignment: Alignment.center,
+        //       children: [
+        //         Icon(
+        //           Icons.local_library,
+        //           color: Colors.red,
+        //         ),
+        //         Text(
+        //           _storeOwner!.likes.toString(),
+        //           style: TextStyle(
+        //             fontSize: SizeConfig.textScaleFactor * 11,
+        //           ),
+        //         ),
+        //       ],
+        //     ),
+        //   ),
+        // ),
       ],
     );
   }

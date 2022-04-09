@@ -14,6 +14,7 @@ class UserModel {
   String? regtoken;
   List<String>? interests;
   LocationModel? location;
+  int? likes;
 
   UserModel({
     this.userid,
@@ -29,6 +30,7 @@ class UserModel {
     this.regtoken,
     this.interests,
     this.location,
+    this.likes,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -52,6 +54,7 @@ class UserModel {
       location: json['location'] != null
           ? LocationModel.fromJson(json['location'])
           : null,
+      likes: json['likes'] as int?,
     );
   }
 
@@ -70,6 +73,7 @@ class UserModel {
       'regtoken': this.regtoken,
       'interests': this.interests,
       'location': this.location,
+      'likes': this.likes,
     };
   }
 }

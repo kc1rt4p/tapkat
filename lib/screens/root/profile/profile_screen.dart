@@ -288,7 +288,53 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       horizontal: 16.0),
                                   child: Row(
                                     children: [
-                                      _buildPhoto(),
+                                      Column(
+                                        children: [
+                                          _buildPhoto(),
+                                          _userModel != null
+                                              ? Container(
+                                                  margin: EdgeInsets.only(
+                                                      bottom: 3.0),
+                                                  padding: EdgeInsets.symmetric(
+                                                      horizontal: 10.0),
+                                                  child: Row(
+                                                    children: [
+                                                      Text(
+                                                        'Followers',
+                                                        style: Style.fieldTitle.copyWith(
+                                                            color:
+                                                                kBackgroundColor,
+                                                            fontSize: SizeConfig
+                                                                    .textScaleFactor *
+                                                                11),
+                                                      ),
+                                                      SizedBox(width: 8.0),
+                                                      Align(
+                                                        alignment: Alignment
+                                                            .centerRight,
+                                                        child: Text(
+                                                          _userModel!.likes !=
+                                                                  null
+                                                              ? _userModel!
+                                                                  .likes
+                                                                  .toString()
+                                                              : '0',
+                                                          textAlign:
+                                                              TextAlign.right,
+                                                          style: Style.fieldText
+                                                              .copyWith(
+                                                                  fontSize:
+                                                                      SizeConfig
+                                                                              .textScaleFactor *
+                                                                          12),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                )
+                                              : Container(),
+                                        ],
+                                      ),
                                       Expanded(
                                         child: Container(
                                           margin: EdgeInsets.symmetric(
