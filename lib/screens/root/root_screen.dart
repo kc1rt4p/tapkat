@@ -8,6 +8,7 @@ import 'package:notification_permissions/notification_permissions.dart'
     as notif;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
+import 'package:tapkat/models/location.dart';
 import 'package:tapkat/screens/product/bloc/product_bloc.dart';
 import 'package:tapkat/screens/product/product_add_screen.dart';
 import 'package:tapkat/screens/root/barter/barter_transactions_screen.dart';
@@ -17,6 +18,8 @@ import 'package:tapkat/screens/root/wish_list/wish_list_screen.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/utilities/application.dart' as application;
+import 'package:geocoding/geocoding.dart' as geoCoding;
+import 'package:geolocator/geolocator.dart' as geoLocator;
 
 import 'bloc/root_bloc.dart';
 
@@ -60,13 +63,14 @@ class _RootScreenState extends State<RootScreen> {
   final _productBloc = ProductBloc();
   final _authBloc = AuthBloc();
 
-  final _currentVerDate = DateTime(2022, 4, 8, 9);
+  final _currentVerDate = DateTime(2022, 4, 9, 10);
 
   final _appConfig = new LocalStorage('app_config.json');
 
   @override
   void initState() {
     Permission.location.request();
+    _loadUserLocation();
     _authBloc.add(GetCurrentuser());
     super.initState();
   }
@@ -109,6 +113,7 @@ class _RootScreenState extends State<RootScreen> {
       provisional: false,
       sound: true,
     );
+    print('============= ${await FirebaseMessaging.instance.getToken()}');
     if (_firstLoginDate == null) {
       await _appConfig.setItem(
           'first_login_date', DateTime.now().millisecondsSinceEpoch.toString());
@@ -304,6 +309,17 @@ class _RootScreenState extends State<RootScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  _loadUserLocation() async {
+    if (await Permission.location.isDenied) return;
+    if (!(await geoLocator.GeolocatorPlatform.instance
+        .isLocationServiceEnabled())) return;
+    final userLoc = await geoLocator.Geolocator.getCurrentPosition();
+    application.currentUserLocation = LocationModel(
+      latitude: userLoc.latitude,
+      longitude: userLoc.longitude,
     );
   }
 }

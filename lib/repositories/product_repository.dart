@@ -430,6 +430,7 @@ class ProductRepository {
     String? lastProductId,
     String? startAfterVal,
     String? category,
+    required LocationModel location,
   }) async {
     var _body = {
       'psk': psk,
@@ -437,6 +438,7 @@ class ProductRepository {
       'sortdirection': 'ascending',
       'productcount': productCount,
       'userid': application.currentUser!.uid,
+      ...location.toJson(),
     };
     if (keyword.length > 0) _body.addAll({'keywords': keyword});
     if (category != null) _body.addAll({'category': category});

@@ -7,7 +7,6 @@ import 'package:tapkat/utilities/dialog_message.dart';
 import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/utilities/style.dart';
 import 'package:tapkat/widgets/custom_app_bar.dart';
-import 'package:toggle_switch/toggle_switch.dart';
 import 'package:tapkat/utilities/application.dart' as application;
 import 'package:notification_permissions/notification_permissions.dart'
     as notif;
