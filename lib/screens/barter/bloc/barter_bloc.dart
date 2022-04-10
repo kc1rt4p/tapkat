@@ -206,6 +206,7 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
                       ? _newBarterRecord.userid2!
                       : _newBarterRecord.userid1!,
                   sender: _user!.uid,
+                  barterId: _barterRecord.barterId!,
                 );
 
                 emit(UpdateBarterStatusSuccess());
@@ -249,6 +250,7 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
                     ? barterRecord.userid2!
                     : barterRecord.userid1!,
                 sender: _user!.uid,
+                barterId: barterRecord.barterId!,
               );
 
               // update products' status
@@ -397,6 +399,7 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
                     ? _barterRecord.userid2!
                     : _barterRecord.userid1!,
                 sender: application.currentUserModel!.userid!,
+                barterId: _barterRecord.barterId!,
               );
               emit(SendMessageSuccess());
             }

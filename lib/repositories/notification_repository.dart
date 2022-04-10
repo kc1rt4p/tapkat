@@ -14,6 +14,7 @@ class NotificationRepository {
     required String body,
     required String sender,
     required String receiver,
+    required String barterId,
   }) async {
     final deviceid = await _getId();
     final userid = application.currentUser!.uid;
@@ -30,6 +31,7 @@ class NotificationRepository {
       'body': body,
       'sender': sender,
       'receiver': receiver,
+      'barterid': barterId,
     });
 
     return response.data['status'] == 'SUCCESS';
