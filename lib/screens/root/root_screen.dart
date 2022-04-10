@@ -102,8 +102,8 @@ class _RootScreenState extends State<RootScreen> {
   initNotifications() async {
     final _firebaseMessaging = FirebaseMessaging.instance;
     final _firstLoginDate = await _appConfig.getItem('first_login_date');
-    final permissionStatus =
-        await notif.NotificationPermissions.requestNotificationPermissions();
+    // final permissionStatus =
+    //     await notif.NotificationPermissions.getNotificationPermissionStatus();
     final settings = await _firebaseMessaging.requestPermission(
       alert: true,
       announcement: false,
@@ -113,18 +113,30 @@ class _RootScreenState extends State<RootScreen> {
       provisional: false,
       sound: true,
     );
-    print('============= ${await FirebaseMessaging.instance.getToken()}');
+    print('=============FIRST LOGIN DATE: $_firstLoginDate');
     if (_firstLoginDate == null) {
-      await _appConfig.setItem(
-          'first_login_date', DateTime.now().millisecondsSinceEpoch.toString());
+      await _appConfig.setItem('first_login_date', {
+        application.currentUser!.uid:
+            DateTime.now().millisecondsSinceEpoch.toString(),
+      });
+
+      if (application.currentUserModel!.pushalert == null) {
+        _rootBloc.add(UpdateUserToken());
+      }
+    } else if (_firstLoginDate[application.currentUser!.uid] == null) {
+      await _appConfig.setItem('first_login_date', {
+        application.currentUser!.uid:
+            DateTime.now().millisecondsSinceEpoch.toString(),
+        ..._firstLoginDate,
+      });
 
       if (application.currentUserModel!.pushalert == null) {
         _rootBloc.add(UpdateUserToken());
       }
     }
-
-    if (permissionStatus == PermissionStatus.denied ||
-        settings.authorizationStatus != AuthorizationStatus.authorized) return;
+    print('----------= status: ${settings.authorizationStatus}');
+    // permissionStatus == PermissionStatus.denied ||
+    if (settings.authorizationStatus != AuthorizationStatus.authorized) return;
 
     print(
         '----------= PUSH ALERT: ${application.currentUserModel!.pushalert} =-----------');

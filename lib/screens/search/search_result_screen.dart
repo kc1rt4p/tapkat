@@ -186,7 +186,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
             width: SizeConfig.screenWidth,
             child: Column(
               children: [
-                CustomAppBar(label: 'Browse Products'),
+                CustomAppBar(label: 'Search Products'),
                 Expanded(
                   child: Container(
                     child: Column(
@@ -201,38 +201,111 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                           padding: EdgeInsets.symmetric(horizontal: 20.0),
                           child: Row(
                             children: [
-                              Text(
-                                'Search Results',
-                                style: Style.subtitle2
-                                    .copyWith(color: kBackgroundColor),
-                              ),
                               Expanded(
-                                child: InkWell(
-                                  onTap: _onFilterByCategory,
-                                  child: Container(
-                                    padding:
-                                        EdgeInsets.symmetric(horizontal: 10.0),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Text(
-                                          _selectedCategory != null
-                                              ? _selectedCategory!.name!
-                                                  .toUpperCase()
-                                              : 'ALL',
-                                          style: Style.subtitle2.copyWith(
-                                              color: kBackgroundColor),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('Category'),
+                                    InkWell(
+                                      onTap: _onFilterByCategory,
+                                      child: Container(
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 10.0),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Text(
+                                              _selectedCategory != null
+                                                  ? _selectedCategory!.name!
+                                                      .toUpperCase()
+                                                  : 'ALL',
+                                              style: Style.subtitle2.copyWith(
+                                                  color: kBackgroundColor),
+                                            ),
+                                            Spacer(),
+                                            Icon(
+                                              FontAwesomeIcons.chevronDown,
+                                              color: kBackgroundColor,
+                                              size: 15.0,
+                                            ),
+                                          ],
                                         ),
-                                        SizedBox(width: 5.0),
-                                        Icon(
-                                          FontAwesomeIcons.chevronDown,
-                                          color: kBackgroundColor,
-                                          size: 15.0,
-                                        ),
-                                      ],
+                                      ),
                                     ),
-                                  ),
+                                  ],
+                                ),
+                              ),
+                              VerticalDivider(),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('Distance'),
+                                    InkWell(
+                                      onTap: _onFilterByCategory,
+                                      child: Container(
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 10.0),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Text(
+                                              _selectedCategory != null
+                                                  ? _selectedCategory!.name!
+                                                      .toUpperCase()
+                                                  : 'ALL',
+                                              style: Style.subtitle2.copyWith(
+                                                  color: kBackgroundColor),
+                                            ),
+                                            Spacer(),
+                                            Icon(
+                                              FontAwesomeIcons.chevronDown,
+                                              color: kBackgroundColor,
+                                              size: 15.0,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              VerticalDivider(),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('Sort by'),
+                                    InkWell(
+                                      onTap: _onFilterByCategory,
+                                      child: Container(
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 10.0),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Text(
+                                              _selectedCategory != null
+                                                  ? _selectedCategory!.name!
+                                                      .toUpperCase()
+                                                  : 'ALL',
+                                              style: Style.subtitle2.copyWith(
+                                                  color: kBackgroundColor),
+                                            ),
+                                            Spacer(),
+                                            Icon(
+                                              FontAwesomeIcons.chevronDown,
+                                              color: kBackgroundColor,
+                                              size: 15.0,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                               InkWell(

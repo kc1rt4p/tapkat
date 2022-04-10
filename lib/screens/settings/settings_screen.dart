@@ -32,7 +32,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   initNotification() async {
     final permission =
-        await notif.NotificationPermissions.requestNotificationPermissions();
+        await notif.NotificationPermissions.getNotificationPermissionStatus();
+    print(permission.toString());
     setState(() {
       pushNotif = permission == notif.PermissionStatus.denied
           ? 0
@@ -141,11 +142,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
         _authBloc.add(UpdatePushAlert(pushNotif == 1));
       },
       secondButtonText: 'No',
-      secondButtonClicked: () {
-        setState(() {
-          pushNotif = 0;
-        });
-      },
       hideClose: true,
     );
   }
