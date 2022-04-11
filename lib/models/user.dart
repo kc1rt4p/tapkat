@@ -15,6 +15,7 @@ class UserModel {
   List<String>? interests;
   LocationModel? location;
   int? likes;
+  double? rating;
 
   UserModel({
     this.userid,
@@ -31,6 +32,7 @@ class UserModel {
     this.interests,
     this.location,
     this.likes,
+    this.rating,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -55,6 +57,7 @@ class UserModel {
           ? LocationModel.fromJson(json['location'])
           : null,
       likes: json['likes'] as int?,
+      rating: json['rating'] != null ? json['rating'] + 0.00 as double? : 0.00,
     );
   }
 
@@ -74,6 +77,7 @@ class UserModel {
       'interests': this.interests,
       'location': this.location,
       'likes': this.likes,
+      'rating': this.rating,
     };
   }
 }

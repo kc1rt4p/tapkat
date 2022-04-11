@@ -49,7 +49,7 @@ class Style {
         'Poppins',
         color: Color(0xFF616161),
         fontWeight: FontWeight.normal,
-        fontSize: 16,
+        fontSize: 15,
       );
   static TextStyle get bodyText1 => GoogleFonts.getFont(
         'Poppins',

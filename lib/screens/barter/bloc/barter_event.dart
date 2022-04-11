@@ -139,3 +139,11 @@ class CounterOffer extends BarterEvent {
 
   CounterOffer(this.barterId, this.product);
 }
+
+class GetUnreadBarterMessages extends BarterEvent {}
+
+class MarkMessagesAsRead extends BarterEvent {
+  final String barterId;
+
+  MarkMessagesAsRead(this.barterId);
+}

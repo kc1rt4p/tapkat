@@ -239,6 +239,7 @@ class ProductRepository {
     required dynamic startAfterVal,
     List<String>? interests,
     LocationModel? location,
+    int radius = 5000,
   }) async {
     var body = {
       'psk': psk,
@@ -246,16 +247,15 @@ class ProductRepository {
       'productcount': productCount,
     };
 
-    if (listType == 'demand') {
+    if (location != null) {
       body.addAll({
-        'radius': 1000,
+        'startafterval': startAfterVal,
+        'location': location.toJson(),
+        'radius': radius,
       });
-      if (location != null) {
-        body.addAll({
-          'startafterval': startAfterVal,
-          'location': location.toJson(),
-        });
-      }
+    }
+
+    if (listType == 'demand') {
     } else {
       body.addAll({
         'sortBy': 'price',
@@ -318,27 +318,23 @@ class ProductRepository {
         .toList();
   }
 
-  Future<List<ProductModel>> getFirstProducts(String listType,
-      [String? userid, num? lat, num? lng, List<String>? interests]) async {
+  Future<List<ProductModel>> getFirstProducts(
+      String listType, LocationModel? location, int? radius,
+      [String? userid, List<String>? interests]) async {
     var body = {
       'psk': psk,
       'userid': userid,
       'productcount': productCount,
     };
-    if (listType == 'demand') {
-      body.addAll({
-        'radius': 1000,
-      });
 
-      if (lat != null && lng != null) {
-        body.addAll({
-          'location': {
-            '_latitude': lat,
-            '_longitude': lng,
-          },
-        });
-      }
-    } else {
+    if (location != null && listType != 'user') {
+      body.addAll({
+        'location': location.toJson(),
+        'radius': radius ?? 5000,
+      });
+    }
+
+    if (listType != 'demand') {
       body.addAll({
         'sortby': 'price',
         'sortdirection': listType == 'reco' ? 'ascending' : 'descending',
@@ -426,13 +422,12 @@ class ProductRepository {
     return true;
   }
 
-  Future<List<ProductModel>> searchProducts(
-    List<String> keyword, {
-    String? lastProductId,
-    String? startAfterVal,
-    String? category,
-    required LocationModel location,
-  }) async {
+  Future<List<ProductModel>> searchProducts(List<String> keyword,
+      {String? lastProductId,
+      String? startAfterVal,
+      String? category,
+      required LocationModel location,
+      int radius = 5000}) async {
     var _body = {
       'psk': psk,
       'sortby': 'price',
@@ -440,6 +435,7 @@ class ProductRepository {
       'productcount': productCount,
       'userid': application.currentUser!.uid,
       'location': location.toJson(),
+      'radius': radius,
     };
     if (keyword.length > 0) _body.addAll({'keywords': keyword});
     if (category != null) _body.addAll({'category': category});

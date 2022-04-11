@@ -24,21 +24,21 @@ class AuthRepository {
     return await FirebaseAuth.instance.signInWithCredential(credential);
   }
 
-  Future<String> testHeader({
-    required String userid,
-    required String deviceid,
-    required String time,
-  }) async {
-    final response = await _apiService.get(
-      url: 'apitest',
-      headers: {
-        'userid': userid,
-        'deviceid': deviceid,
-        'time': time,
-        'authorization': TapKatEncryption.encryptMsg(userid + deviceid + time),
-      },
-    );
+  // Future<String> testHeader({
+  //   required String userid,
+  //   required String deviceid,
+  //   required String time,
+  // }) async {
+  //   final response = await _apiService.get(
+  //     url: 'apitest',
+  //     headers: {
+  //       'userid': userid,
+  //       'deviceid': deviceid,
+  //       'time': time,
+  //       'authorization': TapKatEncryption.encryptMsg(userid + deviceid + time),
+  //     },
+  //   );
 
-    return response.data['message'] as String;
-  }
+  //   return response.data['message'] as String;
+  // }
 }

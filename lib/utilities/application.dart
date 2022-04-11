@@ -6,6 +6,7 @@ import 'package:tapkat/models/user.dart';
 
 User? currentUser;
 UserModel? currentUserModel;
+String? deviceId;
 
 bool chatOpened = false;
 LocationModel? currentUserLocation;

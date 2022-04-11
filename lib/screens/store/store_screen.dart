@@ -102,7 +102,40 @@ class _StoreScreenState extends State<StoreScreen> {
                       ),
                       child: Row(
                         children: [
-                          _buildPhoto(),
+                          Column(
+                            children: [
+                              _buildPhoto(),
+                              SizedBox(height: 5.0),
+                              _storeOwner != null
+                                  ? Container(
+                                      margin: EdgeInsets.only(bottom: 3.0),
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: 10.0),
+                                      child: Row(
+                                        children: [
+                                          Icon(
+                                            Icons.star,
+                                            size:
+                                                SizeConfig.textScaleFactor * 12,
+                                          ),
+                                          SizedBox(width: 5.0),
+                                          Text(
+                                            _storeOwner!.rating != null
+                                                ? _storeOwner!.rating!
+                                                    .toStringAsFixed(1)
+                                                : '0',
+                                            textAlign: TextAlign.right,
+                                            style: Style.fieldText.copyWith(
+                                                fontSize:
+                                                    SizeConfig.textScaleFactor *
+                                                        12),
+                                          ),
+                                        ],
+                                      ),
+                                    )
+                                  : Container(),
+                            ],
+                          ),
                           SizedBox(width: 10.0),
                           Expanded(
                             child: Container(
@@ -165,37 +198,43 @@ class _StoreScreenState extends State<StoreScreen> {
                                             likeCount: liked ? -1 : 1,
                                           ),
                                         ),
-                                        child: Container(
-                                          decoration: BoxDecoration(
-                                            color: kBackgroundColor,
-                                            borderRadius:
-                                                BorderRadius.circular(6.0),
-                                          ),
+                                        child: Padding(
                                           padding: EdgeInsets.symmetric(
-                                              vertical: 5.0),
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              Icon(
-                                                Icons.library_add_check,
-                                                size:
-                                                    SizeConfig.textScaleFactor *
-                                                        13,
-                                                color: Colors.white,
-                                              ),
-                                              SizedBox(width: 5.0),
-                                              Text(
-                                                liked ? 'Following' : 'Follow',
-                                                style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: SizeConfig
+                                              horizontal: 10.0),
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              color: kBackgroundColor,
+                                              borderRadius:
+                                                  BorderRadius.circular(6.0),
+                                            ),
+                                            padding: EdgeInsets.symmetric(
+                                                vertical: 5.0),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Icon(
+                                                  Icons.library_add_check,
+                                                  size: SizeConfig
                                                           .textScaleFactor *
-                                                      15,
+                                                      13,
+                                                  color: Colors.white,
                                                 ),
-                                              ),
-                                            ],
+                                                SizedBox(width: 5.0),
+                                                Text(
+                                                  liked
+                                                      ? 'Following'
+                                                      : 'Follow',
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: SizeConfig
+                                                            .textScaleFactor *
+                                                        15,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
                                           ),
                                         ),
                                       );
@@ -226,7 +265,7 @@ class _StoreScreenState extends State<StoreScreen> {
                           borderRadius: BorderRadius.circular(10.0),
                         ),
                         padding: EdgeInsets.symmetric(
-                          vertical: 6.0,
+                          vertical: 5.0,
                           horizontal: 10.0,
                         ),
                         child: Row(
@@ -263,7 +302,7 @@ class _StoreScreenState extends State<StoreScreen> {
                           child: Container(
                             padding: EdgeInsets.all(8.0),
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: kBackgroundColor,
                               borderRadius: BorderRadius.circular(10.0),
                               boxShadow: [
                                 BoxShadow(
@@ -277,7 +316,7 @@ class _StoreScreenState extends State<StoreScreen> {
                                   ? FontAwesomeIcons.mapMarkedAlt
                                   : FontAwesomeIcons.thLarge,
                               size: 16.0,
-                              color: kBackgroundColor,
+                              color: Colors.white,
                             ),
                           ),
                         ),
@@ -344,12 +383,17 @@ class _StoreScreenState extends State<StoreScreen> {
                     BlocListener(
                       bloc: _storeBloc,
                       listener: (context, state) {
+                        print('CURRENT STATE: $state');
                         if (state is LoadingStore) {
                           ProgressHUD.of(context)!.show();
                         } else {
                           setState(() {
                             ProgressHUD.of(context)!.dismiss();
                           });
+                        }
+
+                        if (state is StateError) {
+                          DialogMessage.show(context, message: state.message);
                         }
 
                         if (state is InitializedStoreScreen) {
@@ -696,8 +740,8 @@ class _StoreScreenState extends State<StoreScreen> {
               fit: BoxFit.cover,
             ),
           ),
-          height: SizeConfig.screenWidth * .25,
-          width: SizeConfig.screenWidth * .25,
+          height: SizeConfig.screenWidth * .26,
+          width: SizeConfig.screenWidth * .26,
         ),
         // Container(
         //   height: SizeConfig.textScaleFactor * 15,

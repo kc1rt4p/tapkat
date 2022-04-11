@@ -35,6 +35,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         if (_user != null) {
           application.currentUserModel =
               application.currentUserModel ?? await userRepo.getUser(_user.uid);
+          application.currentUserLocation =
+              application.currentUserModel!.location;
         }
 
         emit(GetCurrentUsersuccess(
@@ -95,6 +97,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             final userModel = await userRepo.getUser(user.uid);
             if (userModel != null) {
               application.currentUserModel = userModel;
+
+              application.currentUserLocation =
+                  application.currentUserModel!.location;
             }
 
             emit(ShowSignUpPhoto());
@@ -117,6 +122,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             final userModel = await userRepo.getUser(user.uid);
             if (userModel != null) {
               application.currentUserModel = userModel;
+
+              application.currentUserLocation =
+                  application.currentUserModel!.location;
             }
 
             emit(AuthSignedIn(user));
@@ -177,6 +185,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             final userModel = await userRepo.getUser(user.uid);
             if (userModel != null) {
               application.currentUserModel = userModel;
+
+              application.currentUserLocation =
+                  application.currentUserModel!.location;
             }
             emit(AuthSignedIn(user));
           }

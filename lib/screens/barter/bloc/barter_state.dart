@@ -104,3 +104,11 @@ class BarterError extends BarterState {
 }
 
 class SendMessageSuccess extends BarterState {}
+
+class GetUnreadBarterMessagesSuccess extends BarterState {
+  final List<ChatMessageModel> messages;
+
+  GetUnreadBarterMessagesSuccess(this.messages);
+}
+
+class MarkMessagesAsReadSuccess extends BarterState {}

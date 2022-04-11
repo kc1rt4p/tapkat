@@ -1,25 +1,46 @@
 import 'dart:async';
+import 'dart:io';
 
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:tapkat/services/http/dio_config.dart';
+import 'package:tapkat/services/tapkat_encryption.dart';
 import 'package:tapkat/utilities/error_exception.dart';
+import 'package:tapkat/utilities/application.dart' as application;
 
 class ApiService {
   Dio _dio = DioConfiguration().init();
   static ApiService _instance = ApiService._();
   static ApiService get instance => _instance;
+  Map<String, dynamic>? header;
+
   ApiService._();
-  ApiService();
+
+  ApiService() {}
+
+  _init() async {
+    final userid = application.currentUser!.uid;
+    final time = DateTime.now().millisecondsSinceEpoch;
+    final deviceId = await _getId();
+
+    header = {
+      'userid': application.currentUser!.uid,
+      'deviceid': deviceId,
+      'time': DateTime.now().millisecondsSinceEpoch,
+      'authorization':
+          TapKatEncryption.encryptMsg(userid + deviceId! + time.toString()),
+    };
+  }
+
   Future<Response> get(
-      {required String url,
-      Map<String, dynamic>? headers,
-      Map<String, dynamic>? body}) async {
+      {required String url, Map<String, dynamic>? body}) async {
+    await _init();
     return await _safeFetch(
       () => _dio.get(
         url,
         queryParameters: body,
         options: Options(
-          headers: headers,
+          headers: header,
         ),
       ),
     );
@@ -27,9 +48,9 @@ class ApiService {
 
   Future<Response> delete({
     required String url,
-    Map<String, dynamic>? header,
     Map<String, dynamic>? body,
   }) async {
+    await _init();
     return await _safeFetch(() => _dio.delete(
           url,
           data: body,
@@ -42,8 +63,8 @@ class ApiService {
   Future<Response> patch({
     required String url,
     Map<String, dynamic>? body,
-    Map<String, dynamic>? header,
   }) async {
+    await _init();
     return await _safeFetch(
       () => _dio.patch(
         url,
@@ -58,11 +79,11 @@ class ApiService {
   Future<Response> post({
     required String url,
     Map<String, dynamic>? body,
-    Map<String, dynamic>? header,
     Map<String, dynamic>? params,
     Function(int, int)? onSendProgress,
     FormData? formData,
   }) async {
+    await _init();
     return await _safeFetch(
       () => _dio.post(
         url,
@@ -86,5 +107,17 @@ class ApiService {
       throw ErrorExceptions.handleError(e);
     }
     return response;
+  }
+
+  Future<String?> _getId() async {
+    var deviceInfo = DeviceInfoPlugin();
+    if (Platform.isIOS) {
+      // import 'dart:io'
+      var iosDeviceInfo = await deviceInfo.iosInfo;
+      return iosDeviceInfo.identifierForVendor; // unique ID on iOS
+    } else {
+      var androidDeviceInfo = await deviceInfo.androidInfo;
+      return androidDeviceInfo.androidId; // unique ID on Android
+    }
   }
 }

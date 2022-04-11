@@ -21,13 +21,12 @@ part 'barter_event.dart';
 part 'barter_state.dart';
 
 class BarterBloc extends Bloc<BarterEvent, BarterState> {
+  List<ChatMessageModel> unreadMessages = [];
   BarterBloc() : super(BarterInitial()) {
-    final _authService = AuthService();
     final _productRepository = ProductRepository();
     final _barterRepository = BarterRepository();
     final _userRepo = UserRepository();
     User? _user;
-    UserModel? _userModel;
     final _notifRepo = NotificationRepository();
     on<BarterEvent>((event, emit) async {
       print('current event: $event');
@@ -36,7 +35,6 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
       try {
         _user = application.currentUser;
         if (_user != null) {
-          _userModel = application.currentUserModel;
           if (event is InitializeBarter) {
             print('=== barter id: ${event.barterData.barterId}');
             var _barterRecord = await _barterRepository
@@ -56,11 +54,6 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
 
               final newBarter =
                   await _barterRepository.setBarterRecord(event.barterData);
-
-              print(
-                  '=================================================================');
-              print(user1Model.display_name);
-              print(user2Model.display_name);
 
               var barterProducts = await _barterRepository
                   .getBarterProducts(event.barterData.barterId!);
@@ -92,12 +85,14 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
                   ? _barterRecord.userid1
                   : _barterRecord.userid2;
 
-              final currentUserProducts =
-                  await _productRepository.getFirstProducts('user', _user!.uid);
+              final currentUserProducts = await _productRepository
+                  .getFirstProducts('user', null, null, _user!.uid);
 
               final remoteUserProducts =
                   await _productRepository.getFirstProducts(
                       'user',
+                      null,
+                      null,
                       senderUserId == _user!.uid
                           ? recipientUserId
                           : senderUserId);
@@ -346,12 +341,14 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
                     ? event.barterRecord.userid1
                     : event.barterRecord.userid2;
 
-            final currentUserProducts =
-                await _productRepository.getFirstProducts('user', _user!.uid);
+            final currentUserProducts = await _productRepository
+                .getFirstProducts('user', null, null, _user!.uid);
 
             final remoteUserProducts =
                 await _productRepository.getFirstProducts(
                     'user',
+                    null,
+                    null,
                     senderUserId == _user!.uid
                         ? recipientUserId
                         : senderUserId);
@@ -419,6 +416,23 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
                 event.products.map((prod) => prod.productId!).toList());
             if (success) {
               emit(DeleteBarterProductsSuccess());
+            }
+          }
+
+          if (event is GetUnreadBarterMessages) {
+            final messages = await _barterRepository.getUnreadBarterMessages();
+            unreadMessages = messages;
+            emit(GetUnreadBarterMessagesSuccess(messages));
+          }
+
+          if (event is MarkMessagesAsRead) {
+            final messages = unreadMessages
+                .where((msg) => msg.barterId == event.barterId)
+                .toList();
+            final marked = await _barterRepository.markAsRead(messages);
+            if (marked) {
+              emit(MarkMessagesAsReadSuccess());
+              add(GetUnreadBarterMessages());
             }
           }
         }

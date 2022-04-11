@@ -32,9 +32,9 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
           final recommendedList = await _productRepo.getFirstProducts(
             'reco',
+            application.currentUserLocation,
+            5000,
             application.currentUser!.uid,
-            null,
-            null,
             application.currentUserModel != null &&
                     application.currentUserModel!.interests != null &&
                     application.currentUserModel!.interests!.isNotEmpty
@@ -47,7 +47,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
         if (event is LoadUserList) {
           final userItems = await _productRepo.getFirstProducts(
-              'user', application.currentUser!.uid);
+              'user', null, null, application.currentUser!.uid);
           emit(LoadedUserList(userItems));
           add(LoadTopStores());
         }
@@ -63,15 +63,15 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
           emit(LoadProductsInCategoriesSuccess(list));
         }
 
-        if (event is TestHeader) {
-          DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
-          AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
-          final devInfo = await deviceInfo.deviceInfo;
-          final result = await _authRepo.testHeader(
-              userid: application.currentUser!.uid,
-              deviceid: androidInfo.androidId!,
-              time: DateTime.now().millisecondsSinceEpoch.toString());
-        }
+        // if (event is TestHeader) {
+        //   DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+        //   AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+        //   final devInfo = await deviceInfo.deviceInfo;
+        //   final result = await _authRepo.testHeader(
+        //       userid: application.currentUser!.uid,
+        //       deviceid: androidInfo.androidId!,
+        //       time: DateTime.now().millisecondsSinceEpoch.toString());
+        // }
 
         if (event is LoadTrendingList) {
           LocationModel? _location;
@@ -84,20 +84,14 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
               longitude: userLoc.longitude,
               latitude: userLoc.latitude,
             );
+          } else {
+            _location = application.currentUserLocation;
           }
           final trendingList = await _productRepo.getFirstProducts(
             'demand',
+            _location,
+            5000,
             application.currentUser!.uid,
-            _location != null
-                ? _location.latitude
-                : application.currentUserModel!.location != null
-                    ? application.currentUserModel!.location!.latitude
-                    : null,
-            _location != null
-                ? _location.longitude
-                : application.currentUserModel!.location != null
-                    ? application.currentUserModel!.location!.longitude
-                    : null,
           );
           emit(LoadedTrendingList(trendingList));
           add(LoadUserList());

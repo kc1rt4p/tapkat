@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:tapkat/models/barter_product.dart';
 import 'package:tapkat/models/barter_record_model.dart';
 import 'package:tapkat/models/chat_message.dart';
+import 'package:tapkat/utilities/application.dart' as application;
 
 class BarterRepository {
   final barterRef = FirebaseFirestore.instance.collection('barter');
@@ -145,6 +146,55 @@ class BarterRepository {
     }
   }
 
+  Future<bool> markAsRead(List<ChatMessageModel> list) async {
+    try {
+      await Future.forEach<ChatMessageModel>(list, (msg) async {
+        await barterRef
+            .doc(msg.barterId)
+            .collection('messages')
+            .doc(msg.id)
+            .update({'is_read': true});
+      });
+
+      return true;
+    } catch (e) {
+      print('_-=error: ${e.toString()}');
+      return false;
+    }
+  }
+
+  Future<List<ChatMessageModel>> getUnreadBarterMessages() async {
+    List<BarterRecordModel> barters = [];
+    barters.addAll(await getBartersByUser(application.currentUser!.uid));
+    barters.addAll(await getBartersFromOthers(application.currentUser!.uid));
+    List<ChatMessageModel> _unreadMessages = [];
+
+    await Future.forEach<BarterRecordModel>(barters, (barter) async {
+      final msgs = await barterRef
+          .doc(barter.barterId)
+          .collection('messages')
+          .where('is_read', isNotEqualTo: true)
+          .get();
+      if (msgs.docs.isNotEmpty) {
+        _unreadMessages.addAll(
+          msgs.docs.map(
+            (msg) {
+              print('_-== ${ChatMessageModel.fromJson(msg.data()).toJson()}');
+              return ChatMessageModel.fromJson(msg.data())..id = msg.id;
+            },
+          ),
+        );
+      }
+    });
+    print('_-=unreadMsgs==- ${_unreadMessages.length} -===-');
+    _unreadMessages = _unreadMessages
+        .where((chat) => chat.userId != application.currentUser!.uid)
+        .toList();
+
+    print('_-=msgforuser ${_unreadMessages.length} -==-');
+    return _unreadMessages;
+  }
+
   Future<bool> updateBarterStatus(String barterId, String status) async {
     try {
       await barterRef.doc(barterId).update({
@@ -178,7 +228,7 @@ class BarterRepository {
               .map(
                 (doc) => ChatMessageModel.fromJson(
                   doc.data(),
-                ),
+                )..id = doc.id,
               )
               .toList(),
         );

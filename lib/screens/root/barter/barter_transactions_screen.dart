@@ -26,7 +26,7 @@ class BarterTransactionsScreen extends StatefulWidget {
 }
 
 class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
-  final _barterBloc = BarterBloc();
+  late BarterBloc _barterBloc;
   List<BarterRecordModel> byYouList = [];
   List<BarterRecordModel> fromOthersList = [];
 
@@ -43,6 +43,7 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
 
   @override
   void initState() {
+    _barterBloc = BlocProvider.of<BarterBloc>(context);
     _barterBloc.add(InitializeBarterTransactions());
     super.initState();
   }
@@ -78,7 +79,7 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                 label: 'Your Barters',
                 hideBack: true,
               ),
-              SizedBox(height: 10.0),
+              SizedBox(height: 5.0),
               ToggleSwitch(
                 activeBgColor: [kBackgroundColor],
                 initialLabelIndex: _view == 'open' ? 0 : 1,
@@ -225,10 +226,10 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                                 'Barters You Initiated',
                                 style: Style.subtitle2.copyWith(
                                   color: kBackgroundColor,
-                                  fontSize: 20.0,
+                                  fontSize: SizeConfig.textScaleFactor * 17,
                                 ),
                               ),
-                              SizedBox(height: 10.0),
+                              SizedBox(height: 6.0),
                               Expanded(
                                 child: (_view == 'open'
                                             ? openInitiatedList
@@ -270,10 +271,10 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                               'Offers from Other Users',
                               style: Style.subtitle2.copyWith(
                                 color: kBackgroundColor,
-                                fontSize: 20.0,
+                                fontSize: SizeConfig.textScaleFactor * 17,
                               ),
                             ),
-                            SizedBox(height: 10.0),
+                            SizedBox(height: 6.0),
                             Expanded(
                               child: (_view == 'open'
                                           ? openOffersList

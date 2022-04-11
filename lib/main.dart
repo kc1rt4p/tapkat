@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
+import 'package:tapkat/screens/barter/bloc/barter_bloc.dart';
 import 'package:tapkat/screens/login/email_verification_screen.dart';
 import 'package:tapkat/screens/login/login_screen.dart';
 import 'package:tapkat/screens/root/root_screen.dart';
@@ -34,6 +35,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   final _authBloc = AuthBloc();
+  final _barterBloc = BarterBloc();
   StreamSubscription<TapkatFirebaseUser?>? _userStream;
   TapkatFirebaseUser? _user;
   final GlobalKey<NavigatorState> navigatorKey =
@@ -52,6 +54,9 @@ class _MyAppState extends State<MyApp> {
       providers: [
         BlocProvider<AuthBloc>(
           create: (context) => _authBloc,
+        ),
+        BlocProvider<BarterBloc>(
+          create: (context) => _barterBloc,
         ),
       ],
       child: MultiBlocListener(
@@ -108,8 +113,7 @@ class _MyAppState extends State<MyApp> {
                 if (snapshot.hasData) {
                   if (snapshot.data != null) {
                     final user = snapshot.data;
-                    print(user!.displayName);
-                    if (user.emailVerified) {
+                    if (user!.emailVerified) {
                       return RootScreen();
                     } else {
                       return EmailVerificationScreen();

@@ -37,11 +37,13 @@ import 'bloc/barter_bloc.dart';
 class BarterScreen extends StatefulWidget {
   final ProductModel? product;
   final BarterRecordModel? barterRecord;
+  final bool showChatFirst;
 
   const BarterScreen({
     Key? key,
     this.product,
     this.barterRecord,
+    this.showChatFirst = false,
   }) : super(key: key);
 
   @override
@@ -53,7 +55,7 @@ class _BarterScreenState extends State<BarterScreen> {
   ProductModel? _product;
 
   final _authBloc = AuthBloc();
-  final _barterBloc = BarterBloc();
+  late BarterBloc _barterBloc;
 
   List<BarterProductModel> origCurrentUserOffers = [];
   List<BarterProductModel> currentUserOffers = [];
@@ -105,6 +107,7 @@ class _BarterScreenState extends State<BarterScreen> {
   @override
   void initState() {
     _authBloc.add(GetCurrentuser());
+    _barterBloc = BlocProvider.of<BarterBloc>(context);
 
     if (widget.product != null) {
       _product = widget.product!;
@@ -469,6 +472,14 @@ class _BarterScreenState extends State<BarterScreen> {
                   }
                 }
               });
+
+              if (widget.showChatFirst) {
+                _panelController.open();
+
+                _barterBloc.add(MarkMessagesAsRead(_barterRecord!.barterId!));
+
+                application.chatOpened = true;
+              }
             }
 
             if (state is BarterError) {
@@ -929,6 +940,7 @@ class _BarterScreenState extends State<BarterScreen> {
             textColor: Colors.white,
             onTap: () {
               _panelController.open();
+              _barterBloc.add(MarkMessagesAsRead(_barterRecord!.barterId!));
               application.chatOpened = true;
             },
             removeMargin: true,

@@ -150,17 +150,9 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
 
           final result = await _productRepo.getFirstProducts(
             event.listType,
+            _location,
+            null,
             event.userId,
-            _location != null
-                ? _location.latitude
-                : _userModel!.location != null
-                    ? _userModel.location!.latitude
-                    : null,
-            _location != null
-                ? _location.longitude
-                : _userModel!.location != null
-                    ? _userModel.location!.longitude
-                    : null,
             event.listType == 'reco' ? _userModel!.interests : null,
           );
 

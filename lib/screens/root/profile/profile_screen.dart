@@ -218,7 +218,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     borderRadius: BorderRadius.circular(10.0),
                                   ),
                                   padding: EdgeInsets.symmetric(
-                                    vertical: 8.0,
+                                    vertical: 5.0,
                                     horizontal: 10.0,
                                   ),
                                   child: Row(
@@ -277,7 +277,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         child: Icon(
                                           FontAwesomeIcons.solidEdit,
                                           color: Colors.white,
-                                          size: 18.0,
+                                          size: SizeConfig.textScaleFactor * 14,
                                         ),
                                       ),
                                     ],
@@ -299,35 +299,48 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                       horizontal: 10.0),
                                                   child: Row(
                                                     children: [
+                                                      Icon(
+                                                        Icons.people_alt,
+                                                        size: SizeConfig
+                                                                .textScaleFactor *
+                                                            12,
+                                                      ),
+                                                      SizedBox(width: 5.0),
                                                       Text(
-                                                        'Followers',
-                                                        style: Style.fieldTitle.copyWith(
-                                                            color:
-                                                                kBackgroundColor,
+                                                        _userModel!.likes !=
+                                                                null
+                                                            ? _userModel!.likes
+                                                                .toString()
+                                                            : '0',
+                                                        textAlign:
+                                                            TextAlign.right,
+                                                        style: Style.fieldText.copyWith(
                                                             fontSize: SizeConfig
                                                                     .textScaleFactor *
-                                                                11),
+                                                                12),
                                                       ),
-                                                      SizedBox(width: 8.0),
-                                                      Align(
-                                                        alignment: Alignment
-                                                            .centerRight,
-                                                        child: Text(
-                                                          _userModel!.likes !=
-                                                                  null
-                                                              ? _userModel!
-                                                                  .likes
-                                                                  .toString()
-                                                              : '0',
-                                                          textAlign:
-                                                              TextAlign.right,
-                                                          style: Style.fieldText
-                                                              .copyWith(
-                                                                  fontSize:
-                                                                      SizeConfig
-                                                                              .textScaleFactor *
-                                                                          12),
-                                                        ),
+                                                      VerticalDivider(),
+                                                      Icon(
+                                                        Icons.star,
+                                                        size: SizeConfig
+                                                                .textScaleFactor *
+                                                            12,
+                                                      ),
+                                                      SizedBox(width: 5.0),
+                                                      Text(
+                                                        _userModel!.rating !=
+                                                                null
+                                                            ? _userModel!
+                                                                .rating!
+                                                                .toStringAsFixed(
+                                                                    1)
+                                                            : '0',
+                                                        textAlign:
+                                                            TextAlign.right,
+                                                        style: Style.fieldText.copyWith(
+                                                            fontSize: SizeConfig
+                                                                    .textScaleFactor *
+                                                                12),
                                                       ),
                                                     ],
                                                   ),
@@ -348,7 +361,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                 CrossAxisAlignment.center,
                                             children: [
                                               _buildInfoItem(
-                                                label: 'Display name',
+                                                label: 'Name',
                                                 controller:
                                                     _displayNameTextController,
                                               ),
@@ -358,7 +371,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                     _emailTextController,
                                               ),
                                               _buildInfoItem(
-                                                label: 'Phone number',
+                                                label: 'Phone',
                                                 controller:
                                                     _phoneTextController,
                                               ),
@@ -400,14 +413,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                           child: Container(
                                             width: double.infinity,
                                             margin:
-                                                EdgeInsets.only(bottom: 12.0),
+                                                EdgeInsets.only(bottom: 8.0),
                                             decoration: BoxDecoration(
                                               color: kBackgroundColor,
                                               borderRadius:
                                                   BorderRadius.circular(10.0),
                                             ),
                                             padding: EdgeInsets.symmetric(
-                                              vertical: 8.0,
+                                              vertical: 5.0,
                                               horizontal: 10.0,
                                             ),
                                             child: Row(
@@ -439,14 +452,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                           child: Container(
                                             width: double.infinity,
                                             margin:
-                                                EdgeInsets.only(bottom: 12.0),
+                                                EdgeInsets.only(bottom: 8.0),
                                             decoration: BoxDecoration(
                                               color: kBackgroundColor,
                                               borderRadius:
                                                   BorderRadius.circular(10.0),
                                             ),
                                             padding: EdgeInsets.symmetric(
-                                              vertical: 8.0,
+                                              vertical: 5.0,
                                               horizontal: 10.0,
                                             ),
                                             child: Row(
@@ -475,7 +488,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                 BorderRadius.circular(10.0),
                                           ),
                                           padding: EdgeInsets.symmetric(
-                                            vertical: 8.0,
+                                            vertical: 5.0,
                                             horizontal: 10.0,
                                           ),
                                           child: Row(
@@ -566,9 +579,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       showNewPageProgressIndicatorAsGridChild: false,
       showNewPageErrorIndicatorAsGridChild: false,
       showNoMoreItemsIndicatorAsGridChild: false,
-      padding: EdgeInsets.symmetric(
-        vertical: 10.0,
-      ),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         mainAxisSpacing: 10.0,
@@ -576,25 +586,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       builderDelegate: PagedChildBuilderDelegate<ProductModel>(
         itemBuilder: (context, product, index) {
-          var thumbnail = '';
-
-          if (product.mediaPrimary != null &&
-              product.mediaPrimary!.url != null &&
-              product.mediaPrimary!.url!.isNotEmpty)
-            thumbnail = product.mediaPrimary!.url!;
-
-          if (product.mediaPrimary != null &&
-              product.mediaPrimary!.url_t != null &&
-              product.mediaPrimary!.url_t!.isNotEmpty)
-            thumbnail = product.mediaPrimary!.url_t!;
-
-          if (product.mediaPrimary!.url!.isEmpty &&
-              product.mediaPrimary!.url_t!.isEmpty &&
-              product.media != null &&
-              product.media!.isNotEmpty)
-            thumbnail = product.media!.first.url_t != null
-                ? product.media!.first.url_t!
-                : product.media!.first.url!;
           return Center(
             child: BarterListItem(
               product: product,
@@ -645,11 +636,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
         horizontal: 20.0,
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Text(
+            label,
+            style: Style.fieldTitle.copyWith(color: kBackgroundColor),
+          ),
           TextFormField(
             controller: controller,
             style: Style.fieldText,
-            textAlign: TextAlign.center,
             readOnly: !editProfile || readOnly,
             onTap: onTap,
             enabled: editProfile,
@@ -689,10 +684,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   BoxConstraints(maxHeight: 25, maxWidth: 25),
               suffixIcon: editProfile ? suffix : null,
             ),
-          ),
-          Text(
-            label,
-            style: Style.fieldTitle.copyWith(color: kBackgroundColor),
           ),
         ],
       ),

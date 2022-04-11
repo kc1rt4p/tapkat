@@ -4,11 +4,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:intl/intl.dart';
 import 'package:localstorage/localstorage.dart';
-import 'package:notification_permissions/notification_permissions.dart'
-    as notif;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
+import 'package:tapkat/models/chat_message.dart';
 import 'package:tapkat/models/location.dart';
+import 'package:tapkat/screens/barter/bloc/barter_bloc.dart';
 import 'package:tapkat/screens/product/bloc/product_bloc.dart';
 import 'package:tapkat/screens/product/product_add_screen.dart';
 import 'package:tapkat/screens/root/barter/barter_transactions_screen.dart';
@@ -18,7 +18,6 @@ import 'package:tapkat/screens/root/wish_list/wish_list_screen.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/utilities/application.dart' as application;
-import 'package:geocoding/geocoding.dart' as geoCoding;
 import 'package:geolocator/geolocator.dart' as geoLocator;
 
 import 'bloc/root_bloc.dart';
@@ -61,17 +60,24 @@ class _RootScreenState extends State<RootScreen> {
 
   final _rootBloc = RootBloc();
   final _productBloc = ProductBloc();
-  final _authBloc = AuthBloc();
+  late AuthBloc _authBloc;
+  late BarterBloc _barterBloc;
 
   final _currentVerDate = DateTime(2022, 4, 10, 1);
 
   final _appConfig = new LocalStorage('app_config.json');
 
+  List<ChatMessageModel> _unreadMessages = [];
+
   @override
   void initState() {
+    _barterBloc = BlocProvider.of<BarterBloc>(context);
+    _authBloc = BlocProvider.of<AuthBloc>(context);
+
     Permission.location.request();
     _loadUserLocation();
     _authBloc.add(GetCurrentuser());
+    _barterBloc.add(GetUnreadBarterMessages());
     super.initState();
   }
 
@@ -163,6 +169,9 @@ class _RootScreenState extends State<RootScreen> {
           BlocProvider(
             create: (context) => _productBloc,
           ),
+          BlocProvider(
+            create: (context) => _barterBloc,
+          ),
         ],
         child: MultiBlocListener(
           listeners: [
@@ -185,6 +194,18 @@ class _RootScreenState extends State<RootScreen> {
               listener: (context, state) {
                 if (state is GetCurrentUsersuccess) {
                   initNotifications();
+                }
+              },
+            ),
+            BlocListener(
+              bloc: _barterBloc,
+              listener: (context, state) {
+                print('--ROOT-- ==BARTER BLOC== --CURRENT STATE: $state');
+                if (state is GetUnreadBarterMessagesSuccess) {
+                  print('_-=---| ${state.messages.length}');
+                  setState(() {
+                    _unreadMessages = state.messages;
+                  });
                 }
               },
             )
@@ -221,8 +242,9 @@ class _RootScreenState extends State<RootScreen> {
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(50.0),
               ),
-              padding: EdgeInsets.all(8.0),
+              padding: EdgeInsets.all(5.0),
               child: FloatingActionButton(
+                mini: true,
                 heroTag: 'addProductBtn',
                 backgroundColor: Color(0xFFBB3F03),
                 child: Icon(Icons.add, size: 30.0),
@@ -256,7 +278,7 @@ class _RootScreenState extends State<RootScreen> {
 
   Widget _buildBottomNavBar() {
     return Container(
-      height: kToolbarHeight,
+      height: kToolbarHeight - 10,
       color: Color(0xFFEBFBFF),
       child: Container(
         decoration: BoxDecoration(
@@ -289,6 +311,7 @@ class _RootScreenState extends State<RootScreen> {
               isActive: _currentIndex == 2,
               icon: Icons.repeat_outlined,
               index: 2,
+              showBadge: _unreadMessages.isNotEmpty,
             ),
             _buildBottomNavItem(
               isActive: _currentIndex == 3,
@@ -305,6 +328,7 @@ class _RootScreenState extends State<RootScreen> {
     required IconData icon,
     required bool isActive,
     required int index,
+    bool showBadge = false,
   }) {
     return Expanded(
       child: InkWell(
@@ -314,10 +338,30 @@ class _RootScreenState extends State<RootScreen> {
           });
         },
         child: Container(
-          child: Icon(
-            icon,
-            color: isActive ? Color(0xFF94D2BD) : Colors.grey,
-            size: isActive ? 30.0 : null,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Icon(
+                icon,
+                color: isActive ? Color(0xFF94D2BD) : Colors.grey,
+                size: isActive ? 30.0 : null,
+              ),
+              Visibility(
+                visible: showBadge,
+                child: Positioned(
+                  top: 0,
+                  right: SizeConfig.screenWidth * 0.06,
+                  child: Container(
+                    height: 8.0,
+                    width: 8.0,
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),

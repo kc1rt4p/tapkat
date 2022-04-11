@@ -9,6 +9,7 @@ import 'package:tapkat/models/user.dart';
 import 'package:tapkat/repositories/store_repository.dart';
 import 'package:tapkat/repositories/user_repository.dart';
 import 'package:tapkat/services/auth_service.dart';
+import 'package:tapkat/utilities/application.dart' as application;
 
 part 'store_event.dart';
 part 'store_state.dart';
@@ -22,10 +23,10 @@ class StoreBloc extends Bloc<StoreEvent, StoreState> {
       emit(LoadingStore());
       try {
         final _user = await _authService.getCurrentUser();
-        final _userModel = await _userRepo.getUser(_user!.uid);
+        final _userModel = application.currentUserModel;
         if (event is InitializeStoreScreen) {
           final likeStream =
-              _storeRepo.streamStoreLike(event.userId, _user.uid);
+              _storeRepo.streamStoreLike(event.userId, _user!.uid);
           final store = await _userRepo.getUser(event.userId);
           emit(InitializedStoreScreen(
             user: store!,
@@ -47,12 +48,13 @@ class StoreBloc extends Bloc<StoreEvent, StoreState> {
         if (event is EditUserLike) {
           final updated = await _userRepo.addLikeToStore(
             user: event.user,
-            likerId: _user.uid,
+            likerId: _user!.uid,
             val: event.likeCount,
           );
           emit(EditUserLikeSuccess());
         }
       } catch (e) {
+        print(e.toString());
         emit(StoreError(e.toString()));
       }
     });

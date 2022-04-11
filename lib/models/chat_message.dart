@@ -5,6 +5,7 @@ class ChatMessageModel {
   String? userName;
   String? message;
   DateTime? dateCreated;
+  bool? isRead;
 
   ChatMessageModel({
     this.id,
@@ -13,6 +14,7 @@ class ChatMessageModel {
     this.userName,
     this.message,
     this.dateCreated,
+    this.isRead,
   });
 
   Map<String, dynamic> toJson() {
@@ -23,6 +25,7 @@ class ChatMessageModel {
       'userName': this.userName,
       'message': this.message,
       'dateCreated': this.dateCreated,
+      'is_read': this.isRead ?? false,
     };
   }
 
@@ -35,6 +38,7 @@ class ChatMessageModel {
       userName: json['userName'] as String?,
       message: json['message'] as String?,
       dateCreated: json['dateCreated'].toDate(),
+      isRead: json['is_read'] as bool?,
     );
   }
 }

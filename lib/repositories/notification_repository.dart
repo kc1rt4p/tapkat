@@ -16,16 +16,7 @@ class NotificationRepository {
     required String receiver,
     required String barterId,
   }) async {
-    final deviceid = await _getId();
-    final userid = application.currentUser!.uid;
-    final time = DateTime.now().millisecondsSinceEpoch;
-    final response = await _apiService.post(url: 'alert', header: {
-      'userid': application.currentUser!.uid,
-      'deviceid': deviceid,
-      'time': DateTime.now().millisecondsSinceEpoch,
-      'authorization':
-          TapKatEncryption.encryptMsg(userid + deviceid! + time.toString()),
-    }, body: {
+    final response = await _apiService.post(url: 'alert', body: {
       'psk': psk,
       'title': title,
       'body': body,
