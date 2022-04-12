@@ -6,8 +6,10 @@ import 'package:intl/intl.dart';
 import 'package:localstorage/localstorage.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
+import 'package:tapkat/models/barter_record_model.dart';
 import 'package:tapkat/models/chat_message.dart';
 import 'package:tapkat/models/location.dart';
+import 'package:tapkat/screens/barter/barter_screen.dart';
 import 'package:tapkat/screens/barter/bloc/barter_bloc.dart';
 import 'package:tapkat/screens/product/bloc/product_bloc.dart';
 import 'package:tapkat/screens/product/product_add_screen.dart';
@@ -37,8 +39,7 @@ final InitializationSettings initializationSettings = InitializationSettings(
     macOS: initializationSettingsMacOS);
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  print(
-      '*****###***** *****###***** background message: ${message.notification!.body.toString()} *****###***** *****###*****');
+  print('__-= BACKGROUND NOTIF: ${message.data}');
 }
 
 class RootScreen extends StatefulWidget {
@@ -63,7 +64,7 @@ class _RootScreenState extends State<RootScreen> {
   late AuthBloc _authBloc;
   late BarterBloc _barterBloc;
 
-  final _currentVerDate = DateTime(2022, 4, 10, 1);
+  final _currentVerDate = DateTime(2022, 4, 12, 6);
 
   final _appConfig = new LocalStorage('app_config.json');
 
@@ -73,7 +74,6 @@ class _RootScreenState extends State<RootScreen> {
   void initState() {
     _barterBloc = BlocProvider.of<BarterBloc>(context);
     _authBloc = BlocProvider.of<AuthBloc>(context);
-
     Permission.location.request();
     _loadUserLocation();
     _authBloc.add(GetCurrentuser());
@@ -105,6 +105,21 @@ class _RootScreenState extends State<RootScreen> {
       return;
   }
 
+  Future<void> _firebaseMessageOpened(RemoteMessage message) async {
+    final barterId = message.data['barterid'] as String;
+    if (barterId != null) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => BarterScreen(
+            barterRecord: BarterRecordModel(barterId: barterId),
+            showChatFirst: true,
+          ),
+        ),
+      );
+    }
+  }
+
   initNotifications() async {
     final _firebaseMessaging = FirebaseMessaging.instance;
     final _firstLoginDate = await _appConfig.getItem('first_login_date');
@@ -119,16 +134,14 @@ class _RootScreenState extends State<RootScreen> {
       provisional: false,
       sound: true,
     );
-    print('=============FIRST LOGIN DATE: $_firstLoginDate');
+
     if (_firstLoginDate == null) {
       await _appConfig.setItem('first_login_date', {
         application.currentUser!.uid:
             DateTime.now().millisecondsSinceEpoch.toString(),
       });
 
-      if (application.currentUserModel!.pushalert == null) {
-        _rootBloc.add(UpdateUserToken());
-      }
+      _rootBloc.add(UpdateUserToken());
     } else if (_firstLoginDate[application.currentUser!.uid] == null) {
       await _appConfig.setItem('first_login_date', {
         application.currentUser!.uid:
@@ -136,9 +149,7 @@ class _RootScreenState extends State<RootScreen> {
         ..._firstLoginDate,
       });
 
-      if (application.currentUserModel!.pushalert == null) {
-        _rootBloc.add(UpdateUserToken());
-      }
+      _rootBloc.add(UpdateUserToken());
     }
     print('----------= status: ${settings.authorizationStatus}');
     // permissionStatus == PermissionStatus.denied ||
@@ -148,11 +159,15 @@ class _RootScreenState extends State<RootScreen> {
         '----------= PUSH ALERT: ${application.currentUserModel!.pushalert} =-----------');
 
     await flutterLocalNotificationsPlugin.initialize(initializationSettings,
-        onSelectNotification: (val) {});
+        onSelectNotification: (val) {
+      print('WHAAAAAAAAT?');
+    });
 
     FirebaseMessaging.onMessage.listen(_firebaseMessagingForegroundHandler);
 
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+    FirebaseMessaging.onMessageOpenedApp.listen(_firebaseMessageOpened);
   }
 
   @override
@@ -192,6 +207,7 @@ class _RootScreenState extends State<RootScreen> {
             BlocListener(
               bloc: _authBloc,
               listener: (context, state) {
+                print('ROOT AUTH STATE:::: $state');
                 if (state is GetCurrentUsersuccess) {
                   initNotifications();
                 }
@@ -200,9 +216,7 @@ class _RootScreenState extends State<RootScreen> {
             BlocListener(
               bloc: _barterBloc,
               listener: (context, state) {
-                print('--ROOT-- ==BARTER BLOC== --CURRENT STATE: $state');
                 if (state is GetUnreadBarterMessagesSuccess) {
-                  print('_-=---| ${state.messages.length}');
                   setState(() {
                     _unreadMessages = state.messages;
                   });

@@ -426,11 +426,12 @@ class ProductRepository {
       {String? lastProductId,
       String? startAfterVal,
       String? category,
+      required String sortBy,
       required LocationModel location,
       int radius = 5000}) async {
     var _body = {
       'psk': psk,
-      'sortby': 'price',
+      'sortby': sortBy.toLowerCase(),
       'sortdirection': 'ascending',
       'productcount': productCount,
       'userid': application.currentUser!.uid,

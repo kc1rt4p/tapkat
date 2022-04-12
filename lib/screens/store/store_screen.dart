@@ -10,7 +10,6 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:tapkat/models/product.dart';
-import 'package:tapkat/models/store_like.dart';
 import 'package:tapkat/models/user.dart';
 import 'package:tapkat/schemas/product_markers_record.dart';
 import 'package:tapkat/schemas/user_likes_record.dart';
@@ -82,6 +81,13 @@ class _StoreScreenState extends State<StoreScreen> {
   }
 
   @override
+  void setState(fn) {
+    if (mounted) {
+      super.setState(fn);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
     return ProgressHUD(
@@ -98,7 +104,7 @@ class _StoreScreenState extends State<StoreScreen> {
                   ? Container(
                       padding: EdgeInsets.symmetric(
                         vertical: 8.0,
-                        horizontal: 10.0,
+                        horizontal: 20.0,
                       ),
                       child: Row(
                         children: [
@@ -136,7 +142,7 @@ class _StoreScreenState extends State<StoreScreen> {
                                   : Container(),
                             ],
                           ),
-                          SizedBox(width: 10.0),
+                          SizedBox(width: 20.0),
                           Expanded(
                             child: Container(
                               margin: EdgeInsets.symmetric(
@@ -214,7 +220,9 @@ class _StoreScreenState extends State<StoreScreen> {
                                                   MainAxisAlignment.center,
                                               children: [
                                                 Icon(
-                                                  Icons.library_add_check,
+                                                  liked
+                                                      ? Icons.remove_circle
+                                                      : Icons.library_add,
                                                   size: SizeConfig
                                                           .textScaleFactor *
                                                       13,
@@ -222,9 +230,7 @@ class _StoreScreenState extends State<StoreScreen> {
                                                 ),
                                                 SizedBox(width: 5.0),
                                                 Text(
-                                                  liked
-                                                      ? 'Following'
-                                                      : 'Follow',
+                                                  liked ? 'Unfollow' : 'Follow',
                                                   style: TextStyle(
                                                     color: Colors.white,
                                                     fontWeight: FontWeight.bold,
@@ -696,7 +702,6 @@ class _StoreScreenState extends State<StoreScreen> {
   }) {
     return Container(
       margin: EdgeInsets.only(bottom: 3.0),
-      padding: EdgeInsets.symmetric(horizontal: 10.0),
       child: Row(
         children: [
           Text(

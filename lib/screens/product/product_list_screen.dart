@@ -189,48 +189,54 @@ class _ProductListScreenState extends State<ProductListScreen> {
                 CustomAppBar(
                   label: _title,
                 ),
-                Row(
-                  children: [
-                    Expanded(
-                      child: CustomSearchBar(
-                        margin: EdgeInsets.symmetric(horizontal: 20.0),
-                        controller: _keywordTextController,
-                        backgroundColor: Color(0xFF005F73).withOpacity(0.3),
-                        onSubmitted: (val) => _onSearchSubmitted(val),
+                Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 20.0,
+                    vertical: 10.0,
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: CustomSearchBar(
+                          margin: EdgeInsets.symmetric(horizontal: 20.0),
+                          controller: _keywordTextController,
+                          backgroundColor: Color(0xFF005F73).withOpacity(0.3),
+                          onSubmitted: (val) => _onSearchSubmitted(val),
+                        ),
                       ),
-                    ),
-                    Visibility(
-                      visible: !widget.ownListing,
-                      child: Row(
-                        children: [
-                          InkWell(
-                            onTap: _onSelectView,
-                            child: Container(
-                              padding: EdgeInsets.all(8.0),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(10.0),
-                                boxShadow: [
-                                  BoxShadow(
-                                    offset: Offset(1, 1),
-                                    color: Colors.grey,
-                                  ),
-                                ],
-                              ),
-                              child: Icon(
-                                _selectedView != 'map'
-                                    ? FontAwesomeIcons.mapMarkedAlt
-                                    : FontAwesomeIcons.thLarge,
-                                size: 16.0,
-                                color: kBackgroundColor,
+                      Visibility(
+                        visible: !widget.ownListing,
+                        child: Row(
+                          children: [
+                            SizedBox(width: 10.0),
+                            InkWell(
+                              onTap: _onSelectView,
+                              child: Container(
+                                padding: EdgeInsets.all(8.0),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(10.0),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      offset: Offset(1, 1),
+                                      color: Colors.grey,
+                                    ),
+                                  ],
+                                ),
+                                child: Icon(
+                                  _selectedView != 'map'
+                                      ? FontAwesomeIcons.mapMarkedAlt
+                                      : FontAwesomeIcons.thLarge,
+                                  size: 16.0,
+                                  color: kBackgroundColor,
+                                ),
                               ),
                             ),
-                          ),
-                          SizedBox(width: 20.0),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
                 Container(
                   margin: EdgeInsets.symmetric(vertical: 8.0),

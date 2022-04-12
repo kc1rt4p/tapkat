@@ -37,8 +37,6 @@ class _CustomSearchBarState extends State<CustomSearchBar> {
         children: [
           Expanded(
             child: Container(
-              margin: widget.margin ??
-                  EdgeInsets.symmetric(vertical: 3.0, horizontal: 20.0),
               padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 0.0),
               width: double.infinity,
               decoration: BoxDecoration(

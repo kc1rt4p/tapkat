@@ -41,7 +41,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final _productBloc = ProductBloc();
   final _storeBloc = StoreBloc();
   late RootBloc _rootBloc;
-  late AuthBloc _authBloc;
+  final _authBloc = AuthBloc();
   List<ProductModel> _recommendedList = [];
   List<ProductModel> _trendingList = [];
   List<ProductModel> _myProductList = [];
@@ -68,7 +68,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void initState() {
-    _authBloc = BlocProvider.of<AuthBloc>(context);
     _rootBloc = BlocProvider.of<RootBloc>(context);
     _productBloc.add(GetCategories());
     _authBloc.add(GetCurrentuser());
@@ -219,7 +218,10 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Container(
               color: kBackgroundColor,
-              padding: EdgeInsets.only(top: SizeConfig.paddingTop),
+              padding: EdgeInsets.symmetric(
+                horizontal: 20.0,
+                vertical: 10.0,
+              ),
               child: CustomSearchBar(
                 controller: _keywordTextController,
                 onSubmitted: (val) => _onSearchSubmitted(val),

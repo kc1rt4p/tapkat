@@ -16,19 +16,19 @@ class ApiService {
 
   ApiService._();
 
-  ApiService() {}
+  ApiService();
 
   _init() async {
+    final deviceid = await _getId();
     final userid = application.currentUser!.uid;
     final time = DateTime.now().millisecondsSinceEpoch;
-    final deviceId = await _getId();
 
     header = {
       'userid': application.currentUser!.uid,
-      'deviceid': deviceId,
+      'deviceid': deviceid,
       'time': DateTime.now().millisecondsSinceEpoch,
       'authorization':
-          TapKatEncryption.encryptMsg(userid + deviceId! + time.toString()),
+          TapKatEncryption.encryptMsg(userid + deviceid! + time.toString()),
     };
   }
 

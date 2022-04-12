@@ -113,11 +113,16 @@ class _StoreListScreenState extends State<StoreListScreen> {
             CustomAppBar(
               label: 'Top Stores',
             ),
-            CustomSearchBar(
-              controller: TextEditingController(),
-              hintText: 'Search store name',
-              backgroundColor: kBackgroundColor,
-              textColor: Colors.white,
+            Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: 20.0,
+              ),
+              child: CustomSearchBar(
+                controller: TextEditingController(),
+                hintText: 'Search store name',
+                backgroundColor: kBackgroundColor,
+                textColor: Colors.white,
+              ),
             ),
             Expanded(
               child: PagedGridView<int, StoreModel>(

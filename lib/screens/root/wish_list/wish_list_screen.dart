@@ -185,28 +185,36 @@ class _WishListScreenState extends State<WishListScreen> {
                   label: 'Your Wish List',
                   hideBack: true,
                 ),
-                CustomSearchBar(
-                  margin: EdgeInsets.symmetric(horizontal: 20.0),
-                  controller: _keywordTextController,
-                  backgroundColor: Color(0xFF005F73).withOpacity(0.3),
-                  onSubmitted: (val) => _onSearchSubmitted(val),
+                Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 16.0,
+                  ),
+                  child: Column(
+                    children: [
+                      CustomSearchBar(
+                        controller: _keywordTextController,
+                        backgroundColor: Color(0xFF005F73).withOpacity(0.3),
+                        onSubmitted: (val) => _onSearchSubmitted(val),
+                      ),
+                    ],
+                  ),
                 ),
                 ToggleSwitch(
                   activeBgColor: [kBackgroundColor],
                   initialLabelIndex: _selectedView == 'products' ? 0 : 1,
-                  minWidth: SizeConfig.screenWidth * 0.4,
+                  minWidth: double.infinity,
                   minHeight: 25.0,
                   borderColor: [Color(0xFFEBFBFF)],
                   totalSwitches: 2,
                   customTextStyles: [
                     TextStyle(
                       fontWeight: FontWeight.bold,
-                      fontSize: SizeConfig.textScaleFactor * 15,
+                      fontSize: SizeConfig.textScaleFactor * 13,
                       color: Colors.white,
                     ),
                     TextStyle(
                       fontWeight: FontWeight.bold,
-                      fontSize: SizeConfig.textScaleFactor * 15,
+                      fontSize: SizeConfig.textScaleFactor * 13,
                       color: Colors.white,
                     ),
                   ],

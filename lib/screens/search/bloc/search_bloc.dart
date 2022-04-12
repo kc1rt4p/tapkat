@@ -18,6 +18,8 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
       if (event is InitializeSearch) {
         final result = await _productRepo.searchProducts(
           event.keyword.isNotEmpty ? event.keyword.trim().split(" ") : [],
+          sortBy: event.sortBy,
+          radius: event.distance,
           category: event.category,
           location: application.currentUserLocation ??
               application.currentUserModel!.location ??
@@ -31,6 +33,8 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
       if (event is SearchNextProducts) {
         final list = await _productRepo.searchProducts(
           event.keyword.split(" "),
+          sortBy: event.sortBy,
+          radius: event.distance,
           lastProductId: event.lastProductId,
           startAfterVal: event.startAfterVal,
           location: application.currentUserLocation ??

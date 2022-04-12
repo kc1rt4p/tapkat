@@ -472,14 +472,6 @@ class _BarterScreenState extends State<BarterScreen> {
                   }
                 }
               });
-
-              if (widget.showChatFirst) {
-                _panelController.open();
-
-                _barterBloc.add(MarkMessagesAsRead(_barterRecord!.barterId!));
-
-                application.chatOpened = true;
-              }
             }
 
             if (state is BarterError) {
@@ -646,6 +638,14 @@ class _BarterScreenState extends State<BarterScreen> {
                 }
 
                 if (state is BarterChatInitialized) {
+                  if (widget.showChatFirst) {
+                    _panelController.open();
+
+                    _barterBloc
+                        .add(MarkMessagesAsRead(_barterRecord!.barterId!));
+
+                    application.chatOpened = true;
+                  }
                   _barterChatStreamSub = state.barterChatStream.listen((list) {
                     setState(() {
                       if (list.isNotEmpty) {
