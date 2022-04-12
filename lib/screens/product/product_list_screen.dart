@@ -10,6 +10,7 @@ import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:tapkat/backend.dart';
 import 'package:tapkat/models/product.dart';
+import 'package:tapkat/models/product_category.dart';
 import 'package:tapkat/schemas/user_likes_record.dart';
 import 'package:tapkat/screens/product/bloc/product_bloc.dart';
 import 'package:tapkat/screens/product/product_details_screen.dart';
@@ -70,6 +71,18 @@ class _ProductListScreenState extends State<ProductListScreen> {
   ProductModel? lastProduct;
 
   bool _loading = false;
+
+  String _selectedSortBy = 'price';
+  List<String> sortByOptions = [
+    'Distance',
+    'Name',
+    'Price',
+  ];
+  int _selectedRadius = 5000;
+  List<int> radiusOptions = [1000, 5000, 10000, 20000, 50000];
+  ProductCategoryModel? _selectedCategory;
+
+  List<ProductCategoryModel> _categoryList = [];
 
   @override
   void initState() {
@@ -192,100 +205,204 @@ class _ProductListScreenState extends State<ProductListScreen> {
                 Padding(
                   padding: EdgeInsets.symmetric(
                     horizontal: 20.0,
-                    vertical: 10.0,
                   ),
-                  child: Row(
+                  child: Column(
                     children: [
-                      Expanded(
-                        child: CustomSearchBar(
-                          margin: EdgeInsets.symmetric(horizontal: 20.0),
-                          controller: _keywordTextController,
-                          backgroundColor: Color(0xFF005F73).withOpacity(0.3),
-                          onSubmitted: (val) => _onSearchSubmitted(val),
-                        ),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: CustomSearchBar(
+                              margin: EdgeInsets.symmetric(horizontal: 20.0),
+                              controller: _keywordTextController,
+                              backgroundColor:
+                                  Color(0xFF005F73).withOpacity(0.3),
+                              onSubmitted: (val) => _onSearchSubmitted(val),
+                            ),
+                          ),
+                          Visibility(
+                            visible: !widget.ownListing,
+                            child: Row(
+                              children: [
+                                SizedBox(width: 10.0),
+                                InkWell(
+                                  onTap: _onSelectView,
+                                  child: Container(
+                                    padding: EdgeInsets.all(8.0),
+                                    decoration: BoxDecoration(
+                                      color: Color(0xFF005F73).withOpacity(0.3),
+                                      borderRadius: BorderRadius.circular(10.0),
+                                    ),
+                                    child: Icon(
+                                      _selectedView != 'map'
+                                          ? FontAwesomeIcons.mapMarkedAlt
+                                          : FontAwesomeIcons.thLarge,
+                                      size: 16.0,
+                                      color: kBackgroundColor,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
-                      Visibility(
-                        visible: !widget.ownListing,
+                      Container(
+                        margin: EdgeInsets.only(bottom: 8.0),
                         child: Row(
                           children: [
-                            SizedBox(width: 10.0),
-                            InkWell(
-                              onTap: _onSelectView,
-                              child: Container(
-                                padding: EdgeInsets.all(8.0),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(10.0),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      offset: Offset(1, 1),
-                                      color: Colors.grey,
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Category',
+                                    style: TextStyle(
+                                      fontSize: SizeConfig.textScaleFactor * 12,
                                     ),
-                                  ],
-                                ),
-                                child: Icon(
-                                  _selectedView != 'map'
-                                      ? FontAwesomeIcons.mapMarkedAlt
-                                      : FontAwesomeIcons.thLarge,
-                                  size: 16.0,
-                                  color: kBackgroundColor,
-                                ),
+                                  ),
+                                  SizedBox(height: 5.0),
+                                  InkWell(
+                                    onTap: _onFilterByCategory,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        border: Border(
+                                          bottom: BorderSide(
+                                            color: kBackgroundColor,
+                                            width: 0.6,
+                                          ),
+                                        ),
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            _selectedCategory != null
+                                                ? _selectedCategory!.name!
+                                                    .toUpperCase()
+                                                : 'All',
+                                            style: Style.subtitle2.copyWith(
+                                              color: kBackgroundColor,
+                                              fontSize:
+                                                  SizeConfig.textScaleFactor *
+                                                      14,
+                                            ),
+                                          ),
+                                          Spacer(),
+                                          Icon(
+                                            FontAwesomeIcons.chevronDown,
+                                            color: kBackgroundColor,
+                                            size:
+                                                SizeConfig.textScaleFactor * 14,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            VerticalDivider(),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Distance',
+                                    style: TextStyle(
+                                      fontSize: SizeConfig.textScaleFactor * 12,
+                                    ),
+                                  ),
+                                  SizedBox(height: 5.0),
+                                  InkWell(
+                                    onTap: _onSelectDistance,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        border: Border(
+                                          bottom: BorderSide(
+                                            color: kBackgroundColor,
+                                            width: 0.6,
+                                          ),
+                                        ),
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            '${(_selectedRadius ~/ 1000).toInt()} km',
+                                            style: Style.subtitle2.copyWith(
+                                              color: kBackgroundColor,
+                                              fontSize:
+                                                  SizeConfig.textScaleFactor *
+                                                      14,
+                                            ),
+                                          ),
+                                          Spacer(),
+                                          Icon(
+                                            FontAwesomeIcons.chevronDown,
+                                            color: kBackgroundColor,
+                                            size:
+                                                SizeConfig.textScaleFactor * 14,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            VerticalDivider(),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Sort by',
+                                    style: TextStyle(
+                                      fontSize: SizeConfig.textScaleFactor * 12,
+                                    ),
+                                  ),
+                                  SizedBox(height: 5.0),
+                                  InkWell(
+                                    onTap: _onSortBy,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        border: Border(
+                                          bottom: BorderSide(
+                                            color: kBackgroundColor,
+                                            width: 0.6,
+                                          ),
+                                        ),
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            '${_selectedSortBy[0].toUpperCase()}${_selectedSortBy.substring(1).toLowerCase()}',
+                                            style: Style.subtitle2.copyWith(
+                                              color: kBackgroundColor,
+                                              fontSize:
+                                                  SizeConfig.textScaleFactor *
+                                                      14,
+                                            ),
+                                          ),
+                                          Spacer(),
+                                          Icon(
+                                            FontAwesomeIcons.chevronDown,
+                                            color: kBackgroundColor,
+                                            size:
+                                                SizeConfig.textScaleFactor * 14,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  margin: EdgeInsets.symmetric(vertical: 8.0),
-                  padding: EdgeInsets.symmetric(horizontal: 20.0),
-                  child: Row(
-                    children: [
-                      Text('Sort by:'),
-                      SizedBox(width: 5.0),
-                      _buildSortOption(),
-                      SizedBox(width: 10.0),
-                      Expanded(
-                        child: Container(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 10.0, vertical: 5.0),
-                          decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(9.0),
-                              color: Colors.white),
-                          child: Center(
-                              child: Text(
-                            'Most Recent',
-                            style: TextStyle(
-                              fontSize: 12.0,
-                            ),
-                          )),
-                        ),
-                      ),
-                      SizedBox(width: 10.0),
-                      Expanded(
-                        child: Container(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 10.0, vertical: 5.0),
-                          decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(9.0),
-                              color: Colors.white),
-                          child: Row(
-                            children: [
-                              Text(
-                                'Price',
-                                style: TextStyle(
-                                  fontSize: 12.0,
-                                ),
-                              ),
-                              Spacer(),
-                              Icon(
-                                Icons.keyboard_arrow_down,
-                                size: 14.0,
-                              )
-                            ],
-                          ),
                         ),
                       ),
                     ],
@@ -389,6 +506,228 @@ class _ProductListScreenState extends State<ProductListScreen> {
         ),
       ),
     );
+  }
+
+  _onSelectDistance() async {
+    final distance = await showDialog<int?>(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) {
+          return Dialog(
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 30.0, vertical: 16.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Search radius distance',
+                        style: Style.subtitle2.copyWith(
+                            color: kBackgroundColor,
+                            fontWeight: FontWeight.bold),
+                      ),
+                      GestureDetector(
+                        onTap: () => Navigator.pop(context, null),
+                        child: Icon(
+                          FontAwesomeIcons.times,
+                          color: kBackgroundColor,
+                          size: 20.0,
+                        ),
+                      ),
+                    ],
+                  ),
+                  ListView(
+                    shrinkWrap: true,
+                    // mainAxisSize: MainAxisSize.min,
+                    // crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(height: 8.0),
+                      ...radiusOptions.map(
+                        (item) => ListTile(
+                          title: Text((item ~/ 1000).toString() + ' km'),
+                          contentPadding: EdgeInsets.zero,
+                          onTap: () => Navigator.pop(context, item),
+                          selectedColor: Color(0xFFBB3F03),
+                          selected: _selectedRadius == item,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
+        });
+
+    // if (distance != null) {
+    //   setState(() {
+    //     _selectedRadius = distance;
+    //   });
+
+    //   _searchBloc.add(InitializeSearch(
+    //     keyword: _keyWordTextController.text.trim(),
+    //     category: _selectedCategory != null ? _selectedCategory!.code : null,
+    //     sortBy: _selectedSortBy,
+    //     distance: _selectedRadius,
+    //   ));
+    // }
+  }
+
+  _onSortBy() async {
+    final sortBy = await showDialog<String?>(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) {
+          return Dialog(
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 30.0, vertical: 16.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Sort by',
+                        style: Style.subtitle2.copyWith(
+                            color: kBackgroundColor,
+                            fontWeight: FontWeight.bold),
+                      ),
+                      GestureDetector(
+                        onTap: () => Navigator.pop(context, null),
+                        child: Icon(
+                          FontAwesomeIcons.times,
+                          color: kBackgroundColor,
+                          size: 20.0,
+                        ),
+                      ),
+                    ],
+                  ),
+                  ListView(
+                    shrinkWrap: true,
+                    // mainAxisSize: MainAxisSize.min,
+                    // crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(height: 8.0),
+                      ...sortByOptions.map(
+                        (item) => ListTile(
+                          title: Text(item),
+                          contentPadding: EdgeInsets.zero,
+                          onTap: () => Navigator.pop(context, item),
+                          selectedColor: Color(0xFFBB3F03),
+                          selected: _selectedSortBy.toLowerCase() ==
+                              item.toLowerCase(),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
+        });
+
+    // if (sortBy != null) {
+    //   setState(() {
+    //     _selectedSortBy = sortBy;
+    //   });
+
+    //   _searchBloc.add(InitializeSearch(
+    //     keyword: _keyWordTextController.text.trim(),
+    //     category: _selectedCategory != null ? _selectedCategory!.code : null,
+    //     sortBy: _selectedSortBy,
+    //     distance: _selectedRadius,
+    //   ));
+    // }
+  }
+
+  _onFilterByCategory() async {
+    if (_categoryList.isEmpty) return;
+    final category = await showDialog<ProductCategoryModel?>(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) {
+          return Dialog(
+            child: Container(
+              height: SizeConfig.screenHeight * .5,
+              padding: EdgeInsets.symmetric(horizontal: 30.0, vertical: 16.0),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Category',
+                        style: Style.subtitle2.copyWith(
+                            color: kBackgroundColor,
+                            fontWeight: FontWeight.bold),
+                      ),
+                      GestureDetector(
+                        onTap: () => Navigator.pop(context, null),
+                        child: Icon(
+                          FontAwesomeIcons.times,
+                          color: kBackgroundColor,
+                          size: 20.0,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Expanded(
+                    child: ListView(
+                      padding: EdgeInsets.zero,
+                      shrinkWrap: true,
+                      // mainAxisSize: MainAxisSize.min,
+                      // crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(height: 8.0),
+                        ListTile(
+                          title: Text(
+                            'All',
+                            style: TextStyle(
+                              fontSize: SizeConfig.textScaleFactor * 15.0,
+                            ),
+                          ),
+                          contentPadding: EdgeInsets.zero,
+                          onTap: () => Navigator.pop(context, null),
+                          selectedColor: Color(0xFFBB3F03),
+                          selected: _selectedCategory == null,
+                        ),
+                        ..._categoryList.where((cat) => cat.type == 'PT1').map(
+                              (item) => ListTile(
+                                dense: true,
+                                title: Text(
+                                  item.name ?? '',
+                                  style: TextStyle(
+                                    fontSize: SizeConfig.textScaleFactor * 15.0,
+                                  ),
+                                ),
+                                contentPadding: EdgeInsets.zero,
+                                onTap: () => Navigator.pop(context, item),
+                                selectedColor: Color(0xFFBB3F03),
+                                selected: _selectedCategory != null &&
+                                    _selectedCategory!.code == item.code,
+                              ),
+                            ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        });
+
+    // setState(() {
+    //   _selectedCategory = category;
+    // });
+    // _searchBloc.add(InitializeSearch(
+    //   keyword: _keyWordTextController.text.trim(),
+    //   category: _selectedCategory != null ? _selectedCategory!.code : null,
+    //   sortBy: _selectedSortBy,
+    //   distance: _selectedRadius,
+    // ));
   }
 
   Future<dynamic> _onMarkerTapped(ProductModel product) async {
