@@ -34,7 +34,7 @@ class _CustomButtonState extends State<CustomButton> {
         margin: !widget.removeMargin ? EdgeInsets.only(bottom: 16.0) : null,
         width: double.infinity,
         padding: EdgeInsets.symmetric(
-          vertical: 10.0,
+          vertical: 5.0,
         ),
         decoration: BoxDecoration(
           color: widget.enabled ? widget.bgColor : Colors.grey.shade400,

@@ -45,6 +45,13 @@ class InitializeUserRatingsScreen extends ProfileEvent {
   InitializeUserRatingsScreen(this.userId);
 }
 
+class UpdatePassword extends ProfileEvent {
+  final String currentPassword;
+  final String newPassword;
+
+  UpdatePassword(this.currentPassword, this.newPassword);
+}
+
 class GetNextProductRatings extends ProfileEvent {
   final String userId;
   final String lastProductId;

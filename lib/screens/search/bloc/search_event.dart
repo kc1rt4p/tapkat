@@ -9,7 +9,7 @@ abstract class SearchEvent extends Equatable {
 
 class InitializeSearch extends SearchEvent {
   final String keyword;
-  final String? category;
+  final List<String>? category;
   final int distance;
   final String sortBy;
 

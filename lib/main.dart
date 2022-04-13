@@ -63,7 +63,6 @@ class _MyAppState extends State<MyApp> {
           BlocListener(
             bloc: _authBloc,
             listener: (context, state) {
-              print('current auth state: $state');
               if (state is AuthInitialized) {
                 _userStream = state.stream.listen((user) {
                   if (user.user != null) {

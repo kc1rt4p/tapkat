@@ -23,6 +23,7 @@ import 'package:tapkat/widgets/barter_list_item.dart';
 import 'package:tapkat/widgets/custom_app_bar.dart';
 import 'package:tapkat/widgets/custom_search_bar.dart';
 import 'package:tapkat/widgets/tapkat_map.dart';
+import 'package:tapkat/utilities/application.dart' as application;
 
 class ProductListScreen extends StatefulWidget {
   final bool showAdd;
@@ -87,7 +88,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
   @override
   void initState() {
     _setTitle();
-    _productBloc.add(GetFirstProducts(widget.listType, userId: widget.userId));
+    _productBloc.add(InitializeAddUpdateProduct());
 
     super.initState();
   }
@@ -134,7 +135,22 @@ class _ProductListScreenState extends State<ProductListScreen> {
               });
             }
 
+            if (state is InitializeAddUpdateProductSuccess) {
+              _categoryList = state.categories;
+              _productBloc.add(GetFirstProducts(
+                userId: application.currentUser!.uid,
+                listType: widget.listType,
+                sortBy: _selectedSortBy,
+                distance: _selectedRadius,
+                category: _selectedCategory != null
+                    ? [_selectedCategory!.code!]
+                    : null,
+              ));
+            }
+
             if (state is GetFirstProductsSuccess) {
+              _refreshController.refreshCompleted();
+              _pagingController.refresh();
               if (state.list.isNotEmpty) {
                 _list.addAll(state.list);
 
@@ -153,8 +169,6 @@ class _ProductListScreenState extends State<ProductListScreen> {
                 _onSelectView();
               }
 
-              _refreshController.refreshCompleted();
-
               _pagingController.addPageRequestListener((pageKey) {
                 if (lastProduct != null) {
                   _productBloc.add(
@@ -165,6 +179,11 @@ class _ProductListScreenState extends State<ProductListScreen> {
                           ? lastProduct!.price!.toString()
                           : lastProduct!.likes.toString(),
                       userId: widget.listType == 'user' ? widget.userId : '',
+                      sortBy: _selectedSortBy,
+                      distance: _selectedRadius,
+                      category: _selectedCategory != null
+                          ? [_selectedCategory!.code!]
+                          : null,
                     ),
                   );
                 } else {
@@ -251,6 +270,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                         child: Row(
                           children: [
                             Expanded(
+                              flex: 2,
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -279,13 +299,12 @@ class _ProductListScreenState extends State<ProductListScreen> {
                                           Text(
                                             _selectedCategory != null
                                                 ? _selectedCategory!.name!
-                                                    .toUpperCase()
                                                 : 'All',
                                             style: Style.subtitle2.copyWith(
                                               color: kBackgroundColor,
                                               fontSize:
                                                   SizeConfig.textScaleFactor *
-                                                      14,
+                                                      12,
                                             ),
                                           ),
                                           Spacer(),
@@ -293,7 +312,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                                             FontAwesomeIcons.chevronDown,
                                             color: kBackgroundColor,
                                             size:
-                                                SizeConfig.textScaleFactor * 14,
+                                                SizeConfig.textScaleFactor * 12,
                                           ),
                                         ],
                                       ),
@@ -304,6 +323,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                             ),
                             VerticalDivider(),
                             Expanded(
+                              flex: 1,
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -335,7 +355,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                                               color: kBackgroundColor,
                                               fontSize:
                                                   SizeConfig.textScaleFactor *
-                                                      14,
+                                                      12,
                                             ),
                                           ),
                                           Spacer(),
@@ -343,7 +363,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                                             FontAwesomeIcons.chevronDown,
                                             color: kBackgroundColor,
                                             size:
-                                                SizeConfig.textScaleFactor * 14,
+                                                SizeConfig.textScaleFactor * 12,
                                           ),
                                         ],
                                       ),
@@ -354,6 +374,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                             ),
                             VerticalDivider(),
                             Expanded(
+                              flex: 1,
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -385,7 +406,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                                               color: kBackgroundColor,
                                               fontSize:
                                                   SizeConfig.textScaleFactor *
-                                                      14,
+                                                      12,
                                             ),
                                           ),
                                           Spacer(),
@@ -393,7 +414,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                                             FontAwesomeIcons.chevronDown,
                                             color: kBackgroundColor,
                                             size:
-                                                SizeConfig.textScaleFactor * 14,
+                                                SizeConfig.textScaleFactor * 12,
                                           ),
                                         ],
                                       ),
@@ -440,44 +461,25 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
   Widget _buildGridView2() {
     return SmartRefresher(
-      onRefresh: () => _productBloc
-          .add(GetFirstProducts(widget.listType, userId: widget.userId)),
+      onRefresh: () => _productBloc.add(GetFirstProducts(
+        userId: application.currentUser!.uid,
+        listType: widget.listType,
+        sortBy: _selectedSortBy,
+        distance: _selectedRadius,
+        category: _selectedCategory != null ? [_selectedCategory!.code!] : null,
+      )),
       controller: _refreshController,
       child: PagedGridView<int, ProductModel>(
         pagingController: _pagingController,
         showNewPageProgressIndicatorAsGridChild: false,
         showNewPageErrorIndicatorAsGridChild: false,
         showNoMoreItemsIndicatorAsGridChild: false,
-        padding: EdgeInsets.symmetric(
-          horizontal: 16.0,
-          vertical: 10.0,
-        ),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           mainAxisSpacing: 16,
           crossAxisCount: 2,
         ),
         builderDelegate: PagedChildBuilderDelegate<ProductModel>(
           itemBuilder: (context, product, index) {
-            var thumbnail = '';
-
-            if (product.mediaPrimary != null &&
-                product.mediaPrimary!.url != null &&
-                product.mediaPrimary!.url!.isNotEmpty)
-              thumbnail = product.mediaPrimary!.url!;
-
-            if (product.mediaPrimary != null &&
-                product.mediaPrimary!.url_t != null &&
-                product.mediaPrimary!.url_t!.isNotEmpty)
-              thumbnail = product.mediaPrimary!.url_t!;
-
-            if (product.mediaPrimary == null ||
-                product.mediaPrimary!.url!.isEmpty &&
-                    product.mediaPrimary!.url_t!.isEmpty &&
-                    product.media != null &&
-                    product.media!.isNotEmpty)
-              thumbnail = product.media!.first.url_t != null
-                  ? product.media!.first.url_t!
-                  : product.media!.first.url!;
             return Center(
               child: BarterListItem(
                 height: SizeConfig.screenHeight * 0.21,
@@ -561,18 +563,19 @@ class _ProductListScreenState extends State<ProductListScreen> {
           );
         });
 
-    // if (distance != null) {
-    //   setState(() {
-    //     _selectedRadius = distance;
-    //   });
+    if (distance != null) {
+      setState(() {
+        _selectedRadius = distance;
+      });
 
-    //   _searchBloc.add(InitializeSearch(
-    //     keyword: _keyWordTextController.text.trim(),
-    //     category: _selectedCategory != null ? _selectedCategory!.code : null,
-    //     sortBy: _selectedSortBy,
-    //     distance: _selectedRadius,
-    //   ));
-    // }
+      _productBloc.add(GetFirstProducts(
+        userId: application.currentUser!.uid,
+        listType: widget.listType,
+        sortBy: _selectedSortBy,
+        distance: _selectedRadius,
+        category: _selectedCategory != null ? [_selectedCategory!.code!] : null,
+      ));
+    }
   }
 
   _onSortBy() async {
@@ -629,18 +632,19 @@ class _ProductListScreenState extends State<ProductListScreen> {
           );
         });
 
-    // if (sortBy != null) {
-    //   setState(() {
-    //     _selectedSortBy = sortBy;
-    //   });
+    if (sortBy != null) {
+      setState(() {
+        _selectedSortBy = sortBy;
+      });
 
-    //   _searchBloc.add(InitializeSearch(
-    //     keyword: _keyWordTextController.text.trim(),
-    //     category: _selectedCategory != null ? _selectedCategory!.code : null,
-    //     sortBy: _selectedSortBy,
-    //     distance: _selectedRadius,
-    //   ));
-    // }
+      _productBloc.add(GetFirstProducts(
+        userId: application.currentUser!.uid,
+        listType: widget.listType,
+        sortBy: _selectedSortBy,
+        distance: _selectedRadius,
+        category: _selectedCategory != null ? [_selectedCategory!.code!] : null,
+      ));
+    }
   }
 
   _onFilterByCategory() async {
@@ -719,15 +723,17 @@ class _ProductListScreenState extends State<ProductListScreen> {
           );
         });
 
-    // setState(() {
-    //   _selectedCategory = category;
-    // });
-    // _searchBloc.add(InitializeSearch(
-    //   keyword: _keyWordTextController.text.trim(),
-    //   category: _selectedCategory != null ? _selectedCategory!.code : null,
-    //   sortBy: _selectedSortBy,
-    //   distance: _selectedRadius,
-    // ));
+    setState(() {
+      _selectedCategory = category;
+    });
+
+    _productBloc.add(GetFirstProducts(
+      userId: application.currentUser!.uid,
+      listType: widget.listType,
+      sortBy: _selectedSortBy,
+      distance: _selectedRadius,
+      category: _selectedCategory != null ? [_selectedCategory!.code!] : null,
+    ));
   }
 
   Future<dynamic> _onMarkerTapped(ProductModel product) async {

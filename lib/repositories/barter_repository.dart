@@ -149,6 +149,7 @@ class BarterRepository {
   Future<bool> markAsRead(List<ChatMessageModel> list) async {
     try {
       await Future.forEach<ChatMessageModel>(list, (msg) async {
+        print('000--- ${msg.toJson()}');
         await barterRef
             .doc(msg.barterId)
             .collection('messages')
@@ -186,7 +187,7 @@ class BarterRepository {
         );
       }
     });
-    print('_-=unreadMsgs==- ${_unreadMessages.length} -===-');
+
     _unreadMessages = _unreadMessages
         .where((chat) => chat.userId != application.currentUser!.uid)
         .toList();

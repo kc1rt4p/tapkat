@@ -364,8 +364,8 @@ class _UserRatingsScreenState extends State<UserRatingsScreen> {
               context,
               MaterialPageRoute(
                 builder: (context) => StoreScreen(
-                  userId: rating.reviewerid!,
-                  userName: rating.reviewername!,
+                  userId: rating.userid!,
+                  userName: rating.username!,
                 ),
               ),
             ),

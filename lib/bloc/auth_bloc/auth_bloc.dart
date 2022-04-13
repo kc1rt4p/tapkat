@@ -3,6 +3,7 @@ import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_webservice/places.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:tapkat/models/location.dart';
 import 'package:tapkat/models/request/update_user.dart';
 import 'package:tapkat/models/user.dart';
@@ -13,6 +14,7 @@ import 'package:tapkat/services/firebase.dart';
 import 'package:tapkat/utilities/application.dart' as application;
 import 'package:tapkat/utilities/auth_util.dart';
 import 'package:tapkat/utilities/upload_media.dart';
+import 'package:geolocator/geolocator.dart' as geoLocator;
 
 part 'auth_event.dart';
 part 'auth_state.dart';
@@ -34,8 +36,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         if (_user != null) {
           application.currentUserModel =
               application.currentUserModel ?? await userRepo.getUser(_user.uid);
-          application.currentUserLocation =
-              application.currentUserModel!.location;
         }
 
         emit(GetCurrentUsersuccess(
@@ -96,9 +96,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             final userModel = await userRepo.getUser(user.uid);
             if (userModel != null) {
               application.currentUserModel = userModel;
-
-              application.currentUserLocation =
-                  application.currentUserModel!.location;
+              _loadUserLocation();
             }
 
             emit(ShowSignUpPhoto());
@@ -111,7 +109,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       try {
         if (event is SignInFacebook) {
           final user = await authService.signInWithFacebook();
-          if (user != null) emit(AuthSignedIn(user));
+          if (user != null) {
+            application.currentUserModel = await userRepo.getUser(user.uid);
+
+            if (application.currentUserModel != null) {
+              _loadUserLocation();
+              emit(AuthSignedIn(user));
+            }
+          }
         }
 
         if (event is SignInGoogle) {
@@ -121,9 +126,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             final userModel = await userRepo.getUser(user.uid);
             if (userModel != null) {
               application.currentUserModel = userModel;
-
-              application.currentUserLocation =
-                  application.currentUserModel!.location;
+              _loadUserLocation();
             }
 
             emit(AuthSignedIn(user));
@@ -185,8 +188,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             if (userModel != null) {
               application.currentUserModel = userModel;
 
-              application.currentUserLocation =
-                  application.currentUserModel!.location;
+              _loadUserLocation();
             }
             emit(AuthSignedIn(user));
           }
@@ -200,5 +202,19 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         emit(AuthSignedOut());
       }
     });
+  }
+}
+
+_loadUserLocation() async {
+  if (await Permission.location.isDenied &&
+      !(await geoLocator.GeolocatorPlatform.instance
+          .isLocationServiceEnabled())) {
+    application.currentUserLocation = application.currentUserModel!.location!;
+  } else {
+    final userLoc = await geoLocator.Geolocator.getCurrentPosition();
+    application.currentUserLocation = LocationModel(
+      latitude: userLoc.latitude,
+      longitude: userLoc.longitude,
+    );
   }
 }

@@ -32,8 +32,8 @@ class _StoreListItemState extends State<StoreListItem> {
         InkWell(
           onTap: widget.onTap,
           child: Container(
-            height: SizeConfig.screenHeight * 0.22,
-            width: SizeConfig.screenWidth * 0.40,
+            height: SizeConfig.screenHeight * 0.2,
+            width: SizeConfig.screenHeight * 0.2,
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(15.0),
@@ -104,66 +104,61 @@ class _StoreListItemState extends State<StoreListItem> {
                           ),
                         ),
                 ),
-                Expanded(
-                  flex: 3,
-                  child: Container(
-                    padding: EdgeInsets.symmetric(
-                      vertical: SizeConfig.safeBlockVertical * 1.3,
-                      horizontal: SizeConfig.safeBlockVertical,
-                    ),
-                    width: double.infinity,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          widget.store.display_name ?? '',
-                          textAlign: TextAlign.center,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: SizeConfig.textScaleFactor * 13.5,
-                            fontWeight: FontWeight.w600,
-                          ),
+                Container(
+                  padding: EdgeInsets.symmetric(
+                    vertical: SizeConfig.safeBlockVertical * 1.3,
+                    horizontal: SizeConfig.safeBlockVertical,
+                  ),
+                  width: double.infinity,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        widget.store.display_name ?? '',
+                        textAlign: TextAlign.center,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: SizeConfig.textScaleFactor * 13.5,
+                          fontWeight: FontWeight.w600,
                         ),
-                        widget.store.rating != null
-                            ? Column(
-                                children: [
-                                  SizedBox(
-                                      height: SizeConfig.screenHeight * 0.009),
-                                  Row(
-                                    children: [
-                                      RatingBar.builder(
-                                        ignoreGestures: true,
-                                        initialRating:
-                                            widget.store.rating != null
-                                                ? widget.store.rating!
-                                                    .roundToDouble()
-                                                : 0,
-                                        minRating: 0,
-                                        direction: Axis.horizontal,
-                                        allowHalfRating: true,
-                                        itemCount: 5,
-                                        itemSize: 15,
-                                        tapOnlyMode: true,
-                                        itemPadding: EdgeInsets.symmetric(
-                                            horizontal: 4.0),
-                                        itemBuilder: (context, _) => Icon(
-                                          Icons.star,
-                                          color: Colors.amber,
-                                        ),
-                                        onRatingUpdate: (rating) {
-                                          //
-                                        },
+                      ),
+                      widget.store.rating != null
+                          ? Column(
+                              children: [
+                                SizedBox(
+                                    height: SizeConfig.screenHeight * 0.009),
+                                Row(
+                                  children: [
+                                    RatingBar.builder(
+                                      ignoreGestures: true,
+                                      initialRating: widget.store.rating != null
+                                          ? widget.store.rating!.roundToDouble()
+                                          : 0,
+                                      minRating: 0,
+                                      direction: Axis.horizontal,
+                                      allowHalfRating: true,
+                                      itemCount: 5,
+                                      itemSize: 15,
+                                      tapOnlyMode: true,
+                                      itemPadding:
+                                          EdgeInsets.symmetric(horizontal: 4.0),
+                                      itemBuilder: (context, _) => Icon(
+                                        Icons.star,
+                                        color: Colors.amber,
                                       ),
-                                      Text(widget.store.rating!
-                                          .toStringAsFixed(1)),
-                                    ],
-                                  ),
-                                ],
-                              )
-                            : Container(),
-                      ],
-                    ),
+                                      onRatingUpdate: (rating) {
+                                        //
+                                      },
+                                    ),
+                                    Text(widget.store.rating!
+                                        .toStringAsFixed(1)),
+                                  ],
+                                ),
+                              ],
+                            )
+                          : Container(),
+                    ],
                   ),
                 ),
               ],

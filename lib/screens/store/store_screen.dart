@@ -360,6 +360,8 @@ class _StoreScreenState extends State<StoreScreen> {
                                   GetNextProducts(
                                     listType: 'user',
                                     lastProductId: lastProduct!.productid!,
+                                    sortBy: 'distance',
+                                    distance: 50000,
                                     startAfterVal:
                                         lastProduct!.price.toString(),
                                     userId: widget.userId,
@@ -420,8 +422,12 @@ class _StoreScreenState extends State<StoreScreen> {
                                 _isFollowing = false;
                             });
                           });
-                          _productBloc.add(
-                              GetFirstProducts('user', userId: widget.userId));
+                          _productBloc.add(GetFirstProducts(
+                            listType: 'user',
+                            userId: widget.userId,
+                            sortBy: 'distance',
+                            distance: 50000,
+                          ));
                         }
 
                         if (state is EditUserLikeSuccess) {

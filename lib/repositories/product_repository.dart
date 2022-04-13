@@ -234,7 +234,7 @@ class ProductRepository {
 
   Future<List<ProductModel>> getNextProducts({
     required String listType,
-    String? userId,
+    required userId,
     required String lastProductId,
     required dynamic startAfterVal,
     List<String>? interests,
@@ -283,27 +283,39 @@ class ProductRepository {
     print("=== === === ${categories.length}");
     List<Map<String, dynamic>> list = [];
 
-    for (var cat in categories.where((cat) => cat.type == 'PT1')) {
+    final products = await getCategoryProducts(
+        categories
+            .where((cat) => cat.type == 'PT1')
+            .map((c) => c.code!)
+            .toList(),
+        application.currentUser!.uid);
+    final cats = categories.where((cat) => cat.type == 'PT1').toList();
+
+    for (var cat in cats) {
       list.add({
         'name': cat.name,
         'code': cat.code,
-        'products': await getCategoryProducts(cat.code!),
+        'products':
+            products.where((product) => product.category == cat.code).toList(),
       });
     }
 
     return list;
   }
 
-  Future<List<ProductModel>> getCategoryProducts(String category,
+  Future<List<ProductModel>> getCategoryProducts(List<String> categories,
       [String? userid]) async {
     var _body = {
       'psk': psk,
-      'sortby': 'price',
+      'sortby': 'distance',
       'type': 'PT1',
-      'category': category,
+      'userid': userid,
       'sortdirection': 'ascending',
       'productcount': productCount,
-      'location': application.currentUserLocation!.toJson(),
+      'location': application.currentUserLocation != null
+          ? application.currentUserLocation!.toJson()
+          : application.currentUserModel!.location!.toJson(),
+      'radius': 5000,
     };
 
     final response = await _apiService.post(
@@ -318,26 +330,31 @@ class ProductRepository {
         .toList();
   }
 
-  Future<List<ProductModel>> getFirstProducts(
-      String listType, LocationModel? location, int? radius,
-      [String? userid, List<String>? interests]) async {
+  Future<List<ProductModel>> getFirstProducts(String listType,
+      {required String userId,
+      List<String>? interests,
+      List<String>? category,
+      required String sortBy,
+      LocationModel? location,
+      int radius = 5000}) async {
+    if (listType == 'reco') {}
     var body = {
       'psk': psk,
-      'userid': userid,
+      'userid': userId,
       'productcount': productCount,
     };
 
-    if (location != null && listType != 'user') {
+    if (listType != 'user') {
       body.addAll({
-        'location': location.toJson(),
-        'radius': radius ?? 5000,
+        'location': location!.toJson(),
+        'radius': radius,
       });
     }
 
     if (listType != 'demand') {
       body.addAll({
-        'sortby': 'price',
-        'sortdirection': listType == 'reco' ? 'ascending' : 'descending',
+        'sortby': 'distance',
+        'sortdirection': 'ascending',
       });
 
       if (listType == 'reco' && interests != null) {
@@ -347,11 +364,6 @@ class ProductRepository {
     final response = await _apiService.post(
       url: 'products/$listType/searchfirst',
       body: body,
-      // params: userid != null
-      //     ? {
-      //         'userid': userid,
-      //       }
-      //     : null,
     );
 
     if (response.data['status'] != 'SUCCESS') return [];
@@ -425,7 +437,7 @@ class ProductRepository {
   Future<List<ProductModel>> searchProducts(List<String> keyword,
       {String? lastProductId,
       String? startAfterVal,
-      String? category,
+      List<String>? category,
       required String sortBy,
       required LocationModel location,
       int radius = 5000}) async {

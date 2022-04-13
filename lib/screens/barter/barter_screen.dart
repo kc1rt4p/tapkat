@@ -2104,26 +2104,6 @@ class _BarterScreenState extends State<BarterScreen> {
                     ),
                     items: [
                       ...remoteUserItems.map((item) {
-                        var thumbnail = '';
-
-                        if (item.mediaPrimary != null &&
-                            item.mediaPrimary!.url != null &&
-                            item.mediaPrimary!.url!.isNotEmpty)
-                          thumbnail = item.mediaPrimary!.url!;
-
-                        if (item.mediaPrimary != null &&
-                            item.mediaPrimary!.url_t != null &&
-                            item.mediaPrimary!.url_t!.isNotEmpty)
-                          thumbnail = item.mediaPrimary!.url_t!;
-
-                        if (item.mediaPrimary != null &&
-                            item.mediaPrimary!.url!.isEmpty &&
-                            item.mediaPrimary!.url_t!.isEmpty &&
-                            item.media != null &&
-                            item.media!.isNotEmpty)
-                          thumbnail = item.media!.first.url_t != null
-                              ? item.media!.first.url_t!
-                              : item.media!.first.url!;
                         return Stack(
                           alignment: Alignment.topCenter,
                           children: [

@@ -6,6 +6,7 @@ import 'package:flutter_progress_hud/flutter_progress_hud.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:tapkat/backend.dart';
+import 'package:tapkat/models/address.dart';
 import 'package:tapkat/models/media_primary_model.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/models/request/add_product_request.dart';
@@ -253,12 +254,14 @@ class _WishListScreenState extends State<WishListScreen> {
       showNewPageErrorIndicatorAsGridChild: false,
       showNoMoreItemsIndicatorAsGridChild: false,
       padding: EdgeInsets.symmetric(
-        horizontal: 16.0,
         vertical: 10.0,
+        horizontal: 16.0,
       ),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        mainAxisSpacing: 16,
-        crossAxisCount: 2,
+        childAspectRatio: 1,
+        crossAxisSpacing: 10.0,
+        mainAxisSpacing: 16.0,
+        crossAxisCount: 3,
       ),
       builderDelegate: PagedChildBuilderDelegate<LikedStoreModel>(
         itemBuilder: (context, store, index) {
@@ -292,21 +295,16 @@ class _WishListScreenState extends State<WishListScreen> {
       showNewPageProgressIndicatorAsGridChild: false,
       showNewPageErrorIndicatorAsGridChild: false,
       showNoMoreItemsIndicatorAsGridChild: false,
-      padding: EdgeInsets.symmetric(
-        horizontal: 16.0,
-        vertical: 10.0,
-      ),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        mainAxisSpacing: 16,
         crossAxisCount: 2,
+        mainAxisSpacing: 10.0,
+        crossAxisSpacing: 10.0,
       ),
       builderDelegate: PagedChildBuilderDelegate<LikedProductModel>(
         itemBuilder: (context, product, index) {
           return Center(
             child: BarterListItem(
-              height: SizeConfig.screenHeight * 0.21,
-              width: SizeConfig.screenWidth * 0.40,
-              likeLeftMargin: SizeConfig.safeBlockHorizontal * 2,
+              likeLeftMargin: SizeConfig.screenWidth * 0.09,
               product: ProductModel(
                 productid: product.productid,
                 productname: product.productname,

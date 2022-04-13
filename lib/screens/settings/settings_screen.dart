@@ -2,6 +2,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
+import 'package:tapkat/screens/root/profile/change_password_screen.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/dialog_message.dart';
 import 'package:tapkat/utilities/size_config.dart';
@@ -60,7 +61,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   padding: EdgeInsets.zero,
                   children: [
                     _buildListHeader(label: 'Account Settings'),
-                    _buildListGroupItem(label: 'Change Password'),
+                    _buildListGroupItem(
+                      label: 'Change Password',
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ChangePasswordScreen(),
+                        ),
+                      ),
+                    ),
                     _buildListGroupItem(label: 'Default Location'),
                     _buildListGroupItem(label: 'Default Currency'),
                     _buildListGroupItem(label: 'Delete Account'),

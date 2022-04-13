@@ -85,17 +85,21 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
                   ? _barterRecord.userid1
                   : _barterRecord.userid2;
 
-              final currentUserProducts = await _productRepository
-                  .getFirstProducts('user', null, null, _user!.uid);
+              final currentUserProducts =
+                  await _productRepository.getFirstProducts(
+                'user',
+                sortBy: 'name',
+                userId: application.currentUser!.uid,
+              );
 
               final remoteUserProducts =
                   await _productRepository.getFirstProducts(
-                      'user',
-                      null,
-                      null,
-                      senderUserId == _user!.uid
-                          ? recipientUserId
-                          : senderUserId);
+                'user',
+                sortBy: 'name',
+                userId: senderUserId == application.currentUser!.uid
+                    ? recipientUserId!
+                    : senderUserId!,
+              );
 
               emit(BarterInitialized(
                 barterStream:
@@ -188,8 +192,8 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
               if (updated) {
                 _barterRepository.addMessage(ChatMessageModel(
                   barterId: event.barterId,
-                  userId: _user!.uid,
-                  userName: _user!.displayName,
+                  userId: application.currentUser!.uid,
+                  userName: application.currentUser!.displayName,
                   message: 'Offer SUBMITTED (Counter Offer)',
                   dateCreated: DateTime.now(),
                 ));
@@ -228,12 +232,10 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
                       ? recipientUserId!
                       : senderUserId!;
 
-              final user = await _userRepo.getUser(userId);
-
               _barterRepository.addMessage(ChatMessageModel(
                 barterId: event.barterId,
-                userId: userId,
-                userName: user!.display_name,
+                userId: application.currentUser!.uid,
+                userName: application.currentUser!.displayName,
                 message: 'Offer ${event.status.toUpperCase()}',
                 dateCreated: DateTime.now(),
               ));
@@ -341,17 +343,21 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
                     ? event.barterRecord.userid1
                     : event.barterRecord.userid2;
 
-            final currentUserProducts = await _productRepository
-                .getFirstProducts('user', null, null, _user!.uid);
+            final currentUserProducts =
+                await _productRepository.getFirstProducts(
+              'user',
+              sortBy: 'name',
+              userId: application.currentUser!.uid,
+            );
 
             final remoteUserProducts =
                 await _productRepository.getFirstProducts(
-                    'user',
-                    null,
-                    null,
-                    senderUserId == _user!.uid
-                        ? recipientUserId
-                        : senderUserId);
+              'user',
+              sortBy: 'name',
+              userId: senderUserId == application.currentUser!.uid
+                  ? recipientUserId!
+                  : senderUserId!,
+            );
 
             emit(BarterInitialized(
               barterStream:
@@ -421,15 +427,16 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
 
           if (event is GetUnreadBarterMessages) {
             final messages = await _barterRepository.getUnreadBarterMessages();
-            unreadMessages = messages;
+            application.unreadBarterMessages = messages;
             emit(GetUnreadBarterMessagesSuccess(messages));
           }
 
           if (event is MarkMessagesAsRead) {
-            final messages = unreadMessages
+            final messages = application.unreadBarterMessages
                 .where((msg) => msg.barterId == event.barterId)
                 .toList();
-            final marked = await _barterRepository.markAsRead(messages);
+            final marked = await _barterRepository.markAsRead(
+                messages.where((msg) => msg.isRead == false).toList());
             if (marked) {
               emit(MarkMessagesAsReadSuccess());
               add(GetUnreadBarterMessages());
@@ -442,3 +449,17 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
     });
   }
 }
+
+final home = {
+  'psk': 'lcp9321p',
+  'userid': 'bt5cnkJUqpRm4jtguOWPYTovDrz1',
+  'productcount': 10,
+  'location': {
+    '_longitude': 123.19112,
+    '_latitude': 13.6256732,
+  },
+  'radius': 5000,
+  'sortby': 'distance',
+  'sortdirection': 'ascending',
+  'interests': ['PC11', 'PC10', 'PC06', 'PC01'],
+};

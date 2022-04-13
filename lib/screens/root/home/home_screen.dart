@@ -262,6 +262,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 builder: (context) => ProductListScreen(
                                   listType: 'reco',
                                   showAdd: false,
+                                  userId: application.currentUser!.uid,
                                 ),
                               ),
                             ),
@@ -272,6 +273,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   listType: 'reco',
                                   showAdd: false,
                                   initialView: 'map',
+                                  userId: application.currentUser!.uid,
                                 ),
                               ),
                             ),
@@ -291,6 +293,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 builder: (context) => ProductListScreen(
                                   listType: 'demand',
                                   showAdd: false,
+                                  userId: application.currentUser!.uid,
                                 ),
                               ),
                             ),
@@ -333,17 +336,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                           userid: store.userid,
                                           photo_url: store.photo_url,
                                         ),
-                                        // liked: liked,
-                                        // onLikeTapped: () => _storeBloc.add(
-                                        //   EditUserLike(
-                                        //     user: UserModel(
-                                        //       display_name: store.display_name,
-                                        //       userid: store.userid,
-                                        //       photo_url: store.photo_url,
-                                        //     ),
-                                        //     likeCount: liked ? -1 : 1,
-                                        //   ),
-                                        // ),
                                         removeLike: true,
                                         onTap: () => Navigator.push(
                                           context,

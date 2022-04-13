@@ -8,7 +8,6 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
 import 'package:tapkat/models/barter_record_model.dart';
 import 'package:tapkat/models/chat_message.dart';
-import 'package:tapkat/models/location.dart';
 import 'package:tapkat/screens/barter/barter_screen.dart';
 import 'package:tapkat/screens/barter/bloc/barter_bloc.dart';
 import 'package:tapkat/screens/product/bloc/product_bloc.dart';
@@ -20,7 +19,6 @@ import 'package:tapkat/screens/root/wish_list/wish_list_screen.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/utilities/application.dart' as application;
-import 'package:geolocator/geolocator.dart' as geoLocator;
 
 import 'bloc/root_bloc.dart';
 
@@ -64,18 +62,15 @@ class _RootScreenState extends State<RootScreen> {
   late AuthBloc _authBloc;
   late BarterBloc _barterBloc;
 
-  final _currentVerDate = DateTime(2022, 4, 12, 8);
+  final _currentVerDate = DateTime(2022, 4, 13, 8);
 
   final _appConfig = new LocalStorage('app_config.json');
-
-  List<ChatMessageModel> _unreadMessages = [];
 
   @override
   void initState() {
     _barterBloc = BlocProvider.of<BarterBloc>(context);
     _authBloc = BlocProvider.of<AuthBloc>(context);
     Permission.location.request();
-    _loadUserLocation();
     _authBloc.add(GetCurrentuser());
     _barterBloc.add(GetUnreadBarterMessages());
     super.initState();
@@ -96,17 +91,18 @@ class _RootScreenState extends State<RootScreen> {
     );
     const NotificationDetails platformChannelSpecifics =
         NotificationDetails(android: androidPlatformChannelSpecifics);
-
+    _barterBloc.add(GetUnreadBarterMessages());
     if (!application.chatOpened) {
       await flutterLocalNotificationsPlugin.show(0, message.notification!.title,
           message.notification!.body, platformChannelSpecifics,
-          payload: '');
+          payload: message.data['barterid']);
     } else
       return;
   }
 
   Future<void> _firebaseMessageOpened(RemoteMessage message) async {
     final barterId = message.data['barterid'] as String;
+    _barterBloc.add(GetUnreadBarterMessages());
     if (barterId != null) {
       Navigator.push(
         context,
@@ -160,7 +156,15 @@ class _RootScreenState extends State<RootScreen> {
 
     await flutterLocalNotificationsPlugin.initialize(initializationSettings,
         onSelectNotification: (val) {
-      print('WHAAAAAAAAT?');
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => BarterScreen(
+            barterRecord: BarterRecordModel(barterId: val),
+            showChatFirst: true,
+          ),
+        ),
+      );
     });
 
     FirebaseMessaging.onMessage.listen(_firebaseMessagingForegroundHandler);
@@ -218,7 +222,7 @@ class _RootScreenState extends State<RootScreen> {
               listener: (context, state) {
                 if (state is GetUnreadBarterMessagesSuccess) {
                   setState(() {
-                    _unreadMessages = state.messages;
+                    application.unreadBarterMessages = state.messages;
                   });
                 }
               },
@@ -291,6 +295,7 @@ class _RootScreenState extends State<RootScreen> {
   }
 
   Widget _buildBottomNavBar() {
+    print(application.unreadBarterMessages.length);
     return Container(
       height: kToolbarHeight - 10,
       color: Color(0xFFEBFBFF),
@@ -325,7 +330,7 @@ class _RootScreenState extends State<RootScreen> {
               isActive: _currentIndex == 2,
               icon: Icons.repeat_outlined,
               index: 2,
-              showBadge: _unreadMessages.isNotEmpty,
+              showBadge: application.unreadBarterMessages.isNotEmpty,
             ),
             _buildBottomNavItem(
               isActive: _currentIndex == 3,
@@ -379,17 +384,6 @@ class _RootScreenState extends State<RootScreen> {
           ),
         ),
       ),
-    );
-  }
-
-  _loadUserLocation() async {
-    if (await Permission.location.isDenied) return;
-    if (!(await geoLocator.GeolocatorPlatform.instance
-        .isLocationServiceEnabled())) return;
-    final userLoc = await geoLocator.Geolocator.getCurrentPosition();
-    application.currentUserLocation = LocationModel(
-      latitude: userLoc.latitude,
-      longitude: userLoc.longitude,
     );
   }
 }

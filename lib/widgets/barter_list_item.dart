@@ -2,11 +2,13 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tapkat/backend.dart';
+import 'package:tapkat/models/location.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/schemas/user_likes_record.dart';
 import 'package:tapkat/screens/product/bloc/product_bloc.dart';
 import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/utilities/application.dart' as application;
+import 'dart:math';
 
 typedef OnLikeCallBack = void Function(int);
 
@@ -19,6 +21,7 @@ class BarterListItem extends StatefulWidget {
   final double? likeLeftMargin;
   final ProductModel product;
   final OnLikeCallBack? onLikeTapped;
+  final bool hideDistance;
 
   const BarterListItem({
     Key? key,
@@ -30,6 +33,7 @@ class BarterListItem extends StatefulWidget {
     this.likeLeftMargin,
     required this.product,
     this.onLikeTapped,
+    this.hideDistance = false,
   }) : super(key: key);
 
   @override
@@ -50,6 +54,8 @@ class _BarterListItemState extends State<BarterListItem> {
   @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
+    LocationModel _location = application.currentUserLocation ??
+        application.currentUserModel!.location!;
     return StreamBuilder<List<UserLikesRecord?>>(
       stream: queryUserLikesRecord(
         queryBuilder: (userLikesRecord) => userLikesRecord
@@ -98,8 +104,8 @@ class _BarterListItemState extends State<BarterListItem> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
-                    height: widget.height ?? SizeConfig.screenHeight * 0.235,
-                    width: widget.width ?? SizeConfig.screenWidth * 0.40,
+                    height: widget.height ?? SizeConfig.screenHeight * 0.2,
+                    width: widget.height ?? SizeConfig.screenHeight * 0.2,
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(15.0),
@@ -171,46 +177,52 @@ class _BarterListItemState extends State<BarterListItem> {
                                   ),
                                 ),
                         ),
-                        Expanded(
-                          flex: 3,
-                          child: Container(
-                            padding: EdgeInsets.symmetric(
-                                vertical: SizeConfig.safeBlockVertical * 1.3,
-                                horizontal: SizeConfig.safeBlockVertical),
-                            width: double.infinity,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: [
-                                Text(
-                                  product.productname ?? '',
-                                  textAlign: TextAlign.center,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    fontSize: widget.fontSize ??
-                                        SizeConfig.textScaleFactor * 13.5,
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                        Container(
+                          padding: EdgeInsets.all(3.0),
+                          width: double.infinity,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                product.productname ?? '',
+                                textAlign: TextAlign.center,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: widget.fontSize ??
+                                      SizeConfig.textScaleFactor * 12,
+                                  fontWeight: FontWeight.w600,
                                 ),
-                                // SizedBox(height: SizeConfig.screenHeight * 0.009),
-                                Spacer(),
-                                Text(
-                                  product.price != null
-                                      ? product.price!.toStringAsFixed(2)
-                                      : '0.00',
-                                  style: TextStyle(
-                                    fontSize: widget.fontSize ??
-                                        SizeConfig.textScaleFactor * 12.4,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                              ),
+                              SizedBox(height: 5.0),
+                              Text(
+                                product.price != null
+                                    ? product.price!.toStringAsFixed(2)
+                                    : '0.00',
+                                style: TextStyle(
+                                  fontSize: widget.fontSize ??
+                                      SizeConfig.textScaleFactor * 10,
+                                  fontWeight: FontWeight.bold,
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
                     ),
                   ),
+                  product.address != null &&
+                          product.address!.location != null &&
+                          !widget.hideDistance
+                      ? Padding(
+                          padding: const EdgeInsets.only(top: 5.0),
+                          child: Text(
+                              '${calculateDistance(product.address!.location!.latitude, product.address!.location!.longitude, _location.latitude, _location.longitude).toStringAsFixed(1)} Km',
+                              style: TextStyle(
+                                  fontSize: SizeConfig.textScaleFactor * 10)),
+                        )
+                      : Container(),
                 ],
               ),
             ),
@@ -218,27 +230,25 @@ class _BarterListItemState extends State<BarterListItem> {
               visible: !widget.hideLikeBtn,
               child: Positioned(
                 top: 5,
-                right:
-                    widget.likeLeftMargin ?? SizeConfig.safeBlockHorizontal * 5,
+                right: widget.likeLeftMargin ?? 5,
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
                     Icon(
                       Icons.favorite,
                       color: Colors.white,
-                      size: 27,
+                      size: SizeConfig.textScaleFactor * 20,
                     ),
                     GestureDetector(
                       onTap: widget.onLikeTapped != null
                           ? () {
-                              print('LIKED: $liked');
-
                               widget.onLikeTapped!(liked ? 1 : -1);
                             }
                           : null,
                       child: Icon(
                         liked ? Icons.favorite : Icons.favorite_outline,
                         color: liked ? Colors.red : Colors.black,
+                        size: SizeConfig.textScaleFactor * 17,
                       ),
                     ),
                   ],
@@ -249,5 +259,14 @@ class _BarterListItemState extends State<BarterListItem> {
         );
       },
     );
+  }
+
+  double calculateDistance(lat1, lon1, lat2, lon2) {
+    var p = 0.017453292519943295;
+    var c = cos;
+    var a = 0.5 -
+        c((lat2 - lat1) * p) / 2 +
+        c(lat1 * p) * c(lat2 * p) * (1 - c((lon2 - lon1) * p)) / 2;
+    return 12742 * asin(sqrt(a));
   }
 }

@@ -23,6 +23,8 @@ class ProfileScreenInitialized extends ProfileState {
   });
 }
 
+class UpdatePasswordSuccess extends ProfileState {}
+
 class ProfileLoading extends ProfileState {}
 
 class UpdateUserInfoSuccess extends ProfileState {}
@@ -49,4 +51,10 @@ class GetNextUserRatingsSuccess extends ProfileState {
   final List<UserReviewModel> list;
 
   GetNextUserRatingsSuccess(this.list);
+}
+
+class ProfileError extends ProfileState {
+  final String message;
+
+  ProfileError(this.message);
 }

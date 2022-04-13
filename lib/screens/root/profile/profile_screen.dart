@@ -147,7 +147,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           listType: 'user',
                           lastProductId: lastProduct!.productid!,
                           startAfterVal: lastProduct!.price.toString(),
+                          sortBy: 'distance',
                           userId: _user!.uid,
+                          distance: 50000,
                         ),
                       );
                     }
@@ -351,7 +353,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       Expanded(
                                         child: Container(
                                           margin: EdgeInsets.symmetric(
-                                            vertical: 10.0,
+                                            vertical: 5.0,
                                           ),
                                           width: double.infinity,
                                           child: Column(
@@ -579,6 +581,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       showNewPageProgressIndicatorAsGridChild: false,
       showNewPageErrorIndicatorAsGridChild: false,
       showNoMoreItemsIndicatorAsGridChild: false,
+      padding: EdgeInsets.symmetric(vertical: 10.0),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         mainAxisSpacing: 10.0,
@@ -588,9 +591,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         itemBuilder: (context, product, index) {
           return Center(
             child: BarterListItem(
+              hideDistance: true,
               product: product,
-              height: SizeConfig.screenHeight * 0.20,
-              width: SizeConfig.screenWidth * 0.4,
               hideLikeBtn: true,
               onTapped: () async {
                 final changed = await Navigator.push(
@@ -602,8 +604,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
                 );
-
-                print('changed value: $changed');
 
                 if (changed == true) {
                   _profileBloc.add(InitializeProfileScreen());

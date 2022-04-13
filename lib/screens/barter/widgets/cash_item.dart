@@ -5,8 +5,8 @@ import 'package:tapkat/utilities/size_config.dart';
 Widget buildCashItem(num amount) {
   return InkWell(
     child: Container(
-      height: SizeConfig.screenHeight * 0.231,
-      width: SizeConfig.screenWidth * 0.40,
+      height: SizeConfig.screenHeight * 0.2,
+      width: SizeConfig.screenHeight * 0.2,
       margin: EdgeInsets.only(right: 8.0),
       decoration: BoxDecoration(
         color: Colors.white,

@@ -70,7 +70,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
 
   bool _loading = false;
 
-  String _selectedSortBy = 'price';
+  String _selectedSortBy = 'distance';
   List<String> sortByOptions = [
     'Distance',
     'Name',
@@ -86,7 +86,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
 
     _searchBloc.add(InitializeSearch(
       keyword: _keyWordTextController.text.trim(),
-      category: widget.category,
+      category: widget.category != null ? [widget.category!] : null,
       sortBy: _selectedSortBy,
       distance: _selectedRadius,
     ));
@@ -249,6 +249,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                           child: Row(
                             children: [
                               Expanded(
+                                flex: 2,
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -275,24 +276,26 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                                           mainAxisAlignment:
                                               MainAxisAlignment.center,
                                           children: [
-                                            Text(
-                                              _selectedCategory != null
-                                                  ? _selectedCategory!.name!
-                                                      .toUpperCase()
-                                                  : 'All',
-                                              style: Style.subtitle2.copyWith(
-                                                color: kBackgroundColor,
-                                                fontSize:
-                                                    SizeConfig.textScaleFactor *
-                                                        14,
+                                            Expanded(
+                                              child: Text(
+                                                _selectedCategory != null
+                                                    ? _selectedCategory!.name!
+                                                    : 'All',
+                                                style: Style.subtitle2.copyWith(
+                                                  color: kBackgroundColor,
+                                                  fontSize: SizeConfig
+                                                          .textScaleFactor *
+                                                      12,
+                                                ),
+                                                overflow: TextOverflow.ellipsis,
+                                                maxLines: 1,
                                               ),
                                             ),
-                                            Spacer(),
                                             Icon(
                                               FontAwesomeIcons.chevronDown,
                                               color: kBackgroundColor,
                                               size: SizeConfig.textScaleFactor *
-                                                  14,
+                                                  12,
                                             ),
                                           ],
                                         ),
@@ -303,6 +306,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                               ),
                               VerticalDivider(),
                               Expanded(
+                                flex: 1,
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -335,7 +339,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                                                 color: kBackgroundColor,
                                                 fontSize:
                                                     SizeConfig.textScaleFactor *
-                                                        14,
+                                                        12,
                                               ),
                                             ),
                                             Spacer(),
@@ -343,7 +347,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                                               FontAwesomeIcons.chevronDown,
                                               color: kBackgroundColor,
                                               size: SizeConfig.textScaleFactor *
-                                                  14,
+                                                  12,
                                             ),
                                           ],
                                         ),
@@ -354,6 +358,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                               ),
                               VerticalDivider(),
                               Expanded(
+                                flex: 1,
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -386,7 +391,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                                                 color: kBackgroundColor,
                                                 fontSize:
                                                     SizeConfig.textScaleFactor *
-                                                        14,
+                                                        12,
                                               ),
                                             ),
                                             Spacer(),
@@ -394,7 +399,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                                               FontAwesomeIcons.chevronDown,
                                               color: kBackgroundColor,
                                               size: SizeConfig.textScaleFactor *
-                                                  14,
+                                                  12,
                                             ),
                                           ],
                                         ),
@@ -497,7 +502,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
 
       _searchBloc.add(InitializeSearch(
         keyword: _keyWordTextController.text.trim(),
-        category: _selectedCategory != null ? _selectedCategory!.code : null,
+        category: _selectedCategory != null ? [_selectedCategory!.code!] : null,
         sortBy: _selectedSortBy,
         distance: _selectedRadius,
       ));
@@ -565,7 +570,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
 
       _searchBloc.add(InitializeSearch(
         keyword: _keyWordTextController.text.trim(),
-        category: _selectedCategory != null ? _selectedCategory!.code : null,
+        category: _selectedCategory != null ? [_selectedCategory!.code!] : null,
         sortBy: _selectedSortBy,
         distance: _selectedRadius,
       ));
@@ -653,7 +658,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
     });
     _searchBloc.add(InitializeSearch(
       keyword: _keyWordTextController.text.trim(),
-      category: _selectedCategory != null ? _selectedCategory!.code : null,
+      category: _selectedCategory != null ? [_selectedCategory!.code!] : null,
       sortBy: _selectedSortBy,
       distance: _selectedRadius,
     ));
@@ -817,7 +822,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
     return SmartRefresher(
       onRefresh: () => _searchBloc.add(InitializeSearch(
         keyword: _keyWordTextController.text.trim(),
-        category: _selectedCategory != null ? _selectedCategory!.code : '',
+        category: _selectedCategory != null ? [_selectedCategory!.code!] : null,
         sortBy: _selectedSortBy,
         distance: _selectedRadius,
       )),
@@ -828,7 +833,6 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
         showNewPageErrorIndicatorAsGridChild: false,
         showNoMoreItemsIndicatorAsGridChild: false,
         padding: EdgeInsets.symmetric(
-          horizontal: 16.0,
           vertical: 10.0,
         ),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -906,7 +910,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
     _pagingController.refresh();
     _searchBloc.add(InitializeSearch(
       keyword: _keyWordTextController.text.trim(),
-      category: _selectedCategory != null ? _selectedCategory!.code : null,
+      category: _selectedCategory != null ? [_selectedCategory!.code!] : null,
       sortBy: _selectedSortBy,
       distance: _selectedRadius,
     ));

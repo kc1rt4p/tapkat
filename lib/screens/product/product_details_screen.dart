@@ -17,6 +17,7 @@ import 'package:photo_view/photo_view_gallery.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:tapkat/backend.dart';
 import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
+import 'package:tapkat/models/location.dart';
 import 'package:tapkat/models/media_primary_model.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/models/user.dart';
@@ -59,32 +60,13 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   UserModel? _userModel;
 
   LatLng? googleMapsCenter;
-
-  geoCoding.Placemark? _currentUserLoc;
-  geoLocator.Position? _currentUserPosition;
+  late LocationModel _location;
 
   final _refreshController = RefreshController();
-
-  _loadUserLocation() async {
-    if (await Permission.location.isDenied) return;
-    if (!(await geoLocator.GeolocatorPlatform.instance
-        .isLocationServiceEnabled())) return;
-    final userLoc = await geoLocator.Geolocator.getCurrentPosition();
-    List<geoCoding.Placemark> placemarks = await geoCoding
-        .placemarkFromCoordinates(userLoc.latitude, userLoc.longitude);
-    if (placemarks.isNotEmpty) {
-      placemarks.forEach((placemark) => print(placemark.toJson()));
-      setState(() {
-        _currentUserLoc = placemarks.first;
-        _currentUserPosition = userLoc;
-      });
-    }
-  }
 
   @override
   void initState() {
     _productBloc.add(GetProductDetails(widget.productId));
-    _loadUserLocation();
 
     super.initState();
     _user = application.currentUser;
@@ -94,6 +76,8 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
+    LocationModel _location = application.currentUserLocation ??
+        application.currentUserModel!.location!;
     return Scaffold(
       body: ProgressHUD(
         indicatorColor: kBackgroundColor,
@@ -393,29 +377,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                     _product!.address != null &&
                                                     _product!.address!
                                                             .location !=
-                                                        null &&
-                                                    _currentUserPosition != null
+                                                        null
                                                 ? Text(
-                                                    '${calculateDistance(
-                                                      _product!.address!
-                                                          .location!.latitude,
-                                                      _product!.address!
-                                                          .location!.longitude,
-                                                      _currentUserPosition !=
-                                                              null
-                                                          ? _currentUserPosition!
-                                                              .latitude
-                                                          : _userModel!
-                                                              .location!
-                                                              .latitude,
-                                                      _currentUserPosition !=
-                                                              null
-                                                          ? _currentUserPosition!
-                                                              .longitude
-                                                          : _userModel!
-                                                              .location!
-                                                              .longitude,
-                                                    ).toStringAsFixed(2)}km away',
+                                                    '${calculateDistance(_product!.address!.location!.latitude, _product!.address!.location!.longitude, _location.latitude, _location.longitude).toStringAsFixed(2)}km away',
                                                   )
                                                 : Container(),
                                           ],

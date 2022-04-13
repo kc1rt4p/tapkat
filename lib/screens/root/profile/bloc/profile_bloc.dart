@@ -27,7 +27,10 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
         if (_user != null) {
           final userModel = await _userRepo.getUser(_user.uid);
           final list = await _productRepo.getFirstProducts(
-              'user', null, null, _user.uid);
+            'user',
+            userId: _user.uid,
+            sortBy: 'distance',
+          );
 
           emit(ProfileScreenInitialized(
             user: _user,
@@ -85,6 +88,16 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       if (event is UpdateUserInfo) {
         final updated = await _userRepo.updateUser(event.user);
         if (updated) emit(UpdateUserInfoSuccess());
+      }
+
+      if (event is UpdatePassword) {
+        final result = await _authService.updatePassword(
+            event.currentPassword, event.newPassword);
+        if (result == true) {
+          emit(UpdatePasswordSuccess());
+        } else {
+          emit(ProfileError(result as String));
+        }
       }
     });
   }

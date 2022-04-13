@@ -12,6 +12,7 @@ import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:tapkat/models/user.dart';
 import 'package:tapkat/schemas/users_record.dart';
 import 'package:tapkat/utilities/helper.dart';
+import 'package:tapkat/utilities/application.dart' as application;
 
 class TapkatFirebaseUser {
   TapkatFirebaseUser(this.user);
@@ -45,6 +46,23 @@ class AuthService {
     }
 
     return null;
+  }
+
+  Future<dynamic> updatePassword(
+      String currentPassword, String newPassword) async {
+    try {
+      final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: application.currentUser!.email!, password: currentPassword);
+    } on FirebaseAuthException catch (e) {
+      return e.message;
+    }
+
+    try {
+      FirebaseAuth.instance.currentUser!.updatePassword(newPassword);
+      return true;
+    } on FirebaseAuthException catch (e) {
+      return e.message;
+    }
   }
 
   Future<User?> getCurrentUser() async {

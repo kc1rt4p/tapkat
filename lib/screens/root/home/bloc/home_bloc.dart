@@ -30,12 +30,16 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
           emit(LoadingTrendingList());
           emit(LoadingTopStoreList());
 
+          LocationModel _location = application.currentUserLocation ??
+              application.currentUserModel!.location!;
+
           final recommendedList = await _productRepo.getFirstProducts(
             'reco',
-            application.currentUserLocation,
-            5000,
-            application.currentUser!.uid,
-            application.currentUserModel != null &&
+            location: _location,
+            sortBy: 'distance',
+            radius: 5000,
+            userId: application.currentUser!.uid,
+            interests: application.currentUserModel != null &&
                     application.currentUserModel!.interests != null &&
                     application.currentUserModel!.interests!.isNotEmpty
                 ? application.currentUserModel!.interests
@@ -47,7 +51,10 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
         if (event is LoadUserList) {
           final userItems = await _productRepo.getFirstProducts(
-              'user', null, null, application.currentUser!.uid);
+            'user',
+            userId: application.currentUser!.uid,
+            sortBy: 'name',
+          );
           emit(LoadedUserList(userItems));
           add(LoadTopStores());
         }
@@ -89,9 +96,9 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
           }
           final trendingList = await _productRepo.getFirstProducts(
             'demand',
-            _location,
-            5000,
-            application.currentUser!.uid,
+            location: _location,
+            userId: application.currentUser!.uid,
+            sortBy: 'distance',
           );
           emit(LoadedTrendingList(trendingList));
           add(LoadUserList());

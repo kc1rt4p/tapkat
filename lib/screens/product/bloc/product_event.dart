@@ -28,9 +28,18 @@ class AddProductImage extends ProductEvent {
 
 class GetFirstProducts extends ProductEvent {
   final String listType;
-  final String? userId;
 
-  GetFirstProducts(this.listType, {this.userId});
+  final List<String>? category;
+  final int distance;
+  final String sortBy;
+
+  GetFirstProducts({
+    required this.listType,
+    required userId,
+    this.category,
+    required this.distance,
+    required this.sortBy,
+  });
 }
 
 class GetNextProducts extends ProductEvent {
@@ -39,6 +48,9 @@ class GetNextProducts extends ProductEvent {
   final String lastProductId;
   final String startAfterVal;
   final LocationModel? location;
+  final List<String>? category;
+  final int distance;
+  final String sortBy;
 
   GetNextProducts({
     required this.listType,
@@ -46,6 +58,9 @@ class GetNextProducts extends ProductEvent {
     required this.startAfterVal,
     this.userId,
     this.location,
+    this.category,
+    required this.distance,
+    required this.sortBy,
   });
 }
 

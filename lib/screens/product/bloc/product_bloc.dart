@@ -136,24 +136,17 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
         if (event is GetFirstProducts) {
           emit(ProductLoading());
 
-          LocationModel? _location;
-
-          if (await Permission.location.isGranted &&
-              await geoLocator.GeolocatorPlatform.instance
-                  .isLocationServiceEnabled()) {
-            final userLoc = await geoLocator.Geolocator.getCurrentPosition();
-            _location = LocationModel(
-              longitude: userLoc.longitude,
-              latitude: userLoc.latitude,
-            );
-          }
+          LocationModel _location = application.currentUserLocation ??
+              application.currentUserModel!.location!;
 
           final result = await _productRepo.getFirstProducts(
             event.listType,
-            _location,
-            null,
-            event.userId,
-            event.listType == 'reco' ? _userModel!.interests : null,
+            location: _location,
+            sortBy: event.sortBy,
+            radius: event.distance,
+            category: event.category,
+            userId: application.currentUser!.uid,
+            interests: event.listType == 'reco' ? _userModel!.interests : null,
           );
 
           emit(GetFirstProductsSuccess(result));
@@ -169,22 +162,14 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
 
         if (event is GetNextProducts) {
           emit(ProductLoading());
-          LocationModel? _location;
-          if (await Permission.location.isGranted &&
-              await geoLocator.GeolocatorPlatform.instance
-                  .isLocationServiceEnabled()) {
-            final userLoc = await geoLocator.Geolocator.getCurrentPosition();
-            _location = LocationModel(
-              longitude: userLoc.longitude,
-              latitude: userLoc.latitude,
-            );
-          }
+          LocationModel _location = application.currentUserLocation ??
+              application.currentUserModel!.location!;
           final result = await _productRepo.getNextProducts(
             listType: event.listType,
             lastProductId: event.lastProductId,
             startAfterVal: event.startAfterVal,
             userId: event.listType == 'user' ? event.userId : '',
-            location: event.listType == 'demand'
+            location: event.listType != 'user'
                 ? (_location != null ? _location : _userModel!.location)
                 : null,
           );

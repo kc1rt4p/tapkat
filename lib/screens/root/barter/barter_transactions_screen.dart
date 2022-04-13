@@ -16,6 +16,7 @@ import 'package:tapkat/widgets/barter_list_item.dart';
 import 'package:tapkat/widgets/custom_app_bar.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:toggle_switch/toggle_switch.dart';
+import 'package:tapkat/utilities/application.dart' as application;
 
 class BarterTransactionsScreen extends StatefulWidget {
   const BarterTransactionsScreen({Key? key}) : super(key: key);
@@ -124,6 +125,9 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                     }
 
                     if (state is BarterTransactionsInitialized) {
+                      if (_byYouStream != null) {
+                        _byYouStream!.cancel();
+                      }
                       _byYouStream = state.byYouStream.listen((list) {
                         setState(() {
                           if (list.isNotEmpty) {
@@ -161,7 +165,9 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                         //     fromOthersList.clear();
                         // });
                       });
-
+                      if (_fromOthersStream != null) {
+                        _fromOthersStream!.cancel();
+                      }
                       _fromOthersStream = state.fromOthersStream.listen((list) {
                         setState(() {
                           if (list.isNotEmpty) {
@@ -215,39 +221,30 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                     width: double.infinity,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              SizedBox(height: 10.0),
-                              Text(
-                                'Barters You Initiated',
-                                style: Style.subtitle2.copyWith(
-                                  color: kBackgroundColor,
-                                  fontSize: SizeConfig.textScaleFactor * 17,
-                                ),
-                              ),
-                              SizedBox(height: 6.0),
-                              Expanded(
-                                child: (_view == 'open'
-                                            ? openInitiatedList
-                                            : completedInitiatedList)
-                                        .isNotEmpty
-                                    ? SingleChildScrollView(
-                                        child: _buildListContainer(
-                                            _view == 'open'
-                                                ? openInitiatedList
-                                                : completedInitiatedList,
-                                            'For'),
-                                      )
-                                    : Center(
-                                        child: Text('No barters found'),
-                                      ),
-                              ),
-                            ],
+                        SizedBox(height: 10.0),
+                        Text(
+                          'Barters You Initiated',
+                          style: Style.subtitle2.copyWith(
+                            color: kBackgroundColor,
+                            fontSize: SizeConfig.textScaleFactor * 17,
                           ),
+                        ),
+                        SizedBox(height: 6.0),
+                        Expanded(
+                          child: (_view == 'open'
+                                      ? openInitiatedList
+                                      : completedInitiatedList)
+                                  .isNotEmpty
+                              ? _buildListContainer(
+                                  _view == 'open'
+                                      ? openInitiatedList
+                                      : completedInitiatedList,
+                                  'For')
+                              : Center(
+                                  child: Text('No barters found'),
+                                ),
                         ),
                       ],
                     ),
@@ -266,6 +263,7 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
                               'Offers from Other Users',
@@ -280,13 +278,11 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                                           ? openOffersList
                                           : completedOffersList)
                                       .isNotEmpty
-                                  ? SingleChildScrollView(
-                                      child: _buildListContainer(
-                                          _view == 'open'
-                                              ? openOffersList
-                                              : completedOffersList,
-                                          'From'),
-                                    )
+                                  ? _buildListContainer(
+                                      _view == 'open'
+                                          ? openOffersList
+                                          : completedOffersList,
+                                      'From')
                                   : Center(
                                       child: Text('No offers found'),
                                     ),
@@ -307,129 +303,154 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
 
   Container _buildListContainer(List<BarterRecordModel> list, String prefix) {
     return Container(
-        width: double.infinity,
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: list.map(
-              (barter) {
-                var name = prefix.toLowerCase() == 'from'
-                    ? barter.userid1Name!
-                    : barter.userid2Name!;
-                if (name.length > 10) {
-                  name = name.substring(0, 10) + '...';
-                }
-                return Stack(
+      width: double.infinity,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: list.map(
+            (barter) {
+              var name = prefix.toLowerCase() == 'from'
+                  ? barter.userid1Name!
+                  : barter.userid2Name!;
+              if (name.length > 10) {
+                name = name.substring(0, 10) + '...';
+              }
+              return Container(
+                margin: EdgeInsets.only(right: 8.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Container(
-                      margin: EdgeInsets.only(right: 10.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                    RichText(
+                      text: TextSpan(
+                        style: TextStyle(
+                          fontFamily: 'Poppins',
+                          color: Colors.black,
+                        ),
                         children: [
-                          RichText(
-                            text: TextSpan(
-                              style: TextStyle(
-                                fontFamily: 'Poppins',
-                                color: Colors.black,
-                              ),
-                              children: [
-                                TextSpan(text: '$prefix '),
-                                TextSpan(
-                                  text: name,
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
+                          TextSpan(text: '$prefix '),
+                          TextSpan(
+                            text: name,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
-                          SizedBox(height: 8.0),
-                          BarterListItem(
-                            product: ProductModel(
-                              productid: barter.u2P1Id!,
-                              productname: barter.u2P1Name ?? '',
-                              price: barter.u2P1Price != null
-                                  ? barter.u2P1Price!
-                                  : 0.00,
-                              mediaPrimary: MediaPrimaryModel(
-                                type: 'image',
-                                url_t: barter.u2P1Image,
-                                url: barter.u2P1Image,
-                              ),
-                            ),
-                            hideLikeBtn: true,
-                            onTapped: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => BarterScreen(
-                                    barterRecord: barter,
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                          barter.dealDate != null
-                              ? Container(
-                                  width: 160.0,
-                                  child: Text(
-                                    timeago.format(barter.dealDate!),
-                                    style: Style.subtitle2
-                                        .copyWith(fontSize: 12.0),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                )
-                              : Container(),
                         ],
                       ),
                     ),
-                    Positioned(
-                      top: (SizeConfig.screenHeight * 0.26) * 0.555,
-                      child: Container(
-                        padding: EdgeInsets.symmetric(vertical: 5.0),
-                        color: kBackgroundColor,
-                        width: SizeConfig.screenWidth * 0.4,
-                        child: Text(
-                          (barter.dealStatus ?? '').toUpperCase(),
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 14.0,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                    SizedBox(height: 8.0),
+                    Stack(
+                      children: [
+                        BarterListItem(
+                          hideDistance: true,
+                          product: ProductModel(
+                            productid: barter.u2P1Id!,
+                            productname: barter.u2P1Name ?? '',
+                            price: barter.u2P1Price != null
+                                ? barter.u2P1Price!
+                                : 0.00,
+                            mediaPrimary: MediaPrimaryModel(
+                              type: 'image',
+                              url_t: barter.u2P1Image,
+                              url: barter.u2P1Image,
+                            ),
                           ),
+                          hideLikeBtn: true,
+                          onTapped: () async {
+                            await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => BarterScreen(
+                                  barterRecord: barter,
+                                ),
+                              ),
+                            );
+
+                            _barterBloc.add(InitializeBarterTransactions());
+                          },
                         ),
-                      ),
-                    ),
-                    Visibility(
-                      visible: ['new', 'completed', 'rejected', 'withdrawn']
-                          .contains(barter.dealStatus),
-                      child: Positioned(
-                        top: 30.0,
-                        right: 20,
-                        child: InkWell(
-                          onTap: () =>
-                              _onDeletebarter('Barter', barter.barterId!),
+                        Positioned(
+                          top: SizeConfig.screenHeight * 0.105,
                           child: Container(
-                            padding: EdgeInsets.all(3.0),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.red,
-                            ),
-                            child: Icon(
-                              Icons.close,
-                              color: Colors.white,
+                            padding: EdgeInsets.symmetric(vertical: 5.0),
+                            color: kBackgroundColor,
+                            width: SizeConfig.screenHeight * 0.2,
+                            child: Text(
+                              (barter.dealStatus ?? '').toUpperCase(),
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: SizeConfig.textScaleFactor * 12,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
                             ),
                           ),
                         ),
-                      ),
+                        Visibility(
+                          visible: ['new', 'completed', 'rejected', 'withdrawn']
+                              .contains(barter.dealStatus),
+                          child: Positioned(
+                            top: 5,
+                            right: 5,
+                            child: InkWell(
+                              onTap: () =>
+                                  _onDeletebarter('Barter', barter.barterId!),
+                              child: Container(
+                                padding: EdgeInsets.all(3.0),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.red,
+                                ),
+                                child: Icon(
+                                  Icons.close,
+                                  color: Colors.white,
+                                  size: SizeConfig.textScaleFactor * 15,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        Visibility(
+                          visible: application.unreadBarterMessages
+                              .any((msg) => msg.barterId == barter.barterId),
+                          child: Positioned(
+                            bottom: 5,
+                            right: 5,
+                            child: Container(
+                              padding: EdgeInsets.all(3.0),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.red,
+                              ),
+                              child: Icon(
+                                Icons.chat_bubble,
+                                color: Colors.white,
+                                size: SizeConfig.textScaleFactor * 15,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
+                    barter.dealDate != null
+                        ? Container(
+                            width: 160.0,
+                            child: Text(
+                              timeago.format(barter.dealDate!),
+                              style: Style.subtitle2.copyWith(fontSize: 12.0),
+                              textAlign: TextAlign.center,
+                            ),
+                          )
+                        : Container(),
                   ],
-                );
-              },
-            ).toList(),
-          ),
-        ));
+                ),
+              );
+            },
+          ).toList(),
+        ),
+      ),
+    );
   }
 
   _onDeletebarter(String type, String id) {
