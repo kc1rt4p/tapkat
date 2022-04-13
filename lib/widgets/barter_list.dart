@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
+import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/utilities/style.dart';
 
 class BarterList extends StatefulWidget {
@@ -41,7 +42,7 @@ class _BarterListState extends State<BarterList> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: widget.removeMargin ? null : EdgeInsets.only(bottom: 16.0),
+      margin: widget.removeMargin ? null : EdgeInsets.only(bottom: 10.0),
       child: Column(
         children: [
           Container(
@@ -61,10 +62,10 @@ class _BarterListState extends State<BarterList> {
                           child: InkWell(
                             onTap: widget.onViewAllTapped,
                             child: Container(
-                              padding: EdgeInsets.fromLTRB(6.0, 3.0, 3.0, 3.0),
+                              padding: EdgeInsets.fromLTRB(6.0, 1.0, 3.0, 1.0),
                               decoration: BoxDecoration(
                                 color: kBackgroundColor,
-                                borderRadius: BorderRadius.circular(10.0),
+                                borderRadius: BorderRadius.circular(5.0),
                                 boxShadow: [
                                   BoxShadow(
                                     offset: Offset(1, 1),
@@ -78,12 +79,13 @@ class _BarterListState extends State<BarterList> {
                                   Text('See All',
                                       style: TextStyle(
                                         color: Colors.white,
-                                        fontSize: 14.0,
+                                        fontSize:
+                                            SizeConfig.textScaleFactor * 13,
                                       )),
                                   SizedBox(width: 5.0),
                                   Icon(
                                     Icons.chevron_right,
-                                    size: 20.0,
+                                    size: SizeConfig.textScaleFactor * 17,
                                     color: Colors.white,
                                   ),
                                 ],
@@ -95,14 +97,14 @@ class _BarterListState extends State<BarterList> {
                       visible: !widget.removeMapBtn,
                       child: Row(
                         children: [
-                          SizedBox(width: 8.0),
+                          SizedBox(width: 4.0),
                           InkWell(
                             onTap: widget.onMapBtnTapped,
                             child: Container(
-                              padding: EdgeInsets.all(8.0),
+                              padding: EdgeInsets.all(5.0),
                               decoration: BoxDecoration(
                                 color: kBackgroundColor,
-                                borderRadius: BorderRadius.circular(10.0),
+                                borderRadius: BorderRadius.circular(5.0),
                                 boxShadow: [
                                   BoxShadow(
                                     offset: Offset(1, 1),
@@ -112,7 +114,7 @@ class _BarterListState extends State<BarterList> {
                               ),
                               child: Icon(
                                 FontAwesomeIcons.solidMap,
-                                size: 12.0,
+                                size: SizeConfig.textScaleFactor * 10,
                                 color: Colors.white,
                               ),
                             ),
@@ -158,19 +160,9 @@ class _BarterListState extends State<BarterList> {
                               .toList(),
                         ),
                       ),
-                      // CarouselSlider(
-                      //   options: CarouselOptions(
-                      //     viewportFraction: widget.smallItems ? 0.42 : 0.50,
-                      //     autoPlay: false,
-                      //     enableInfiniteScroll: true,
-                      //     initialPage: 0,
-                      //     disableCenter: true,
-                      //   ),
-                      //   items: widget.items,
-                      // ),
                     )
                   : Container(
-                      height: 100.0,
+                      height: 80.0,
                       width: double.infinity,
                       child: Center(
                         child: Text(
