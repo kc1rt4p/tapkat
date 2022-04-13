@@ -1,7 +1,9 @@
 import 'dart:async';
 
+import 'package:device_preview/device_preview.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -88,39 +90,44 @@ class _MyAppState extends State<MyApp> {
             },
           ),
         ],
-        child: MaterialApp(
-          navigatorKey: navigatorKey,
-          debugShowCheckedModeBanner: false,
-          title: 'Tapkat',
-          localizationsDelegates: [
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          supportedLocales: const [Locale('en', '')],
-          theme: ThemeData(
-            primarySwatch: Colors.blue,
-            fontFamily: 'Poppins',
-            bottomSheetTheme: BottomSheetThemeData(
-              backgroundColor: Colors.transparent,
+        child: DevicePreview(
+          enabled: false,
+          builder: (context) => MaterialApp(
+            useInheritedMediaQuery: true,
+            locale: DevicePreview.locale(context),
+            navigatorKey: navigatorKey,
+            debugShowCheckedModeBanner: false,
+            title: 'Tapkat',
+            localizationsDelegates: [
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: const [Locale('en', '')],
+            theme: ThemeData(
+              primarySwatch: Colors.blue,
+              fontFamily: 'Poppins',
+              bottomSheetTheme: BottomSheetThemeData(
+                backgroundColor: Colors.transparent,
+              ),
             ),
-          ),
-          home: StreamBuilder<User?>(
-              stream: FirebaseAuth.instance.authStateChanges(),
-              builder: (context, snapshot) {
-                if (snapshot.hasData) {
-                  if (snapshot.data != null) {
-                    final user = snapshot.data;
-                    if (user!.emailVerified) {
-                      return RootScreen();
-                    } else {
-                      return EmailVerificationScreen();
+            home: StreamBuilder<User?>(
+                stream: FirebaseAuth.instance.authStateChanges(),
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    if (snapshot.data != null) {
+                      final user = snapshot.data;
+                      if (user!.emailVerified) {
+                        return RootScreen();
+                      } else {
+                        return EmailVerificationScreen();
+                      }
                     }
                   }
-                }
 
-                return LoginScreen();
-              }),
+                  return LoginScreen();
+                }),
+          ),
         ),
       ),
     );

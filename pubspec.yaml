@@ -45,7 +45,7 @@ dependencies:
   image_picker: ^0.8.4+1
   intl: ^0.17.0
   json_path: ^0.3.0
-  json_serializable: ^4.1.0
+  json_serializable: ^6.1.5
   mime_type: ^1.0.0
   page_transition: ^2.0.4
   rxdart: ^0.26.0
@@ -84,6 +84,7 @@ dependencies:
   firebase_messaging: ^11.2.11
   notification_permissions: ^0.6.1
   flutter_local_notifications: ^9.4.0
+  device_preview: ^1.0.0
 
 dev_dependencies:
   build_runner: ^2.1.2

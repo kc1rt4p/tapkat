@@ -369,23 +369,7 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
 
                             _barterBloc.add(InitializeBarterTransactions());
                           },
-                        ),
-                        Positioned(
-                          top: SizeConfig.screenHeight * 0.105,
-                          child: Container(
-                            padding: EdgeInsets.symmetric(vertical: 5.0),
-                            color: kBackgroundColor,
-                            width: SizeConfig.screenHeight * 0.2,
-                            child: Text(
-                              (barter.dealStatus ?? '').toUpperCase(),
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: SizeConfig.textScaleFactor * 12,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
+                          status: barter.dealStatus,
                         ),
                         Visibility(
                           visible: ['new', 'completed', 'rejected', 'withdrawn']

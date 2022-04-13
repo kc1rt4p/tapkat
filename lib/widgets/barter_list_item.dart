@@ -6,6 +6,7 @@ import 'package:tapkat/models/location.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/schemas/user_likes_record.dart';
 import 'package:tapkat/screens/product/bloc/product_bloc.dart';
+import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/utilities/application.dart' as application;
 import 'dart:math';
@@ -22,6 +23,7 @@ class BarterListItem extends StatefulWidget {
   final ProductModel product;
   final OnLikeCallBack? onLikeTapped;
   final bool hideDistance;
+  final String? status;
 
   const BarterListItem({
     Key? key,
@@ -34,6 +36,7 @@ class BarterListItem extends StatefulWidget {
     required this.product,
     this.onLikeTapped,
     this.hideDistance = false,
+    this.status,
   }) : super(key: key);
 
   @override
@@ -41,7 +44,6 @@ class BarterListItem extends StatefulWidget {
 }
 
 class _BarterListItemState extends State<BarterListItem> {
-  get kBackgroundColor => null;
   late ProductModel _product;
 
   @override
@@ -226,6 +228,25 @@ class _BarterListItemState extends State<BarterListItem> {
                 ],
               ),
             ),
+            widget.status != null
+                ? Positioned(
+                    bottom: 37.0,
+                    child: Container(
+                      padding: EdgeInsets.symmetric(vertical: 5.0),
+                      color: kBackgroundColor,
+                      width: widget.height ?? SizeConfig.screenHeight * 0.2,
+                      child: Text(
+                        (widget.status ?? '').toUpperCase(),
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: SizeConfig.textScaleFactor * 12,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  )
+                : Container(),
             Visibility(
               visible: !widget.hideLikeBtn,
               child: Positioned(
