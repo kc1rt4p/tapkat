@@ -329,6 +329,9 @@ class _WishListScreenState extends State<WishListScreen> {
                   productid: product.productid,
                   productname: product.productname,
                   price: product.price,
+                  address: AddressModel(
+                    location: product.location,
+                  ),
                   mediaPrimary: MediaPrimaryModel(
                     type: 'image',
                     url: product.image_url,

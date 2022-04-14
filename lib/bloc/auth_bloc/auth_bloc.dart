@@ -14,7 +14,6 @@ import 'package:tapkat/services/firebase.dart';
 import 'package:tapkat/utilities/application.dart' as application;
 import 'package:tapkat/utilities/auth_util.dart';
 import 'package:tapkat/utilities/upload_media.dart';
-import 'package:geolocator/geolocator.dart' as geoLocator;
 
 part 'auth_event.dart';
 part 'auth_state.dart';
@@ -96,7 +95,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             final userModel = await userRepo.getUser(user.uid);
             if (userModel != null) {
               application.currentUserModel = userModel;
-              _loadUserLocation();
             }
 
             emit(ShowSignUpPhoto());
@@ -113,7 +111,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             application.currentUserModel = await userRepo.getUser(user.uid);
 
             if (application.currentUserModel != null) {
-              _loadUserLocation();
               emit(AuthSignedIn(user));
             }
           }
@@ -126,7 +123,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             final userModel = await userRepo.getUser(user.uid);
             if (userModel != null) {
               application.currentUserModel = userModel;
-              _loadUserLocation();
             }
 
             emit(AuthSignedIn(user));
@@ -187,8 +183,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             final userModel = await userRepo.getUser(user.uid);
             if (userModel != null) {
               application.currentUserModel = userModel;
-
-              _loadUserLocation();
             }
             emit(AuthSignedIn(user));
           }
@@ -207,19 +201,5 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         emit(AuthSignedOut());
       }
     });
-  }
-}
-
-_loadUserLocation() async {
-  if (await Permission.location.isDenied &&
-      !(await geoLocator.GeolocatorPlatform.instance
-          .isLocationServiceEnabled())) {
-    application.currentUserLocation = application.currentUserModel!.location!;
-  } else {
-    final userLoc = await geoLocator.Geolocator.getCurrentPosition();
-    application.currentUserLocation = LocationModel(
-      latitude: userLoc.latitude,
-      longitude: userLoc.longitude,
-    );
   }
 }

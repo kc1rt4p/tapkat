@@ -22,6 +22,7 @@ class ProductRequestModel {
   LocationModel? location;
   num? price;
   num? rating;
+  List<String>? tradefor;
 
   ProductRequestModel({
     this.productid,
@@ -44,6 +45,7 @@ class ProductRequestModel {
     this.display_name,
     this.status,
     this.acquired_by,
+    this.tradefor,
   });
 
   factory ProductRequestModel.fromProduct(ProductModel product) {
@@ -68,6 +70,7 @@ class ProductRequestModel {
       display_name: product.display_name,
       acquired_by: product.acquired_by ?? '',
       status: product.status ?? '',
+      tradefor: product.tradeFor ?? [],
     );
   }
 
@@ -92,6 +95,7 @@ class ProductRequestModel {
       'display_name': this.display_name ?? '',
       'acquired_by': this.acquired_by ?? '',
       'status': this.status ?? '',
+      'tradefor': this.tradefor ?? [],
     };
 
     if (updating) {

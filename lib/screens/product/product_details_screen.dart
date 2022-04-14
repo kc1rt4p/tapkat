@@ -616,6 +616,46 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                         ? Text(
                                             'Last updated ${timeago.format(_product!.updated_time ?? DateTime.now())}.')
                                         : Container(),
+                                    Padding(
+                                      padding: EdgeInsets.symmetric(
+                                        vertical: 10.0,
+                                      ),
+                                      child: Divider(
+                                        thickness: 0.6,
+                                        color: kBackgroundColor,
+                                      ),
+                                    ),
+                                    _product != null &&
+                                            _product!.tradeFor != null
+                                        ? Container(
+                                            margin:
+                                                EdgeInsets.only(bottom: 10.0),
+                                            child: Row(
+                                              children: [
+                                                Text('Trade for: '),
+                                                Expanded(
+                                                  child: Wrap(
+                                                    children: [
+                                                      ...List.generate(
+                                                          _product!.tradeFor!
+                                                              .length, (index) {
+                                                        if (index <
+                                                            _product!.tradeFor!
+                                                                    .length -
+                                                                1)
+                                                          return Text(
+                                                              '${_product!.tradeFor![index]}, ');
+                                                        else
+                                                          return Text(
+                                                              '${_product!.tradeFor![index]}');
+                                                      })
+                                                    ],
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          )
+                                        : Text(''),
                                   ],
                                 ),
                               ),

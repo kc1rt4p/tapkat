@@ -85,6 +85,7 @@ dependencies:
   notification_permissions: ^0.6.1
   flutter_local_notifications: ^9.4.0
   device_preview: ^1.0.0
+  connectivity_plus: ^2.3.0
 
 dev_dependencies:
   build_runner: ^2.1.2

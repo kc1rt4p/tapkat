@@ -1,9 +1,12 @@
+import 'package:tapkat/models/location.dart';
+
 class StoreLikeModel {
   String? userid;
   String? likerid;
   String? user_image_url;
   String? username;
   String? like_date;
+  LocationModel? location;
 
   StoreLikeModel({
     this.userid,
@@ -11,6 +14,7 @@ class StoreLikeModel {
     this.user_image_url,
     this.username,
     this.like_date,
+    this.location,
   });
 
   Map<String, dynamic> toJson() => {
@@ -19,6 +23,7 @@ class StoreLikeModel {
         'user_image_url': this.user_image_url,
         'username': this.username,
         'like_date': this.like_date,
+        'location': this.location,
       };
 
   factory StoreLikeModel.fromJson(Map<String, dynamic> json) => StoreLikeModel(
@@ -27,6 +32,9 @@ class StoreLikeModel {
         user_image_url: json['user_image_url'] as String?,
         username: json['username'] as String?,
         like_date: json['like_date'] as String?,
+        location: json['location'] != null
+            ? LocationModel.fromJson(json['location'])
+            : null,
       );
 }
 
@@ -36,6 +44,7 @@ class LikedProductModel {
   num? price;
   String? image_url;
   String? like_date;
+  LocationModel? location;
 
   LikedProductModel({
     this.productid,
@@ -43,6 +52,7 @@ class LikedProductModel {
     this.price,
     this.image_url,
     this.like_date,
+    this.location,
   });
 
   factory LikedProductModel.fromJson(Map<String, dynamic> json) =>
@@ -52,6 +62,9 @@ class LikedProductModel {
         price: json['price'] as num?,
         image_url: json['image_url'] as String?,
         like_date: json['like_date'] as String?,
+        location: json['location'] != null
+            ? LocationModel.fromJson(json['location'])
+            : null,
       );
 
   Map<String, dynamic> toJson() => {

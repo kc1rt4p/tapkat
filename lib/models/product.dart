@@ -22,6 +22,8 @@ class ProductModel {
   String? status;
   DateTime? updated_time;
   String? acquired_by;
+  double? distance;
+  List<String>? tradeFor;
 
   ProductModel({
     this.productid,
@@ -43,9 +45,12 @@ class ProductModel {
     this.updated_time,
     this.display_name,
     this.acquired_by,
+    this.distance,
+    this.tradeFor,
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
+    print('......>${json['tradefor'].runtimeType}');
     return ProductModel(
       productid: json['productid'],
       userid: json['userid'],
@@ -82,6 +87,12 @@ class ProductModel {
           : null,
       display_name: json['image_url'] as String?,
       acquired_by: json['acquired_by'] as String?,
+      distance: json['distance'] as double?,
+      tradeFor: json['tradefor'] != null
+          ? (json['tradefor'] as List<dynamic>)
+              .map((item) => item.toString())
+              .toList()
+          : [],
     );
   }
 
@@ -101,6 +112,7 @@ class ProductModel {
       'updated_time': this.updated_time,
       'acquired_by': this.acquired_by,
       'status': this.status,
+      'tradefor': this.tradeFor,
     };
     return json..addAll({'productid': this.productid});
   }

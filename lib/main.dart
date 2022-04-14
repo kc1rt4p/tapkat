@@ -8,12 +8,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
+import 'package:tapkat/models/location.dart';
 import 'package:tapkat/screens/barter/bloc/barter_bloc.dart';
 import 'package:tapkat/screens/login/email_verification_screen.dart';
 import 'package:tapkat/screens/login/login_screen.dart';
 import 'package:tapkat/screens/root/root_screen.dart';
 import 'package:tapkat/services/auth_service.dart';
+import 'package:geolocator/geolocator.dart' as geoLocator;
+import 'package:tapkat/utilities/application.dart' as application;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -47,7 +51,7 @@ class _MyAppState extends State<MyApp> {
     _authBloc = AuthBloc();
     _barterBloc = BarterBloc();
     _authBloc.add(InitializeAuth());
-
+    _loadUserLocation();
     super.initState();
   }
 
@@ -140,5 +144,20 @@ class _MyAppState extends State<MyApp> {
     _userStream?.cancel();
     _barterBloc.close();
     super.dispose();
+  }
+
+  _loadUserLocation() async {
+    final per1 = await Permission.location.request();
+    final per2 =
+        await geoLocator.GeolocatorPlatform.instance.isLocationServiceEnabled();
+    if (per1 != PermissionStatus.denied && per2) {
+      final userLoc = await geoLocator.Geolocator.getCurrentPosition();
+      application.currentUserLocation = LocationModel(
+        latitude: userLoc.latitude,
+        longitude: userLoc.longitude,
+      );
+    } else {
+      application.currentUserLocation = application.currentUserModel!.location!;
+    }
   }
 }

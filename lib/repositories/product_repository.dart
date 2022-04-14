@@ -449,6 +449,7 @@ class ProductRepository {
       'userid': application.currentUser!.uid,
       'location': location.toJson(),
       'radius': radius,
+      'type': 'PT1',
     };
     if (keyword.length > 0) _body.addAll({'keywords': keyword});
     if (category != null) _body.addAll({'category': category});

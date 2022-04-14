@@ -258,7 +258,7 @@ class _BarterListItemState extends State<BarterListItem> {
                     ? Padding(
                         padding: const EdgeInsets.only(top: 5.0),
                         child: Text(
-                            '${calculateDistance(product.address!.location!.latitude, product.address!.location!.longitude, _location.latitude, _location.longitude).toStringAsFixed(1)} Km',
+                            '${product.distance != null ? product.distance! < 0.1 ? product.distance!.toStringAsFixed(2) : product.distance!.toStringAsFixed(1) : 0.0} Km',
                             style: TextStyle(
                                 fontSize: SizeConfig.textScaleFactor * 10)),
                       )
@@ -271,12 +271,12 @@ class _BarterListItemState extends State<BarterListItem> {
     );
   }
 
-  double calculateDistance(lat1, lon1, lat2, lon2) {
-    var p = 0.017453292519943295;
-    var c = cos;
-    var a = 0.5 -
-        c((lat2 - lat1) * p) / 2 +
-        c(lat1 * p) * c(lat2 * p) * (1 - c((lon2 - lon1) * p)) / 2;
-    return 12742 * asin(sqrt(a));
-  }
+  // double calculateDistance(lat1, lon1, lat2, lon2) {
+  //   var p = 0.017453292519943295;
+  //   var c = cos;
+  //   var a = 0.5 -
+  //       c((lat2 - lat1) * p) / 2 +
+  //       c(lat1 * p) * c(lat2 * p) * (1 - c((lon2 - lon1) * p)) / 2;
+  //   return 12742 * asin(sqrt(a));
+  // }
 }

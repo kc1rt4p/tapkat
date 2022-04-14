@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -62,9 +65,11 @@ class _RootScreenState extends State<RootScreen> {
   late AuthBloc _authBloc;
   late BarterBloc _barterBloc;
 
-  final _currentVerDate = DateTime(2022, 4, 14, 4);
+  final _currentVerDate = DateTime(2022, 4, 15, 12);
 
   final _appConfig = new LocalStorage('app_config.json');
+
+  StreamSubscription<ConnectivityResult>? _connectivityStream;
 
   @override
   void initState() {
@@ -89,15 +94,17 @@ class _RootScreenState extends State<RootScreen> {
       icon: 'ic_stat_notif_icon',
       color: kBackgroundColor,
     );
+
     const NotificationDetails platformChannelSpecifics =
         NotificationDetails(android: androidPlatformChannelSpecifics);
+
     _barterBloc.add(GetUnreadBarterMessages());
+
     if (!application.chatOpened) {
       await flutterLocalNotificationsPlugin.show(0, message.notification!.title,
           message.notification!.body, platformChannelSpecifics,
           payload: message.data['barterid']);
-    } else
-      return;
+    }
   }
 
   Future<void> _firebaseMessageOpened(RemoteMessage message) async {
@@ -142,7 +149,6 @@ class _RootScreenState extends State<RootScreen> {
       await _appConfig.setItem('first_login_date', {
         application.currentUser!.uid:
             DateTime.now().millisecondsSinceEpoch.toString(),
-        ..._firstLoginDate,
       });
 
       _rootBloc.add(UpdateUserToken());
@@ -172,6 +178,45 @@ class _RootScreenState extends State<RootScreen> {
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
     FirebaseMessaging.onMessageOpenedApp.listen(_firebaseMessageOpened);
+
+    _connectivityStream =
+        Connectivity().onConnectivityChanged.listen((result) async {
+      print('__-==CONNECTION CHANGED');
+      if (result != ConnectivityResult.none) {
+        print('__-==internet is back');
+        final message = await FirebaseMessaging.instance.getInitialMessage();
+
+        if (message != null) {
+          const AndroidNotificationDetails androidPlatformChannelSpecifics =
+              AndroidNotificationDetails(
+            'tapkat-2022',
+            'tapkat_barter',
+            channelDescription: 'your channel description',
+            importance: Importance.max,
+            priority: Priority.high,
+            ticker: 'ticker',
+            icon: 'ic_stat_notif_icon',
+            color: kBackgroundColor,
+          );
+
+          const NotificationDetails platformChannelSpecifics =
+              NotificationDetails(android: androidPlatformChannelSpecifics);
+
+          _barterBloc.add(GetUnreadBarterMessages());
+
+          if (!application.chatOpened) {
+            await flutterLocalNotificationsPlugin.show(
+                0,
+                message.notification!.title,
+                message.notification!.body,
+                platformChannelSpecifics,
+                payload: message.data['barterid']);
+          }
+        }
+      } else {
+        print('__-==internet is gone');
+      }
+    });
   }
 
   @override

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_progress_hud/flutter_progress_hud.dart';
 import 'package:tapkat/models/product_category.dart';
 import 'package:tapkat/models/request/add_product_request.dart';
+import 'package:tapkat/screens/product/product_trade_for_screen.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/dialog_message.dart';
 import 'package:tapkat/utilities/size_config.dart';
@@ -198,10 +199,22 @@ class _SelectProductCategoryScreenState
     );
   }
 
-  _onSaveTapped() {
+  _onSaveTapped() async {
     var productRequest = widget.productRequest;
     productRequest.category =
         _selectedCategory != null ? _selectedCategory!.code : null;
+
+    final tradefor = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ProductTradeForScreen(
+          list: productRequest.tradefor != null ? productRequest.tradefor! : [],
+        ),
+      ),
+    );
+
+    productRequest.tradefor = tradefor;
+
     if (widget.updating) {
       _productBloc.add(EditProduct(productRequest));
     } else {

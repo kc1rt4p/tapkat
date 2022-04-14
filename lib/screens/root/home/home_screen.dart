@@ -383,6 +383,19 @@ class _HomeScreenState extends State<HomeScreen> {
                                       hideLikeBtn: true,
                                       hideDistance: true,
                                       product: product,
+                                      onTapped: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                ProductDetailsScreen(
+                                              productId:
+                                                  product.productid ?? '',
+                                              ownItem: false,
+                                            ),
+                                          ),
+                                        );
+                                      },
                                     ),
                                   )
                                   .toList(),
