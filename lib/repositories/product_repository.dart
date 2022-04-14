@@ -311,7 +311,7 @@ class ProductRepository {
       'type': 'PT1',
       'userid': userid,
       'sortdirection': 'ascending',
-      'productcount': productCount,
+      'productcount': 100,
       'location': application.currentUserLocation != null
           ? application.currentUserLocation!.toJson()
           : application.currentUserModel!.location!.toJson(),

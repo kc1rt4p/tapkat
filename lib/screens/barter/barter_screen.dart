@@ -1069,7 +1069,7 @@ class _BarterScreenState extends State<BarterScreen> {
                                     item.productId!, _currentUser!.uid));
                               },
                               child: Container(
-                                padding: EdgeInsets.all(5.0),
+                                padding: EdgeInsets.all(3.0),
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   color: kBackgroundColor,
@@ -1077,6 +1077,7 @@ class _BarterScreenState extends State<BarterScreen> {
                                 child: Icon(
                                   Icons.star,
                                   color: Colors.white,
+                                  size: SizeConfig.textScaleFactor * 14,
                                 ),
                               ),
                             ),

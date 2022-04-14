@@ -589,7 +589,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       builderDelegate: PagedChildBuilderDelegate<ProductModel>(
         itemBuilder: (context, product, index) {
-          return Center(
+          return FittedBox(
             child: BarterListItem(
               hideDistance: true,
               product: product,

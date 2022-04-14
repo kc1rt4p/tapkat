@@ -9,8 +9,8 @@ InkWell buildAddItemBtn({
   return InkWell(
     onTap: onTap,
     child: Container(
-      height: SizeConfig.screenHeight * 0.235,
-      width: SizeConfig.screenWidth * 0.40,
+      height: SizeConfig.screenHeight * 0.206,
+      width: SizeConfig.screenHeight * 0.19,
       decoration: BoxDecoration(
         color: kBackgroundColor,
         borderRadius: BorderRadius.circular(20.0),

@@ -632,7 +632,7 @@ class _StoreScreenState extends State<StoreScreen> {
         ),
         builderDelegate: PagedChildBuilderDelegate<ProductModel>(
           itemBuilder: (context, product, index) {
-            return Center(
+            return FittedBox(
               child: StreamBuilder<List<UserLikesRecord?>>(
                   stream: queryUserLikesRecord(
                     queryBuilder: (userLikesRecord) => userLikesRecord
@@ -652,31 +652,8 @@ class _StoreScreenState extends State<StoreScreen> {
                       }
                     }
 
-                    var thumbnail = '';
-
-                    if (product.mediaPrimary != null &&
-                        product.mediaPrimary!.url != null &&
-                        product.mediaPrimary!.url!.isNotEmpty)
-                      thumbnail = product.mediaPrimary!.url!;
-
-                    if (product.mediaPrimary != null &&
-                        product.mediaPrimary!.url_t != null &&
-                        product.mediaPrimary!.url_t!.isNotEmpty)
-                      thumbnail = product.mediaPrimary!.url_t!;
-
-                    if (product.mediaPrimary != null &&
-                        product.mediaPrimary!.url!.isEmpty &&
-                        product.mediaPrimary!.url_t!.isEmpty &&
-                        product.media != null &&
-                        product.media!.isNotEmpty)
-                      thumbnail = product.media!.first.url_t != null
-                          ? product.media!.first.url_t!
-                          : product.media!.first.url!;
-
                     return BarterListItem(
                       product: product,
-                      height: SizeConfig.screenHeight * 0.21,
-                      width: SizeConfig.screenWidth * 0.40,
                       onTapped: () => Navigator.push(
                         context,
                         MaterialPageRoute(

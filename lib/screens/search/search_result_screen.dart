@@ -833,40 +833,20 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
         showNewPageErrorIndicatorAsGridChild: false,
         showNoMoreItemsIndicatorAsGridChild: false,
         padding: EdgeInsets.symmetric(
+          horizontal: 16.0,
           vertical: 10.0,
         ),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          mainAxisSpacing: 16,
+          crossAxisSpacing: 10.0,
+          mainAxisSpacing: 10.0,
           crossAxisCount: 2,
         ),
         builderDelegate: PagedChildBuilderDelegate<ProductModel>(
           itemBuilder: (context, product, index) {
-            var thumbnail = '';
-
-            if (product.mediaPrimary != null &&
-                product.mediaPrimary!.url != null &&
-                product.mediaPrimary!.url!.isNotEmpty)
-              thumbnail = product.mediaPrimary!.url!;
-
-            if (product.mediaPrimary != null &&
-                product.mediaPrimary!.url_t != null &&
-                product.mediaPrimary!.url_t!.isNotEmpty)
-              thumbnail = product.mediaPrimary!.url_t!;
-
-            if (product.mediaPrimary != null) {
-              if (product.mediaPrimary!.url!.isEmpty &&
-                  product.mediaPrimary!.url_t!.isEmpty &&
-                  product.media != null &&
-                  product.media!.isNotEmpty)
-                thumbnail = product.media!.first.url_t != null
-                    ? product.media!.first.url_t!
-                    : product.media!.first.url!;
-            }
-            return Center(
+            return FittedBox(
               child: BarterListItem(
+                likeLeftMargin: 25,
                 product: product,
-                height: SizeConfig.screenHeight * 0.22,
-                width: SizeConfig.screenWidth * 0.40,
                 onTapped: () => Navigator.push(
                   context,
                   MaterialPageRoute(

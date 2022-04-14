@@ -317,7 +317,7 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                 name = name.substring(0, 10) + '...';
               }
               return Container(
-                margin: EdgeInsets.only(right: 8.0),
+                margin: EdgeInsets.only(right: SizeConfig.screenWidth * 0.05),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -419,10 +419,11 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                     ),
                     barter.dealDate != null
                         ? Container(
-                            width: 160.0,
+                            width: SizeConfig.screenHeight * 0.19,
                             child: Text(
                               timeago.format(barter.dealDate!),
-                              style: Style.subtitle2.copyWith(fontSize: 12.0),
+                              style: Style.subtitle2.copyWith(
+                                  fontSize: SizeConfig.textScaleFactor * 9),
                               textAlign: TextAlign.center,
                             ),
                           )

@@ -98,185 +98,167 @@ class _BarterListItemState extends State<BarterListItem> {
               ? product.media!.first.url_t!
               : product.media!.first.url!;
 
-        return Stack(
-          children: [
-            InkWell(
-              onTap: widget.onTapped,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    height: widget.height ?? SizeConfig.screenHeight * 0.2,
-                    width: widget.height ?? SizeConfig.screenHeight * 0.2,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(15.0),
-                      boxShadow: [
-                        BoxShadow(
-                          offset: Offset(1, 1),
-                          color: Colors.grey.shade200,
-                          blurRadius: 1.0,
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      children: [
-                        Expanded(
-                          flex: 5,
-                          child: thumbnail.isNotEmpty
-                              ? CachedNetworkImage(
-                                  imageUrl: thumbnail,
-                                  imageBuilder: (context, imageProvider) =>
-                                      Container(
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.only(
-                                        topLeft: Radius.circular(20.0),
-                                        topRight: Radius.circular(20.0),
-                                      ),
-                                      color: Colors.grey,
-                                      image: DecorationImage(
-                                        fit: BoxFit.cover,
-                                        alignment: FractionalOffset.center,
-                                        image: imageProvider,
-                                      ),
-                                    ),
-                                  ),
-                                  placeholder: (context, text) => Container(
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.only(
-                                        topLeft: Radius.circular(20.0),
-                                        topRight: Radius.circular(20.0),
-                                      ),
-                                      color: Colors.grey,
-                                      image: DecorationImage(
-                                        image: AssetImage(
-                                            'assets/images/image_placeholder.jpg'),
-                                        fit: BoxFit.cover,
-                                      ),
-                                    ),
-                                  ),
-                                  errorWidget: (context, url, error) =>
-                                      Container(
-                                    height: 150.0,
-                                    child: Icon(
-                                      Icons.error,
-                                      color: kBackgroundColor,
-                                    ),
-                                  ),
-                                )
-                              : Container(
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.only(
-                                      topLeft: Radius.circular(20.0),
-                                      topRight: Radius.circular(20.0),
-                                    ),
-                                    color: Colors.grey,
-                                    image: DecorationImage(
-                                      image: AssetImage(
-                                          'assets/images/image_placeholder.jpg'),
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                ),
-                        ),
-                        Container(
-                          padding: EdgeInsets.all(3.0),
-                          width: double.infinity,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                product.productname ?? '',
-                                textAlign: TextAlign.center,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontSize: widget.fontSize ??
-                                      SizeConfig.textScaleFactor * 12,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              SizedBox(height: 5.0),
-                              Text(
-                                product.price != null
-                                    ? product.price!.toStringAsFixed(2)
-                                    : '0.00',
-                                style: TextStyle(
-                                  fontSize: widget.fontSize ??
-                                      SizeConfig.textScaleFactor * 10,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  product.address != null &&
-                          product.address!.location != null &&
-                          !widget.hideDistance
-                      ? Padding(
-                          padding: const EdgeInsets.only(top: 5.0),
-                          child: Text(
-                              '${calculateDistance(product.address!.location!.latitude, product.address!.location!.longitude, _location.latitude, _location.longitude).toStringAsFixed(1)} Km',
-                              style: TextStyle(
-                                  fontSize: SizeConfig.textScaleFactor * 10)),
-                        )
-                      : Container(),
-                ],
-              ),
-            ),
-            widget.status != null
-                ? Positioned(
-                    bottom: 37.0,
-                    child: Container(
-                      padding: EdgeInsets.symmetric(vertical: 5.0),
-                      color: kBackgroundColor,
-                      width: widget.height ?? SizeConfig.screenHeight * 0.2,
-                      child: Text(
-                        (widget.status ?? '').toUpperCase(),
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: SizeConfig.textScaleFactor * 12,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  )
-                : Container(),
-            Visibility(
-              visible: !widget.hideLikeBtn,
-              child: Positioned(
-                top: 5,
-                right: widget.likeLeftMargin ?? 5,
-                child: Stack(
-                  alignment: Alignment.center,
+        return InkWell(
+          onTap: widget.onTapped,
+          child: Container(
+            child: Column(
+              children: [
+                Stack(
                   children: [
-                    Icon(
-                      Icons.favorite,
-                      color: Colors.white,
-                      size: SizeConfig.textScaleFactor * 20,
-                    ),
-                    GestureDetector(
-                      onTap: widget.onLikeTapped != null
-                          ? () {
-                              widget.onLikeTapped!(liked ? 1 : -1);
-                            }
-                          : null,
-                      child: Icon(
-                        liked ? Icons.favorite : Icons.favorite_outline,
-                        color: liked ? Colors.red : Colors.black,
-                        size: SizeConfig.textScaleFactor * 17,
+                    thumbnail.isNotEmpty
+                        ? CachedNetworkImage(
+                            imageUrl: thumbnail,
+                            imageBuilder: (context, imageProvider) => Container(
+                              height: widget.height ??
+                                  SizeConfig.screenHeight * 0.15,
+                              width: widget.height ??
+                                  SizeConfig.screenHeight * 0.19,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.only(
+                                  topLeft: Radius.circular(20.0),
+                                  topRight: Radius.circular(20.0),
+                                ),
+                                color: Colors.grey,
+                                image: DecorationImage(
+                                  fit: BoxFit.cover,
+                                  alignment: FractionalOffset.center,
+                                  image: imageProvider,
+                                ),
+                              ),
+                            ),
+                            placeholder: (context, text) => Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.only(
+                                  topLeft: Radius.circular(20.0),
+                                  topRight: Radius.circular(20.0),
+                                ),
+                                color: Colors.grey,
+                                image: DecorationImage(
+                                  image: AssetImage(
+                                      'assets/images/image_placeholder.jpg'),
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            ),
+                            errorWidget: (context, url, error) => Container(
+                              height: 150.0,
+                              child: Icon(
+                                Icons.error,
+                                color: kBackgroundColor,
+                              ),
+                            ),
+                          )
+                        : Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(20.0),
+                                topRight: Radius.circular(20.0),
+                              ),
+                              color: Colors.grey,
+                              image: DecorationImage(
+                                image: AssetImage(
+                                    'assets/images/image_placeholder.jpg'),
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
+                    widget.status != null
+                        ? Positioned(
+                            bottom: 0,
+                            child: Container(
+                              padding: EdgeInsets.symmetric(vertical: 5.0),
+                              color: kBackgroundColor,
+                              width: widget.height ??
+                                  SizeConfig.screenHeight * 0.19,
+                              child: Text(
+                                (widget.status ?? '').toUpperCase(),
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: SizeConfig.textScaleFactor * 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          )
+                        : Text(''),
+                    Visibility(
+                      visible: !widget.hideLikeBtn,
+                      child: Positioned(
+                        top: 5,
+                        right: 5,
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            Icon(
+                              Icons.favorite,
+                              color: Colors.white,
+                              size: SizeConfig.textScaleFactor * 20,
+                            ),
+                            GestureDetector(
+                              onTap: widget.onLikeTapped != null
+                                  ? () {
+                                      widget.onLikeTapped!(liked ? 1 : -1);
+                                    }
+                                  : null,
+                              child: Icon(
+                                liked ? Icons.favorite : Icons.favorite_outline,
+                                color: liked ? Colors.red : Colors.black,
+                                size: SizeConfig.textScaleFactor * 17,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ],
                 ),
-              ),
+                Container(
+                  color: Colors.white,
+                  width: widget.height ?? SizeConfig.screenHeight * 0.19,
+                  padding: EdgeInsets.all(3.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Text(
+                        product.productname ?? '',
+                        textAlign: TextAlign.center,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: widget.fontSize ??
+                              SizeConfig.textScaleFactor * 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      SizedBox(height: 5.0),
+                      Text(
+                        product.price != null
+                            ? product.price!.toStringAsFixed(2)
+                            : '0.00',
+                        style: TextStyle(
+                          fontSize: widget.fontSize ??
+                              SizeConfig.textScaleFactor * 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                product.address != null &&
+                        product.address!.location != null &&
+                        !widget.hideDistance
+                    ? Padding(
+                        padding: const EdgeInsets.only(top: 5.0),
+                        child: Text(
+                            '${calculateDistance(product.address!.location!.latitude, product.address!.location!.longitude, _location.latitude, _location.longitude).toStringAsFixed(1)} Km',
+                            style: TextStyle(
+                                fontSize: SizeConfig.textScaleFactor * 10)),
+                      )
+                    : Container(),
+              ],
             ),
-          ],
+          ),
         );
       },
     );

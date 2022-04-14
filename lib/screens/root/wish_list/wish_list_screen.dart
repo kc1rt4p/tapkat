@@ -258,14 +258,13 @@ class _WishListScreenState extends State<WishListScreen> {
         horizontal: 16.0,
       ),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        childAspectRatio: 1,
         crossAxisSpacing: 10.0,
         mainAxisSpacing: 16.0,
         crossAxisCount: 3,
       ),
       builderDelegate: PagedChildBuilderDelegate<LikedStoreModel>(
         itemBuilder: (context, store, index) {
-          return Center(
+          return FittedBox(
             child: StoreListItem(
               StoreModel(
                 display_name: store.username,
@@ -295,15 +294,15 @@ class _WishListScreenState extends State<WishListScreen> {
       showNewPageProgressIndicatorAsGridChild: false,
       showNewPageErrorIndicatorAsGridChild: false,
       showNoMoreItemsIndicatorAsGridChild: false,
-      padding: EdgeInsets.symmetric(vertical: 10.0),
+      padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 16.0),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        mainAxisSpacing: 10.0,
+        mainAxisSpacing: 16.0,
         crossAxisSpacing: 10.0,
       ),
       builderDelegate: PagedChildBuilderDelegate<LikedProductModel>(
         itemBuilder: (context, product, index) {
-          return Center(
+          return FittedBox(
             child: BarterListItem(
               likeLeftMargin: SizeConfig.screenWidth * 0.09,
               product: ProductModel(

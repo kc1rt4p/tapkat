@@ -91,7 +91,7 @@ class _MyAppState extends State<MyApp> {
           ),
         ],
         child: DevicePreview(
-          enabled: false,
+          enabled: true,
           builder: (context) => MaterialApp(
             useInheritedMediaQuery: true,
             locale: DevicePreview.locale(context),

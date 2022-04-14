@@ -449,9 +449,8 @@ class _HomeScreenState extends State<HomeScreen> {
     if (hideLike) {
       return BarterListItem(
         product: product,
-        height: SizeConfig.screenHeight * 0.165,
-        width: SizeConfig.screenWidth * 0.27,
-        fontSize: SizeConfig.textScaleFactor * 9,
+        height: SizeConfig.screenHeight * 0.17,
+        width: SizeConfig.screenHeight * 0.17,
         hideLikeBtn: product.userid == application.currentUserModel!.userid,
         onTapped: () {
           Navigator.push(
