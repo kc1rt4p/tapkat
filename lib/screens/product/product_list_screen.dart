@@ -73,7 +73,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
   bool _loading = false;
 
-  String _selectedSortBy = 'price';
+  String _selectedSortBy = 'distance';
   List<String> sortByOptions = [
     'Distance',
     'Name',
@@ -474,16 +474,18 @@ class _ProductListScreenState extends State<ProductListScreen> {
         showNewPageProgressIndicatorAsGridChild: false,
         showNewPageErrorIndicatorAsGridChild: false,
         showNoMoreItemsIndicatorAsGridChild: false,
+        padding: EdgeInsets.symmetric(
+          horizontal: 16.0,
+          vertical: 10.0,
+        ),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           mainAxisSpacing: 16,
           crossAxisCount: 2,
         ),
         builderDelegate: PagedChildBuilderDelegate<ProductModel>(
           itemBuilder: (context, product, index) {
-            return Center(
+            return FittedBox(
               child: BarterListItem(
-                height: SizeConfig.screenHeight * 0.21,
-                width: SizeConfig.screenWidth * 0.40,
                 hideLikeBtn: widget.ownListing,
                 product: product,
                 onTapped: () => Navigator.push(

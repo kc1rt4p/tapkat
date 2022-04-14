@@ -334,14 +334,15 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
           }
 
           if (event is StreamBarter) {
-            final senderUserId = event.barterRecord.userid1Role == 'sender'
-                ? event.barterRecord.userid1
-                : event.barterRecord.userid2;
+            final barterRecord = await _barterRepository
+                .getBarterRecord(event.barterRecord.barterId!);
+            final senderUserId = barterRecord!.userid1Role == 'sender'
+                ? barterRecord.userid1
+                : barterRecord.userid2;
 
-            final recipientUserId =
-                event.barterRecord.userid1Role == 'recipient'
-                    ? event.barterRecord.userid1
-                    : event.barterRecord.userid2;
+            final recipientUserId = barterRecord.userid1Role == 'recipient'
+                ? barterRecord.userid1
+                : barterRecord.userid2;
 
             final currentUserProducts =
                 await _productRepository.getFirstProducts(

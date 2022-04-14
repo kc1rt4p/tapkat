@@ -45,8 +45,9 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
   @override
   void initState() {
     _barterBloc = BlocProvider.of<BarterBloc>(context);
-    _barterBloc.add(InitializeBarterTransactions());
     super.initState();
+
+    _barterBloc.add(InitializeBarterTransactions());
   }
 
   @override
@@ -55,6 +56,7 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
     _byYouStream = null;
     _fromOthersStream?.cancel();
     _fromOthersStream = null;
+    // _barterBloc.close();
     super.dispose();
   }
 
@@ -316,70 +318,96 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
               if (name.length > 10) {
                 name = name.substring(0, 10) + '...';
               }
-              return Container(
-                margin: EdgeInsets.only(right: SizeConfig.screenWidth * 0.05),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    RichText(
-                      text: TextSpan(
-                        style: TextStyle(
-                          fontFamily: 'Poppins',
-                          color: Colors.black,
+              return FittedBox(
+                child: Container(
+                  margin: EdgeInsets.only(right: SizeConfig.screenWidth * 0.05),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      RichText(
+                        text: TextSpan(
+                          style: TextStyle(
+                            fontFamily: 'Poppins',
+                            color: Colors.black,
+                          ),
+                          children: [
+                            TextSpan(text: '$prefix '),
+                            TextSpan(
+                              text: name,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
-                        children: [
-                          TextSpan(text: '$prefix '),
-                          TextSpan(
-                            text: name,
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
                       ),
-                    ),
-                    SizedBox(height: 8.0),
-                    Stack(
-                      children: [
-                        BarterListItem(
-                          hideDistance: true,
-                          product: ProductModel(
-                            productid: barter.u2P1Id!,
-                            productname: barter.u2P1Name ?? '',
-                            price: barter.u2P1Price != null
-                                ? barter.u2P1Price!
-                                : 0.00,
-                            mediaPrimary: MediaPrimaryModel(
-                              type: 'image',
-                              url_t: barter.u2P1Image,
-                              url: barter.u2P1Image,
+                      SizedBox(height: 8.0),
+                      Stack(
+                        children: [
+                          BarterListItem(
+                            hideDistance: true,
+                            product: ProductModel(
+                              productid: barter.u2P1Id!,
+                              productname: barter.u2P1Name ?? '',
+                              price: barter.u2P1Price != null
+                                  ? barter.u2P1Price!
+                                  : 0.00,
+                              mediaPrimary: MediaPrimaryModel(
+                                type: 'image',
+                                url_t: barter.u2P1Image,
+                                url: barter.u2P1Image,
+                              ),
                             ),
+                            hideLikeBtn: true,
+                            onTapped: () async {
+                              await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => BarterScreen(
+                                    barterRecord: barter,
+                                  ),
+                                ),
+                              );
+
+                              _barterBloc.add(InitializeBarterTransactions());
+                            },
+                            status: barter.dealStatus,
                           ),
-                          hideLikeBtn: true,
-                          onTapped: () async {
-                            await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => BarterScreen(
-                                  barterRecord: barter,
+                          Visibility(
+                            visible: [
+                              'new',
+                              'completed',
+                              'rejected',
+                              'withdrawn'
+                            ].contains(barter.dealStatus),
+                            child: Positioned(
+                              top: 5,
+                              right: 5,
+                              child: InkWell(
+                                onTap: () =>
+                                    _onDeletebarter('Barter', barter.barterId!),
+                                child: Container(
+                                  padding: EdgeInsets.all(3.0),
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.red,
+                                  ),
+                                  child: Icon(
+                                    Icons.close,
+                                    color: Colors.white,
+                                    size: SizeConfig.textScaleFactor * 15,
+                                  ),
                                 ),
                               ),
-                            );
-
-                            _barterBloc.add(InitializeBarterTransactions());
-                          },
-                          status: barter.dealStatus,
-                        ),
-                        Visibility(
-                          visible: ['new', 'completed', 'rejected', 'withdrawn']
-                              .contains(barter.dealStatus),
-                          child: Positioned(
-                            top: 5,
-                            right: 5,
-                            child: InkWell(
-                              onTap: () =>
-                                  _onDeletebarter('Barter', barter.barterId!),
+                            ),
+                          ),
+                          Visibility(
+                            visible: application.unreadBarterMessages
+                                .any((msg) => msg.barterId == barter.barterId),
+                            child: Positioned(
+                              top: 35,
+                              right: 5,
                               child: Container(
                                 padding: EdgeInsets.all(3.0),
                                 decoration: BoxDecoration(
@@ -387,48 +415,28 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                                   color: Colors.red,
                                 ),
                                 child: Icon(
-                                  Icons.close,
+                                  Icons.chat_bubble,
                                   color: Colors.white,
                                   size: SizeConfig.textScaleFactor * 15,
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                        Visibility(
-                          visible: application.unreadBarterMessages
-                              .any((msg) => msg.barterId == barter.barterId),
-                          child: Positioned(
-                            bottom: 5,
-                            right: 5,
-                            child: Container(
-                              padding: EdgeInsets.all(3.0),
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Colors.red,
+                        ],
+                      ),
+                      barter.dealDate != null
+                          ? Container(
+                              width: SizeConfig.screenHeight * 0.19,
+                              child: Text(
+                                timeago.format(barter.dealDate!),
+                                style: Style.subtitle2.copyWith(
+                                    fontSize: SizeConfig.textScaleFactor * 9),
+                                textAlign: TextAlign.center,
                               ),
-                              child: Icon(
-                                Icons.chat_bubble,
-                                color: Colors.white,
-                                size: SizeConfig.textScaleFactor * 15,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    barter.dealDate != null
-                        ? Container(
-                            width: SizeConfig.screenHeight * 0.19,
-                            child: Text(
-                              timeago.format(barter.dealDate!),
-                              style: Style.subtitle2.copyWith(
-                                  fontSize: SizeConfig.textScaleFactor * 9),
-                              textAlign: TextAlign.center,
-                            ),
-                          )
-                        : Container(),
-                  ],
+                            )
+                          : Container(),
+                    ],
+                  ),
                 ),
               );
             },

@@ -5,12 +5,9 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:tapkat/models/location.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/models/store.dart';
-import 'package:tapkat/repositories/auth_repository.dart';
 import 'package:tapkat/repositories/product_repository.dart';
 import 'package:tapkat/repositories/user_repository.dart';
 import 'package:tapkat/utilities/application.dart' as application;
-
-import 'package:geolocator/geolocator.dart' as geoLocator;
 
 part 'home_event.dart';
 part 'home_state.dart';
@@ -19,7 +16,6 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   HomeBloc() : super(HomeInitial()) {
     final _productRepo = ProductRepository();
     final _userRepo = UserRepository();
-    final _authRepo = AuthRepository();
     on<HomeEvent>((event, emit) async {
       emit(HomeLoading());
 
@@ -31,7 +27,8 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
           emit(LoadingTopStoreList());
 
           LocationModel _location = application.currentUserLocation ??
-              application.currentUserModel!.location!;
+              application.currentUserModel!.location ??
+              LocationModel(latitude: 0, longitude: 0);
 
           final recommendedList = await _productRepo.getFirstProducts(
             'reco',
@@ -81,19 +78,9 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         // }
 
         if (event is LoadTrendingList) {
-          LocationModel? _location;
-
-          if (await Permission.location.isGranted &&
-              await geoLocator.GeolocatorPlatform.instance
-                  .isLocationServiceEnabled()) {
-            final userLoc = await geoLocator.Geolocator.getCurrentPosition();
-            _location = LocationModel(
-              longitude: userLoc.longitude,
-              latitude: userLoc.latitude,
-            );
-          } else {
-            _location = application.currentUserLocation;
-          }
+          LocationModel _location = application.currentUserLocation ??
+              application.currentUserModel!.location ??
+              LocationModel(latitude: 0, longitude: 0);
           final trendingList = await _productRepo.getFirstProducts(
             'demand',
             location: _location,

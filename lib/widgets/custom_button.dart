@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tapkat/utilities/size_config.dart';
 
 class CustomButton extends StatefulWidget {
   final String label;
@@ -18,7 +19,7 @@ class CustomButton extends StatefulWidget {
     this.textColor = Colors.white,
     this.removeMargin = false,
     this.enabled = true,
-    this.fontSize = 16.0,
+    this.fontSize,
   }) : super(key: key);
 
   @override
@@ -59,7 +60,7 @@ class _CustomButtonState extends State<CustomButton> {
                 widget.label,
                 style: TextStyle(
                   color: widget.textColor,
-                  fontSize: widget.fontSize,
+                  fontSize: widget.fontSize ?? SizeConfig.textScaleFactor * 14,
                   fontWeight: FontWeight.bold,
                 ),
               ),

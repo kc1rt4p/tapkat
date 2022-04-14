@@ -62,7 +62,7 @@ class _RootScreenState extends State<RootScreen> {
   late AuthBloc _authBloc;
   late BarterBloc _barterBloc;
 
-  final _currentVerDate = DateTime(2022, 4, 14, 12);
+  final _currentVerDate = DateTime(2022, 4, 14, 4);
 
   final _appConfig = new LocalStorage('app_config.json');
 
@@ -72,7 +72,7 @@ class _RootScreenState extends State<RootScreen> {
     _authBloc = BlocProvider.of<AuthBloc>(context);
     Permission.location.request();
     _authBloc.add(GetCurrentuser());
-    _barterBloc.add(GetUnreadBarterMessages());
+
     super.initState();
   }
 
@@ -175,6 +175,12 @@ class _RootScreenState extends State<RootScreen> {
   }
 
   @override
+  void dispose() {
+    _barterBloc.close();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final bool showFab = MediaQuery.of(context).viewInsets.bottom == 0.0;
     SizeConfig().init(context);
@@ -214,6 +220,7 @@ class _RootScreenState extends State<RootScreen> {
                 print('ROOT AUTH STATE:::: $state');
                 if (state is GetCurrentUsersuccess) {
                   initNotifications();
+                  _barterBloc.add(GetUnreadBarterMessages());
                 }
               },
             ),

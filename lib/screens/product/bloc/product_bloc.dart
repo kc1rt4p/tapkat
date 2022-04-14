@@ -137,7 +137,8 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
           emit(ProductLoading());
 
           LocationModel _location = application.currentUserLocation ??
-              application.currentUserModel!.location!;
+              application.currentUserModel!.location ??
+              LocationModel(latitude: 0, longitude: 0);
 
           final result = await _productRepo.getFirstProducts(
             event.listType,
@@ -158,12 +159,15 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
             secondaryVal: event.lastUserId,
             startAfterVal: event.startAfterVal,
           );
+
+          emit(GetNextRatingsSuccess(result));
         }
 
         if (event is GetNextProducts) {
           emit(ProductLoading());
           LocationModel _location = application.currentUserLocation ??
-              application.currentUserModel!.location!;
+              application.currentUserModel!.location ??
+              LocationModel(latitude: 0, longitude: 0);
           final result = await _productRepo.getNextProducts(
             listType: event.listType,
             lastProductId: event.lastProductId,

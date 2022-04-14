@@ -35,8 +35,8 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  final _authBloc = AuthBloc();
-  final _barterBloc = BarterBloc();
+  late AuthBloc _authBloc;
+  late BarterBloc _barterBloc;
   StreamSubscription<TapkatFirebaseUser?>? _userStream;
   TapkatFirebaseUser? _user;
   final GlobalKey<NavigatorState> navigatorKey =
@@ -44,6 +44,8 @@ class _MyAppState extends State<MyApp> {
 
   @override
   void initState() {
+    _authBloc = AuthBloc();
+    _barterBloc = BarterBloc();
     _authBloc.add(InitializeAuth());
 
     super.initState();
@@ -136,6 +138,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void dispose() {
     _userStream?.cancel();
+    _barterBloc.close();
     super.dispose();
   }
 }

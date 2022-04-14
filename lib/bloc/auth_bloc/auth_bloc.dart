@@ -199,6 +199,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
       if (event is SignOut) {
         signOut();
+        application.currentUser = null;
+        application.currentUserLocation = null;
+        application.currentUserModel = null;
+        application.chatOpened = false;
+        application.unreadBarterMessages = [];
         emit(AuthSignedOut());
       }
     });

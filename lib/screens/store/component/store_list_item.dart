@@ -55,6 +55,8 @@ class _StoreListItemState extends State<StoreListItem> {
                             ),
                           ),
                           placeholder: (context, text) => Container(
+                            height: SizeConfig.screenHeight * 0.15,
+                            width: SizeConfig.screenHeight * 0.19,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.only(
                                 topLeft: Radius.circular(20.0),
@@ -69,7 +71,8 @@ class _StoreListItemState extends State<StoreListItem> {
                             ),
                           ),
                           errorWidget: (context, url, error) => Container(
-                            height: 150.0,
+                            height: SizeConfig.screenHeight * 0.15,
+                            width: SizeConfig.screenHeight * 0.19,
                             child: Icon(
                               Icons.error,
                               color: kBackgroundColor,
@@ -95,7 +98,7 @@ class _StoreListItemState extends State<StoreListItem> {
             ),
             Container(
               color: Colors.white,
-              width: SizeConfig.screenHeight * 0.17,
+              width: SizeConfig.screenHeight * 0.19,
               padding: EdgeInsets.all(3.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,

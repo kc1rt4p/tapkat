@@ -376,10 +376,15 @@ class _HomeScreenState extends State<HomeScreen> {
                               context: context,
                               ownList: true,
                               items: _myProductList
-                                  .map((product) => _buildProductItem(
-                                        product: product,
-                                        hideLike: true,
-                                      ))
+                                  .map(
+                                    (product) => BarterListItem(
+                                      height: SizeConfig.screenHeight * 0.10,
+                                      width: SizeConfig.screenHeight * 0.14,
+                                      hideLikeBtn: true,
+                                      hideDistance: true,
+                                      product: product,
+                                    ),
+                                  )
                                   .toList(),
                               label: 'Your Items',
                               smallItems: true,

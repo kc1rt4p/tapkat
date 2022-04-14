@@ -111,7 +111,7 @@ class _BarterListItemState extends State<BarterListItem> {
                             imageBuilder: (context, imageProvider) => Container(
                               height: widget.height ??
                                   SizeConfig.screenHeight * 0.15,
-                              width: widget.height ??
+                              width: widget.width ??
                                   SizeConfig.screenHeight * 0.19,
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.only(
@@ -127,6 +127,10 @@ class _BarterListItemState extends State<BarterListItem> {
                               ),
                             ),
                             placeholder: (context, text) => Container(
+                              height: widget.height ??
+                                  SizeConfig.screenHeight * 0.15,
+                              width: widget.width ??
+                                  SizeConfig.screenHeight * 0.19,
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.only(
                                   topLeft: Radius.circular(20.0),
@@ -141,7 +145,10 @@ class _BarterListItemState extends State<BarterListItem> {
                               ),
                             ),
                             errorWidget: (context, url, error) => Container(
-                              height: 150.0,
+                              height: widget.height ??
+                                  SizeConfig.screenHeight * 0.15,
+                              width: widget.width ??
+                                  SizeConfig.screenHeight * 0.19,
                               child: Icon(
                                 Icons.error,
                                 color: kBackgroundColor,
@@ -168,7 +175,7 @@ class _BarterListItemState extends State<BarterListItem> {
                             child: Container(
                               padding: EdgeInsets.symmetric(vertical: 5.0),
                               color: kBackgroundColor,
-                              width: widget.height ??
+                              width: widget.width ??
                                   SizeConfig.screenHeight * 0.19,
                               child: Text(
                                 (widget.status ?? '').toUpperCase(),
@@ -215,7 +222,7 @@ class _BarterListItemState extends State<BarterListItem> {
                 ),
                 Container(
                   color: Colors.white,
-                  width: widget.height ?? SizeConfig.screenHeight * 0.19,
+                  width: widget.width ?? SizeConfig.screenHeight * 0.19,
                   padding: EdgeInsets.all(3.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
