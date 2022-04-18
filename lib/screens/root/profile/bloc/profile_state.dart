@@ -58,3 +58,11 @@ class ProfileError extends ProfileState {
 
   ProfileError(this.message);
 }
+
+class DeleteProductReviewSuccess extends ProfileState {}
+
+class DeleteUserReviewSuccess extends ProfileState {}
+
+class UpdateUserReviewSuccess extends ProfileState {}
+
+class UpdateProductReviewSuccess extends ProfileState {}

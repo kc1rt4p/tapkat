@@ -322,27 +322,49 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                                 12),
                                                       ),
                                                       VerticalDivider(),
-                                                      Icon(
-                                                        Icons.star,
-                                                        size: SizeConfig
-                                                                .textScaleFactor *
-                                                            12,
-                                                      ),
-                                                      SizedBox(width: 5.0),
-                                                      Text(
-                                                        _userModel!.rating !=
-                                                                null
-                                                            ? _userModel!
-                                                                .rating!
-                                                                .toStringAsFixed(
-                                                                    1)
-                                                            : '0',
-                                                        textAlign:
-                                                            TextAlign.right,
-                                                        style: Style.fieldText.copyWith(
-                                                            fontSize: SizeConfig
-                                                                    .textScaleFactor *
-                                                                12),
+                                                      InkWell(
+                                                        onTap: () =>
+                                                            Navigator.push(
+                                                          context,
+                                                          MaterialPageRoute(
+                                                            builder: (context) =>
+                                                                UserReviewListScreen(
+                                                                    userId: _userModel!
+                                                                        .userid!),
+                                                          ),
+                                                        ),
+                                                        child: Container(
+                                                          child: Row(
+                                                            children: [
+                                                              Icon(
+                                                                Icons.star,
+                                                                size: SizeConfig
+                                                                        .textScaleFactor *
+                                                                    12,
+                                                              ),
+                                                              SizedBox(
+                                                                  width: 5.0),
+                                                              Text(
+                                                                _userModel!.rating !=
+                                                                        null
+                                                                    ? _userModel!
+                                                                        .rating!
+                                                                        .toStringAsFixed(
+                                                                            1)
+                                                                    : '0',
+                                                                textAlign:
+                                                                    TextAlign
+                                                                        .right,
+                                                                style: Style
+                                                                    .fieldText
+                                                                    .copyWith(
+                                                                        fontSize:
+                                                                            SizeConfig.textScaleFactor *
+                                                                                12),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ),
                                                       ),
                                                     ],
                                                   ),
@@ -429,45 +451,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                               children: [
                                                 Text(
                                                   'Reviewed Products & Users',
-                                                  style: Style.subtitle2
-                                                      .copyWith(
-                                                          color: Colors.white),
-                                                ),
-                                                Spacer(),
-                                                Icon(
-                                                  FontAwesomeIcons.chevronRight,
-                                                  color: Colors.white,
-                                                  size: 18.0,
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                        InkWell(
-                                          onTap: () => Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      UserReviewListScreen(
-                                                          userId: _userModel!
-                                                              .userid!))),
-                                          child: Container(
-                                            width: double.infinity,
-                                            margin:
-                                                EdgeInsets.only(bottom: 8.0),
-                                            decoration: BoxDecoration(
-                                              color: kBackgroundColor,
-                                              borderRadius:
-                                                  BorderRadius.circular(10.0),
-                                            ),
-                                            padding: EdgeInsets.symmetric(
-                                              vertical: 5.0,
-                                              horizontal: 10.0,
-                                            ),
-                                            child: Row(
-                                              children: [
-                                                Text(
-                                                  'My Reviews',
                                                   style: Style.subtitle2
                                                       .copyWith(
                                                           color: Colors.white),

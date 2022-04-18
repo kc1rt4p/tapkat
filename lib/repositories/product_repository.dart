@@ -482,6 +482,19 @@ class ProductRepository {
     return response.data['status'] == 'SUCCESS';
   }
 
+  Future<bool> deleteRating(ProductReviewModel review) async {
+    final response = await _apiService.delete(
+      url: 'products/review/delete',
+      body: {
+        'psk': psk,
+        'productid': review.productid,
+        'userid': application.currentUser!.uid,
+      },
+    );
+
+    return response.data['status'] == 'SUCCESS';
+  }
+
   Future<bool> addRating({
     required ProductRequestModel productRequest,
     required String userId,
@@ -517,7 +530,6 @@ class ProductRepository {
         'image_url': productRequest.image_url,
       },
     );
-    print(response.data['status']);
 
     return response.data['status'] == 'SUCCESS';
   }

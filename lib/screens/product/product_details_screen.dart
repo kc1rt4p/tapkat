@@ -862,7 +862,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
             heroAttributes: PhotoViewHeroAttributes(
                 tag: _product!.productid! +
                     index.toString() +
-                    DateTime.now().toIso8601String()),
+                    DateTime.now().millisecondsSinceEpoch.toString()),
           );
         },
         onPageChanged: (index) {

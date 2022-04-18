@@ -99,6 +99,25 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
           emit(ProfileError(result as String));
         }
       }
+
+      if (event is UpdateUserReview) {
+        final updated = await _userRepo.updateUserReview(event.review);
+        if (updated) emit(UpdateUserReviewSuccess());
+      }
+
+      if (event is UpdateProductReview) {
+        final updated = await _productRepo.updateProductReview(event.review);
+        if (updated) emit(UpdateProductReviewSuccess());
+      }
+
+      if (event is DeleteProductReview) {
+        final deleted = await _productRepo.deleteRating(event.review);
+        if (deleted) emit(DeleteProductReviewSuccess());
+      }
+
+      if (event is DeleteUserReview) {
+        final deleted = await _userRepo.deleteUserReview(event.review);
+      }
     });
   }
 }

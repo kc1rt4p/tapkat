@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_progress_hud/flutter_progress_hud.dart';
@@ -12,7 +13,10 @@ import 'package:tapkat/screens/store/store_screen.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/constants.dart';
 import 'package:tapkat/utilities/size_config.dart';
+import 'package:tapkat/utilities/style.dart';
 import 'package:tapkat/widgets/custom_app_bar.dart';
+import 'package:tapkat/widgets/custom_button.dart';
+import 'package:tapkat/widgets/custom_textformfield.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 class UserRatingsScreen extends StatefulWidget {
@@ -68,6 +72,8 @@ class _UserRatingsScreenState extends State<UserRatingsScreen> {
             }
 
             if (state is GetUserRatingsSuccess) {
+              lastUserReview = null;
+              _userPagingController.refresh();
               if (state.list.isNotEmpty) {
                 lastUserReview = state.list.last;
                 if (state.list.length == productCount) {
@@ -91,6 +97,14 @@ class _UserRatingsScreenState extends State<UserRatingsScreen> {
               });
             }
 
+            if (state is UpdateProductReviewSuccess ||
+                state is UpdateUserReviewSuccess ||
+                state is DeleteUserReviewSuccess ||
+                state is DeleteProductReviewSuccess) {
+              _profileBloc
+                  .add(InitializeUserRatingsScreen(widget.user.userid!));
+            }
+
             if (state is GetNextUserRatingsSuccess) {
               if (state.list.isNotEmpty) {
                 lastUserReview = state.list.last;
@@ -105,6 +119,8 @@ class _UserRatingsScreenState extends State<UserRatingsScreen> {
             }
 
             if (state is GetProductRatingsSuccess) {
+              lastProductReview = null;
+              _productPagingController.refresh();
               if (state.list.isNotEmpty) {
                 lastProductReview = state.list.last;
                 if (state.list.length == productCount) {
@@ -250,6 +266,7 @@ class _UserRatingsScreenState extends State<UserRatingsScreen> {
       builderDelegate: PagedChildBuilderDelegate<ProductReviewModel>(
         itemBuilder: (context, rating, index) {
           return InkWell(
+            onLongPress: () => _onLongPressProduct(rating),
             onTap: () => Navigator.push(
               context,
               MaterialPageRoute(
@@ -323,7 +340,7 @@ class _UserRatingsScreenState extends State<UserRatingsScreen> {
                                 direction: Axis.horizontal,
                                 allowHalfRating: true,
                                 itemCount: 5,
-                                itemSize: 20,
+                                itemSize: SizeConfig.textScaleFactor * 13,
                                 tapOnlyMode: true,
                                 itemPadding:
                                     EdgeInsets.symmetric(horizontal: 4.0),
@@ -350,6 +367,295 @@ class _UserRatingsScreenState extends State<UserRatingsScreen> {
     );
   }
 
+  _onLongPressUser(UserReviewModel user) async {
+    final operation = await showModalBottomSheet(
+      context: context,
+      builder: (context) => Container(
+        color: Colors.white,
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: Icon(Icons.delete),
+              title: Text('Delete'),
+              onTap: () => Navigator.pop(context, 'delete'),
+            ),
+            ListTile(
+              leading: Icon(Icons.edit),
+              title: Text('Edit'),
+              onTap: () => Navigator.pop(context, 'edit'),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (operation == 'delete') {
+      _profileBloc.add(DeleteUserReview(user));
+    }
+
+    if (operation == 'edit') {
+      _onUserReviewUpdate(user);
+    }
+  }
+
+  _onLongPressProduct(ProductReviewModel review) async {
+    final operation = await showModalBottomSheet(
+      context: context,
+      builder: (context) => Container(
+        color: Colors.white,
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: Icon(Icons.delete),
+              title: Text('Delete'),
+              onTap: () => Navigator.pop(context, 'delete'),
+            ),
+            ListTile(
+              leading: Icon(Icons.edit),
+              title: Text('Edit'),
+              onTap: () => Navigator.pop(context, 'edit'),
+            ),
+          ],
+        ),
+      ),
+    );
+    print('selected op: $operation');
+    if (operation == 'delete') {
+      _profileBloc.add(DeleteProductReview(review));
+    }
+    if (operation == 'edit') {
+      _onProductReviewUpdate(review);
+    }
+  }
+
+  _onUserReviewUpdate(UserReviewModel review) async {
+    final _reviewTextController = TextEditingController();
+    num _rating = 0;
+    if (review != null) {
+      _reviewTextController.text = review.review ?? '';
+      _rating = review.rating ?? 0;
+    }
+
+    final rating = await showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) => Dialog(
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(26.0),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Rate User',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: kBackgroundColor,
+                            fontSize: SizeConfig.textScaleFactor * 15.0,
+                          ),
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () => Navigator.pop(context),
+                        child: Icon(
+                          Icons.close,
+                          color: kBackgroundColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 16.0),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      RatingBar.builder(
+                        initialRating:
+                            review != null ? review.rating!.toDouble() : 0,
+                        minRating: 0,
+                        direction: Axis.horizontal,
+                        allowHalfRating: true,
+                        itemCount: 5,
+                        itemSize: 20,
+                        itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
+                        itemBuilder: (context, _) => Icon(
+                          Icons.star,
+                          color: Colors.amber,
+                        ),
+                        onRatingUpdate: (rating) {
+                          setState(() {
+                            _rating = rating;
+                          });
+                        },
+                      ),
+                      Text(_rating.toStringAsFixed(1),
+                          style: TextStyle(fontSize: 16.0)),
+                    ],
+                  ),
+                  SizedBox(height: 8.0),
+                  CustomTextFormField(
+                    label: 'Review',
+                    hintText: 'Write a user review',
+                    controller: _reviewTextController,
+                    textColor: kBackgroundColor,
+                    maxLines: 3,
+                  ),
+                  CustomButton(
+                    bgColor: kBackgroundColor,
+                    label: 'UPDATE',
+                    onTap: () {
+                      Navigator.pop(context, {
+                        'rating': _rating,
+                        'review': _reviewTextController.text.trim(),
+                      });
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+
+    if (rating != null) {
+      _profileBloc.add(UpdateUserReview(
+        UserReviewModel(
+          rating: rating['rating'] as double,
+          review: rating['review'] as String?,
+          reviewerid: review.userid,
+          reviewername: review.reviewername,
+          userid: review.userid,
+          username: review.username,
+        ),
+      ));
+    }
+  }
+
+  _onProductReviewUpdate(ProductReviewModel review) async {
+    final updatedReview = await showDialog(
+        context: context,
+        builder: (context) {
+          final _reviewTextController = TextEditingController(
+              text: review.review != null ? review.review : '');
+          num _rating = review.rating != null ? review.rating ?? 0 : 0.0;
+          return StatefulBuilder(builder: (context, StateSetter setState) {
+            return Dialog(
+              child: Container(
+                padding: EdgeInsets.all(10.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      children: [
+                        Text('Edit review', style: Style.subtitle2),
+                        Spacer(),
+                        GestureDetector(
+                          onTap: () => Navigator.pop(context, null),
+                          child: Icon(Icons.close),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 16.0),
+                    Row(
+                      children: [
+                        Container(
+                          width: SizeConfig.screenWidth * .1,
+                          height: SizeConfig.screenWidth * .1,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            image: DecorationImage(
+                              image: review.image_url_t != null
+                                  ? NetworkImage(review.image_url_t!)
+                                  : AssetImage(
+                                          'assets/images/image_placeholder.jpg')
+                                      as ImageProvider<Object>,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: 16.0),
+                        Expanded(
+                          child: Text(
+                            review.productname ?? '',
+                            style: TextStyle(
+                              fontSize: SizeConfig.textScaleFactor * 13,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        RatingBar.builder(
+                          initialRating: review.rating != null
+                              ? review.rating!.toDouble()
+                              : 0.0,
+                          minRating: 0,
+                          direction: Axis.horizontal,
+                          allowHalfRating: true,
+                          itemCount: 5,
+                          itemSize: 20,
+                          itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
+                          itemBuilder: (context, _) => Icon(
+                            Icons.star,
+                            color: Colors.amber,
+                          ),
+                          onRatingUpdate: (rating) =>
+                              setState(() => _rating = rating),
+                        ),
+                        Text('${_rating.toStringAsFixed(1)}'),
+                      ],
+                    ),
+                    SizedBox(height: 8.0),
+                    CustomTextFormField(
+                      label: 'Review',
+                      hintText: 'Write a user review',
+                      controller: _reviewTextController,
+                      textColor: kBackgroundColor,
+                      maxLines: 3,
+                    ),
+                    CustomButton(
+                      enabled: _rating > 0,
+                      bgColor: kBackgroundColor,
+                      label: 'UPDATE',
+                      onTap: () {
+                        Navigator.pop(context, {
+                          'rating': _rating,
+                          'review': _reviewTextController.text.trim(),
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            );
+          });
+        });
+
+    if (updatedReview != null) {
+      _profileBloc.add(UpdateProductReview(
+        ProductReviewModel(
+          rating: updatedReview['rating'] + 0.0,
+          review: updatedReview['review'] as String?,
+          display_name: review.display_name,
+          productid: review.productid,
+          productname: review.productname,
+          image_url_t: review.image_url_t,
+          userid: review.userid,
+        ),
+      ));
+    }
+  }
+
   Widget _buildUserRatingsList() {
     return PagedListView<int, UserReviewModel>(
       padding: EdgeInsets.symmetric(
@@ -360,6 +666,7 @@ class _UserRatingsScreenState extends State<UserRatingsScreen> {
       builderDelegate: PagedChildBuilderDelegate<UserReviewModel>(
         itemBuilder: (context, rating, index) {
           return InkWell(
+            onLongPress: () => _onLongPressUser(rating),
             onTap: () => Navigator.push(
               context,
               MaterialPageRoute(

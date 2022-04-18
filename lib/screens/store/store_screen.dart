@@ -197,53 +197,64 @@ class _StoreScreenState extends State<StoreScreen> {
                                       } else {
                                         _isFollowing = false;
                                       }
-                                      return InkWell(
-                                        onTap: () => _storeBloc.add(
-                                          EditUserLike(
-                                            user: _storeOwner!,
-                                            likeCount: liked ? -1 : 1,
-                                          ),
-                                        ),
-                                        child: Padding(
-                                          padding: EdgeInsets.symmetric(
-                                              horizontal: 10.0),
-                                          child: Container(
-                                            decoration: BoxDecoration(
-                                              color: kBackgroundColor,
-                                              borderRadius:
-                                                  BorderRadius.circular(6.0),
+
+                                      print(
+                                          '0-----> ${snapshot.connectionState}');
+
+                                      if (snapshot.connectionState !=
+                                          ConnectionState.active)
+                                        return CircularProgressIndicator();
+                                      else
+                                        return InkWell(
+                                          onTap: () => _storeBloc.add(
+                                            EditUserLike(
+                                              user: _storeOwner!,
+                                              likeCount: liked ? -1 : 1,
                                             ),
+                                          ),
+                                          child: Padding(
                                             padding: EdgeInsets.symmetric(
-                                                vertical: 5.0),
-                                            child: Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: [
-                                                Icon(
-                                                  liked
-                                                      ? Icons.remove_circle
-                                                      : Icons.library_add,
-                                                  size: SizeConfig
-                                                          .textScaleFactor *
-                                                      13,
-                                                  color: Colors.white,
-                                                ),
-                                                SizedBox(width: 5.0),
-                                                Text(
-                                                  liked ? 'Unfollow' : 'Follow',
-                                                  style: TextStyle(
-                                                    color: Colors.white,
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: SizeConfig
+                                                horizontal: 10.0),
+                                            child: Container(
+                                              decoration: BoxDecoration(
+                                                color: kBackgroundColor,
+                                                borderRadius:
+                                                    BorderRadius.circular(6.0),
+                                              ),
+                                              padding: EdgeInsets.symmetric(
+                                                  vertical: 5.0),
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  Icon(
+                                                    liked
+                                                        ? Icons.remove_circle
+                                                        : Icons.library_add,
+                                                    size: SizeConfig
                                                             .textScaleFactor *
-                                                        15,
+                                                        13,
+                                                    color: Colors.white,
                                                   ),
-                                                ),
-                                              ],
+                                                  SizedBox(width: 5.0),
+                                                  Text(
+                                                    liked
+                                                        ? 'Unfollow'
+                                                        : 'Follow',
+                                                    style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: SizeConfig
+                                                              .textScaleFactor *
+                                                          15,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
                                             ),
                                           ),
-                                        ),
-                                      );
+                                        );
                                     },
                                   ),
                                 ],
@@ -633,44 +644,24 @@ class _StoreScreenState extends State<StoreScreen> {
         builderDelegate: PagedChildBuilderDelegate<ProductModel>(
           itemBuilder: (context, product, index) {
             return FittedBox(
-              child: StreamBuilder<List<UserLikesRecord?>>(
-                  stream: queryUserLikesRecord(
-                    queryBuilder: (userLikesRecord) => userLikesRecord
-                        .where('userid', isEqualTo: widget.userId)
-                        .where('productid', isEqualTo: product.productid),
-                    singleRecord: true,
+              child: BarterListItem(
+                product: product,
+                onTapped: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ProductDetailsScreen(
+                      productId: product.productid ?? '',
+                    ),
                   ),
-                  builder: (context, snapshot) {
-                    bool liked = false;
-                    UserLikesRecord? record;
-                    if (snapshot.hasData) {
-                      if (snapshot.data != null && snapshot.data!.isNotEmpty) {
-                        record = snapshot.data!.first;
-                        if (record != null) {
-                          liked = record.liked ?? false;
-                        }
-                      }
-                    }
-
-                    return BarterListItem(
-                      product: product,
-                      onTapped: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ProductDetailsScreen(
-                            productId: product.productid ?? '',
-                          ),
-                        ),
-                      ),
-                      onLikeTapped: (val) {
-                        if (val.isNegative) {
-                          _productBloc.add(AddLike(product));
-                        } else {
-                          _productBloc.add(Unlike(product));
-                        }
-                      },
-                    );
-                  }),
+                ),
+                onLikeTapped: (val) {
+                  if (val.isNegative) {
+                    _productBloc.add(AddLike(product));
+                  } else {
+                    _productBloc.add(Unlike(product));
+                  }
+                },
+              ),
             );
           },
         ),

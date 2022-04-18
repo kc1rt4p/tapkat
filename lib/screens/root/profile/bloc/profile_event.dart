@@ -52,6 +52,30 @@ class UpdatePassword extends ProfileEvent {
   UpdatePassword(this.currentPassword, this.newPassword);
 }
 
+class DeleteProductReview extends ProfileEvent {
+  final ProductReviewModel review;
+
+  DeleteProductReview(this.review);
+}
+
+class DeleteUserReview extends ProfileEvent {
+  final UserReviewModel review;
+
+  DeleteUserReview(this.review);
+}
+
+class UpdateProductReview extends ProfileEvent {
+  final ProductReviewModel review;
+
+  UpdateProductReview(this.review);
+}
+
+class UpdateUserReview extends ProfileEvent {
+  final UserReviewModel review;
+
+  UpdateUserReview(this.review);
+}
+
 class GetNextProductRatings extends ProfileEvent {
   final String userId;
   final String lastProductId;

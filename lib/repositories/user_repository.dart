@@ -58,6 +58,19 @@ class UserRepository {
     return result.data['status'] == 'SUCCESS';
   }
 
+  Future<bool> deleteUserReview(UserReviewModel review) async {
+    final result = await _apiService.delete(
+      url: 'users/review/delete',
+      body: {
+        'psk': psk,
+        'userid': review.userid,
+        'reviewerid': review.reviewerid,
+      },
+    );
+
+    return result.data['status'] == 'SUCCESS';
+  }
+
   Future<List<UserReviewModel>> getUserReviews(
       String? userid, String? reviewerid) async {
     var _body = {

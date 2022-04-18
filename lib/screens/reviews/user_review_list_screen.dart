@@ -125,31 +125,23 @@ class _UserReviewListScreenState extends State<UserReviewListScreen> {
                 children: [
                   Row(
                     children: [
-                      Text(rating.reviewername ?? ''),
+                      Text(
+                        rating.reviewername ?? '',
+                        style: TextStyle(
+                          fontSize: SizeConfig.textScaleFactor * 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                       Spacer(),
-                      Text(timeago.format(DateTime.parse(rating.review_date!))),
+                      Text(
+                        timeago.format(DateTime.parse(rating.review_date!)),
+                        style: TextStyle(
+                            fontSize: SizeConfig.textScaleFactor * 11),
+                      ),
                     ],
                   ),
-                  SizedBox(height: 8.0),
                   Row(
                     children: [
-                      // Container(
-                      //   width: SizeConfig.screenWidth * .3,
-                      //   height: SizeConfig.screenWidth * .3,
-                      //   decoration: BoxDecoration(
-                      //     color: Colors.white,
-                      //     image: DecorationImage(
-                      //       image: rating.user_image_url != null &&
-                      //               rating.user_image_url!.isNotEmpty
-                      //           ? CachedNetworkImageProvider(
-                      //               rating.user_image_url!)
-                      //           : AssetImage(
-                      //                   'assets/images/image_placeholder.jpg')
-                      //               as ImageProvider<Object>,
-                      //       fit: BoxFit.cover,
-                      //     ),
-                      //   ),
-                      // ),
                       Expanded(
                         child: Column(
                           children: [
@@ -175,7 +167,7 @@ class _UserReviewListScreenState extends State<UserReviewListScreen> {
                                 direction: Axis.horizontal,
                                 allowHalfRating: true,
                                 itemCount: 5,
-                                itemSize: 20,
+                                itemSize: SizeConfig.textScaleFactor * 13,
                                 tapOnlyMode: true,
                                 itemPadding:
                                     EdgeInsets.symmetric(horizontal: 4.0),

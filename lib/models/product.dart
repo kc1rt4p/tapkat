@@ -50,7 +50,6 @@ class ProductModel {
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
-    print('......>${json['tradefor'].runtimeType}');
     return ProductModel(
       productid: json['productid'],
       userid: json['userid'],

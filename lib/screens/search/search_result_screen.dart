@@ -151,7 +151,6 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                 if (state is SearchSuccess) {
                   _refreshController.refreshCompleted();
                   _pagingController.refresh();
-
                   if (state.searchResults.isNotEmpty) {
                     lastProduct = state.searchResults.last;
                     searchResults.addAll(state.searchResults);
@@ -495,18 +494,22 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
           );
         });
 
-    if (distance != null) {
-      setState(() {
-        _selectedRadius = distance;
-      });
-
-      _searchBloc.add(InitializeSearch(
-        keyword: _keyWordTextController.text.trim(),
-        category: _selectedCategory != null ? [_selectedCategory!.code!] : null,
-        sortBy: _selectedSortBy,
-        distance: _selectedRadius,
-      ));
+    if (distance == null) {
+      return;
     }
+
+    _reset();
+
+    setState(() {
+      _selectedRadius = distance;
+    });
+
+    _searchBloc.add(InitializeSearch(
+      keyword: _keyWordTextController.text.trim(),
+      category: _selectedCategory != null ? [_selectedCategory!.code!] : null,
+      sortBy: _selectedSortBy,
+      distance: _selectedRadius,
+    ));
   }
 
   _onSortBy() async {
@@ -562,6 +565,12 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
             ),
           );
         });
+
+    if (sortBy == null) {
+      return;
+    }
+
+    _reset();
 
     if (sortBy != null) {
       setState(() {
@@ -653,6 +662,12 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
           );
         });
 
+    if (category == null) {
+      return;
+    }
+
+    _reset();
+
     setState(() {
       _selectedCategory = category;
     });
@@ -662,6 +677,10 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
       sortBy: _selectedSortBy,
       distance: _selectedRadius,
     ));
+  }
+
+  _reset() {
+    lastProduct = null;
   }
 
   _buildMapView() {
