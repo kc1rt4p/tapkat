@@ -65,6 +65,7 @@ class _StoreScreenState extends State<StoreScreen> {
   String _selectedView = 'grid';
 
   Stream<QuerySnapshot<Map<String, dynamic>>>? _storeLikeStream;
+  StreamSubscription? _storeLikeStreamSub;
 
   bool _isFollowing = false;
 
@@ -77,6 +78,7 @@ class _StoreScreenState extends State<StoreScreen> {
 
   @override
   void dispose() {
+    if (_storeLikeStreamSub != null) _storeLikeStreamSub!.cancel();
     super.dispose();
   }
 
@@ -203,7 +205,11 @@ class _StoreScreenState extends State<StoreScreen> {
 
                                       if (snapshot.connectionState !=
                                           ConnectionState.active)
-                                        return CircularProgressIndicator();
+                                        return SizedBox(
+                                          height: 15.0,
+                                          width: 15.0,
+                                          child: CircularProgressIndicator(),
+                                        );
                                       else
                                         return InkWell(
                                           onTap: () => _storeBloc.add(
@@ -348,6 +354,7 @@ class _StoreScreenState extends State<StoreScreen> {
                     BlocListener(
                       bloc: _productBloc,
                       listener: (context, state) {
+                        print('0-----> current state: $state');
                         if (state is ProductLoading) {
                           ProgressHUD.of(context)!.show();
                         } else {
@@ -402,7 +409,7 @@ class _StoreScreenState extends State<StoreScreen> {
                     BlocListener(
                       bloc: _storeBloc,
                       listener: (context, state) {
-                        print('CURRENT STATE: $state');
+                        print('0-----> CURRENT STATE: $state');
                         if (state is LoadingStore) {
                           ProgressHUD.of(context)!.show();
                         } else {
@@ -425,7 +432,8 @@ class _StoreScreenState extends State<StoreScreen> {
                             _storeLikeStream = state.storeLikeStream;
                           });
 
-                          _storeLikeStream!.listen((snapshot) {
+                          _storeLikeStreamSub =
+                              _storeLikeStream!.listen((snapshot) {
                             setState(() {
                               if (snapshot.docs.isNotEmpty)
                                 _isFollowing = true;
