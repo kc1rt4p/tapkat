@@ -95,7 +95,7 @@ class _BarterListItemState extends State<BarterListItem> {
             product.mediaPrimary!.url!.isEmpty &&
                 product.mediaPrimary!.url_t!.isEmpty &&
                 product.media != null &&
-                product.media!.isNotEmpty)
+                product.media!.length > 0)
           thumbnail = product.media!.first.url_t != null
               ? product.media!.first.url_t!
               : product.media!.first.url!;
@@ -158,6 +158,10 @@ class _BarterListItemState extends State<BarterListItem> {
                             ),
                           )
                         : Container(
+                            height:
+                                widget.height ?? SizeConfig.screenHeight * 0.15,
+                            width:
+                                widget.width ?? SizeConfig.screenHeight * 0.19,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.only(
                                 topLeft: Radius.circular(20.0),
