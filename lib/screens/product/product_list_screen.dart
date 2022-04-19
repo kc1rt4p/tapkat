@@ -136,7 +136,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
             if (state is InitializeAddUpdateProductSuccess) {
               _categoryList = state.categories;
               _productBloc.add(GetFirstProducts(
-                userId: application.currentUser!.uid,
+                userid: application.currentUser!.uid,
                 listType: widget.listType,
                 sortBy: _selectedSortBy,
                 distance: _selectedRadius,
@@ -460,7 +460,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
   Widget _buildGridView2() {
     return SmartRefresher(
       onRefresh: () => _productBloc.add(GetFirstProducts(
-        userId: application.currentUser!.uid,
+        userid: application.currentUser!.uid,
         listType: widget.listType,
         sortBy: _selectedSortBy,
         distance: _selectedRadius,
@@ -569,7 +569,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
       });
 
       _productBloc.add(GetFirstProducts(
-        userId: application.currentUser!.uid,
+        userid: application.currentUser!.uid,
         listType: widget.listType,
         sortBy: _selectedSortBy,
         distance: _selectedRadius,
@@ -638,7 +638,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
       });
 
       _productBloc.add(GetFirstProducts(
-        userId: application.currentUser!.uid,
+        userid: application.currentUser!.uid,
         listType: widget.listType,
         sortBy: _selectedSortBy,
         distance: _selectedRadius,
@@ -728,7 +728,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
     });
 
     _productBloc.add(GetFirstProducts(
-      userId: application.currentUser!.uid,
+      userid: application.currentUser!.uid,
       listType: widget.listType,
       sortBy: _selectedSortBy,
       distance: _selectedRadius,

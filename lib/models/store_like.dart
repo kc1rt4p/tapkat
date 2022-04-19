@@ -7,6 +7,7 @@ class StoreLikeModel {
   String? username;
   String? like_date;
   LocationModel? location;
+  double? distance;
 
   StoreLikeModel({
     this.userid,
@@ -15,6 +16,7 @@ class StoreLikeModel {
     this.username,
     this.like_date,
     this.location,
+    this.distance,
   });
 
   Map<String, dynamic> toJson() => {
@@ -24,6 +26,7 @@ class StoreLikeModel {
         'username': this.username,
         'like_date': this.like_date,
         'location': this.location,
+        'distance': this.distance,
       };
 
   factory StoreLikeModel.fromJson(Map<String, dynamic> json) => StoreLikeModel(
@@ -35,6 +38,7 @@ class StoreLikeModel {
         location: json['location'] != null
             ? LocationModel.fromJson(json['location'])
             : null,
+        distance: json['distance'] as double?,
       );
 }
 
@@ -45,6 +49,7 @@ class LikedProductModel {
   String? image_url;
   String? like_date;
   LocationModel? location;
+  double? distance;
 
   LikedProductModel({
     this.productid,
@@ -53,6 +58,7 @@ class LikedProductModel {
     this.image_url,
     this.like_date,
     this.location,
+    this.distance,
   });
 
   factory LikedProductModel.fromJson(Map<String, dynamic> json) =>
@@ -65,6 +71,7 @@ class LikedProductModel {
         location: json['location'] != null
             ? LocationModel.fromJson(json['location'])
             : null,
+        distance: json['distance'] as double?,
       );
 
   Map<String, dynamic> toJson() => {
@@ -73,5 +80,6 @@ class LikedProductModel {
         'price': this.price,
         'image_url': this.image_url,
         'like_date': this.like_date,
+        'distance': this.distance,
       };
 }

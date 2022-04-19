@@ -17,6 +17,12 @@ class UserModel {
   int? likes;
   double? rating;
 
+  String? fb_profile;
+  String? ig_profile;
+  String? yt_profile;
+  String? tt_profile;
+  String? tw_profile;
+
   UserModel({
     this.userid,
     this.email,
@@ -33,6 +39,11 @@ class UserModel {
     this.location,
     this.likes,
     this.rating,
+    this.fb_profile,
+    this.ig_profile,
+    this.yt_profile,
+    this.tt_profile,
+    this.tw_profile,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -58,6 +69,11 @@ class UserModel {
           : null,
       likes: json['likes'] as int?,
       rating: json['rating'] != null ? json['rating'] + 0.00 as double? : 0.00,
+      fb_profile: json['fb_profile'] as String?,
+      ig_profile: json['ig_profile'] as String?,
+      yt_profile: json['yt_profile'] as String?,
+      tt_profile: json['tt_profile'] as String?,
+      tw_profile: json['tw_profile'] as String?,
     );
   }
 
@@ -78,6 +94,11 @@ class UserModel {
       'location': this.location,
       'likes': this.likes,
       'rating': this.rating,
+      'fb_profile': this.fb_profile,
+      'ig_profile': this.ig_profile,
+      'yt_profile': this.yt_profile,
+      'tt_profile': this.tt_profile,
+      'tw_profile': this.tw_profile,
     };
   }
 }

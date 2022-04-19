@@ -3,7 +3,6 @@ import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_webservice/places.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:tapkat/models/location.dart';
 import 'package:tapkat/models/request/update_user.dart';
 import 'package:tapkat/models/user.dart';
@@ -25,6 +24,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   AuthBloc() : super(AuthInitial()) {
     on<AuthEvent>((event, emit) async {
       emit(AuthLoading());
+
       if (event is InitializeAuth) {
         emit(AuthInitialized(authService.tapkatFirebaseUserStream()));
       }

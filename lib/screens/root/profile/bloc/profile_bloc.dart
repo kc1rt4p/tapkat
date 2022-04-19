@@ -10,6 +10,7 @@ import 'package:tapkat/repositories/product_repository.dart';
 import 'package:tapkat/repositories/user_repository.dart';
 import 'package:tapkat/services/auth_service.dart';
 import 'package:tapkat/utilities/upload_media.dart';
+import 'package:tapkat/utilities/application.dart' as application;
 
 part 'profile_event.dart';
 part 'profile_state.dart';
@@ -22,10 +23,10 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     on<ProfileEvent>((event, emit) async {
       emit(ProfileLoading());
 
-      final _user = await _authService.getCurrentUser();
+      final _user = application.currentUser;
       if (event is InitializeProfileScreen) {
         if (_user != null) {
-          final userModel = await _userRepo.getUser(_user.uid);
+          final userModel = application.currentUserModel;
           final list = await _productRepo.getFirstProducts(
             'user',
             userId: _user.uid,

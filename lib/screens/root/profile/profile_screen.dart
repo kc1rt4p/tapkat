@@ -292,7 +292,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     children: [
                                       Column(
                                         children: [
-                                          _buildPhoto(),
+                                          InkWell(
+                                            onTap: _onPhotoTapped,
+                                            child: _buildPhoto(),
+                                          ),
                                           _userModel != null
                                               ? Container(
                                                   margin: EdgeInsets.only(
@@ -612,6 +615,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     Widget? suffix,
     Function()? onTap,
     bool readOnly = false,
+    bool center = false,
   }) {
     return Container(
       margin: EdgeInsets.only(bottom: 3.0),
@@ -619,13 +623,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
         horizontal: 20.0,
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment:
+            center ? CrossAxisAlignment.center : CrossAxisAlignment.start,
         children: [
           Text(
             label,
             style: Style.fieldTitle.copyWith(color: kBackgroundColor),
           ),
           TextFormField(
+            textAlign: center ? TextAlign.center : TextAlign.start,
             controller: controller,
             style: Style.fieldText,
             readOnly: !editProfile || readOnly,
@@ -796,19 +802,114 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (p != null && p.placeId != null) displayPrediction(p);
   }
 
-  _onPhotoTapped() async {
-    final selectedMedia = await selectMediaWithSourceBottomSheet(
+  _onPhotoTapped() {
+    showDialog(
       context: context,
-      allowPhoto: true,
+      builder: (context) => Dialog(
+        insetPadding: EdgeInsets.symmetric(
+          vertical: 20.0,
+          horizontal: 25.0,
+        ),
+        child: Stack(
+          children: [
+            Container(
+              padding: EdgeInsets.all(10.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Center(
+                    child: SizedBox(
+                      height: SizeConfig.screenWidth * .23,
+                      width: SizeConfig.screenWidth * .23,
+                      child: _buildPhoto(),
+                    ),
+                  ),
+                  SizedBox(height: 15),
+                  _buildInfoItem(
+                    center: true,
+                    label: 'Name',
+                    controller: TextEditingController(
+                        text: _userModel!.display_name ?? '-'),
+                  ),
+                  _buildInfoItem(
+                    center: true,
+                    label: 'Email Address',
+                    controller:
+                        TextEditingController(text: _userModel!.email ?? '-'),
+                  ),
+                  _buildInfoItem(
+                    center: true,
+                    label: 'Phone',
+                    controller: TextEditingController(
+                        text: _userModel!.phone_number ?? '-'),
+                  ),
+                  _buildInfoItem(
+                    center: true,
+                    label: 'Address',
+                    controller:
+                        TextEditingController(text: _userModel!.address ?? '-'),
+                  ),
+                  _buildInfoItem(
+                    center: true,
+                    label: 'Postcode',
+                    controller: TextEditingController(
+                        text: _userModel!.postcode ?? '-'),
+                  ),
+                  _buildInfoItem(
+                    center: true,
+                    label: 'Country',
+                    controller:
+                        TextEditingController(text: _userModel!.country ?? '-'),
+                  ),
+                  Divider(
+                    height: 10.0,
+                    color: kBackgroundColor,
+                  ),
+                  _buildInfoItem(
+                    center: true,
+                    label: 'Facebook',
+                    controller: TextEditingController(
+                        text: _userModel!.fb_profile ?? '-'),
+                  ),
+                  _buildInfoItem(
+                    center: true,
+                    label: 'Instagram',
+                    controller: TextEditingController(
+                        text: _userModel!.ig_profile ?? '-'),
+                  ),
+                  _buildInfoItem(
+                    center: true,
+                    label: 'Youtube',
+                    controller: TextEditingController(
+                        text: _userModel!.yt_profile ?? '-'),
+                  ),
+                  _buildInfoItem(
+                    center: true,
+                    label: 'Twitter',
+                    controller: TextEditingController(
+                        text: _userModel!.tw_profile ?? '-'),
+                  ),
+                  _buildInfoItem(
+                    center: true,
+                    label: 'Tiktok',
+                    controller: TextEditingController(
+                        text: _userModel!.tt_profile ?? '-'),
+                  ),
+                ],
+              ),
+            ),
+            Positioned(
+              top: 10.0,
+              right: 10.0,
+              child: InkWell(
+                onTap: () => Navigator.pop(context),
+                child: Icon(Icons.close),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
-
-    if (selectedMedia != null &&
-        validateFileFormat(selectedMedia.storagePath, context)) {
-      setState(() {
-        _selectedMedia = selectedMedia;
-      });
-
-      _profileBloc.add(UpdateUserPhoto(_selectedMedia!));
-    }
   }
 }

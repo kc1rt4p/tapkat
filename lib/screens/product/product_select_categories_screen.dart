@@ -187,7 +187,7 @@ class _SelectProductCategoryScreenState
                     vertical: 10.0,
                   ),
                   child: CustomButton(
-                    label: 'Save',
+                    label: 'Next',
                     onTap: _onSaveTapped,
                   ),
                 ),
@@ -213,7 +213,9 @@ class _SelectProductCategoryScreenState
       ),
     );
 
-    productRequest.tradefor = tradefor;
+    if (tradefor == null) return;
+
+    if (tradefor is List<String>) productRequest.tradefor = tradefor;
 
     if (widget.updating) {
       _productBloc.add(EditProduct(productRequest));

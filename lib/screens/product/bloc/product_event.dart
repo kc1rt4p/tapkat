@@ -28,14 +28,14 @@ class AddProductImage extends ProductEvent {
 
 class GetFirstProducts extends ProductEvent {
   final String listType;
-
+  final String? userid;
   final List<String>? category;
   final int distance;
   final String sortBy;
 
   GetFirstProducts({
     required this.listType,
-    required userId,
+    this.userid,
     this.category,
     required this.distance,
     required this.sortBy,

@@ -6,6 +6,7 @@ import 'package:flutter_progress_hud/flutter_progress_hud.dart';
 import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
 import 'package:tapkat/models/user.dart';
 import 'package:tapkat/screens/root/profile/interests_selection_screen.dart';
+import 'package:tapkat/screens/root/profile/social_media_screen.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/utilities/style.dart';
@@ -64,11 +65,17 @@ class _SignUpPhotoSelectionScreenState
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => InterestSelectionScreen(
+                  builder: (context) => UserSocialMediaAccountsScreen(
                     user: _user!,
-                    signingUp: true,
+                    op: 'register',
                   ),
                 ),
+                // MaterialPageRoute(
+                //   builder: (context) => InterestSelectionScreen(
+                //     user: _user!,
+                //     signingUp: true,
+                //   ),
+                // ),
               );
             }
 
@@ -203,18 +210,21 @@ class _SignUpPhotoSelectionScreenState
                         CustomButton(
                           label: 'Skip',
                           onTap: () {
-                            print('skip');
-                            // BlocProvider.of<AuthBloc>(context)
-                            //     .add(SkipSignUpPhoto());
-
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => InterestSelectionScreen(
+                                builder: (context) =>
+                                    UserSocialMediaAccountsScreen(
                                   user: _user!,
-                                  signingUp: true,
+                                  op: 'register',
                                 ),
                               ),
+                              // MaterialPageRoute(
+                              //   builder: (context) => InterestSelectionScreen(
+                              //     user: _user!,
+                              //     signingUp: true,
+                              //   ),
+                              // ),
                             );
                           },
                           bgColor: Color(0xFFBB3F03),

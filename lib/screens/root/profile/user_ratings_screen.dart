@@ -730,7 +730,7 @@ class _UserRatingsScreenState extends State<UserRatingsScreen> {
                               ),
                             ),
                             Align(
-                              alignment: Alignment.center,
+                              alignment: Alignment.bottomCenter,
                               child: RatingBar.builder(
                                 ignoreGestures: true,
                                 initialRating: rating.rating != null
@@ -740,7 +740,7 @@ class _UserRatingsScreenState extends State<UserRatingsScreen> {
                                 direction: Axis.horizontal,
                                 allowHalfRating: true,
                                 itemCount: 5,
-                                itemSize: 20,
+                                itemSize: SizeConfig.textScaleFactor * 13,
                                 tapOnlyMode: true,
                                 itemPadding:
                                     EdgeInsets.symmetric(horizontal: 4.0),

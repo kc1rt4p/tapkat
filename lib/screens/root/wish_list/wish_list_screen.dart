@@ -304,6 +304,7 @@ class _WishListScreenState extends State<WishListScreen> {
         itemBuilder: (context, product, index) {
           return FittedBox(
             child: BarterListItem(
+              distance: product.distance,
               likeLeftMargin: SizeConfig.screenWidth * 0.09,
               product: ProductModel(
                 productid: product.productid,

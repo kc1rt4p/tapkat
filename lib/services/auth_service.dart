@@ -92,6 +92,7 @@ class AuthService {
       uid: user.uid,
       phoneNumber: user.phoneNumber,
       createdTime: getCurrentTimestamp,
+      updatedTime: getCurrentTimestamp,
     );
 
     await userRecord.set(userData);

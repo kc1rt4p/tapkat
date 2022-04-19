@@ -16,6 +16,12 @@ class UpdateUserModel {
   LocationModel? location;
   List<String>? interests;
 
+  String? fb_profile;
+  String? ig_profile;
+  String? yt_profile;
+  String? tt_profile;
+  String? tw_profile;
+
   UpdateUserModel({
     this.userid,
     this.display_name,
@@ -31,6 +37,11 @@ class UpdateUserModel {
     this.phone_number,
     this.location,
     this.interests,
+    this.fb_profile,
+    this.ig_profile,
+    this.yt_profile,
+    this.tt_profile,
+    this.tw_profile,
   });
 
   Map<String, dynamic> toJson() {
@@ -49,6 +60,11 @@ class UpdateUserModel {
       "phone_number": this.phone_number,
       "location": this.location != null ? this.location!.toJson() : null,
       'interests': this.interests,
+      'fb_profile': this.fb_profile ?? null,
+      'ig_profile': this.ig_profile ?? null,
+      'yt_profile': this.yt_profile ?? null,
+      'tt_profile': this.tt_profile ?? null,
+      'tw_profile': this.tw_profile ?? null,
     };
   }
 }

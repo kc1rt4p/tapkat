@@ -146,7 +146,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
             sortBy: event.sortBy == 'name' ? 'productname' : event.sortBy,
             radius: event.distance,
             category: event.category,
-            userId: application.currentUser!.uid,
+            userId: event.userid ?? application.currentUser!.uid,
             interests: event.listType == 'reco' ? _userModel!.interests : null,
           );
 

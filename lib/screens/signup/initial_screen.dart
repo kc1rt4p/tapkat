@@ -174,6 +174,8 @@ class _InitialSignUpScreenState extends State<InitialSignUpScreen> {
                                         if (val !=
                                             _passwordTextController.text.trim())
                                           return 'Passwords don\'t match!';
+
+                                        return null;
                                       },
                                     ),
                                     CustomTextFormField(

@@ -62,7 +62,7 @@ class _InterestSelectionScreenState extends State<InterestSelectionScreen> {
                   if (!widget.signingUp) {
                     var count = 0;
                     Navigator.popUntil(context, (route) {
-                      return count++ == 2;
+                      return count++ == 3;
                     });
                   } else {
                     _authBloc.add(SkipSignUpPhoto());
@@ -196,6 +196,7 @@ class _InterestSelectionScreenState extends State<InterestSelectionScreen> {
                 Container(
                   padding: EdgeInsets.symmetric(
                     horizontal: 20.0,
+                    vertical: 10.0,
                   ),
                   child: CustomButton(
                     removeMargin: true,
@@ -239,6 +240,11 @@ class _InterestSelectionScreenState extends State<InterestSelectionScreen> {
       address: _user.address,
       country: _user.country,
       location: _user.location,
+      fb_profile: widget.user.fb_profile,
+      ig_profile: widget.user.ig_profile,
+      yt_profile: widget.user.yt_profile,
+      tt_profile: widget.user.tt_profile,
+      tw_profile: widget.user.tw_profile,
     );
 
     _profileBloc.add(UpdateUserInfo(user));

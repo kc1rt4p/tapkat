@@ -35,6 +35,7 @@ class ProductRepository {
       "psk": psk,
       "userid": userId,
       "productcount": productCount,
+      'location': application.currentUserLocation!.toJson(),
     });
 
     if (response.data['status'] != 'SUCCESS') return [];
@@ -53,6 +54,7 @@ class ProductRepository {
       "productcount": productCount,
       "startaferval": lastProductDate,
       "productid": lastProductId,
+      'location': application.currentUserLocation!.toJson(),
     });
 
     return (response.data['like_list'] as List<dynamic>)

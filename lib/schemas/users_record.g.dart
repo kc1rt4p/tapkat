@@ -238,6 +238,10 @@ class UsersRecordBuilder implements Builder<UsersRecord, UsersRecordBuilder> {
   DateTime? get createdTime => _$this._createdTime;
   set createdTime(DateTime? createdTime) => _$this._createdTime = createdTime;
 
+  DateTime? _updatedTime;
+  DateTime? get updatedTime => _$this._updatedTime;
+  set updatedTime(DateTime? updatedTime) => _$this._updatedTime = updatedTime;
+
   String? _phoneNumber;
   String? get phoneNumber => _$this._phoneNumber;
   set phoneNumber(String? phoneNumber) => _$this._phoneNumber = phoneNumber;

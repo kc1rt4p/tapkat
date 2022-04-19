@@ -64,6 +64,7 @@ Map<String, dynamic> createUsersRecordData({
   String? photoUrl,
   String? uid,
   DateTime? createdTime,
+  DateTime? updatedTime,
   String? phoneNumber,
   LatLng? location,
   String? country,
@@ -72,11 +73,12 @@ Map<String, dynamic> createUsersRecordData({
 }) =>
     serializers.toFirestore(
         UsersRecord.serializer,
-        UsersRecord((u) => u
+        UsersRecord((UsersRecordBuilder u) => u
           ..email = email
           ..displayName = displayName
           ..photoUrl = photoUrl
           ..uid = uid
           ..createdTime = createdTime
+          ..updatedTime = updatedTime
           ..phoneNumber = phoneNumber
           ..location = location));

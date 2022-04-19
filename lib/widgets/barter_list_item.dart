@@ -24,6 +24,7 @@ class BarterListItem extends StatefulWidget {
   final OnLikeCallBack? onLikeTapped;
   final bool hideDistance;
   final String? status;
+  final double? distance;
 
   const BarterListItem({
     Key? key,
@@ -37,6 +38,7 @@ class BarterListItem extends StatefulWidget {
     this.onLikeTapped,
     this.hideDistance = false,
     this.status,
+    this.distance,
   }) : super(key: key);
 
   @override
@@ -252,13 +254,16 @@ class _BarterListItemState extends State<BarterListItem> {
                     ],
                   ),
                 ),
-                product.address != null &&
-                        product.address!.location != null &&
-                        !widget.hideDistance
+                (product.address != null &&
+                            product.address!.location != null &&
+                            !widget.hideDistance) ||
+                        widget.distance != null
                     ? Padding(
                         padding: const EdgeInsets.only(top: 5.0),
                         child: Text(
-                            '${product.distance != null ? product.distance! < 0.1 ? product.distance!.toStringAsFixed(2) : product.distance!.toStringAsFixed(1) : 0.0} Km',
+                            widget.distance != null
+                                ? '${widget.distance!.toStringAsFixed(widget.distance! < 0.1 ? 2 : 1)} Km'
+                                : '${product.distance != null ? product.distance! < 0.1 ? product.distance!.toStringAsFixed(2) : product.distance!.toStringAsFixed(1) : 0.0} Km',
                             style: TextStyle(
                                 fontSize: SizeConfig.textScaleFactor * 10)),
                       )

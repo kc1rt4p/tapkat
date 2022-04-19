@@ -32,7 +32,7 @@ class _CustomButtonState extends State<CustomButton> {
     return InkWell(
       onTap: widget.enabled ? widget.onTap : null,
       child: Container(
-        margin: !widget.removeMargin ? EdgeInsets.only(bottom: 16.0) : null,
+        margin: !widget.removeMargin ? EdgeInsets.only(bottom: 12.0) : null,
         width: double.infinity,
         padding: EdgeInsets.symmetric(
           vertical: 5.0,

@@ -9,6 +9,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/models/user.dart';
 import 'package:tapkat/schemas/product_markers_record.dart';
@@ -26,6 +27,7 @@ import 'package:tapkat/widgets/barter_list_item.dart';
 import 'package:tapkat/widgets/custom_app_bar.dart';
 import 'package:tapkat/widgets/custom_search_bar.dart';
 import 'package:tapkat/widgets/tapkat_map.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../backend.dart';
 
@@ -69,6 +71,8 @@ class _StoreScreenState extends State<StoreScreen> {
 
   bool _isFollowing = false;
 
+  bool _isLoading = true;
+
   @override
   void initState() {
     _storeBloc.add(InitializeStoreScreen(widget.userId));
@@ -95,378 +99,539 @@ class _StoreScreenState extends State<StoreScreen> {
     return ProgressHUD(
       backgroundColor: Colors.white,
       indicatorColor: kBackgroundColor,
-      child: Scaffold(
-        body: Container(
-          child: Column(
-            children: [
-              CustomAppBar(
-                label: '$storeOwnerName\'s Store',
-              ),
-              _storeOwner != null
-                  ? Container(
-                      padding: EdgeInsets.symmetric(
-                        vertical: 8.0,
-                        horizontal: 20.0,
-                      ),
-                      child: Row(
-                        children: [
-                          Column(
-                            children: [
-                              _buildPhoto(),
-                              SizedBox(height: 5.0),
-                              _storeOwner != null
-                                  ? Container(
-                                      margin: EdgeInsets.only(bottom: 3.0),
-                                      padding: EdgeInsets.symmetric(
-                                          horizontal: 10.0),
-                                      child: Row(
-                                        children: [
-                                          Icon(
-                                            Icons.star,
-                                            size:
-                                                SizeConfig.textScaleFactor * 12,
-                                          ),
-                                          SizedBox(width: 5.0),
-                                          Text(
-                                            _storeOwner!.rating != null
-                                                ? _storeOwner!.rating!
-                                                    .toStringAsFixed(1)
-                                                : '0',
-                                            textAlign: TextAlign.right,
-                                            style: Style.fieldText.copyWith(
-                                                fontSize:
+      child: MultiBlocListener(
+        listeners: [
+          BlocListener(
+            bloc: _productBloc,
+            listener: (context, state) {
+              print('0-----> current state: $state');
+              if (state is ProductLoading) {
+                ProgressHUD.of(context)!.show();
+              } else {
+                ProgressHUD.of(context)!.dismiss();
+              }
+
+              if (state is GetFirstProductsSuccess) {
+                if (state.list.isNotEmpty) {
+                  _list.addAll(state.list);
+                  lastProduct = state.list.last;
+                  if (state.list.length == productCount) {
+                    _pagingController.appendPage(state.list, currentPage + 1);
+                  } else {
+                    _pagingController.appendLastPage(state.list);
+                  }
+
+                  _pagingController.addPageRequestListener((pageKey) {
+                    if (lastProduct != null) {
+                      _productBloc.add(
+                        GetNextProducts(
+                          listType: 'user',
+                          lastProductId: lastProduct!.productid!,
+                          sortBy: 'distance',
+                          distance: 50000,
+                          startAfterVal: lastProduct!.price.toString(),
+                          userId: widget.userId,
+                        ),
+                      );
+                    }
+                  });
+                }
+              }
+
+              if (state is GetProductsSuccess) {
+                if (state.list.isNotEmpty) {
+                  _list.addAll(state.list);
+                  lastProduct = state.list.last;
+                  if (state.list.length == productCount) {
+                    _pagingController.appendPage(state.list, currentPage + 1);
+                  } else {
+                    _pagingController.appendLastPage(state.list);
+                  }
+                } else {
+                  _pagingController.appendLastPage([]);
+                }
+              }
+            },
+          ),
+          BlocListener(
+            bloc: _storeBloc,
+            listener: (context, state) {
+              print('0-----> CURRENT STATE: $state');
+              if (state is LoadingStore) {
+                ProgressHUD.of(context)!.show();
+                setState(() {
+                  _isLoading = true;
+                });
+              } else {
+                setState(() {
+                  _isLoading = false;
+                });
+                ProgressHUD.of(context)!.dismiss();
+              }
+
+              if (state is StateError) {
+                DialogMessage.show(context, message: state.message);
+              }
+
+              if (state is InitializedStoreScreen) {
+                _refreshController.refreshCompleted();
+                _pagingController.refresh();
+                _list.clear();
+                setState(() {
+                  _storeOwner = state.user;
+                  storeOwnerName = _storeOwner!.display_name!;
+                  _storeLikeStream = state.storeLikeStream;
+                });
+
+                _storeLikeStreamSub = _storeLikeStream!.listen((snapshot) {
+                  setState(() {
+                    if (snapshot.docs.isNotEmpty)
+                      _isFollowing = true;
+                    else
+                      _isFollowing = false;
+                  });
+                });
+                _productBloc.add(GetFirstProducts(
+                  listType: 'user',
+                  userid: widget.userId,
+                  sortBy: 'distance',
+                  distance: 50000,
+                ));
+              }
+
+              if (state is EditUserLikeSuccess) {
+                _storeBloc.add(InitializeStoreScreen(widget.userId));
+                DialogMessage.show(
+                  context,
+                  message:
+                      'You ${_isFollowing ? 'unfollowed' : 'followed'} this store!',
+                );
+              }
+            },
+          ),
+        ],
+        child: Scaffold(
+          body: Container(
+            child: Column(
+              children: [
+                CustomAppBar(
+                  label: '$storeOwnerName\'s Store',
+                ),
+                _storeOwner != null && !_isLoading
+                    ? Container(
+                        padding: EdgeInsets.symmetric(
+                          vertical: 8.0,
+                          horizontal: 20.0,
+                        ),
+                        child: Row(
+                          children: [
+                            Column(
+                              children: [
+                                _buildPhoto(),
+                                SizedBox(height: 5.0),
+                                _storeOwner != null
+                                    ? InkWell(
+                                        onTap: () => Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    UserReviewListScreen(
+                                                        userId:
+                                                            widget.userId))),
+                                        child: Container(
+                                          margin: EdgeInsets.only(bottom: 3.0),
+                                          padding: EdgeInsets.symmetric(
+                                              horizontal: 10.0),
+                                          child: Row(
+                                            children: [
+                                              Icon(
+                                                Icons.star,
+                                                size:
                                                     SizeConfig.textScaleFactor *
+                                                        12,
+                                              ),
+                                              SizedBox(width: 5.0),
+                                              Text(
+                                                _storeOwner!.rating != null
+                                                    ? _storeOwner!.rating!
+                                                        .toStringAsFixed(1)
+                                                    : '0',
+                                                textAlign: TextAlign.right,
+                                                style: Style.fieldText.copyWith(
+                                                    fontSize: SizeConfig
+                                                            .textScaleFactor *
                                                         12),
+                                              ),
+                                            ],
                                           ),
-                                        ],
+                                        ),
+                                      )
+                                    : Container(),
+                              ],
+                            ),
+                            SizedBox(width: 20.0),
+                            Expanded(
+                              child: Container(
+                                margin: EdgeInsets.symmetric(
+                                  vertical: 10.0,
+                                ),
+                                width: double.infinity,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    _buildInfoItem(
+                                      label: 'Store Owner',
+                                      controller: TextEditingController(
+                                          text: storeOwnerName),
+                                    ),
+                                    _buildInfoItem(
+                                      label: 'Followers',
+                                      controller: TextEditingController(
+                                          text: _storeOwner!.likes.toString()),
+                                    ),
+                                    _buildInfoItem(
+                                      label: 'Location',
+                                      controller: TextEditingController(
+                                          text: (_storeOwner!.address != null &&
+                                                  _storeOwner!.city != null &&
+                                                  _storeOwner!.country != null)
+                                              ? (_storeOwner!.address ?? '') +
+                                                  ', ' +
+                                                  (_storeOwner!.city ?? '') +
+                                                  ', ' +
+                                                  (_storeOwner!.country ?? '')
+                                              : ''),
+                                      suffix: Icon(
+                                        FontAwesomeIcons.mapMarked,
+                                        color: kBackgroundColor,
+                                        size: 12.0,
                                       ),
-                                    )
-                                  : Container(),
-                            ],
-                          ),
-                          SizedBox(width: 20.0),
-                          Expanded(
-                            child: Container(
-                              margin: EdgeInsets.symmetric(
-                                vertical: 10.0,
+                                    ),
+                                    SizedBox(height: 12.0),
+                                    _buildSocialMediaBtns(),
+                                    SizedBox(height: 12.0),
+                                    StreamBuilder<
+                                        QuerySnapshot<Map<String, dynamic>>>(
+                                      stream: _storeLikeStream,
+                                      builder: (context, snapshot) {
+                                        bool liked = false;
+
+                                        if (snapshot.data != null) {
+                                          if (snapshot.data!.docs.isNotEmpty) {
+                                            liked = true;
+
+                                            _isFollowing = true;
+                                          }
+                                        } else {
+                                          _isFollowing = false;
+                                        }
+
+                                        print(
+                                            '0-----> ${snapshot.connectionState}');
+
+                                        if (snapshot.connectionState !=
+                                            ConnectionState.active)
+                                          return SizedBox(
+                                            height: 15.0,
+                                            width: 15.0,
+                                            child: CircularProgressIndicator(),
+                                          );
+                                        else
+                                          return InkWell(
+                                            onTap: () => _storeBloc.add(
+                                              EditUserLike(
+                                                user: _storeOwner!,
+                                                likeCount: liked ? -1 : 1,
+                                              ),
+                                            ),
+                                            child: Padding(
+                                              padding: EdgeInsets.symmetric(
+                                                  horizontal: 10.0),
+                                              child: Container(
+                                                decoration: BoxDecoration(
+                                                  color: kBackgroundColor,
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          6.0),
+                                                ),
+                                                padding: EdgeInsets.symmetric(
+                                                    vertical: 5.0),
+                                                child: Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  children: [
+                                                    Icon(
+                                                      liked
+                                                          ? Icons.remove_circle
+                                                          : Icons.library_add,
+                                                      size: SizeConfig
+                                                              .textScaleFactor *
+                                                          13,
+                                                      color: Colors.white,
+                                                    ),
+                                                    SizedBox(width: 5.0),
+                                                    Text(
+                                                      liked
+                                                          ? 'Unfollow'
+                                                          : 'Follow',
+                                                      style: TextStyle(
+                                                        color: Colors.white,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        fontSize: SizeConfig
+                                                                .textScaleFactor *
+                                                            15,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                          );
+                                      },
+                                    ),
+                                  ],
+                                ),
                               ),
-                              width: double.infinity,
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  _buildInfoItem(
-                                    label: 'Store Owner',
-                                    controller: TextEditingController(
-                                        text: storeOwnerName),
-                                  ),
-                                  _buildInfoItem(
-                                    label: 'Followers',
-                                    controller: TextEditingController(
-                                        text: _storeOwner!.likes.toString()),
-                                  ),
-                                  _buildInfoItem(
-                                    label: 'Location',
-                                    controller: TextEditingController(
-                                        text: (_storeOwner!.address != null &&
-                                                _storeOwner!.city != null &&
-                                                _storeOwner!.country != null)
-                                            ? (_storeOwner!.address ?? '') +
-                                                ', ' +
-                                                (_storeOwner!.city ?? '') +
-                                                ', ' +
-                                                (_storeOwner!.country ?? '')
-                                            : ''),
-                                    suffix: Icon(
-                                      FontAwesomeIcons.mapMarked,
-                                      color: kBackgroundColor,
-                                      size: 12.0,
+                            ),
+                          ],
+                        ),
+                      )
+                    : Container(
+                        padding: EdgeInsets.symmetric(
+                          vertical: 8.0,
+                          horizontal: 20.0,
+                        ),
+                        child: Row(
+                          children: [
+                            Column(
+                              children: [
+                                Shimmer.fromColors(
+                                  child: Container(
+                                    height: SizeConfig.screenWidth * .26,
+                                    width: SizeConfig.screenWidth * .26,
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey,
+                                      shape: BoxShape.circle,
                                     ),
                                   ),
-                                  SizedBox(height: 12.0),
-                                  StreamBuilder<
-                                      QuerySnapshot<Map<String, dynamic>>>(
-                                    stream: _storeLikeStream,
-                                    builder: (context, snapshot) {
-                                      bool liked = false;
-
-                                      if (snapshot.data != null) {
-                                        if (snapshot.data!.docs.isNotEmpty) {
-                                          liked = true;
-
-                                          _isFollowing = true;
-                                        }
-                                      } else {
-                                        _isFollowing = false;
-                                      }
-
-                                      print(
-                                          '0-----> ${snapshot.connectionState}');
-
-                                      if (snapshot.connectionState !=
-                                          ConnectionState.active)
-                                        return SizedBox(
-                                          height: 15.0,
-                                          width: 15.0,
-                                          child: CircularProgressIndicator(),
-                                        );
-                                      else
-                                        return InkWell(
-                                          onTap: () => _storeBloc.add(
-                                            EditUserLike(
-                                              user: _storeOwner!,
-                                              likeCount: liked ? -1 : 1,
+                                  baseColor: kBackgroundColor.withOpacity(0.8),
+                                  highlightColor: kBackgroundColor,
+                                ),
+                                SizedBox(height: 5.0),
+                                Shimmer.fromColors(
+                                  child: Container(
+                                    width: 30.0,
+                                    height: 14.0,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(10.0),
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                  baseColor: kBackgroundColor.withOpacity(0.8),
+                                  highlightColor: kBackgroundColor,
+                                ),
+                              ],
+                            ),
+                            SizedBox(width: 20.0),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Shimmer.fromColors(
+                                          child: Container(
+                                            width: double.infinity,
+                                            height: 14.0,
+                                            decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(10.0),
+                                              color: Colors.grey,
                                             ),
                                           ),
-                                          child: Padding(
-                                            padding: EdgeInsets.symmetric(
-                                                horizontal: 10.0),
-                                            child: Container(
-                                              decoration: BoxDecoration(
-                                                color: kBackgroundColor,
-                                                borderRadius:
-                                                    BorderRadius.circular(6.0),
-                                              ),
-                                              padding: EdgeInsets.symmetric(
-                                                  vertical: 5.0),
-                                              child: Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: [
-                                                  Icon(
-                                                    liked
-                                                        ? Icons.remove_circle
-                                                        : Icons.library_add,
-                                                    size: SizeConfig
-                                                            .textScaleFactor *
-                                                        13,
-                                                    color: Colors.white,
-                                                  ),
-                                                  SizedBox(width: 5.0),
-                                                  Text(
-                                                    liked
-                                                        ? 'Unfollow'
-                                                        : 'Follow',
-                                                    style: TextStyle(
-                                                      color: Colors.white,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      fontSize: SizeConfig
-                                                              .textScaleFactor *
-                                                          15,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
+                                          baseColor:
+                                              kBackgroundColor.withOpacity(0.8),
+                                          highlightColor: kBackgroundColor,
+                                        ),
+                                      ),
+                                      SizedBox(width: 10.0),
+                                      Expanded(
+                                        flex: 3,
+                                        child: Shimmer.fromColors(
+                                          child: Container(
+                                            width: double.infinity,
+                                            height: 14.0,
+                                            decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(10.0),
+                                              color: Colors.grey,
                                             ),
                                           ),
-                                        );
-                                    },
+                                          baseColor:
+                                              kBackgroundColor.withOpacity(0.8),
+                                          highlightColor: kBackgroundColor,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(height: 8.0),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Shimmer.fromColors(
+                                          child: Container(
+                                            width: double.infinity,
+                                            height: 14.0,
+                                            decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(10.0),
+                                              color: Colors.grey,
+                                            ),
+                                          ),
+                                          baseColor:
+                                              kBackgroundColor.withOpacity(0.8),
+                                          highlightColor: kBackgroundColor,
+                                        ),
+                                      ),
+                                      SizedBox(width: 10.0),
+                                      Expanded(
+                                        flex: 3,
+                                        child: Shimmer.fromColors(
+                                          child: Container(
+                                            width: double.infinity,
+                                            height: 14.0,
+                                            decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(10.0),
+                                              color: Colors.grey,
+                                            ),
+                                          ),
+                                          baseColor:
+                                              kBackgroundColor.withOpacity(0.8),
+                                          highlightColor: kBackgroundColor,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(height: 8.0),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Shimmer.fromColors(
+                                          child: Container(
+                                            width: double.infinity,
+                                            height: 14.0,
+                                            decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(10.0),
+                                              color: Colors.grey,
+                                            ),
+                                          ),
+                                          baseColor:
+                                              kBackgroundColor.withOpacity(0.8),
+                                          highlightColor: kBackgroundColor,
+                                        ),
+                                      ),
+                                      SizedBox(width: 10.0),
+                                      Expanded(
+                                        flex: 3,
+                                        child: Shimmer.fromColors(
+                                          child: Container(
+                                            width: double.infinity,
+                                            height: 14.0,
+                                            decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(10.0),
+                                              color: Colors.grey,
+                                            ),
+                                          ),
+                                          baseColor:
+                                              kBackgroundColor.withOpacity(0.8),
+                                          highlightColor: kBackgroundColor,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(height: 16.0),
+                                  Padding(
+                                    padding:
+                                        EdgeInsets.symmetric(horizontal: 16.0),
+                                    child: Shimmer.fromColors(
+                                      child: Container(
+                                        width: double.infinity,
+                                        height: 20.0,
+                                        decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(10.0),
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                      baseColor:
+                                          kBackgroundColor.withOpacity(0.8),
+                                      highlightColor: kBackgroundColor,
+                                    ),
                                   ),
                                 ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: CustomSearchBar(
+                              margin: EdgeInsets.zero,
+                              controller: TextEditingController(),
+                              backgroundColor: kBackgroundColor,
+                              textColor: Colors.white,
+                            ),
+                          ),
+                          SizedBox(width: 10.0),
+                          InkWell(
+                            onTap: _onSelectView,
+                            child: Container(
+                              padding: EdgeInsets.all(8.0),
+                              decoration: BoxDecoration(
+                                color: kBackgroundColor,
+                                borderRadius: BorderRadius.circular(10.0),
+                                boxShadow: [
+                                  BoxShadow(
+                                    offset: Offset(1, 1),
+                                    color: Colors.grey,
+                                  ),
+                                ],
+                              ),
+                              child: Icon(
+                                _selectedView != 'map'
+                                    ? FontAwesomeIcons.mapMarkedAlt
+                                    : FontAwesomeIcons.thLarge,
+                                size: 16.0,
+                                color: Colors.white,
                               ),
                             ),
                           ),
                         ],
                       ),
-                    )
-                  : Container(),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                child: Column(
-                  children: [
-                    InkWell(
-                      onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) =>
-                                  UserReviewListScreen(userId: widget.userId))),
-                      child: Container(
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          color: kBackgroundColor,
-                          borderRadius: BorderRadius.circular(10.0),
-                        ),
-                        padding: EdgeInsets.symmetric(
-                          vertical: 5.0,
-                          horizontal: 10.0,
-                        ),
-                        child: Row(
-                          children: [
-                            Text(
-                              'User Reviews',
-                              style: Style.subtitle2.copyWith(
-                                color: Colors.white,
-                              ),
-                            ),
-                            Spacer(),
-                            Icon(
-                              FontAwesomeIcons.chevronRight,
-                              color: Colors.white,
-                              size: 14.0,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: CustomSearchBar(
-                            margin: EdgeInsets.zero,
-                            controller: TextEditingController(),
-                            backgroundColor: kBackgroundColor,
-                            textColor: Colors.white,
-                          ),
-                        ),
-                        SizedBox(width: 10.0),
-                        InkWell(
-                          onTap: _onSelectView,
-                          child: Container(
-                            padding: EdgeInsets.all(8.0),
-                            decoration: BoxDecoration(
-                              color: kBackgroundColor,
-                              borderRadius: BorderRadius.circular(10.0),
-                              boxShadow: [
-                                BoxShadow(
-                                  offset: Offset(1, 1),
-                                  color: Colors.grey,
-                                ),
-                              ],
-                            ),
-                            child: Icon(
-                              _selectedView != 'map'
-                                  ? FontAwesomeIcons.mapMarkedAlt
-                                  : FontAwesomeIcons.thLarge,
-                              size: 16.0,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              Expanded(
-                child: MultiBlocListener(
-                  listeners: [
-                    BlocListener(
-                      bloc: _productBloc,
-                      listener: (context, state) {
-                        print('0-----> current state: $state');
-                        if (state is ProductLoading) {
-                          ProgressHUD.of(context)!.show();
-                        } else {
-                          ProgressHUD.of(context)!.dismiss();
-                        }
-
-                        if (state is GetFirstProductsSuccess) {
-                          if (state.list.isNotEmpty) {
-                            _list.addAll(state.list);
-                            lastProduct = state.list.last;
-                            if (state.list.length == productCount) {
-                              _pagingController.appendPage(
-                                  state.list, currentPage + 1);
-                            } else {
-                              _pagingController.appendLastPage(state.list);
-                            }
-
-                            _pagingController.addPageRequestListener((pageKey) {
-                              if (lastProduct != null) {
-                                _productBloc.add(
-                                  GetNextProducts(
-                                    listType: 'user',
-                                    lastProductId: lastProduct!.productid!,
-                                    sortBy: 'distance',
-                                    distance: 50000,
-                                    startAfterVal:
-                                        lastProduct!.price.toString(),
-                                    userId: widget.userId,
-                                  ),
-                                );
-                              }
-                            });
-                          }
-                        }
-
-                        if (state is GetProductsSuccess) {
-                          if (state.list.isNotEmpty) {
-                            _list.addAll(state.list);
-                            lastProduct = state.list.last;
-                            if (state.list.length == productCount) {
-                              _pagingController.appendPage(
-                                  state.list, currentPage + 1);
-                            } else {
-                              _pagingController.appendLastPage(state.list);
-                            }
-                          } else {
-                            _pagingController.appendLastPage([]);
-                          }
-                        }
-                      },
-                    ),
-                    BlocListener(
-                      bloc: _storeBloc,
-                      listener: (context, state) {
-                        print('0-----> CURRENT STATE: $state');
-                        if (state is LoadingStore) {
-                          ProgressHUD.of(context)!.show();
-                        } else {
-                          setState(() {
-                            ProgressHUD.of(context)!.dismiss();
-                          });
-                        }
-
-                        if (state is StateError) {
-                          DialogMessage.show(context, message: state.message);
-                        }
-
-                        if (state is InitializedStoreScreen) {
-                          _refreshController.refreshCompleted();
-                          _pagingController.refresh();
-                          _list.clear();
-                          setState(() {
-                            _storeOwner = state.user;
-                            storeOwnerName = _storeOwner!.display_name!;
-                            _storeLikeStream = state.storeLikeStream;
-                          });
-
-                          _storeLikeStreamSub =
-                              _storeLikeStream!.listen((snapshot) {
-                            setState(() {
-                              if (snapshot.docs.isNotEmpty)
-                                _isFollowing = true;
-                              else
-                                _isFollowing = false;
-                            });
-                          });
-                          _productBloc.add(GetFirstProducts(
-                            listType: 'user',
-                            userId: widget.userId,
-                            sortBy: 'distance',
-                            distance: 50000,
-                          ));
-                        }
-
-                        if (state is EditUserLikeSuccess) {
-                          _storeBloc.add(InitializeStoreScreen(widget.userId));
-                          DialogMessage.show(
-                            context,
-                            message:
-                                'You ${_isFollowing ? 'unfollowed' : 'followed'} this store!',
-                          );
-                        }
-                      },
-                    ),
-                  ],
+                Expanded(
                   child: Container(
                       child: _selectedView == 'grid'
                           ? _buildGridView()
                           : _buildMapView()),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -706,6 +871,205 @@ class _StoreScreenState extends State<StoreScreen> {
         ],
       ),
     );
+  }
+
+  Widget _buildSocialMediaBtns() {
+    if (_storeOwner == null) {
+      return Container(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Shimmer.fromColors(
+              child: Container(
+                height: SizeConfig.screenWidth * .07,
+                width: SizeConfig.screenWidth * .07,
+                decoration: BoxDecoration(
+                  color: Colors.grey,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              baseColor: kBackgroundColor.withOpacity(0.8),
+              highlightColor: kBackgroundColor,
+            ),
+            SizedBox(width: 10.0),
+            Shimmer.fromColors(
+              child: Container(
+                height: SizeConfig.screenWidth * .07,
+                width: SizeConfig.screenWidth * .07,
+                decoration: BoxDecoration(
+                  color: Colors.grey,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              baseColor: kBackgroundColor.withOpacity(0.8),
+              highlightColor: kBackgroundColor,
+            ),
+            SizedBox(width: 10.0),
+            Shimmer.fromColors(
+              child: Container(
+                height: SizeConfig.screenWidth * .07,
+                width: SizeConfig.screenWidth * .07,
+                decoration: BoxDecoration(
+                  color: Colors.grey,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              baseColor: kBackgroundColor.withOpacity(0.8),
+              highlightColor: kBackgroundColor,
+            ),
+            SizedBox(width: 10.0),
+            Shimmer.fromColors(
+              child: Container(
+                height: SizeConfig.screenWidth * .07,
+                width: SizeConfig.screenWidth * .07,
+                decoration: BoxDecoration(
+                  color: Colors.grey,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              baseColor: kBackgroundColor.withOpacity(0.8),
+              highlightColor: kBackgroundColor,
+            ),
+            SizedBox(width: 10.0),
+            Shimmer.fromColors(
+              child: Container(
+                height: SizeConfig.screenWidth * .07,
+                width: SizeConfig.screenWidth * .07,
+                decoration: BoxDecoration(
+                  color: Colors.grey,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              baseColor: kBackgroundColor.withOpacity(0.8),
+              highlightColor: kBackgroundColor,
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Container(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Visibility(
+            visible: _storeOwner!.fb_profile != null &&
+                _storeOwner!.fb_profile!.isNotEmpty,
+            child: InkWell(
+              onTap: () => _launchURL(_storeOwner!.fb_profile!),
+              child: Container(
+                height: SizeConfig.screenWidth * .07,
+                width: SizeConfig.screenWidth * .07,
+                decoration: BoxDecoration(
+                  color: kBackgroundColor,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  FontAwesomeIcons.facebookF,
+                  color: Colors.white,
+                  size: SizeConfig.textScaleFactor * 14,
+                ),
+              ),
+            ),
+          ),
+          SizedBox(width: 10.0),
+          Visibility(
+            visible: _storeOwner!.ig_profile != null &&
+                _storeOwner!.ig_profile!.isNotEmpty,
+            child: InkWell(
+              onTap: () => _launchURL(_storeOwner!.ig_profile!),
+              child: Container(
+                height: SizeConfig.screenWidth * .07,
+                width: SizeConfig.screenWidth * .07,
+                decoration: BoxDecoration(
+                  color: kBackgroundColor,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  FontAwesomeIcons.instagram,
+                  color: Colors.white,
+                  size: SizeConfig.textScaleFactor * 14,
+                ),
+              ),
+            ),
+          ),
+          SizedBox(width: 10.0),
+          Visibility(
+            visible: _storeOwner!.yt_profile != null &&
+                _storeOwner!.yt_profile!.isNotEmpty,
+            child: InkWell(
+              onTap: () => _launchURL(_storeOwner!.yt_profile!),
+              child: Container(
+                height: SizeConfig.screenWidth * .07,
+                width: SizeConfig.screenWidth * .07,
+                decoration: BoxDecoration(
+                  color: kBackgroundColor,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  FontAwesomeIcons.youtube,
+                  color: Colors.white,
+                  size: SizeConfig.textScaleFactor * 14,
+                ),
+              ),
+            ),
+          ),
+          SizedBox(width: 10.0),
+          Visibility(
+            visible: _storeOwner!.tt_profile != null &&
+                _storeOwner!.tt_profile!.isNotEmpty,
+            child: InkWell(
+              onTap: () => _launchURL(_storeOwner!.tt_profile!),
+              child: Container(
+                height: SizeConfig.screenWidth * .07,
+                width: SizeConfig.screenWidth * .07,
+                decoration: BoxDecoration(
+                  color: kBackgroundColor,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  FontAwesomeIcons.tiktok,
+                  color: Colors.white,
+                  size: SizeConfig.textScaleFactor * 14,
+                ),
+              ),
+            ),
+          ),
+          SizedBox(width: 10.0),
+          Visibility(
+            visible: _storeOwner!.tw_profile != null &&
+                _storeOwner!.tw_profile!.isNotEmpty,
+            child: InkWell(
+              onTap: () => _launchURL(_storeOwner!.tw_profile!),
+              child: Container(
+                height: SizeConfig.screenWidth * .07,
+                width: SizeConfig.screenWidth * .07,
+                decoration: BoxDecoration(
+                  color: kBackgroundColor,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  FontAwesomeIcons.twitter,
+                  color: Colors.white,
+                  size: SizeConfig.textScaleFactor * 14,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _launchURL(String website) async {
+    String pattern =
+        r'^((?:.|\n)*?)((http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)([-A-Z0-9.]+)(/[-A-Z0-9+&@#/%=~_|!:,.;]*)?(\?[A-Z0-9+&@#/%=~_|!:‌​,.;]*)?)';
+    RegExp regExp = RegExp(pattern);
+    if (!(regExp.hasMatch(website))) {
+      DialogMessage.show(context, message: 'Invalid URL');
+      return;
+    }
+    if (!await launch(website)) throw 'Could not launch $website';
   }
 
   Stack _buildPhoto() {

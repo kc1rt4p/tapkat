@@ -13,6 +13,7 @@ import 'package:tapkat/models/location.dart';
 import 'package:tapkat/models/user.dart';
 import 'package:tapkat/screens/root/profile/bloc/profile_bloc.dart';
 import 'package:tapkat/screens/root/profile/interests_selection_screen.dart';
+import 'package:tapkat/screens/root/profile/social_media_screen.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/constants.dart';
 import 'package:tapkat/utilities/dialog_message.dart';
@@ -174,43 +175,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   ),
                   child: CustomButton(
                     label: 'Next',
-                    onTap: () {
-                      var user = _userModel;
-                      user.display_name =
-                          _displayNameTextController.text.trim();
-                      user.phone_number = _phoneTextController.text.trim();
-                      user.email = _emailTextController.text.trim();
-
-                      if (_selectedLocation != null) {
-                        user.city = _selectedLocation!.addressComponents[1] !=
-                                null
-                            ? _selectedLocation!.addressComponents[1]!.longName
-                            : null;
-                        user.address =
-                            _selectedLocation!.addressComponents[0] != null
-                                ? _selectedLocation!
-                                    .addressComponents[0]!.longName
-                                : null;
-                        user.country =
-                            _selectedLocation!.addressComponents.last != null
-                                ? _selectedLocation!
-                                    .addressComponents.last!.longName
-                                : null;
-                        user.location = LocationModel(
-                          longitude: _selectedLocation!.geometry!.location.lng,
-                          latitude: _selectedLocation!.geometry!.location.lat,
-                        );
-                      }
-
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => InterestSelectionScreen(
-                            user: user,
-                          ),
-                        ),
-                      );
-                    },
+                    onTap: _onNextTapped,
                   ),
                 ),
               ],
@@ -219,6 +184,53 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         ),
       ),
     );
+  }
+
+  _onNextTapped() async {
+    var user = _userModel;
+    user.display_name = _displayNameTextController.text.trim();
+    user.phone_number = _phoneTextController.text.trim();
+    user.email = _emailTextController.text.trim();
+
+    if (_selectedLocation != null) {
+      user.city = _selectedLocation!.addressComponents[1] != null
+          ? _selectedLocation!.addressComponents[1]!.longName
+          : null;
+      user.address = _selectedLocation!.addressComponents[0] != null
+          ? _selectedLocation!.addressComponents[0]!.longName
+          : null;
+      user.country = _selectedLocation!.addressComponents.last != null
+          ? _selectedLocation!.addressComponents.last!.longName
+          : null;
+      user.location = LocationModel(
+        longitude: _selectedLocation!.geometry!.location.lng,
+        latitude: _selectedLocation!.geometry!.location.lat,
+      );
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => UserSocialMediaAccountsScreen(
+          user: user,
+          op: 'edit',
+        ),
+      ),
+    );
+
+    // if (userWithSocialMedia != null)
+    //   user = userWithSocialMedia;
+    // else
+    //   return;
+
+    // Navigator.push(
+    //   context,
+    //   MaterialPageRoute(
+    //     builder: (context) => InterestSelectionScreen(
+    //       user: user,
+    //     ),
+    //   ),
+    // );
   }
 
   Future<Null> displayPrediction(Prediction? p) async {
