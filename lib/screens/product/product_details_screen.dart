@@ -854,45 +854,59 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
 
     return Container(
       height: SizeConfig.screenHeight * .35,
-      child: PhotoViewGallery.builder(
-        itemCount: _product!.media!.length,
-        scrollPhysics: const BouncingScrollPhysics(),
-        builder: (BuildContext context, int index) {
-          final img = _product!.media![index];
+      child: _product!.media!.isEmpty
+          ? Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(20.0),
+                  topRight: Radius.circular(20.0),
+                ),
+                color: Colors.grey,
+                image: DecorationImage(
+                  image: AssetImage('assets/images/image_placeholder.jpg'),
+                  fit: BoxFit.cover,
+                ),
+              ),
+            )
+          : PhotoViewGallery.builder(
+              itemCount: _product!.media!.length,
+              scrollPhysics: const BouncingScrollPhysics(),
+              builder: (BuildContext context, int index) {
+                final img = _product!.media![index];
 
-          return PhotoViewGalleryPageOptions(
-            imageProvider: CachedNetworkImageProvider(img.url != null &&
-                    img.url!.isNotEmpty
-                ? img.url!
-                : 'https://storage.googleapis.com/map-surf-assets/noimage.jpg'),
-            initialScale: PhotoViewComputedScale.contained * 0.8,
-            heroAttributes: PhotoViewHeroAttributes(
-                tag: _product!.productid! +
-                    index.toString() +
-                    DateTime.now().millisecondsSinceEpoch.toString()),
-          );
-        },
-        onPageChanged: (index) {
-          setState(() {
-            _currentCarouselIndex = index;
-          });
-        },
-        loadingBuilder: (context, event) => Center(
-          child: Container(
-            width: 20.0,
-            height: 20.0,
-            child: CircularProgressIndicator(
-              value: event == null
-                  ? 0
-                  : event.cumulativeBytesLoaded /
-                      num.parse(event.expectedTotalBytes.toString()),
+                return PhotoViewGalleryPageOptions(
+                  imageProvider: CachedNetworkImageProvider(img.url != null &&
+                          img.url!.isNotEmpty
+                      ? img.url!
+                      : 'https://storage.googleapis.com/map-surf-assets/noimage.jpg'),
+                  initialScale: PhotoViewComputedScale.contained * 0.8,
+                  heroAttributes: PhotoViewHeroAttributes(
+                      tag: _product!.productid! +
+                          index.toString() +
+                          DateTime.now().millisecondsSinceEpoch.toString()),
+                );
+              },
+              onPageChanged: (index) {
+                setState(() {
+                  _currentCarouselIndex = index;
+                });
+              },
+              loadingBuilder: (context, event) => Center(
+                child: Container(
+                  width: 20.0,
+                  height: 20.0,
+                  child: CircularProgressIndicator(
+                    value: event == null
+                        ? 0
+                        : event.cumulativeBytesLoaded /
+                            num.parse(event.expectedTotalBytes.toString()),
+                  ),
+                ),
+              ),
+              backgroundDecoration: BoxDecoration(
+                color: Colors.grey.shade900,
+              ),
             ),
-          ),
-        ),
-        backgroundDecoration: BoxDecoration(
-          color: Colors.grey.shade900,
-        ),
-      ),
     );
   }
 

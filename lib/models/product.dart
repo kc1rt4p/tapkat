@@ -104,7 +104,8 @@ class ProductModel {
       'specifications': this.specifications,
       'type': this.type,
       'category': this.category,
-      'media_primary': this.mediaPrimary,
+      'media_primary':
+          this.mediaPrimary != null ? this.mediaPrimary!.toJson() : null,
       'price': this.price,
       'likes': this.likes,
       'display_name': this.display_name,

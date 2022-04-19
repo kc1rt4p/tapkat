@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:device_preview/device_preview.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -50,7 +49,6 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     _authBloc = AuthBloc();
     _barterBloc = BarterBloc();
-    _authBloc.add(InitializeAuth());
     _loadUserLocation();
     super.initState();
   }
@@ -161,5 +159,7 @@ class _MyAppState extends State<MyApp> {
       print('-=======< using location used on sign up');
       application.currentUserLocation = application.currentUserModel!.location!;
     }
+
+    _authBloc.add(InitializeAuth());
   }
 }

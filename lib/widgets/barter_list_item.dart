@@ -80,25 +80,18 @@ class _BarterListItemState extends State<BarterListItem> {
         }
 
         var thumbnail = '';
+        print('0---->> ${product.toJson()}');
 
         if (product.mediaPrimary != null &&
-            product.mediaPrimary!.url != null &&
-            product.mediaPrimary!.url!.isNotEmpty)
-          thumbnail = product.mediaPrimary!.url!;
-
-        if (product.mediaPrimary != null &&
-            product.mediaPrimary!.url_t != null &&
-            product.mediaPrimary!.url_t!.isNotEmpty)
+            product.mediaPrimary!.url_t != null) {
           thumbnail = product.mediaPrimary!.url_t!;
+        }
 
-        if (product.mediaPrimary == null ||
-            product.mediaPrimary!.url!.isEmpty &&
-                product.mediaPrimary!.url_t!.isEmpty &&
-                product.media != null &&
-                product.media!.length > 0)
-          thumbnail = product.media!.first.url_t != null
-              ? product.media!.first.url_t!
-              : product.media!.first.url!;
+        if (thumbnail.isEmpty &&
+            product.media != null &&
+            product.media!.isNotEmpty) {
+          thumbnail = product.media!.first.url_t ?? '';
+        }
 
         return InkWell(
           onTap: widget.onTapped,
