@@ -1,13 +1,16 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:tapkat/models/notification.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/models/request/product_review_resuest.dart';
 import 'package:tapkat/models/request/update_user.dart';
 import 'package:tapkat/models/request/user_review_request.dart';
 import 'package:tapkat/models/user.dart';
+import 'package:tapkat/repositories/alert_repository.dart';
 import 'package:tapkat/repositories/product_repository.dart';
 import 'package:tapkat/repositories/user_repository.dart';
+import 'package:tapkat/schemas/index.dart';
 import 'package:tapkat/services/auth_service.dart';
 import 'package:tapkat/utilities/upload_media.dart';
 import 'package:tapkat/utilities/application.dart' as application;
@@ -20,6 +23,8 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     final _authService = AuthService();
     final _productRepo = ProductRepository();
     final _userRepo = UserRepository();
+    final _alertRepo = AlertRepository();
+
     on<ProfileEvent>((event, emit) async {
       emit(ProfileLoading());
 
@@ -118,6 +123,16 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
 
       if (event is DeleteUserReview) {
         final deleted = await _userRepo.deleteUserReview(event.review);
+      }
+
+      if (event is InitializeNotificationList) {
+        final list = await _alertRepo.getNotifications();
+        emit(InitializeNotificationListSuccess(list));
+      }
+
+      if (event is GetNextNotifications) {
+        final list = await _alertRepo.getNotifications(event.startAfterVal);
+        emit(GetNextNotificationsSuccess(list));
       }
     });
   }

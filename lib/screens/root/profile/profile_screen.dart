@@ -23,6 +23,7 @@ import 'package:tapkat/screens/product/product_details_screen.dart';
 import 'package:tapkat/screens/reviews/user_review_list_screen.dart';
 import 'package:tapkat/screens/root/profile/bloc/profile_bloc.dart';
 import 'package:tapkat/screens/root/profile/edit_profile_screen.dart';
+import 'package:tapkat/screens/root/profile/notification_list_screen.dart';
 import 'package:tapkat/screens/root/profile/user_ratings_screen.dart';
 import 'package:tapkat/screens/settings/settings_screen.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
@@ -194,13 +195,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       color: Colors.white,
                     ),
                   ),
-                  // action: GestureDetector(
-                  //   onTap: _onSignOut,
-                  //   child: Icon(
-                  //     FontAwesomeIcons.signOutAlt,
-                  //     color: Colors.white,
-                  //   ),
-                  // ),
+                  action: GestureDetector(
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => NotificationListScreen(),
+                      ),
+                    ),
+                    child: Icon(
+                      FontAwesomeIcons.bell,
+                      color: Colors.white,
+                    ),
+                  ),
                 ),
                 Expanded(
                   child: SmartRefresher(

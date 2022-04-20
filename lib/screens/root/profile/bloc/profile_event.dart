@@ -88,6 +88,14 @@ class GetNextProductRatings extends ProfileEvent {
   });
 }
 
+class InitializeNotificationList extends ProfileEvent {}
+
+class GetNextNotifications extends ProfileEvent {
+  final String startAfterVal;
+
+  GetNextNotifications(this.startAfterVal);
+}
+
 class GetNextUserRatings extends ProfileEvent {
   final String userId;
   final String lastUserId;

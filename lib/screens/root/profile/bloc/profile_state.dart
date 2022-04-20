@@ -66,3 +66,15 @@ class DeleteUserReviewSuccess extends ProfileState {}
 class UpdateUserReviewSuccess extends ProfileState {}
 
 class UpdateProductReviewSuccess extends ProfileState {}
+
+class InitializeNotificationListSuccess extends ProfileState {
+  final List<NotificationModel> list;
+
+  InitializeNotificationListSuccess(this.list);
+}
+
+class GetNextNotificationsSuccess extends ProfileState {
+  final List<NotificationModel> list;
+
+  GetNextNotificationsSuccess(this.list);
+}
