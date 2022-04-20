@@ -662,10 +662,6 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
           );
         });
 
-    if (category == null) {
-      return;
-    }
-
     _reset();
 
     setState(() {
