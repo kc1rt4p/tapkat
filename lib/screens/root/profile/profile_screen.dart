@@ -237,34 +237,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                             .copyWith(color: Colors.white),
                                       ),
                                       Spacer(),
-                                      Visibility(
-                                        visible: editProfile,
-                                        child: Row(
-                                          children: [
-                                            GestureDetector(
-                                              onTap: () {
-                                                setState(() {
-                                                  editProfile = !editProfile;
-                                                });
-                                              },
-                                              child: Icon(
-                                                FontAwesomeIcons.times,
-                                                color: Colors.white,
-                                                size: 18.0,
-                                              ),
-                                            ),
-                                            SizedBox(width: 10.0),
-                                            GestureDetector(
-                                              onTap: _onUpdateUserInfo,
-                                              child: Icon(
-                                                FontAwesomeIcons.solidSave,
-                                                color: Colors.white,
-                                                size: 18.0,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
                                       GestureDetector(
                                         onTap: _userModel != null
                                             ? () async {
