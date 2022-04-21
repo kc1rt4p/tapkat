@@ -13,6 +13,7 @@ class UserModel {
   String? pushalert;
   String? regtoken;
   List<String>? interests;
+  List<String>? items_wanted;
   LocationModel? location;
   int? likes;
   double? rating;
@@ -36,6 +37,7 @@ class UserModel {
     this.pushalert,
     this.regtoken,
     this.interests,
+    this.items_wanted,
     this.location,
     this.likes,
     this.rating,
@@ -61,6 +63,11 @@ class UserModel {
       regtoken: json['regtoken'] as String?,
       interests: json['interests'] != null
           ? (json['interests'] as List<dynamic>)
+              .map((d) => d.toString())
+              .toList()
+          : null,
+      items_wanted: json['items_wanted'] != null
+          ? (json['items_wanted'] as List<dynamic>)
               .map((d) => d.toString())
               .toList()
           : null,
@@ -91,6 +98,7 @@ class UserModel {
       'pushalert': this.pushalert,
       'regtoken': this.regtoken,
       'interests': this.interests,
+      'items_wanted': this.items_wanted,
       'location': this.location,
       'likes': this.likes,
       'rating': this.rating,

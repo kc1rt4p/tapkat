@@ -64,6 +64,7 @@ class _ProductAddScreenState extends State<ProductAddScreen> {
 
   List<ProductTypeModel> _productTypes = [];
   List<ProductCategoryModel> _productCategories = [];
+  bool isFree = false;
 
   @override
   void initState() {
@@ -178,15 +179,58 @@ class _ProductAddScreenState extends State<ProductAddScreen> {
                                     ? 'Required'
                                     : null,
                               ),
-                              CustomTextFormField(
-                                label: 'Price',
-                                hintText: 'Enter the price you want',
-                                controller: _priceTextController,
-                                color: kBackgroundColor,
-                                validator: (val) => val != null && val.isEmpty
-                                    ? 'Required'
-                                    : null,
-                                keyboardType: TextInputType.number,
+                              Container(
+                                margin: EdgeInsets.only(bottom: 16),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Expanded(
+                                      child: CustomTextFormField(
+                                        label: 'Price',
+                                        hintText: 'Enter the price you want',
+                                        controller: _priceTextController,
+                                        color: kBackgroundColor,
+                                        validator: (val) =>
+                                            val != null && val.isEmpty
+                                                ? 'Required'
+                                                : null,
+                                        keyboardType: TextInputType.number,
+                                        isReadOnly: isFree,
+                                        removeMargin: true,
+                                      ),
+                                    ),
+                                    SizedBox(width: 10.0),
+                                    Column(
+                                      children: [
+                                        Text('FREE',
+                                            style: TextStyle(
+                                              fontSize:
+                                                  SizeConfig.textScaleFactor *
+                                                      13,
+                                              color: kBackgroundColor,
+                                              fontWeight: FontWeight.w600,
+                                            )),
+                                        SizedBox(height: 5.0),
+                                        GestureDetector(
+                                          onTap: () {
+                                            setState(() {
+                                              isFree = !isFree;
+                                            });
+
+                                            _priceTextController.text =
+                                                isFree ? '0' : '';
+                                          },
+                                          child: Icon(
+                                            isFree
+                                                ? Icons.check_box
+                                                : Icons.check_box_outline_blank,
+                                            color: kBackgroundColor,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
                               ),
                               Container(
                                 width: double.infinity,
@@ -340,6 +384,7 @@ class _ProductAddScreenState extends State<ProductAddScreen> {
         userid: _user!.uid,
         productname: _nameTextController.text.trim(),
         productdesc: _descTextController.text.trim(),
+        free: isFree,
         price: double.parse(_priceTextController.text.trim()),
         type: _selectedOfferType!,
         location: LocationModel(

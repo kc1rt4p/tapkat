@@ -80,7 +80,6 @@ class _BarterListItemState extends State<BarterListItem> {
         }
 
         var thumbnail = '';
-        print('0---->> ${product.toJson()}');
 
         if (product.mediaPrimary != null &&
             product.mediaPrimary!.url_t != null) {

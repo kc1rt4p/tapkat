@@ -15,7 +15,7 @@ class UpdateUserModel {
   String? phone_number;
   LocationModel? location;
   List<String>? interests;
-
+  List<String>? items_wanted;
   String? fb_profile;
   String? ig_profile;
   String? yt_profile;
@@ -37,6 +37,7 @@ class UpdateUserModel {
     this.phone_number,
     this.location,
     this.interests,
+    this.items_wanted,
     this.fb_profile,
     this.ig_profile,
     this.yt_profile,
@@ -60,6 +61,7 @@ class UpdateUserModel {
       "phone_number": this.phone_number,
       "location": this.location != null ? this.location!.toJson() : null,
       'interests': this.interests,
+      'items_wanted': this.items_wanted,
       'fb_profile': this.fb_profile ?? null,
       'ig_profile': this.ig_profile ?? null,
       'yt_profile': this.yt_profile ?? null,

@@ -10,7 +10,7 @@ class CustomTextFormField extends StatefulWidget {
   final bool obscureText;
   final String? Function(String?)? validator;
   final Function()? onTap;
-  final bool isReadOnly;
+  final bool? isReadOnly;
   final bool isPhone;
   final Color? color;
   final Color? textColor;
@@ -28,7 +28,7 @@ class CustomTextFormField extends StatefulWidget {
     this.obscureText = false,
     this.validator,
     this.onTap,
-    this.isReadOnly = false,
+    this.isReadOnly,
     this.isPhone = false,
     this.textColor,
     this.color,
@@ -65,7 +65,7 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
           child: TextFormField(
             inputFormatters: widget.inputFormatters,
             maxLines: widget.maxLines,
-            readOnly: widget.isReadOnly,
+            readOnly: widget.isReadOnly ?? false,
             onTap: widget.onTap,
             controller: widget.controller,
             style: TextStyle(

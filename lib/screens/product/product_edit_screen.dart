@@ -62,6 +62,7 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
   List<ProductTypeModel> _types = [];
   int _initialTypeIndex = 0;
   String _selectedStatus = 'available';
+  bool isFree = false;
 
   @override
   void initState() {
@@ -84,6 +85,7 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
     _descTextController.text = _product.productdesc ?? '';
     _locationTextController.text =
         '${_product.address!.address ?? ''}, ${_product.address!.city ?? ''}, ${_product.address!.country ?? ''}';
+    isFree = _product.free ?? false;
   }
 
   @override
@@ -177,14 +179,58 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
                             validator: (val) =>
                                 val != null && val.isEmpty ? 'Required' : null,
                           ),
-                          CustomTextFormField(
-                            label: 'Price',
-                            hintText: 'Enter the price you want',
-                            controller: _priceTextController,
-                            color: kBackgroundColor,
-                            validator: (val) =>
-                                val != null && val.isEmpty ? 'Required' : null,
-                            keyboardType: TextInputType.number,
+                          Container(
+                            margin: EdgeInsets.only(bottom: 16),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Expanded(
+                                  child: CustomTextFormField(
+                                    label: 'Price',
+                                    hintText: 'Enter the price you want',
+                                    controller: _priceTextController,
+                                    color: kBackgroundColor,
+                                    validator: (val) =>
+                                        val != null && val.isEmpty
+                                            ? 'Required'
+                                            : null,
+                                    keyboardType: TextInputType.number,
+                                    isReadOnly: isFree,
+                                    removeMargin: true,
+                                  ),
+                                ),
+                                SizedBox(width: 10.0),
+                                Column(
+                                  children: [
+                                    Text('FREE',
+                                        style: TextStyle(
+                                          fontSize:
+                                              SizeConfig.textScaleFactor * 13,
+                                          color: kBackgroundColor,
+                                          fontWeight: FontWeight.w600,
+                                        )),
+                                    SizedBox(height: 5.0),
+                                    GestureDetector(
+                                      onTap: () {
+                                        setState(() {
+                                          isFree = !isFree;
+                                        });
+
+                                        _priceTextController.text = isFree
+                                            ? '0'
+                                            : _product.price.toString();
+                                      },
+                                      child: Icon(
+                                        isFree
+                                            ? Icons.check_box
+                                            : Icons.check_box_outline_blank,
+                                        color: kBackgroundColor,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
 
                           Container(
@@ -356,6 +402,7 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
     productRequest.productdesc = _descTextController.text.trim();
     productRequest.price = double.parse(_priceTextController.text.trim());
     productRequest.status = _selectedStatus;
+    productRequest.free = isFree;
 
     if (_selectedLocation != null) {
       productRequest.address =

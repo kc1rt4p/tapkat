@@ -7,6 +7,7 @@ import 'package:tapkat/models/request/update_user.dart';
 import 'package:tapkat/models/user.dart';
 import 'package:tapkat/screens/product/bloc/product_bloc.dart';
 import 'package:tapkat/screens/root/profile/bloc/profile_bloc.dart';
+import 'package:tapkat/screens/root/profile/items_wanted_screen.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/widgets/custom_app_bar.dart';
@@ -56,17 +57,6 @@ class _InterestSelectionScreenState extends State<InterestSelectionScreen> {
                   ProgressHUD.of(context)!.show();
                 } else {
                   ProgressHUD.of(context)!.dismiss();
-                }
-
-                if (state is UpdateUserInfoSuccess) {
-                  if (!widget.signingUp) {
-                    var count = 0;
-                    Navigator.popUntil(context, (route) {
-                      return count++ == 3;
-                    });
-                  } else {
-                    _authBloc.add(SkipSignUpPhoto());
-                  }
                 }
               },
             ),
@@ -200,7 +190,7 @@ class _InterestSelectionScreenState extends State<InterestSelectionScreen> {
                   ),
                   child: CustomButton(
                     removeMargin: true,
-                    label: 'Save',
+                    label: 'Next',
                     onTap: _onSaveTapped,
                   ),
                 ),
@@ -216,7 +206,7 @@ class _InterestSelectionScreenState extends State<InterestSelectionScreen> {
                         child: CustomButton(
                           bgColor: Color(0xFFBB3F03),
                           label: 'Skip',
-                          onTap: () => _authBloc.add(SkipSignUpPhoto()),
+                          onTap: () => _onSaveTapped(),
                         ),
                       ),
                     ],
@@ -247,6 +237,14 @@ class _InterestSelectionScreenState extends State<InterestSelectionScreen> {
       tw_profile: widget.user.tw_profile,
     );
 
-    _profileBloc.add(UpdateUserInfo(user));
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ItemsWantedScreen(
+          user: user,
+          signingUp: widget.signingUp,
+        ),
+      ),
+    );
   }
 }

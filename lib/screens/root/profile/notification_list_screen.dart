@@ -68,6 +68,20 @@ class _NotificationListScreenState extends State<NotificationListScreen> {
                       }
                     });
                   }
+
+                  if (state is GetNextNotificationsSuccess) {
+                    if (state.list.isNotEmpty) {
+                      lastNotification = state.list.last;
+                      if (state.list.length == 8) {
+                        _pagingController.appendPage(
+                            state.list, currentPage + 1);
+                      } else {
+                        _pagingController.appendLastPage(state.list);
+                      }
+                    } else {
+                      _pagingController.appendLastPage([]);
+                    }
+                  }
                 },
                 child: Container(
                   child: PagedListView.separated(

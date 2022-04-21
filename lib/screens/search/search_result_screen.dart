@@ -667,12 +667,14 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
     setState(() {
       _selectedCategory = category;
     });
-    _searchBloc.add(InitializeSearch(
-      keyword: _keyWordTextController.text.trim(),
-      category: _selectedCategory != null ? [_selectedCategory!.code!] : null,
-      sortBy: _selectedSortBy,
-      distance: _selectedRadius,
-    ));
+    _searchBloc.add(
+      InitializeSearch(
+        keyword: _keyWordTextController.text.trim(),
+        category: _selectedCategory != null ? [_selectedCategory!.code!] : null,
+        sortBy: _selectedSortBy,
+        distance: _selectedRadius,
+      ),
+    );
   }
 
   _reset() {

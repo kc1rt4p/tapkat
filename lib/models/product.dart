@@ -24,6 +24,7 @@ class ProductModel {
   String? acquired_by;
   double? distance;
   List<String>? tradeFor;
+  bool? free;
 
   ProductModel({
     this.productid,
@@ -47,6 +48,7 @@ class ProductModel {
     this.acquired_by,
     this.distance,
     this.tradeFor,
+    this.free,
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
@@ -92,6 +94,7 @@ class ProductModel {
               .map((item) => item.toString())
               .toList()
           : [],
+      free: json['free'] as bool?,
     );
   }
 
@@ -113,6 +116,7 @@ class ProductModel {
       'acquired_by': this.acquired_by,
       'status': this.status,
       'tradefor': this.tradeFor,
+      'free': this.free,
     };
     return json..addAll({'productid': this.productid});
   }

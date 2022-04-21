@@ -23,6 +23,7 @@ class ProductRequestModel {
   num? price;
   num? rating;
   List<String>? tradefor;
+  bool? free;
 
   ProductRequestModel({
     this.productid,
@@ -46,6 +47,7 @@ class ProductRequestModel {
     this.status,
     this.acquired_by,
     this.tradefor,
+    this.free,
   });
 
   factory ProductRequestModel.fromProduct(ProductModel product) {
@@ -71,6 +73,7 @@ class ProductRequestModel {
       acquired_by: product.acquired_by ?? '',
       status: product.status ?? '',
       tradefor: product.tradeFor ?? [],
+      free: product.free ?? null,
     );
   }
 
@@ -96,6 +99,7 @@ class ProductRequestModel {
       'acquired_by': this.acquired_by ?? '',
       'status': this.status ?? '',
       'tradefor': this.tradefor ?? [],
+      'free': this.free ?? false,
     };
 
     if (updating) {
