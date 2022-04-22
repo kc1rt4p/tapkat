@@ -88,7 +88,8 @@ class ProductModel {
           : null,
       display_name: json['image_url'] as String?,
       acquired_by: json['acquired_by'] as String?,
-      distance: json['distance'] as double?,
+      distance:
+          json['distance'] != null ? json['distance'] + 0.0 as double? : null,
       tradeFor: json['tradefor'] != null
           ? (json['tradefor'] as List<dynamic>)
               .map((item) => item.toString())

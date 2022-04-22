@@ -275,7 +275,9 @@ class _BarterListItemState extends State<BarterListItem> {
                               size: 15,
                             ),
                             Text(
-                              product.rating!.toStringAsFixed(1),
+                              product.rating != null
+                                  ? product.rating!.toStringAsFixed(1)
+                                  : '0.0',
                               style: TextStyle(
                                 fontSize: 12.0,
                               ),
