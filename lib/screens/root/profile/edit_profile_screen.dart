@@ -106,7 +106,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 Expanded(
                   child: Container(
                     padding:
-                        EdgeInsets.symmetric(horizontal: 20.0, vertical: 36.0),
+                        EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
                     child: SingleChildScrollView(
                       child: Column(
                         children: [
@@ -171,7 +171,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 Container(
                   padding: EdgeInsets.symmetric(
                     horizontal: 20.0,
-                    vertical: 10.0,
+                    vertical: 2.0,
                   ),
                   child: CustomButton(
                     label: 'Next',
