@@ -346,6 +346,12 @@ class ProductRepository {
       'productcount': productCount,
     };
 
+    if (category != null) {
+      body.addAll({
+        'category': category,
+      });
+    }
+
     if (listType != 'user') {
       body.addAll({
         'location': location!.toJson(),
