@@ -149,8 +149,8 @@ class _MyAppState extends State<MyApp> {
     final per2 =
         await geoLocator.GeolocatorPlatform.instance.isLocationServiceEnabled();
     if (per1 != PermissionStatus.denied && per2) {
-      print('-=======< using device location');
       final userLoc = await geoLocator.Geolocator.getCurrentPosition();
+      print('-=======< using device location');
       application.currentUserLocation = LocationModel(
         latitude: userLoc.latitude,
         longitude: userLoc.longitude,

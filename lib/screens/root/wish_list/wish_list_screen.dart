@@ -42,7 +42,6 @@ class WishListScreen extends StatefulWidget {
 
 class _WishListScreenState extends State<WishListScreen> {
   List<ProductModel> _list = [];
-  User? _user;
   final _wishListBloc = WishListBloc();
   final _storeBloc = StoreBloc();
   final _productBloc = ProductBloc();
@@ -55,6 +54,7 @@ class _WishListScreenState extends State<WishListScreen> {
   final inputTextController = TextEditingController();
   final focusNode = FocusNode();
   List<String> _wants = [];
+  List<String> _origWants = [];
 
   List<LikedProductModel> _products = [];
   LikedProductModel? _lastProduct;
@@ -74,6 +74,7 @@ class _WishListScreenState extends State<WishListScreen> {
   @override
   void initState() {
     _wants = application.currentUserModel!.items_wanted ?? [];
+    _origWants = application.currentUserModel!.items_wanted ?? [];
     _wishListBloc.add(InitializeWishListScreen());
     super.initState();
   }
@@ -118,9 +119,6 @@ class _WishListScreenState extends State<WishListScreen> {
                   _refreshController.refreshCompleted();
                   _productPagingController.refresh();
                   _storePagingController.refresh();
-                  setState(() {
-                    _user = state.user;
-                  });
 
                   if (state.productList.isNotEmpty) {
                     _lastProduct = state.productList.last;
@@ -275,8 +273,12 @@ class _WishListScreenState extends State<WishListScreen> {
                 Expanded(
                   child: SmartRefresher(
                     controller: _refreshController,
-                    onRefresh: () =>
-                        _wishListBloc.add(InitializeWishListScreen()),
+                    onRefresh: () {
+                      _lastProduct = null;
+                      _lastStore = null;
+                      _wants = application.currentUserModel!.items_wanted ?? [];
+                      _wishListBloc.add(InitializeWishListScreen());
+                    },
                     child: _buildSelectedView(),
                   ),
                 ),
@@ -388,9 +390,7 @@ class _WishListScreenState extends State<WishListScreen> {
               // SizedBox(width: 10.0),
               Expanded(
                 child: CustomButton(
-                  enabled:
-                      application.currentUserModel!.items_wanted != _wants &&
-                          _wants.isNotEmpty,
+                  enabled: _origWants != _wants,
                   bgColor: kBackgroundColor,
                   label: 'Save',
                   onTap: () => _onSaveTapped(),
@@ -522,7 +522,7 @@ class _WishListScreenState extends State<WishListScreen> {
       context,
       MaterialPageRoute(
         builder: (context) => SearchResultScreen(
-          userid: _user!.uid,
+          userid: application.currentUser!.uid,
           keyword: val,
         ),
       ),

@@ -46,7 +46,7 @@ class GetNextProducts extends ProductEvent {
   final String listType;
   final String? userId;
   final String lastProductId;
-  final String startAfterVal;
+  final dynamic startAfterVal;
   final LocationModel? location;
   final List<String>? category;
   final int distance;

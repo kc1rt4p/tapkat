@@ -168,11 +168,26 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
 
                     _pagingController.addPageRequestListener((pageKey) {
                       if (lastProduct != null) {
+                        var startAfterVal;
+                        switch (_selectedSortBy.toLowerCase()) {
+                          case 'rating':
+                            startAfterVal = lastProduct!.rating;
+                            break;
+                          case 'name':
+                            startAfterVal = lastProduct!.productname;
+                            break;
+                          case 'distance':
+                            startAfterVal = lastProduct!.distance;
+                            break;
+
+                          default:
+                            startAfterVal = lastProduct!.price;
+                        }
                         _searchBloc.add(
                           SearchNextProducts(
                             keyword: _keyWordTextController.text.trim(),
                             lastProductId: lastProduct!.productid!,
-                            startAfterVal: lastProduct!.price!.toString(),
+                            startAfterVal: startAfterVal,
                             category: widget.category,
                             sortBy: _selectedSortBy,
                             distance: _selectedRadius,

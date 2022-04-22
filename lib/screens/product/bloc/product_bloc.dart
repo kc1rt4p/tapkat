@@ -143,7 +143,9 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
           final result = await _productRepo.getFirstProducts(
             event.listType,
             location: _location,
-            sortBy: event.sortBy == 'name' ? 'productname' : event.sortBy,
+            sortBy: event.sortBy == 'name'
+                ? 'productname'
+                : event.sortBy.toLowerCase(),
             radius: event.distance,
             category: event.category,
             userId: event.userid ?? application.currentUser!.uid,
@@ -172,9 +174,16 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
             listType: event.listType,
             lastProductId: event.lastProductId,
             startAfterVal: event.startAfterVal,
-            userId: event.listType == 'user' ? event.userId : '',
+            userId: event.listType == 'user'
+                ? event.userId
+                : application.currentUser!.uid,
+            category: event.category,
+            sortBy: event.sortBy.toLowerCase(),
+            interests: event.listType == 'reco'
+                ? application.currentUserModel!.interests
+                : null,
             location: event.listType != 'user'
-                ? (_location != null ? _location : _userModel!.location)
+                ? application.currentUserLocation
                 : null,
           );
 

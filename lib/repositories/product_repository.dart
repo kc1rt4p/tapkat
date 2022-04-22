@@ -239,6 +239,8 @@ class ProductRepository {
     required userId,
     required String lastProductId,
     required dynamic startAfterVal,
+    required String sortBy,
+    List<String>? category,
     List<String>? interests,
     LocationModel? location,
     int radius = 5000,
@@ -257,13 +259,24 @@ class ProductRepository {
       });
     }
 
+    if (category != null) {
+      body.addAll({
+        'category': category,
+      });
+    }
+
     if (listType == 'demand') {
     } else {
       body.addAll({
-        'sortBy': 'price',
-        'startafterval': double.parse(startAfterVal),
+        'sortby': sortBy == 'name' ? 'productname' : sortBy.toLowerCase(),
+        'startafterval': startAfterVal,
         'productid': lastProductId,
+        'sortdirection': sortBy == 'rating' ? 'descending' : 'ascending',
       });
+    }
+
+    if (listType == 'reco' && interests != null) {
+      body.addAll({'interests': interests});
     }
 
     final response = await _apiService.post(
@@ -332,13 +345,15 @@ class ProductRepository {
         .toList();
   }
 
-  Future<List<ProductModel>> getFirstProducts(String listType,
-      {required String userId,
-      List<String>? interests,
-      List<String>? category,
-      required String sortBy,
-      LocationModel? location,
-      int radius = 5000}) async {
+  Future<List<ProductModel>> getFirstProducts(
+    String listType, {
+    required String userId,
+    List<String>? interests,
+    List<String>? category,
+    required String sortBy,
+    LocationModel? location,
+    int radius = 5000,
+  }) async {
     if (listType == 'reco') {}
     var body = {
       'psk': psk,
@@ -361,8 +376,8 @@ class ProductRepository {
 
     if (listType != 'demand') {
       body.addAll({
-        'sortby': 'distance',
-        'sortdirection': 'ascending',
+        'sortby': sortBy == 'name' ? 'productname' : sortBy.toLowerCase(),
+        'sortdirection': sortBy == 'rating' ? 'descending' : 'ascending',
       });
 
       if (listType == 'reco' && interests != null) {
@@ -444,15 +459,17 @@ class ProductRepository {
 
   Future<List<ProductModel>> searchProducts(List<String> keyword,
       {String? lastProductId,
-      String? startAfterVal,
+      dynamic startAfterVal,
       List<String>? category,
       required String sortBy,
       required LocationModel location,
       int radius = 5000}) async {
     var _body = {
       'psk': psk,
-      'sortby': sortBy.toLowerCase(),
-      'sortdirection': 'ascending',
+      'sortby':
+          sortBy.toLowerCase() == 'name' ? 'productname' : sortBy.toLowerCase(),
+      'sortdirection':
+          sortBy.toLowerCase() == 'rating' ? 'descending' : 'ascending',
       'productcount': productCount,
       'userid': application.currentUser!.uid,
       'location': location.toJson(),
@@ -463,7 +480,7 @@ class ProductRepository {
     if (category != null) _body.addAll({'category': category});
     if (lastProductId != null && startAfterVal != null) {
       _body.addAll({
-        'startafterval': double.parse(startAfterVal),
+        'startafterval': startAfterVal,
         'productid': lastProductId,
       });
     }
@@ -542,3 +559,29 @@ class ProductRepository {
     return response.data['status'] == 'SUCCESS';
   }
 }
+// search first reco - sort: name
+// Body
+// psk: lcp9321p
+// sortby: productname
+// sortdirection: ascending
+// productcount: 10
+// userid: JdWKYOrvOMMAoQZGEMFQZUzHMI52
+// location: {_longitude: 103.8410042, _latitude: 1.36112}
+// radius: 5000
+// type: PT1
+
+// search set reco - sort: name
+// Body
+// psk: lcp9321p
+// sortby: name
+// sortdirection: ascending
+// productcount: 10
+// userid: JdWKYOrvOMMAoQZGEMFQZUzHMI52
+// location: {_longitude: 103.8410042, _latitude: 1.36112}
+// radius: 5000
+// type: PT1
+// keywords: []
+// startafterval: Five Guys burger
+// productid: RGc91kQGDhHI3S7t5QhB
+
+

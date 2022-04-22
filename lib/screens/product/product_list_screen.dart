@@ -181,12 +181,27 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
               _pagingController.addPageRequestListener((pageKey) {
                 if (lastProduct != null) {
+                  var startAfterVal;
+                  switch (_selectedSortBy.toLowerCase()) {
+                    case 'rating':
+                      startAfterVal = lastProduct!.rating;
+                      break;
+                    case 'name':
+                      startAfterVal = lastProduct!.productname;
+                      break;
+                    case 'distance':
+                      startAfterVal = lastProduct!.distance;
+                      break;
+
+                    default:
+                      startAfterVal = lastProduct!.price;
+                  }
                   _productBloc.add(
                     GetNextProducts(
                       listType: widget.listType,
                       lastProductId: lastProduct!.productid!,
                       startAfterVal: widget.listType != 'demand'
-                          ? lastProduct!.price!.toString()
+                          ? startAfterVal
                           : lastProduct!.likes.toString(),
                       userId: widget.listType == 'user' ? widget.userId : '',
                       sortBy: _selectedSortBy,

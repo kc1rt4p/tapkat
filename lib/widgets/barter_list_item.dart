@@ -237,7 +237,9 @@ class _BarterListItemState extends State<BarterListItem> {
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: [
                             Text(
-                              product.productname ?? '',
+                              product.productname != null
+                                  ? product.productname!.trim()
+                                  : '',
                               textAlign: TextAlign.center,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
@@ -273,7 +275,7 @@ class _BarterListItemState extends State<BarterListItem> {
                               size: 15,
                             ),
                             Text(
-                              product.rating.toString(),
+                              product.rating!.toStringAsFixed(1),
                               style: TextStyle(
                                 fontSize: 12.0,
                               ),

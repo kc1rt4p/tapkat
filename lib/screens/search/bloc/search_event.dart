@@ -29,7 +29,7 @@ class SearchNextProducts extends SearchEvent {
   final int distance;
   final String sortBy;
   final String lastProductId;
-  final String startAfterVal;
+  final dynamic startAfterVal;
 
   SearchNextProducts({
     required this.keyword,
