@@ -559,29 +559,3 @@ class ProductRepository {
     return response.data['status'] == 'SUCCESS';
   }
 }
-// search first reco - sort: name
-// Body
-// psk: lcp9321p
-// sortby: productname
-// sortdirection: ascending
-// productcount: 10
-// userid: JdWKYOrvOMMAoQZGEMFQZUzHMI52
-// location: {_longitude: 103.8410042, _latitude: 1.36112}
-// radius: 5000
-// type: PT1
-
-// search set reco - sort: name
-// Body
-// psk: lcp9321p
-// sortby: name
-// sortdirection: ascending
-// productcount: 10
-// userid: JdWKYOrvOMMAoQZGEMFQZUzHMI52
-// location: {_longitude: 103.8410042, _latitude: 1.36112}
-// radius: 5000
-// type: PT1
-// keywords: []
-// startafterval: Five Guys burger
-// productid: RGc91kQGDhHI3S7t5QhB
-
-
