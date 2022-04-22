@@ -225,6 +225,7 @@ class _InterestSelectionScreenState extends State<InterestSelectionScreen> {
       userid: _user.userid,
       display_name: _user.display_name,
       phone_number: _user.phone_number,
+      items_wanted: _user.items_wanted,
       interests: _selectedCategories.map((scat) => scat.code!).toList(),
       city: _user.city,
       address: _user.address,
