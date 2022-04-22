@@ -308,7 +308,8 @@ class _BarterListItemState extends State<BarterListItem> {
   String _getProductDistance(ProductModel product) {
     if (product.distance == null) return '';
     final distance = product.distance;
-    if (product.distance! > 1000) return product.distance!.toStringAsFixed(1);
+    if (product.distance! > 1)
+      return product.distance!.toStringAsFixed(1) + ' Km';
 
     final meters = product.distance! * 1000;
     if (meters < 100) return 'within 100m';
