@@ -75,6 +75,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
     'Distance',
     'Name',
     'Price',
+    'Rating',
   ];
   int _selectedRadius = 5000;
   List<int> radiusOptions = [1000, 5000, 10000, 20000, 50000];

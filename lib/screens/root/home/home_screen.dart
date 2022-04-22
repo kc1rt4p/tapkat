@@ -382,6 +382,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       width: SizeConfig.screenHeight * 0.14,
                                       hideLikeBtn: true,
                                       hideDistance: true,
+                                      showRating: false,
                                       product: product,
                                       onTapped: () {
                                         Navigator.push(

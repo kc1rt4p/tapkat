@@ -87,6 +87,7 @@ dependencies:
   connectivity_plus: ^2.3.0
   shimmer: ^2.0.0
   url_launcher: ^6.0.20
+  distance: ^1.0.0
 
 dev_dependencies:
   build_runner: ^2.1.2

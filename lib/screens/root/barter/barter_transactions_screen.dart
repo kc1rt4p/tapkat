@@ -347,6 +347,7 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                         children: [
                           BarterListItem(
                             hideDistance: true,
+                            showRating: false,
                             product: ProductModel(
                               productid: barter.u2P1Id!,
                               productname: barter.u2P1Name ?? '',

@@ -1034,6 +1034,8 @@ class _BarterScreenState extends State<BarterScreen> {
                     child: Stack(
                       children: [
                         BarterListItem(
+                          showRating: false,
+                          hideDistance: true,
                           product: ProductModel(
                             productid: item.productId!,
                             productname: item.productName,

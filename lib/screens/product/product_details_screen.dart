@@ -386,7 +386,15 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                             .location !=
                                                         null
                                                 ? Text(
-                                                    '${calculateDistance(_product!.address!.location!.latitude, _product!.address!.location!.longitude, _location.latitude, _location.longitude).toStringAsFixed(2)}km away',
+                                                    calculateDistance(
+                                                        _product!.address!
+                                                            .location!.latitude,
+                                                        _product!
+                                                            .address!
+                                                            .location!
+                                                            .longitude,
+                                                        _location.latitude,
+                                                        _location.longitude),
                                                   )
                                                 : Container(),
                                           ],
@@ -933,13 +941,20 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
     _productBloc.add(GetProductDetails(widget.productId));
   }
 
-  double calculateDistance(lat1, lon1, lat2, lon2) {
+  String calculateDistance(lat1, lon1, lat2, lon2) {
     var p = 0.017453292519943295;
     var c = cos;
     var a = 0.5 -
         c((lat2 - lat1) * p) / 2 +
         c(lat1 * p) * c(lat2 * p) * (1 - c((lon2 - lon1) * p)) / 2;
-    return 12742 * asin(sqrt(a));
+
+    final distance = 12742 * asin(sqrt(a));
+    if (distance > 1000) return distance.toStringAsFixed(1);
+
+    final meters = distance * 1000;
+    if (meters < 100) return 'within 100m';
+    if (meters < 300) return 'within 300m';
+    return 'within 900m';
   }
 
   Future<dynamic> _onMarkerTapped(ProductModel product) async {

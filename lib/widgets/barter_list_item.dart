@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:distance/distance.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tapkat/backend.dart';
@@ -25,6 +26,7 @@ class BarterListItem extends StatefulWidget {
   final bool hideDistance;
   final String? status;
   final double? distance;
+  final bool showRating;
 
   const BarterListItem({
     Key? key,
@@ -39,6 +41,7 @@ class BarterListItem extends StatefulWidget {
     this.hideDistance = false,
     this.status,
     this.distance,
+    this.showRating = true,
   }) : super(key: key);
 
   @override
@@ -221,30 +224,61 @@ class _BarterListItemState extends State<BarterListItem> {
                 Container(
                   color: Colors.white,
                   width: widget.width ?? SizeConfig.screenHeight * 0.19,
-                  padding: EdgeInsets.all(3.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.start,
+                  padding: EdgeInsets.all(5.0),
+                  child: Row(
                     children: [
-                      Text(
-                        product.productname ?? '',
-                        textAlign: TextAlign.center,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: widget.fontSize ??
-                              SizeConfig.textScaleFactor * 12,
-                          fontWeight: FontWeight.w600,
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: product.rating != null &&
+                                  product.rating! > 0 &&
+                                  widget.showRating
+                              ? CrossAxisAlignment.start
+                              : CrossAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Text(
+                              product.productname ?? '',
+                              textAlign: TextAlign.center,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: widget.fontSize ??
+                                    SizeConfig.textScaleFactor * 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            SizedBox(height: 5.0),
+                            Text(
+                              product.price != null
+                                  ? product.price!.toStringAsFixed(2)
+                                  : '0.00',
+                              style: TextStyle(
+                                fontSize: widget.fontSize ??
+                                    SizeConfig.textScaleFactor * 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      SizedBox(height: 5.0),
-                      Text(
-                        product.price != null
-                            ? product.price!.toStringAsFixed(2)
-                            : '0.00',
-                        style: TextStyle(
-                          fontSize: widget.fontSize ??
-                              SizeConfig.textScaleFactor * 10,
-                          fontWeight: FontWeight.bold,
+                      Visibility(
+                        visible: product.rating != null &&
+                            product.rating! > 0 &&
+                            widget.showRating,
+                        child: Row(
+                          children: [
+                            SizedBox(width: 5.0),
+                            Icon(
+                              Icons.star,
+                              color: Colors.yellow,
+                              size: 15,
+                            ),
+                            Text(
+                              product.rating.toString(),
+                              style: TextStyle(
+                                fontSize: 12.0,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
@@ -256,10 +290,7 @@ class _BarterListItemState extends State<BarterListItem> {
                         widget.distance != null
                     ? Padding(
                         padding: const EdgeInsets.only(top: 5.0),
-                        child: Text(
-                            widget.distance != null
-                                ? '${widget.distance!.toStringAsFixed(widget.distance! < 0.1 ? 2 : 1)} Km'
-                                : '${product.distance != null ? product.distance! < 0.1 ? product.distance!.toStringAsFixed(2) : product.distance!.toStringAsFixed(1) : 0.0} Km',
+                        child: Text(_getProductDistance(product),
                             style: TextStyle(
                                 fontSize: SizeConfig.textScaleFactor * 10)),
                       )
@@ -270,6 +301,17 @@ class _BarterListItemState extends State<BarterListItem> {
         );
       },
     );
+  }
+
+  String _getProductDistance(ProductModel product) {
+    if (product.distance == null) return '';
+    final distance = product.distance;
+    if (product.distance! > 1000) return product.distance!.toStringAsFixed(1);
+
+    final meters = product.distance! * 1000;
+    if (meters < 100) return 'within 100m';
+    if (meters < 300) return 'within 300m';
+    return 'within 900m';
   }
 
   // double calculateDistance(lat1, lon1, lat2, lon2) {

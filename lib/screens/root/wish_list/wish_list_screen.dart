@@ -16,6 +16,7 @@ import 'package:tapkat/models/user.dart';
 import 'package:tapkat/schemas/user_likes_record.dart';
 import 'package:tapkat/screens/product/bloc/product_bloc.dart';
 import 'package:tapkat/screens/product/product_details_screen.dart';
+import 'package:tapkat/screens/root/profile/bloc/profile_bloc.dart';
 import 'package:tapkat/screens/root/wish_list/bloc/wish_list_bloc.dart';
 import 'package:tapkat/screens/search/search_result_screen.dart';
 import 'package:tapkat/screens/store/bloc/store_bloc.dart';
@@ -24,10 +25,13 @@ import 'package:tapkat/screens/store/store_screen.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/constants.dart';
 import 'package:tapkat/utilities/size_config.dart';
+import 'package:tapkat/utilities/style.dart';
 import 'package:tapkat/widgets/barter_list_item.dart';
 import 'package:tapkat/widgets/custom_app_bar.dart';
+import 'package:tapkat/widgets/custom_button.dart';
 import 'package:tapkat/widgets/custom_search_bar.dart';
 import 'package:toggle_switch/toggle_switch.dart';
+import 'package:tapkat/utilities/application.dart' as application;
 
 class WishListScreen extends StatefulWidget {
   const WishListScreen({Key? key}) : super(key: key);
@@ -42,10 +46,15 @@ class _WishListScreenState extends State<WishListScreen> {
   final _wishListBloc = WishListBloc();
   final _storeBloc = StoreBloc();
   final _productBloc = ProductBloc();
+  final _profileBloc = ProfileBloc();
   final _keywordTextController = TextEditingController();
   final _refreshController = RefreshController();
   bool _loading = true;
   String _selectedView = 'products';
+
+  final inputTextController = TextEditingController();
+  final focusNode = FocusNode();
+  List<String> _wants = [];
 
   List<LikedProductModel> _products = [];
   LikedProductModel? _lastProduct;
@@ -64,6 +73,7 @@ class _WishListScreenState extends State<WishListScreen> {
 
   @override
   void initState() {
+    _wants = application.currentUserModel!.items_wanted ?? [];
     _wishListBloc.add(InitializeWishListScreen());
     super.initState();
   }
@@ -93,6 +103,12 @@ class _WishListScreenState extends State<WishListScreen> {
                 //     _loading = false;
                 //   });
                 // }
+
+                if (state is UpdateItemsWantedSuccess) {
+                  setState(() {
+                    application.currentUserModel!.items_wanted = _wants;
+                  });
+                }
 
                 if (state is AddLikeSuccess) {
                   _wishListBloc.add(InitializeWishListScreen());
@@ -176,7 +192,7 @@ class _WishListScreenState extends State<WishListScreen> {
                 }
               },
               child: Container(),
-            )
+            ),
           ],
           child: Container(
             color: Color(0xFFEBFBFF),
@@ -201,13 +217,29 @@ class _WishListScreenState extends State<WishListScreen> {
                   ),
                 ),
                 ToggleSwitch(
-                  activeBgColor: [kBackgroundColor],
-                  initialLabelIndex: _selectedView == 'products' ? 0 : 1,
+                  activeBgColor: [
+                    kBackgroundColor,
+                  ],
+                  initialLabelIndex: (() {
+                    switch (_selectedView) {
+                      case 'products':
+                        return 0;
+                      case 'stores':
+                        return 1;
+                      case 'wants':
+                        return 2;
+                    }
+                  }()),
                   minWidth: double.infinity,
                   minHeight: 25.0,
                   borderColor: [Color(0xFFEBFBFF)],
-                  totalSwitches: 2,
+                  totalSwitches: 3,
                   customTextStyles: [
+                    TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: SizeConfig.textScaleFactor * 13,
+                      color: Colors.white,
+                    ),
                     TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: SizeConfig.textScaleFactor * 13,
@@ -220,12 +252,23 @@ class _WishListScreenState extends State<WishListScreen> {
                     ),
                   ],
                   labels: [
-                    'Liked Items',
-                    'Followed Stores',
+                    'Likes',
+                    'Follows',
+                    'Wants',
                   ],
                   onToggle: (index) {
                     setState(() {
-                      _selectedView = index == 0 ? 'products' : 'stores';
+                      switch (index) {
+                        case 0:
+                          _selectedView = 'products';
+                          break;
+                        case 1:
+                          _selectedView = 'stores';
+                          break;
+                        case 2:
+                          _selectedView = 'wants';
+                          break;
+                      }
                     });
                   },
                 ),
@@ -234,9 +277,7 @@ class _WishListScreenState extends State<WishListScreen> {
                     controller: _refreshController,
                     onRefresh: () =>
                         _wishListBloc.add(InitializeWishListScreen()),
-                    child: _selectedView == 'products'
-                        ? _buildLikedItems()
-                        : _buildFollowedStores(),
+                    child: _buildSelectedView(),
                   ),
                 ),
               ],
@@ -245,6 +286,125 @@ class _WishListScreenState extends State<WishListScreen> {
         ),
       ),
     );
+  }
+
+  _buildSelectedView() {
+    switch (_selectedView) {
+      case 'products':
+        return _buildLikedItems();
+      case 'stores':
+        return _buildFollowedStores();
+      default:
+        return _buildWantedItems();
+    }
+  }
+
+  Widget _buildWantedItems() {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 16.0),
+      child: Column(
+        children: [
+          SizedBox(height: 16.0),
+          Text('What products or services are you looking for?',
+              style: Style.subtitle2),
+          SizedBox(height: 15.0),
+          TextFormField(
+            focusNode: focusNode,
+            controller: inputTextController,
+            decoration: InputDecoration(
+              isDense: true,
+              border: UnderlineInputBorder(),
+              focusedBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: kBackgroundColor),
+              ),
+            ),
+            onFieldSubmitted: (val) {
+              if (val.isNotEmpty) {
+                setState(() {
+                  _wants.add(val);
+                });
+                inputTextController.clear();
+                focusNode.requestFocus();
+              }
+            },
+          ),
+          SizedBox(height: 16.0),
+          Expanded(
+            child: Container(
+              width: double.infinity,
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: _wants
+                      .map(
+                        (want) => Container(
+                          margin: EdgeInsets.only(bottom: 8.0),
+                          width: double.infinity,
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 10.0, vertical: 12.0),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10.0),
+                            color: kBackgroundColor,
+                          ),
+                          child: Row(
+                            children: [
+                              Text(
+                                want,
+                                style: Style.subtitle2
+                                    .copyWith(color: Colors.white),
+                              ),
+                              Spacer(),
+                              InkWell(
+                                onTap: () =>
+                                    setState(() => _wants.remove(want)),
+                                child: Icon(
+                                  Icons.close,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                      .toList(),
+                ),
+              ),
+            ),
+          ),
+          Row(
+            children: [
+              // Expanded(
+              //   child: CustomButton(
+              //     enabled: _wants.isNotEmpty,
+              //     bgColor: Colors.red.shade400,
+              //     label: 'Clear',
+              //     onTap: () {
+              //       setState(() {
+              //         _list.clear();
+              //       });
+              //     },
+              //   ),
+              // ),
+              // SizedBox(width: 10.0),
+              Expanded(
+                child: CustomButton(
+                  enabled:
+                      application.currentUserModel!.items_wanted != _wants &&
+                          _wants.isNotEmpty,
+                  bgColor: kBackgroundColor,
+                  label: 'Save',
+                  onTap: () => _onSaveTapped(),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  _onSaveTapped() {
+    _wishListBloc.add(UpdateItemsWanted(_wants));
   }
 
   Widget _buildFollowedStores() {
@@ -304,7 +464,6 @@ class _WishListScreenState extends State<WishListScreen> {
         itemBuilder: (context, product, index) {
           return FittedBox(
             child: BarterListItem(
-              distance: product.distance,
               likeLeftMargin: SizeConfig.screenWidth * 0.09,
               product: ProductModel(
                 productid: product.productid,

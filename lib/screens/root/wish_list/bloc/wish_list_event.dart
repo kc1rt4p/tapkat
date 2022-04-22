@@ -24,3 +24,9 @@ class GetNextFollowedStores extends WishListEvent {
   GetNextFollowedStores(
       {required this.lastStoreId, required this.lastStoreDate});
 }
+
+class UpdateItemsWanted extends WishListEvent {
+  final List<String> wants;
+
+  UpdateItemsWanted(this.wants);
+}

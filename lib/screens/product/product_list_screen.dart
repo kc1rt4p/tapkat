@@ -86,6 +86,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
   @override
   void initState() {
     _setTitle();
+
     _productBloc.add(InitializeAddUpdateProduct());
 
     super.initState();
@@ -101,6 +102,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
     switch (widget.listType) {
       case 'reco':
         _title = 'Recommended For You';
+        sortByOptions.add('Rating');
         break;
       case 'demand':
         _title = 'What\'s Hot?';
@@ -564,6 +566,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
         });
 
     if (distance != null) {
+      lastProduct = null;
       setState(() {
         _selectedRadius = distance;
       });
@@ -633,6 +636,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
         });
 
     if (sortBy != null) {
+      lastProduct = null;
       setState(() {
         _selectedSortBy = sortBy;
       });
@@ -723,6 +727,9 @@ class _ProductListScreenState extends State<ProductListScreen> {
           );
         });
 
+    if (category == null) return;
+
+    lastProduct = null;
     setState(() {
       _selectedCategory = category;
     });

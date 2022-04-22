@@ -35,6 +35,11 @@ class WishListBloc extends Bloc<WishListEvent, WishListState> {
             ));
           }
         }
+
+        if (event is UpdateItemsWanted) {
+          final updated = await _userRepo.updateUserWantedItems(event.wants);
+          if (updated) emit(UpdateItemsWantedSuccess());
+        }
       } catch (e) {
         emit(WishListError(e.toString()));
       }

@@ -40,3 +40,5 @@ class GetNextFollowedStoresSuccess extends WishListState {
 
   GetNextFollowedStoresSuccess(this.storeList);
 }
+
+class UpdateItemsWantedSuccess extends WishListState {}

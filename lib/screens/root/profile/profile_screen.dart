@@ -556,6 +556,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           return FittedBox(
             child: BarterListItem(
               hideDistance: true,
+              showRating: false,
               product: product,
               hideLikeBtn: true,
               onTapped: () async {

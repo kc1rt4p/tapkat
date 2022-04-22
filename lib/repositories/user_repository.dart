@@ -257,6 +257,19 @@ class UserRepository {
     return result.data['status'] == 'SUCCESS';
   }
 
+  Future<bool> updateUserWantedItems(List<String> wants) async {
+    final result = await _apiService.patch(
+      url: 'users/${application.currentUser!.uid}',
+      body: {
+        'psk': "lcp9321p",
+        'userid': application.currentUser!.uid,
+        'items_wanted': wants,
+      },
+    );
+
+    return result.data['status'] == 'SUCCESS';
+  }
+
   Future<bool> updateUserPhoto(String userId, SelectedMedia img) async {
     var formData = FormData.fromMap({
       "psk": "lcp9321p",
