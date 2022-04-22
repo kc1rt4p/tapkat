@@ -1041,10 +1041,7 @@ class _BarterScreenState extends State<BarterScreen> {
                             productname: item.productName,
                             mediaPrimary: MediaPrimaryModel(
                               type: 'image',
-                              url: item.imgUrl != null &&
-                                      item.imgUrl!.isNotEmpty
-                                  ? item.imgUrl!
-                                  : 'https://storage.googleapis.com/map-surf-assets/noimage.jpg',
+                              url_t: item.imgUrl,
                             ),
                             price: item.price != null ? item.price! : 0.00,
                           ),
@@ -1184,10 +1181,7 @@ class _BarterScreenState extends State<BarterScreen> {
                             productname: item.productName,
                             mediaPrimary: MediaPrimaryModel(
                               type: 'image',
-                              url: item.imgUrl != null &&
-                                      item.imgUrl!.isNotEmpty
-                                  ? item.imgUrl!
-                                  : 'https://storage.googleapis.com/map-surf-assets/noimage.jpg',
+                              url_t: item.imgUrl,
                             ),
                             price: item.price != null ? item.price! : 0.00,
                           ),
