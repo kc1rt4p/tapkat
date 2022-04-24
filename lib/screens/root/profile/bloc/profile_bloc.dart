@@ -32,6 +32,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       if (event is InitializeProfileScreen) {
         if (_user != null) {
           final userModel = await _userRepo.getUser(_user.uid);
+          application.currentUserModel = userModel;
           final list = await _productRepo.getFirstProducts(
             'user',
             userId: _user.uid,

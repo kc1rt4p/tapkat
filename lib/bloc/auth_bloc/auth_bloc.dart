@@ -2,6 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_phoenix/flutter_phoenix.dart';
 import 'package:google_maps_webservice/places.dart';
 import 'package:tapkat/models/location.dart';
 import 'package:tapkat/models/request/update_user.dart';
@@ -198,6 +199,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         application.unreadBarterMessages = [];
         signOut();
         emit(AuthSignedOut());
+        Phoenix.rebirth(event.context);
       }
     });
   }

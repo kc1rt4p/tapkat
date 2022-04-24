@@ -373,6 +373,7 @@ class _WishListScreenState extends State<WishListScreen> {
               ),
             ),
           ),
+          SizedBox(height: 10.0),
           Row(
             children: [
               // Expanded(

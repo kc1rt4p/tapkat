@@ -138,14 +138,14 @@ class _ProductListScreenState extends State<ProductListScreen> {
             if (state is InitializeAddUpdateProductSuccess) {
               _categoryList = state.categories;
 
-              if (widget.listType == 'reco' &&
-                  application.currentUserModel!.interests != null &&
-                  application.currentUserModel!.interests!.isNotEmpty) {
-                setState(() {
-                  _selectedCategory = _categoryList.firstWhere((cat) =>
-                      cat.code == application.currentUserModel!.interests![0]);
-                });
-              }
+              // if (widget.listType == 'reco' &&
+              //     application.currentUserModel!.interests != null &&
+              //     application.currentUserModel!.interests!.isNotEmpty) {
+              //   setState(() {
+              //     _selectedCategory = _categoryList.firstWhere((cat) =>
+              //         cat.code == application.currentUserModel!.interests![0]);
+              //   });
+              // }
 
               _productBloc.add(GetFirstProducts(
                 userid: application.currentUser!.uid,
@@ -715,32 +715,28 @@ class _ProductListScreenState extends State<ProductListScreen> {
                       // crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         SizedBox(height: 8.0),
-                        Visibility(
-                          visible: widget.listType != 'reco',
-                          child: ListTile(
-                            title: Text(
-                              'All',
-                              style: TextStyle(
-                                fontSize: SizeConfig.textScaleFactor * 15.0,
-                              ),
+                        ListTile(
+                          title: Text(
+                            'All',
+                            style: TextStyle(
+                              fontSize: SizeConfig.textScaleFactor * 15.0,
                             ),
-                            contentPadding: EdgeInsets.zero,
-                            onTap: () => Navigator.pop(context, null),
-                            selectedColor: Color(0xFFBB3F03),
-                            selected: _selectedCategory == null,
                           ),
+                          contentPadding: EdgeInsets.zero,
+                          onTap: () => Navigator.pop(context, null),
+                          selectedColor: Color(0xFFBB3F03),
+                          selected: _selectedCategory == null,
                         ),
-                        ...(!(widget.listType == 'reco' &&
-                                    application.currentUserModel!.interests !=
-                                        null &&
-                                    application.currentUserModel!.interests!
-                                        .isNotEmpty)
-                                ? _categoryList
-                                : _categoryList.where((cat) => application
-                                    .currentUserModel!.interests!
-                                    .contains(cat.code)))
-                            .where((cat) => cat.type == 'PT1')
-                            .map(
+                        // ...(!(widget.listType == 'reco' &&
+                        //             application.currentUserModel!.interests !=
+                        //                 null &&
+                        //             application.currentUserModel!.interests!
+                        //                 .isNotEmpty)
+                        //         ? _categoryList
+                        //         : _categoryList.where((cat) => application
+                        //             .currentUserModel!.interests!
+                        //             .contains(cat.code)))
+                        ..._categoryList.where((cat) => cat.type == 'PT1').map(
                               (item) => ListTile(
                                 dense: true,
                                 title: Text(

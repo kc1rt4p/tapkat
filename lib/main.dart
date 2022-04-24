@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_phoenix/flutter_phoenix.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
 import 'package:tapkat/models/location.dart';
@@ -18,6 +19,23 @@ import 'package:tapkat/services/auth_service.dart';
 import 'package:geolocator/geolocator.dart' as geoLocator;
 import 'package:tapkat/utilities/application.dart' as application;
 
+_loadUserLocation() async {
+  final per1 = await Permission.location.request();
+  final per2 =
+      await geoLocator.GeolocatorPlatform.instance.isLocationServiceEnabled();
+  if (per1 != PermissionStatus.denied && per2) {
+    final userLoc = await geoLocator.Geolocator.getCurrentPosition();
+    print('-=======< using device location');
+    application.currentUserLocation = LocationModel(
+      latitude: userLoc.latitude,
+      longitude: userLoc.longitude,
+    );
+  } else {
+    print('-=======< using location used on sign up');
+    application.currentUserLocation = application.currentUserModel!.location!;
+  }
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
@@ -27,7 +45,9 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
 
-  runApp(const MyApp());
+  await _loadUserLocation();
+
+  runApp(Phoenix(child: const MyApp()));
 }
 
 class MyApp extends StatefulWidget {
@@ -49,7 +69,8 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     _authBloc = AuthBloc();
     _barterBloc = BarterBloc();
-    _loadUserLocation();
+
+    _authBloc.add(InitializeAuth());
     super.initState();
   }
 
@@ -142,24 +163,5 @@ class _MyAppState extends State<MyApp> {
     _userStream?.cancel();
     _barterBloc.close();
     super.dispose();
-  }
-
-  _loadUserLocation() async {
-    final per1 = await Permission.location.request();
-    final per2 =
-        await geoLocator.GeolocatorPlatform.instance.isLocationServiceEnabled();
-    if (per1 != PermissionStatus.denied && per2) {
-      final userLoc = await geoLocator.Geolocator.getCurrentPosition();
-      print('-=======< using device location');
-      application.currentUserLocation = LocationModel(
-        latitude: userLoc.latitude,
-        longitude: userLoc.longitude,
-      );
-    } else {
-      print('-=======< using location used on sign up');
-      application.currentUserLocation = application.currentUserModel!.location!;
-    }
-
-    _authBloc.add(InitializeAuth());
   }
 }

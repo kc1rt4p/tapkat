@@ -163,7 +163,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       buttonText: 'Yes',
       firstButtonClicked: () {
         Navigator.pop(context);
-        _authBloc.add(SignOut());
+        _authBloc.add(SignOut(context));
       },
       secondButtonText: 'No',
       hideClose: true,

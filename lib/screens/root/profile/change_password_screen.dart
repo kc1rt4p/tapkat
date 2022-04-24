@@ -63,7 +63,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
               buttonText: 'OK',
               firstButtonClicked: () {
                 Navigator.popUntil(context, (route) => route.isFirst);
-                _authBloc.add(SignOut());
+                _authBloc.add(SignOut(context));
               },
             );
           }

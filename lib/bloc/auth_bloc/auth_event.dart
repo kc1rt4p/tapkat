@@ -37,7 +37,11 @@ class SignInFacebook extends AuthEvent {}
 
 class SignInApple extends AuthEvent {}
 
-class SignOut extends AuthEvent {}
+class SignOut extends AuthEvent {
+  final BuildContext context;
+
+  SignOut(this.context);
+}
 
 class SignInWithFB extends AuthEvent {}
 

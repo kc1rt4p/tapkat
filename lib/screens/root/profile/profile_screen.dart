@@ -658,18 +658,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  _onSignOut() {
-    DialogMessage.show(
-      context,
-      title: 'Logout',
-      message: 'Are you sure you want to log out?',
-      buttonText: 'Yes',
-      firstButtonClicked: () => _authBloc.add(SignOut()),
-      secondButtonText: 'No',
-      hideClose: true,
-    );
-  }
-
   Stack _buildPhoto() {
     return Stack(
       children: [

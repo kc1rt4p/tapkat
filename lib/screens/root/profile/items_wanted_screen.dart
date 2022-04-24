@@ -73,128 +73,131 @@ class _ItemsWantedScreenState extends State<ItemsWantedScreen> {
                   height: SizeConfig.screenHeight,
                   padding:
                       EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
-                  child: Column(
-                    children: [
-                      SizedBox(height: SizeConfig.screenHeight * 0.1),
-                      Text('What products or services are you looking for?',
-                          style: Style.subtitle2),
-                      SizedBox(height: 25.0),
-                      TextFormField(
-                        focusNode: focusNode,
-                        controller: inputTextController,
-                        decoration: InputDecoration(
-                          border: UnderlineInputBorder(),
-                          focusedBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(color: kBackgroundColor),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        SizedBox(height: SizeConfig.screenHeight * 0.1),
+                        Text('What products or services are you looking for?',
+                            style: Style.subtitle2),
+                        SizedBox(height: 25.0),
+                        TextFormField(
+                          focusNode: focusNode,
+                          controller: inputTextController,
+                          decoration: InputDecoration(
+                            border: UnderlineInputBorder(),
+                            focusedBorder: UnderlineInputBorder(
+                              borderSide: BorderSide(color: kBackgroundColor),
+                            ),
                           ),
+                          onFieldSubmitted: (val) {
+                            if (val.isNotEmpty) {
+                              setState(() {
+                                _list.add(val);
+                              });
+                              inputTextController.clear();
+                              focusNode.requestFocus();
+                            }
+                          },
                         ),
-                        onFieldSubmitted: (val) {
-                          if (val.isNotEmpty) {
-                            setState(() {
-                              _list.add(val);
-                            });
-                            inputTextController.clear();
-                            focusNode.requestFocus();
-                          }
-                        },
-                      ),
-                      SizedBox(height: 25.0),
-                      Visibility(
-                        visible: _list.isNotEmpty,
-                        child: Container(
-                          padding: EdgeInsets.all(10.0),
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade300,
-                            borderRadius: BorderRadius.circular(10.0),
-                          ),
-                          child: Wrap(
-                            alignment: WrapAlignment.center,
-                            runSpacing: 8.0,
-                            spacing: 8.0,
-                            children: [
-                              ..._list
-                                  .map(
-                                    (val) => InkWell(
-                                      onTap: () {
-                                        setState(() {
-                                          _list.remove(val);
-                                        });
-                                      },
-                                      child: Container(
-                                        padding: EdgeInsets.symmetric(
-                                          horizontal: 10.0,
-                                          vertical: 5.0,
-                                        ),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Text(
-                                              val,
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize:
-                                                    SizeConfig.textScaleFactor *
-                                                        15,
+                        SizedBox(height: 25.0),
+                        Visibility(
+                          visible: _list.isNotEmpty,
+                          child: Container(
+                            padding: EdgeInsets.all(10.0),
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade300,
+                              borderRadius: BorderRadius.circular(10.0),
+                            ),
+                            child: Wrap(
+                              alignment: WrapAlignment.center,
+                              runSpacing: 8.0,
+                              spacing: 8.0,
+                              children: [
+                                ..._list
+                                    .map(
+                                      (val) => InkWell(
+                                        onTap: () {
+                                          setState(() {
+                                            _list.remove(val);
+                                          });
+                                        },
+                                        child: Container(
+                                          padding: EdgeInsets.symmetric(
+                                            horizontal: 10.0,
+                                            vertical: 5.0,
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Text(
+                                                val,
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: SizeConfig
+                                                          .textScaleFactor *
+                                                      15,
+                                                ),
                                               ),
-                                            ),
-                                            SizedBox(width: 5.0),
-                                            Icon(
-                                              Icons.close,
-                                              size: SizeConfig.textScaleFactor *
-                                                  13,
-                                              color: Colors.white,
-                                            ),
-                                          ],
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: Colors.blue,
-                                          borderRadius:
-                                              BorderRadius.circular(15.0),
+                                              SizedBox(width: 5.0),
+                                              Icon(
+                                                Icons.close,
+                                                size:
+                                                    SizeConfig.textScaleFactor *
+                                                        13,
+                                                color: Colors.white,
+                                              ),
+                                            ],
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: Colors.blue,
+                                            borderRadius:
+                                                BorderRadius.circular(15.0),
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                  )
-                                  .toList(),
-                            ],
+                                    )
+                                    .toList(),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                      SizedBox(height: 25.0),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: CustomButton(
-                              label: 'Skip',
-                              onTap: () => _onSaveTapped(),
-                              bgColor: Style.secondaryColor,
+                        SizedBox(height: 25.0),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: CustomButton(
+                                label: 'Skip',
+                                onTap: () => _onSaveTapped(),
+                                bgColor: Style.secondaryColor,
+                              ),
                             ),
-                          ),
-                          SizedBox(width: 10.0),
-                          Expanded(
-                            child: CustomButton(
-                              enabled: _list.isNotEmpty,
-                              bgColor: Colors.red.shade400,
-                              label: 'Clear',
-                              onTap: () {
-                                setState(() {
-                                  _list.clear();
-                                });
-                              },
+                            SizedBox(width: 10.0),
+                            Expanded(
+                              child: CustomButton(
+                                enabled: _list.isNotEmpty,
+                                bgColor: Colors.red.shade400,
+                                label: 'Clear',
+                                onTap: () {
+                                  setState(() {
+                                    _list.clear();
+                                  });
+                                },
+                              ),
                             ),
-                          ),
-                          SizedBox(width: 10.0),
-                          Expanded(
-                            child: CustomButton(
-                              enabled: _list.isNotEmpty,
-                              bgColor: kBackgroundColor,
-                              label: 'Submit',
-                              onTap: () => _onSaveTapped(),
+                            SizedBox(width: 10.0),
+                            Expanded(
+                              child: CustomButton(
+                                enabled: _list.isNotEmpty,
+                                bgColor: kBackgroundColor,
+                                label: 'Submit',
+                                onTap: () => _onSaveTapped(),
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ],
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
