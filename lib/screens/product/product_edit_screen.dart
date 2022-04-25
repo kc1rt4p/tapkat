@@ -346,12 +346,12 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
                                         .toList()
                                         .indexOf(_selectedStatus),
                                     inactiveBgColor: kBackgroundColor,
-                                    minWidth: SizeConfig.screenWidth * 0.27,
+                                    minWidth: SizeConfig.screenWidth * 0.25,
                                     activeFgColor: Colors.black,
                                     inactiveFgColor: Colors.white,
                                     borderColor: [Color(0xFFEBFBFF)],
                                     totalSwitches: productStatusList.length,
-                                    fontSize: SizeConfig.textScaleFactor * 13,
+                                    fontSize: SizeConfig.textScaleFactor * 11,
                                     labels: productStatusList
                                         .map((pt) => pt.toUpperCase())
                                         .toList(),

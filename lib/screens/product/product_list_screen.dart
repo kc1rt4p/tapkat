@@ -761,8 +761,6 @@ class _ProductListScreenState extends State<ProductListScreen> {
           );
         });
 
-    if (category == null) return;
-
     lastProduct = null;
     setState(() {
       _selectedCategory = category;

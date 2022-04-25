@@ -574,13 +574,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   _profileBloc.add(InitializeProfileScreen());
                 }
               },
-              onLikeTapped: (val) {
-                if (val.isNegative) {
-                  _productBloc.add(AddLike(product));
-                } else {
-                  _productBloc.add(Unlike(product));
-                }
-              },
             ),
           );
         },

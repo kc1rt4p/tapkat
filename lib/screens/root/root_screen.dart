@@ -74,7 +74,6 @@ class _RootScreenState extends State<RootScreen> {
   void initState() {
     _barterBloc = BlocProvider.of<BarterBloc>(context);
     _authBloc = BlocProvider.of<AuthBloc>(context);
-    Permission.location.request();
     _authBloc.add(GetCurrentuser());
 
     super.initState();
@@ -265,6 +264,9 @@ class _RootScreenState extends State<RootScreen> {
                 print('ROOT AUTH STATE:::: $state');
                 if (state is GetCurrentUsersuccess) {
                   initNotifications();
+                  if (application.currentUserLocation == null) {
+                    application.currentUserLocation = state.userModel!.location;
+                  }
                   _barterBloc.add(GetUnreadBarterMessages());
                 }
               },

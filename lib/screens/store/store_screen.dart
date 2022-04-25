@@ -288,7 +288,9 @@ class _StoreScreenState extends State<StoreScreen> {
                                     _buildInfoItem(
                                       label: 'Followers',
                                       controller: TextEditingController(
-                                          text: _storeOwner!.likes.toString()),
+                                          text: _storeOwner!.likes != null
+                                              ? _storeOwner!.likes.toString()
+                                              : '0'),
                                     ),
                                     _buildInfoItem(
                                       label: 'Location',
@@ -806,12 +808,8 @@ class _StoreScreenState extends State<StoreScreen> {
         showNewPageProgressIndicatorAsGridChild: false,
         showNewPageErrorIndicatorAsGridChild: false,
         showNoMoreItemsIndicatorAsGridChild: false,
-        padding: EdgeInsets.symmetric(
-          horizontal: 16.0,
-          vertical: 10.0,
-        ),
+        padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 16.0),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          mainAxisSpacing: 16,
           crossAxisCount: 2,
         ),
         builderDelegate: PagedChildBuilderDelegate<ProductModel>(
@@ -964,6 +962,7 @@ class _StoreScreenState extends State<StoreScreen> {
                   color: kBackgroundColor,
                   shape: BoxShape.circle,
                 ),
+                margin: EdgeInsets.only(right: 10.0),
                 child: Icon(
                   FontAwesomeIcons.facebookF,
                   color: Colors.white,
@@ -972,13 +971,13 @@ class _StoreScreenState extends State<StoreScreen> {
               ),
             ),
           ),
-          SizedBox(width: 10.0),
           Visibility(
             visible: _storeOwner!.ig_profile != null &&
                 _storeOwner!.ig_profile!.isNotEmpty,
             child: InkWell(
               onTap: () => _launchURL(_storeOwner!.ig_profile!),
               child: Container(
+                margin: EdgeInsets.only(right: 10.0),
                 height: SizeConfig.screenWidth * .07,
                 width: SizeConfig.screenWidth * .07,
                 decoration: BoxDecoration(
@@ -993,13 +992,13 @@ class _StoreScreenState extends State<StoreScreen> {
               ),
             ),
           ),
-          SizedBox(width: 10.0),
           Visibility(
             visible: _storeOwner!.yt_profile != null &&
                 _storeOwner!.yt_profile!.isNotEmpty,
             child: InkWell(
               onTap: () => _launchURL(_storeOwner!.yt_profile!),
               child: Container(
+                margin: EdgeInsets.only(right: 10.0),
                 height: SizeConfig.screenWidth * .07,
                 width: SizeConfig.screenWidth * .07,
                 decoration: BoxDecoration(
@@ -1014,13 +1013,13 @@ class _StoreScreenState extends State<StoreScreen> {
               ),
             ),
           ),
-          SizedBox(width: 10.0),
           Visibility(
             visible: _storeOwner!.tt_profile != null &&
                 _storeOwner!.tt_profile!.isNotEmpty,
             child: InkWell(
               onTap: () => _launchURL(_storeOwner!.tt_profile!),
               child: Container(
+                margin: EdgeInsets.only(right: 10.0),
                 height: SizeConfig.screenWidth * .07,
                 width: SizeConfig.screenWidth * .07,
                 decoration: BoxDecoration(
@@ -1035,7 +1034,6 @@ class _StoreScreenState extends State<StoreScreen> {
               ),
             ),
           ),
-          SizedBox(width: 10.0),
           Visibility(
             visible: _storeOwner!.tw_profile != null &&
                 _storeOwner!.tw_profile!.isNotEmpty,

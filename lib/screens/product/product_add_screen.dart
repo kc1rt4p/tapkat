@@ -30,6 +30,7 @@ import 'package:tapkat/widgets/custom_app_bar.dart';
 import 'package:tapkat/widgets/custom_button.dart';
 import 'package:tapkat/widgets/custom_textformfield.dart';
 import 'package:toggle_switch/toggle_switch.dart';
+import 'package:tapkat/utilities/application.dart' as application;
 
 class ProductAddScreen extends StatefulWidget {
   const ProductAddScreen({Key? key}) : super(key: key);
@@ -325,50 +326,52 @@ class _ProductAddScreenState extends State<ProductAddScreen> {
     if (await Permission.location.isDenied) return;
     if (!(await geoLocator.GeolocatorPlatform.instance
         .isLocationServiceEnabled())) return;
-    final userLoc = await geoLocator.Geolocator.getCurrentPosition();
-    List<geoCoding.Placemark> placemarks = await geoCoding
-        .placemarkFromCoordinates(userLoc.latitude, userLoc.longitude);
-    if (placemarks.isNotEmpty) {
-      placemarks.forEach((placemark) => print(placemark.toJson()));
-      setState(() {
-        _currentUserLoc = placemarks.first;
-        _currentUserPosition = userLoc;
-        _selectedLocation = PlaceDetails(
-          placeId: '',
-          name: _currentUserLoc!.name ?? '',
-          geometry: Geometry(
-            location: Location(
-              lat: _currentUserPosition!.latitude,
-              lng: _currentUserPosition!.longitude,
+    try {
+      List<geoCoding.Placemark> placemarks =
+          await geoCoding.placemarkFromCoordinates(
+              application.currentUserLocation!.latitude!.toDouble(),
+              application.currentUserLocation!.longitude!.toDouble());
+      if (placemarks.isNotEmpty) {
+        placemarks.forEach((placemark) => print(placemark.toJson()));
+        setState(() {
+          _currentUserLoc = placemarks.first;
+          _selectedLocation = PlaceDetails(
+            placeId: '',
+            name: _currentUserLoc!.name ?? '',
+            geometry: Geometry(
+              location: Location(
+                lat: application.currentUserLocation!.latitude!.toDouble(),
+                lng: application.currentUserLocation!.longitude!.toDouble(),
+              ),
             ),
-          ),
-          addressComponents: [
-            AddressComponent(
-              longName: _currentUserLoc!.street ?? '',
-              types: [],
-              shortName: '',
-            ),
-            AddressComponent(
-              longName: _currentUserLoc!.locality ?? '',
-              types: [],
-              shortName: '',
-            ),
-            AddressComponent(
-              longName: _currentUserLoc!.subAdministrativeArea ?? '',
-              types: [],
-              shortName: '',
-            ),
-            AddressComponent(
-              longName: _currentUserLoc!.country ?? '',
-              types: [],
-              shortName: '',
-            ),
-          ],
-        );
-        _locationTextController.text =
-            '${_currentUserLoc!.street ?? ''}, ${_currentUserLoc!.locality ?? ''}, ${_currentUserLoc!.subAdministrativeArea ?? ''}, ${_currentUserLoc!.country ?? ''}';
-      });
-    }
+            addressComponents: [
+              AddressComponent(
+                longName: _currentUserLoc!.street ?? '',
+                types: [],
+                shortName: '',
+              ),
+              AddressComponent(
+                longName: _currentUserLoc!.locality ?? '',
+                types: [],
+                shortName: '',
+              ),
+              AddressComponent(
+                longName: _currentUserLoc!.subAdministrativeArea ?? '',
+                types: [],
+                shortName: '',
+              ),
+              AddressComponent(
+                longName: _currentUserLoc!.country ?? '',
+                types: [],
+                shortName: '',
+              ),
+            ],
+          );
+          _locationTextController.text =
+              '${_currentUserLoc!.street ?? ''}, ${_currentUserLoc!.locality ?? ''}, ${_currentUserLoc!.subAdministrativeArea ?? ''}, ${_currentUserLoc!.country ?? ''}';
+        });
+      }
+    } catch (e) {}
   }
 
   _onSaveTapped() {

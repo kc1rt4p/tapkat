@@ -20,19 +20,20 @@ import 'package:geolocator/geolocator.dart' as geoLocator;
 import 'package:tapkat/utilities/application.dart' as application;
 
 _loadUserLocation() async {
-  final per1 = await Permission.location.request();
-  final per2 =
-      await geoLocator.GeolocatorPlatform.instance.isLocationServiceEnabled();
-  if (per1 != PermissionStatus.denied && per2) {
-    final userLoc = await geoLocator.Geolocator.getCurrentPosition();
-    print('-=======< using device location');
-    application.currentUserLocation = LocationModel(
-      latitude: userLoc.latitude,
-      longitude: userLoc.longitude,
-    );
-  } else {
-    print('-=======< using location used on sign up');
-    application.currentUserLocation = application.currentUserModel!.location!;
+  try {
+    final per1 = await Permission.location.request();
+    final per2 =
+        await geoLocator.GeolocatorPlatform.instance.isLocationServiceEnabled();
+    if (per1 != PermissionStatus.denied && per2) {
+      final userLoc = await geoLocator.Geolocator.getCurrentPosition();
+      print('-=======< using device location');
+      application.currentUserLocation = LocationModel(
+        latitude: userLoc.latitude,
+        longitude: userLoc.longitude,
+      );
+    }
+  } catch (e) {
+    print('Unable to get current device location::::::: ${e.toString()}');
   }
 }
 

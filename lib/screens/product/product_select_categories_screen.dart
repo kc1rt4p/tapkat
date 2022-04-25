@@ -209,6 +209,7 @@ class _SelectProductCategoryScreenState
       MaterialPageRoute(
         builder: (context) => ProductTradeForScreen(
           list: productRequest.tradefor != null ? productRequest.tradefor! : [],
+          updating: widget.updating,
         ),
       ),
     );

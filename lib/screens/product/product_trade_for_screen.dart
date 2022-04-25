@@ -7,9 +7,11 @@ import 'package:tapkat/widgets/custom_button.dart';
 
 class ProductTradeForScreen extends StatefulWidget {
   final List<String> list;
+  final bool updating;
   const ProductTradeForScreen({
     Key? key,
     required this.list,
+    required this.updating,
   }) : super(key: key);
 
   @override
@@ -33,7 +35,9 @@ class _ProductTradeForScreenState extends State<ProductTradeForScreen> {
     return Scaffold(
       body: Column(
         children: [
-          CustomAppBar(),
+          CustomAppBar(
+            label: widget.updating ? 'Edit Product' : 'Add to Your Store',
+          ),
           Expanded(
             child: Container(
               width: SizeConfig.screenWidth,
@@ -55,7 +59,7 @@ class _ProductTradeForScreenState extends State<ProductTradeForScreen> {
                       ),
                     ),
                     onFieldSubmitted: (val) {
-                      if (val != null) {
+                      if (val.isNotEmpty) {
                         setState(() {
                           _list.add(val);
                         });
@@ -95,6 +99,12 @@ class _ProductTradeForScreenState extends State<ProductTradeForScreen> {
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
+                                        Icon(
+                                          Icons.close,
+                                          size: SizeConfig.textScaleFactor * 13,
+                                          color: Colors.white,
+                                        ),
+                                        SizedBox(width: 5.0),
                                         Text(
                                           val,
                                           style: TextStyle(
@@ -102,12 +112,6 @@ class _ProductTradeForScreenState extends State<ProductTradeForScreen> {
                                             fontSize:
                                                 SizeConfig.textScaleFactor * 15,
                                           ),
-                                        ),
-                                        SizedBox(width: 5.0),
-                                        Icon(
-                                          Icons.close,
-                                          size: SizeConfig.textScaleFactor * 13,
-                                          color: Colors.white,
                                         ),
                                       ],
                                     ),

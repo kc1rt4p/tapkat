@@ -135,56 +135,29 @@ class _StoreListScreenState extends State<StoreListScreen> {
                   vertical: 10.0,
                 ),
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  mainAxisSpacing: 16,
+                  mainAxisSpacing: 10,
+                  crossAxisSpacing: 16,
                   crossAxisCount: 2,
                 ),
                 builderDelegate: PagedChildBuilderDelegate<StoreModel>(
                   itemBuilder: (context, store, index) {
-                    return Center(
-                      child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-                          stream: barterRef
-                              .where('userid', isEqualTo: store.userid)
-                              .where('likerid',
-                                  isEqualTo:
-                                      application.currentUserModel!.userid)
-                              .snapshots(),
-                          builder: (context, snapshot) {
-                            bool liked = false;
-
-                            print(snapshot.data);
-
-                            if (snapshot.data != null) {
-                              if (snapshot.data!.docs.isNotEmpty) liked = true;
-                            }
-
-                            return StoreListItem(
-                              StoreModel(
-                                display_name: store.display_name,
-                                userid: store.userid,
-                                photo_url: store.photo_url,
-                              ),
-                              liked: liked,
-                              onLikeTapped: () => _storeBloc.add(
-                                EditUserLike(
-                                  user: UserModel(
-                                    display_name: store.display_name,
-                                    userid: store.userid,
-                                    photo_url: store.photo_url,
-                                  ),
-                                  likeCount: liked ? -1 : 1,
-                                ),
-                              ),
-                              onTap: () => Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => StoreScreen(
-                                    userId: store.userid!,
-                                    userName: store.display_name!,
-                                  ),
-                                ),
-                              ),
-                            );
-                          }),
+                    return FittedBox(
+                      child: StoreListItem(
+                        StoreModel(
+                          display_name: store.display_name,
+                          userid: store.userid,
+                          photo_url: store.photo_url,
+                        ),
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => StoreScreen(
+                              userId: store.userid!,
+                              userName: store.display_name!,
+                            ),
+                          ),
+                        ),
+                      ),
                     );
                   },
                 ),
