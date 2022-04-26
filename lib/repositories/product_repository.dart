@@ -99,7 +99,6 @@ class ProductRepository {
     final response = await _apiService.post(
       url: 'products/review/get',
       body: {
-        'psk': psk,
         'userid': userId,
         'productid': productId,
       },
@@ -114,7 +113,6 @@ class ProductRepository {
   Future<bool> updateProductReview(ProductReviewModel productReview) async {
     final response =
         await _apiService.patch(url: 'products/review/update', body: {
-      'psk': psk,
       ...productReview.toJson(),
     });
 
@@ -193,7 +191,6 @@ class ProductRepository {
     final response = await _apiService.post(
       url: 'products/review/searchfirst',
       body: {
-        'psk': psk,
         productId != null ? 'productid' : 'userid': productId ?? userId,
         'sortby': 'date',
         'sortdirection': 'descending',
@@ -217,7 +214,6 @@ class ProductRepository {
     final response = await _apiService.post(
       url: 'products/review/searchSet',
       body: {
-        'psk': psk,
         productId != null ? 'productid' : 'userid': productId ?? userId,
         'sortby': 'date',
         'sortdirection': 'descending',
@@ -246,7 +242,6 @@ class ProductRepository {
     int radius = 5000,
   }) async {
     var body = {
-      'psk': psk,
       'userid': userId,
       'productcount': productCount,
     };
@@ -321,7 +316,6 @@ class ProductRepository {
   Future<List<ProductModel>> getCategoryProducts(List<String> categories,
       [String? userid]) async {
     var _body = {
-      'psk': psk,
       'sortby': 'distance',
       'type': 'PT1',
       'userid': userid,
@@ -356,7 +350,6 @@ class ProductRepository {
   }) async {
     if (listType == 'reco') {}
     var body = {
-      'psk': psk,
       'userid': userId,
       'productcount': productCount,
     };
@@ -423,7 +416,6 @@ class ProductRepository {
     final response = await _apiService.post(
       url: 'products/update/${product.productid}',
       body: {
-        'psk': psk,
         ...product.toJson(updating: true),
       },
     );
@@ -434,7 +426,6 @@ class ProductRepository {
   Future<bool> deleteImages(
       List<String> urls, String userId, String productId) async {
     var body = {
-      'psk': psk,
       'userid': userId,
       'productid': productId,
     };
@@ -465,7 +456,6 @@ class ProductRepository {
       required LocationModel location,
       int radius = 5000}) async {
     var _body = {
-      'psk': psk,
       'sortby':
           sortBy.toLowerCase() == 'name' ? 'productname' : sortBy.toLowerCase(),
       'sortdirection':
@@ -501,7 +491,6 @@ class ProductRepository {
     final response = await _apiService.post(url: 'products/wishlist', body: {
       'userid': userId,
       'productid': productId,
-      'psk': psk,
     });
 
     return response.data['status'] == 'SUCCESS';
@@ -511,7 +500,6 @@ class ProductRepository {
     final response = await _apiService.delete(
       url: 'products/review/delete',
       body: {
-        'psk': psk,
         'productid': review.productid,
         'userid': application.currentUser!.uid,
       },
@@ -528,7 +516,6 @@ class ProductRepository {
     final response = await _apiService.post(
       url: 'products/update/${productRequest.productid}',
       body: {
-        'psk': psk,
         ...productRequest.toJson(updating: true),
         'rating': rating,
       },
@@ -546,7 +533,6 @@ class ProductRepository {
     final response = await _apiService.post(
       url: 'products/like',
       body: {
-        'psk': psk,
         'productid': productRequest.productid,
         'productname': productRequest.productname,
         'userid': userId,

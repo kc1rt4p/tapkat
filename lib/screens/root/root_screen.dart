@@ -19,8 +19,10 @@ import 'package:tapkat/screens/root/home/home_screen.dart';
 import 'package:tapkat/screens/root/profile/profile_screen.dart';
 import 'package:tapkat/screens/root/wish_list/wish_list_screen.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
+import 'package:tapkat/utilities/dialog_message.dart';
 import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/utilities/application.dart' as application;
+import 'package:tapkat/utilities/style.dart';
 
 import 'bloc/root_bloc.dart';
 
@@ -330,6 +332,17 @@ class _RootScreenState extends State<RootScreen> {
   }
 
   _onAddTapped() async {
+    if (!application.currentUser!.emailVerified) {
+      DialogMessage.show(
+        context,
+        message:
+            'Click on the verification link sent to your email address: ${application.currentUser!.email}',
+        buttonText: 'Resend',
+        firstButtonClicked: () => _authBloc.add(ResendEmail()),
+      );
+      return;
+    }
+
     await Navigator.push(
       context,
       MaterialPageRoute(
@@ -406,6 +419,16 @@ class _RootScreenState extends State<RootScreen> {
     return Expanded(
       child: InkWell(
         onTap: () {
+          if (index == 2 && !application.currentUser!.emailVerified) {
+            DialogMessage.show(
+              context,
+              message:
+                  'Click on the verification link sent to your email address: ${application.currentUser!.email}',
+              buttonText: 'Resend',
+              firstButtonClicked: () => _authBloc.add(ResendEmail()),
+            );
+            return;
+          }
           setState(() {
             _currentIndex = index;
           });

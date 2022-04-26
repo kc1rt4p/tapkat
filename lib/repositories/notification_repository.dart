@@ -17,7 +17,6 @@ class NotificationRepository {
     required String barterId,
   }) async {
     final response = await _apiService.post(url: 'alert', body: {
-      'psk': psk,
       'title': title,
       'body': body,
       'sender': sender,

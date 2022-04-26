@@ -34,6 +34,8 @@ import 'package:tapkat/utilities/style.dart';
 import 'package:tapkat/utilities/upload_media.dart';
 import 'package:tapkat/widgets/barter_list_item.dart';
 import 'package:tapkat/widgets/custom_app_bar.dart';
+import 'package:tapkat/utilities/application.dart' as application;
+import 'package:tapkat/widgets/custom_button.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -205,6 +207,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: Icon(
                       FontAwesomeIcons.bell,
                       color: Colors.white,
+                    ),
+                  ),
+                ),
+                Visibility(
+                  visible: !application.currentUser!.emailVerified,
+                  child: Container(
+                    width: double.infinity,
+                    color: Style.secondaryColor,
+                    padding: EdgeInsets.all(5.0),
+                    child: Center(
+                      child: Text(
+                        'Your email is not yet verified\nSome features will not be available',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: SizeConfig.textScaleFactor * 12),
+                      ),
                     ),
                   ),
                 ),
@@ -399,26 +419,78 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     ],
                                   ),
                                 ),
-                                Expanded(
-                                  child: Container(
-                                    width: double.infinity,
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        InkWell(
-                                          onTap: () => Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) =>
-                                                  UserRatingsScreen(
-                                                      user: _userModel!),
+                                Visibility(
+                                  visible:
+                                      !application.currentUser!.emailVerified,
+                                  child: CustomButton(
+                                    label: 'Verify your account',
+                                    onTap: () {
+                                      DialogMessage.show(
+                                        context,
+                                        message:
+                                            'Click on the verification link sent to your email address: ${application.currentUser!.email}',
+                                        buttonText: 'Resend',
+                                        firstButtonClicked: () =>
+                                            _authBloc.add(ResendEmail()),
+                                      );
+                                      return;
+                                    },
+                                  ),
+                                ),
+                                Visibility(
+                                  visible:
+                                      application.currentUser!.emailVerified,
+                                  child: Expanded(
+                                    child: Container(
+                                      width: double.infinity,
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          InkWell(
+                                            onTap: () => Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    UserRatingsScreen(
+                                                        user: _userModel!),
+                                              ),
+                                            ),
+                                            child: Container(
+                                              width: double.infinity,
+                                              margin:
+                                                  EdgeInsets.only(bottom: 8.0),
+                                              decoration: BoxDecoration(
+                                                color: kBackgroundColor,
+                                                borderRadius:
+                                                    BorderRadius.circular(10.0),
+                                              ),
+                                              padding: EdgeInsets.symmetric(
+                                                vertical: 5.0,
+                                                horizontal: 10.0,
+                                              ),
+                                              child: Row(
+                                                children: [
+                                                  Text(
+                                                    'Reviewed Products & Users',
+                                                    style: Style.subtitle2
+                                                        .copyWith(
+                                                            color:
+                                                                Colors.white),
+                                                  ),
+                                                  Spacer(),
+                                                  Icon(
+                                                    FontAwesomeIcons
+                                                        .chevronRight,
+                                                    color: Colors.white,
+                                                    size: 18.0,
+                                                  ),
+                                                ],
+                                              ),
                                             ),
                                           ),
-                                          child: Container(
+                                          Container(
                                             width: double.infinity,
-                                            margin:
-                                                EdgeInsets.only(bottom: 8.0),
                                             decoration: BoxDecoration(
                                               color: kBackgroundColor,
                                               borderRadius:
@@ -431,68 +503,55 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                             child: Row(
                                               children: [
                                                 Text(
-                                                  'Reviewed Products & Users',
+                                                  'Products',
                                                   style: Style.subtitle2
                                                       .copyWith(
                                                           color: Colors.white),
                                                 ),
                                                 Spacer(),
-                                                Icon(
-                                                  FontAwesomeIcons.chevronRight,
-                                                  color: Colors.white,
-                                                  size: 18.0,
+                                                GestureDetector(
+                                                  onTap: () async {
+                                                    if (!application
+                                                        .currentUser!
+                                                        .emailVerified) {
+                                                      DialogMessage.show(
+                                                        context,
+                                                        message:
+                                                            'Click on the verification link sent to your email address: ${application.currentUser!.email}',
+                                                        buttonText: 'Resend',
+                                                        firstButtonClicked:
+                                                            () => _authBloc.add(
+                                                                ResendEmail()),
+                                                      );
+                                                      return;
+                                                    }
+                                                    await Navigator.push(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            ProductAddScreen(),
+                                                      ),
+                                                    );
+
+                                                    _profileBloc.add(
+                                                        InitializeProfileScreen());
+                                                  },
+                                                  child: Icon(
+                                                    FontAwesomeIcons.plus,
+                                                    color: Colors.white,
+                                                    size: 18.0,
+                                                  ),
                                                 ),
                                               ],
                                             ),
                                           ),
-                                        ),
-                                        Container(
-                                          width: double.infinity,
-                                          decoration: BoxDecoration(
-                                            color: kBackgroundColor,
-                                            borderRadius:
-                                                BorderRadius.circular(10.0),
+                                          Expanded(
+                                            child: Container(
+                                              child: _buildGridView(),
+                                            ),
                                           ),
-                                          padding: EdgeInsets.symmetric(
-                                            vertical: 5.0,
-                                            horizontal: 10.0,
-                                          ),
-                                          child: Row(
-                                            children: [
-                                              Text(
-                                                'Products',
-                                                style: Style.subtitle2.copyWith(
-                                                    color: Colors.white),
-                                              ),
-                                              Spacer(),
-                                              GestureDetector(
-                                                onTap: () async {
-                                                  await Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                      builder: (context) =>
-                                                          ProductAddScreen(),
-                                                    ),
-                                                  );
-
-                                                  _profileBloc.add(
-                                                      InitializeProfileScreen());
-                                                },
-                                                child: Icon(
-                                                  FontAwesomeIcons.plus,
-                                                  color: Colors.white,
-                                                  size: 18.0,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        Expanded(
-                                          child: Container(
-                                            child: _buildGridView(),
-                                          ),
-                                        ),
-                                      ],
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ),

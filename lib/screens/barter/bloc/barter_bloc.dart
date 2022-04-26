@@ -452,7 +452,6 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
 }
 
 final home = {
-  'psk': 'lcp9321p',
   'userid': 'bt5cnkJUqpRm4jtguOWPYTovDrz1',
   'productcount': 10,
   'location': {

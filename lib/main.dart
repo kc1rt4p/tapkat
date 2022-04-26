@@ -142,12 +142,7 @@ class _MyAppState extends State<MyApp> {
                 builder: (context, snapshot) {
                   if (snapshot.hasData) {
                     if (snapshot.data != null) {
-                      final user = snapshot.data;
-                      if (user!.emailVerified) {
-                        return RootScreen();
-                      } else {
-                        return EmailVerificationScreen();
-                      }
+                      return RootScreen();
                     }
                   }
 

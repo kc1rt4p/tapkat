@@ -58,6 +58,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   ProductModel? _product;
   User? _user;
   UserModel? _userModel;
+  final _authBloc = AuthBloc();
 
   LatLng? googleMapsCenter;
   late LocationModel _location;
@@ -690,8 +691,19 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                         child: CustomButton(
                                           label: 'BARTER',
                                           onTap: () {
-                                            print(
-                                                '=====-==== ${_product!.toJson()}');
+                                            if (!application
+                                                .currentUser!.emailVerified) {
+                                              DialogMessage.show(
+                                                context,
+                                                message:
+                                                    'Click on the verification link sent to your email address: ${application.currentUser!.email}',
+                                                buttonText: 'Resend',
+                                                firstButtonClicked: () =>
+                                                    _authBloc
+                                                        .add(ResendEmail()),
+                                              );
+                                              return;
+                                            }
                                             Navigator.push(
                                               context,
                                               MaterialPageRoute(

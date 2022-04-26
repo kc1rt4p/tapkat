@@ -27,7 +27,6 @@ class UserRepository {
   Future<bool> updateUserFCMToken() async {
     final updated = await _apiService
         .patch(url: 'users/${application.currentUser!.uid}', body: {
-      'psk': psk,
       'userid': application.currentUser!.uid,
       'regtoken': await FirebaseMessaging.instance.getToken(),
     });
@@ -38,7 +37,6 @@ class UserRepository {
   Future<bool> updatePushAlert(bool enable) async {
     final updated = await _apiService
         .patch(url: 'users/${application.currentUser!.uid}', body: {
-      'psk': psk,
       'userid': application.currentUser!.uid,
       'pushalert': enable ? 'Y' : 'N',
     });
@@ -50,7 +48,6 @@ class UserRepository {
     final result = await _apiService.post(
       url: 'users/review',
       body: {
-        'psk': psk,
         ...review.toJson(),
       },
     );
@@ -62,7 +59,6 @@ class UserRepository {
     final result = await _apiService.delete(
       url: 'users/review/delete',
       body: {
-        'psk': psk,
         'userid': review.userid,
         'reviewerid': review.reviewerid,
       },
@@ -74,7 +70,6 @@ class UserRepository {
   Future<List<UserReviewModel>> getUserReviews(
       String? userid, String? reviewerid) async {
     var _body = {
-      'psk': psk,
       'sortby': 'date',
       'sortdirection': 'descending',
       'productCount': 10,
@@ -113,7 +108,6 @@ class UserRepository {
     final result = await _apiService.post(
       url: 'users/storelikes/searchfirst',
       body: {
-        'psk': psk,
         'likerid': likerId,
         'itemcount': productCount,
       },
@@ -134,7 +128,6 @@ class UserRepository {
     final result = await _apiService.post(
       url: 'users/storelikes/searchfirst',
       body: {
-        'psk': psk,
         'likerid': likerId,
         'itemcount': productCount,
         'startafterval': startAfterVal,
@@ -195,7 +188,6 @@ class UserRepository {
     String startAfterVal,
   ) async {
     var _body = {
-      'psk': psk,
       'sortby': 'date',
       'sortdirection': 'descending',
       'productCount': 10,
@@ -221,7 +213,6 @@ class UserRepository {
     final result = await _apiService.post(
       url: 'users/review/get',
       body: {
-        'psk': psk,
         'userid': userId,
         'reviewerid': reviewerId,
       },
@@ -237,7 +228,6 @@ class UserRepository {
     final result = await _apiService.patch(
       url: 'users/review/update',
       body: {
-        'psk': psk,
         ...review.toJson(),
       },
     );
@@ -249,7 +239,6 @@ class UserRepository {
     final result = await _apiService.patch(
       url: 'users/${user.userid}',
       body: {
-        'psk': "lcp9321p",
         ...user.toJson(),
       },
     );
@@ -261,7 +250,6 @@ class UserRepository {
     final result = await _apiService.patch(
       url: 'users/${application.currentUser!.uid}',
       body: {
-        'psk': "lcp9321p",
         'userid': application.currentUser!.uid,
         'items_wanted': wants,
       },

@@ -1,6 +1,6 @@
 // Config
-const defaultConnectTimeout = 30000;
-const defaultReceiveTimeout = 30000;
+const defaultConnectTimeout = 10000;
+const defaultReceiveTimeout = 10000;
 const baseURL = 'https://api.cloud-next.com.au/';
 const productCount = 10;
 

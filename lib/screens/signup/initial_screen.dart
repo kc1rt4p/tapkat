@@ -19,6 +19,7 @@ import 'package:tapkat/utilities/upload_media.dart';
 import 'package:tapkat/widgets/custom_app_bar.dart';
 import 'package:tapkat/widgets/custom_button.dart';
 import 'package:tapkat/widgets/custom_textformfield.dart';
+import 'package:tapkat/utilities/application.dart' as application;
 
 class InitialSignUpScreen extends StatefulWidget {
   const InitialSignUpScreen({Key? key}) : super(key: key);
@@ -329,52 +330,51 @@ class _InitialSignUpScreenState extends State<InitialSignUpScreen> {
   }
 
   _loadUserLocation() async {
-    if (await Permission.location.isDenied) return;
-    if (!(await geoLocator.GeolocatorPlatform.instance
-        .isLocationServiceEnabled())) return;
-    final userLoc = await geoLocator.Geolocator.getCurrentPosition();
-    List<geoCoding.Placemark> placemarks = await geoCoding
-        .placemarkFromCoordinates(userLoc.latitude, userLoc.longitude);
-    if (placemarks.isNotEmpty) {
-      placemarks.forEach((placemark) => print(placemark.toJson()));
-      setState(() {
-        _currentUserLoc = placemarks.first;
-        _currentUserPosition = userLoc;
-        _selectedLocation = PlaceDetails(
-          placeId: '',
-          name: _currentUserLoc!.name ?? '',
-          geometry: Geometry(
-            location: Location(
-              lat: _currentUserPosition!.latitude,
-              lng: _currentUserPosition!.longitude,
+    if (application.currentUserLocation != null) {
+      final position = application.currentUserLocation;
+      List<geoCoding.Placemark> placemarks =
+          await geoCoding.placemarkFromCoordinates(
+              position!.latitude!.toDouble(), position.longitude!.toDouble());
+      if (placemarks.isNotEmpty) {
+        placemarks.forEach((placemark) => print(placemark.toJson()));
+        setState(() {
+          _currentUserLoc = placemarks.first;
+          _selectedLocation = PlaceDetails(
+            placeId: '',
+            name: _currentUserLoc!.name ?? '',
+            geometry: Geometry(
+              location: Location(
+                lat: _currentUserPosition!.latitude,
+                lng: _currentUserPosition!.longitude,
+              ),
             ),
-          ),
-          addressComponents: [
-            AddressComponent(
-              longName: _currentUserLoc!.street ?? '',
-              types: [],
-              shortName: '',
-            ),
-            AddressComponent(
-              longName: _currentUserLoc!.locality ?? '',
-              types: [],
-              shortName: '',
-            ),
-            AddressComponent(
-              longName: _currentUserLoc!.subAdministrativeArea ?? '',
-              types: [],
-              shortName: '',
-            ),
-            AddressComponent(
-              longName: _currentUserLoc!.country ?? '',
-              types: [],
-              shortName: '',
-            ),
-          ],
-        );
-        _locationTextController.text =
-            '${_currentUserLoc!.street ?? ''}, ${_currentUserLoc!.locality ?? ''}, ${_currentUserLoc!.subAdministrativeArea ?? ''}, ${_currentUserLoc!.country ?? ''}';
-      });
+            addressComponents: [
+              AddressComponent(
+                longName: _currentUserLoc!.street ?? '',
+                types: [],
+                shortName: '',
+              ),
+              AddressComponent(
+                longName: _currentUserLoc!.locality ?? '',
+                types: [],
+                shortName: '',
+              ),
+              AddressComponent(
+                longName: _currentUserLoc!.subAdministrativeArea ?? '',
+                types: [],
+                shortName: '',
+              ),
+              AddressComponent(
+                longName: _currentUserLoc!.country ?? '',
+                types: [],
+                shortName: '',
+              ),
+            ],
+          );
+          _locationTextController.text =
+              '${_currentUserLoc!.street ?? ''}, ${_currentUserLoc!.locality ?? ''}, ${_currentUserLoc!.subAdministrativeArea ?? ''}, ${_currentUserLoc!.country ?? ''}';
+        });
+      }
     }
   }
 }
