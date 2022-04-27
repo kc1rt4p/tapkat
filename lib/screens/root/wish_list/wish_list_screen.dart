@@ -73,8 +73,8 @@ class _WishListScreenState extends State<WishListScreen> {
 
   @override
   void initState() {
-    _wants = application.currentUserModel!.items_wanted ?? [];
-    _origWants = application.currentUserModel!.items_wanted ?? [];
+    _wants = List.from(application.currentUserModel!.items_wanted ?? []);
+    _origWants = List.from(application.currentUserModel!.items_wanted ?? []);
     _wishListBloc.add(InitializeWishListScreen());
     super.initState();
   }
@@ -107,7 +107,8 @@ class _WishListScreenState extends State<WishListScreen> {
 
                 if (state is UpdateItemsWantedSuccess) {
                   setState(() {
-                    application.currentUserModel!.items_wanted = _wants;
+                    application.currentUserModel!.items_wanted =
+                        List.from(_wants);
                   });
                 }
 
@@ -391,7 +392,7 @@ class _WishListScreenState extends State<WishListScreen> {
               // SizedBox(width: 10.0),
               Expanded(
                 child: CustomButton(
-                  enabled: _origWants != _wants,
+                  enabled: _origWants.length != _wants.length,
                   bgColor: kBackgroundColor,
                   label: 'Save',
                   onTap: () => _onSaveTapped(),
