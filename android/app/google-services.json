@@ -98,6 +98,14 @@
           }
         },
         {
+          "client_id": "317757606033-vh6v9teicuse017sq8mqsmksc9tgbm2r.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.flutterflow.tapkat",
+            "certificate_hash": "5a93a68063a174f0e821b23e588fdbeb8e5defbc"
+          }
+        },
+        {
           "client_id": "317757606033-p9b7vne6jlfmioiv0n11rl0qk5kfbvvc.apps.googleusercontent.com",
           "client_type": 3
         }

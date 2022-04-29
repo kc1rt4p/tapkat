@@ -19,7 +19,7 @@ class ApiService {
   ApiService();
 
   _init() async {
-    final deviceid = await _getId();
+    final deviceid = application.deviceId ?? await getDeviceId();
     final userid = application.currentUser!.uid;
     final time = DateTime.now().millisecondsSinceEpoch;
 
@@ -109,7 +109,7 @@ class ApiService {
     return response;
   }
 
-  Future<String?> _getId() async {
+  static Future<String?> getDeviceId() async {
     var deviceInfo = DeviceInfoPlugin();
     if (Platform.isIOS) {
       // import 'dart:io'

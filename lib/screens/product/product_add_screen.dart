@@ -79,246 +79,262 @@ class _ProductAddScreenState extends State<ProductAddScreen> {
   Widget build(BuildContext context) {
     SizeConfig().init(context);
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: ProgressHUD(
-          indicatorColor: kBackgroundColor,
-          backgroundColor: Colors.white,
-          barrierEnabled: false,
-          child: MultiBlocListener(
-            listeners: [
-              BlocListener(
-                bloc: _authBloc,
-                listener: (context, state) {
-                  if (state is AuthLoading) {
-                    ProgressHUD.of(context)!.show();
-                  } else {
-                    ProgressHUD.of(context)!.dismiss();
-                  }
+        indicatorColor: kBackgroundColor,
+        backgroundColor: Colors.white,
+        barrierEnabled: false,
+        child: MultiBlocListener(
+          listeners: [
+            BlocListener(
+              bloc: _authBloc,
+              listener: (context, state) {
+                if (state is AuthLoading) {
+                  ProgressHUD.of(context)!.show();
+                } else {
+                  ProgressHUD.of(context)!.dismiss();
+                }
 
-                  if (state is GetCurrentUsersuccess) {
-                    setState(() {
-                      _user = state.user;
-                    });
+                if (state is GetCurrentUsersuccess) {
+                  setState(() {
+                    _user = state.user;
+                  });
 
-                    _productBloc.add(InitializeAddUpdateProduct());
-                  }
-                },
-              ),
-              BlocListener(
-                bloc: _productBloc,
-                listener: (context, state) async {
-                  if (state is ProductLoading) {
-                    ProgressHUD.of(context)!.show();
-                  } else {
-                    ProgressHUD.of(context)!.dismiss();
-                  }
+                  _productBloc.add(InitializeAddUpdateProduct());
+                }
+              },
+            ),
+            BlocListener(
+              bloc: _productBloc,
+              listener: (context, state) async {
+                if (state is ProductLoading) {
+                  ProgressHUD.of(context)!.show();
+                } else {
+                  ProgressHUD.of(context)!.dismiss();
+                }
 
-                  if (state is InitializeAddUpdateProductSuccess) {
-                    setState(() {
-                      _productCategories = state.categories;
-                      _productTypes = state.types;
-                      _selectedOfferType = _productTypes[0].code;
-                    });
-                  }
+                if (state is InitializeAddUpdateProductSuccess) {
+                  setState(() {
+                    _productCategories = state.categories;
+                    _productTypes = state.types;
+                    _selectedOfferType = _productTypes[0].code;
+                  });
+                }
 
-                  if (state is SaveProductSuccess) {
-                    await DialogMessage.show(context,
-                        message: 'An offer has been added');
+                if (state is SaveProductSuccess) {
+                  await DialogMessage.show(context,
+                      message: 'An offer has been added');
 
-                    Navigator.pop(context);
-                  }
+                  Navigator.pop(context);
+                }
 
-                  if (state is ProductError) {
-                    print('====ERROR PRODUCT BLOC: ${state.message}');
-                  }
-                },
-              ),
-            ],
-            child: Container(
-              color: Color(0xFFEBFBFF),
-              child: Column(
-                children: [
-                  CustomAppBar(
-                    label: 'Add to Your Store',
-                  ),
-                  Expanded(
-                    child: Container(
-                      width: double.infinity,
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 30.0,
-                        vertical: 10.0,
-                      ),
-                      child: SingleChildScrollView(
-                        child: Form(
-                          key: _formKey,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Add a product, event or service you want to offer',
-                                style: Style.bodyText2,
-                              ),
-                              SizedBox(height: 10.0),
-                              _buildPhoto(),
-                              Visibility(
-                                visible: showImageError,
-                                child: Text(
-                                  'Please select image(s) of your offer',
-                                  style: TextStyle(
-                                    fontSize: 12.0,
-                                    color: Colors.red.shade400,
-                                    fontStyle: FontStyle.italic,
-                                  ),
+                if (state is ProductError) {
+                  print('====ERROR PRODUCT BLOC: ${state.message}');
+                }
+              },
+            ),
+          ],
+          child: Container(
+            color: Color(0xFFEBFBFF),
+            child: Column(
+              children: [
+                CustomAppBar(
+                  label: 'Add to Your Store',
+                ),
+                Expanded(
+                  child: Container(
+                    width: double.infinity,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 30.0,
+                      vertical: 10.0,
+                    ),
+                    child: SingleChildScrollView(
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Add a product, event or service you want to offer',
+                              style: Style.bodyText2,
+                            ),
+                            SizedBox(height: 10.0),
+                            _buildPhoto(),
+                            Visibility(
+                              visible: showImageError,
+                              child: Text(
+                                'Please select image(s) of your offer',
+                                style: TextStyle(
+                                  fontSize: 12.0,
+                                  color: Colors.red.shade400,
+                                  fontStyle: FontStyle.italic,
                                 ),
                               ),
-                              SizedBox(height: 16.0),
-                              CustomTextFormField(
-                                label: 'Name',
-                                hintText: 'Enter your offer\'s name',
-                                controller: _nameTextController,
-                                color: kBackgroundColor,
-                                validator: (val) => val != null && val.isEmpty
-                                    ? 'Required'
-                                    : null,
-                              ),
-                              Container(
-                                margin: EdgeInsets.only(bottom: 16),
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Expanded(
-                                      child: CustomTextFormField(
-                                        label: 'Price',
-                                        hintText: 'Enter the price you want',
-                                        controller: _priceTextController,
-                                        color: kBackgroundColor,
-                                        validator: (val) =>
-                                            val != null && val.isEmpty
-                                                ? 'Required'
-                                                : null,
-                                        keyboardType: TextInputType.number,
-                                        isReadOnly: isFree,
-                                        removeMargin: true,
-                                      ),
+                            ),
+                            SizedBox(height: 16.0),
+                            CustomTextFormField(
+                              label: 'Name',
+                              hintText: 'Enter your offer\'s name',
+                              controller: _nameTextController,
+                              color: kBackgroundColor,
+                              validator: (val) => val != null && val.isEmpty
+                                  ? 'Required'
+                                  : null,
+                            ),
+                            Container(
+                              margin: EdgeInsets.only(bottom: 16),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Expanded(
+                                    child: CustomTextFormField(
+                                      label: 'Price',
+                                      hintText: 'Enter the price you want',
+                                      controller: _priceTextController,
+                                      color: kBackgroundColor,
+                                      validator: (val) =>
+                                          val != null && val.isEmpty
+                                              ? 'Required'
+                                              : null,
+                                      keyboardType: TextInputType.number,
+                                      isReadOnly: isFree,
+                                      removeMargin: true,
                                     ),
-                                    SizedBox(width: 10.0),
-                                    Column(
-                                      children: [
-                                        Text('FREE',
-                                            style: TextStyle(
-                                              fontSize:
-                                                  SizeConfig.textScaleFactor *
-                                                      13,
-                                              color: kBackgroundColor,
-                                              fontWeight: FontWeight.w600,
-                                            )),
-                                        SizedBox(height: 5.0),
-                                        GestureDetector(
-                                          onTap: () {
-                                            setState(() {
-                                              isFree = !isFree;
-                                            });
-
-                                            _priceTextController.text =
-                                                isFree ? '0' : '';
-                                          },
-                                          child: Icon(
-                                            isFree
-                                                ? Icons.check_box
-                                                : Icons.check_box_outline_blank,
+                                  ),
+                                  SizedBox(width: 10.0),
+                                  Column(
+                                    children: [
+                                      Text('FREE',
+                                          style: TextStyle(
+                                            fontSize:
+                                                SizeConfig.textScaleFactor * 13,
                                             color: kBackgroundColor,
-                                          ),
+                                            fontWeight: FontWeight.w600,
+                                          )),
+                                      SizedBox(height: 5.0),
+                                      GestureDetector(
+                                        onTap: () {
+                                          setState(() {
+                                            isFree = !isFree;
+                                          });
+
+                                          _priceTextController.text =
+                                              isFree ? '0' : '';
+                                        },
+                                        child: Icon(
+                                          isFree
+                                              ? Icons.check_box
+                                              : Icons.check_box_outline_blank,
+                                          color: kBackgroundColor,
                                         ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Container(
-                                width: double.infinity,
-                                margin: EdgeInsets.only(bottom: 16.0),
-                                padding: EdgeInsets.symmetric(
-                                    vertical: 10.0, horizontal: 10.0),
-                                decoration: BoxDecoration(
-                                  color: kBackgroundColor,
-                                  borderRadius: BorderRadius.circular(12.0),
-                                  border: Border.all(
-                                    color: kBackgroundColor,
-                                  ),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Offer Type',
-                                      style: TextStyle(
-                                        color: Colors.white,
                                       ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                            CustomTextFormField(
+                              label: 'Description',
+                              hintText: 'Enter a description',
+                              controller: _descTextController,
+                              color: kBackgroundColor,
+                              maxLines: 3,
+                              validator: (val) => val != null && val.isEmpty
+                                  ? 'Required'
+                                  : null,
+                            ),
+                            Container(
+                              width: double.infinity,
+                              margin: EdgeInsets.only(bottom: 16.0),
+                              padding: EdgeInsets.symmetric(
+                                  vertical: 10.0, horizontal: 10.0),
+                              decoration: BoxDecoration(
+                                color: kBackgroundColor,
+                                borderRadius: BorderRadius.circular(12.0),
+                                border: Border.all(
+                                  color: kBackgroundColor,
+                                ),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Offer Type',
+                                    style: TextStyle(
+                                      color: Colors.white,
                                     ),
-                                    SizedBox(height: 12.0),
-                                    _productTypes.length > 0
-                                        ? Center(
-                                            child: ToggleSwitch(
-                                              initialLabelIndex: 0,
-                                              inactiveBgColor: kBackgroundColor,
-                                              minWidth:
-                                                  SizeConfig.screenWidth * 0.25,
-                                              activeFgColor: Colors.black,
-                                              inactiveFgColor: Colors.white,
-                                              borderColor: [Color(0xFFEBFBFF)],
-                                              totalSwitches:
-                                                  _productTypes.length,
-                                              labels: _productTypes
-                                                  .map((pt) => pt.name!)
-                                                  .toList(),
-                                              onToggle: (index) {
-                                                _selectedOfferType =
-                                                    _productTypes[index!].code;
-                                              },
-                                            ),
-                                          )
-                                        : Container(),
-                                  ],
-                                ),
+                                  ),
+                                  SizedBox(height: 12.0),
+                                  _productTypes.length > 0
+                                      ? FittedBox(
+                                          child: ToggleSwitch(
+                                            activeBgColor: [
+                                              kBackgroundColor,
+                                            ],
+                                            initialLabelIndex: 0,
+                                            minWidth: double.infinity,
+                                            minHeight: 25.0,
+                                            borderColor: [Color(0xFFEBFBFF)],
+                                            totalSwitches: _productTypes.length,
+                                            labels: _productTypes
+                                                .map((pt) => pt.name!)
+                                                .toList(),
+                                            onToggle: (index) {
+                                              _selectedOfferType =
+                                                  _productTypes[index!].code;
+                                            },
+                                            customTextStyles: [
+                                              TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize:
+                                                    SizeConfig.textScaleFactor *
+                                                        15,
+                                                color: Colors.white,
+                                              ),
+                                              TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize:
+                                                    SizeConfig.textScaleFactor *
+                                                        15,
+                                                color: Colors.white,
+                                              ),
+                                            ],
+                                          ),
+                                        )
+                                      : Container(),
+                                ],
                               ),
-                              CustomTextFormField(
-                                label: 'Description',
-                                hintText: 'Enter a description',
-                                controller: _descTextController,
-                                color: kBackgroundColor,
-                                maxLines: 3,
-                                validator: (val) => val != null && val.isEmpty
-                                    ? 'Required'
-                                    : null,
+                            ),
+                            CustomTextFormField(
+                              label: 'Location',
+                              hintText: 'Tap to search location',
+                              controller: _locationTextController,
+                              isReadOnly: true,
+                              color: kBackgroundColor,
+                              suffixIcon: Icon(
+                                Icons.location_on,
+                                color: Colors.white,
                               ),
-                              CustomTextFormField(
-                                label: 'Location',
-                                hintText: 'Tap to search location',
-                                controller: _locationTextController,
-                                isReadOnly: true,
-                                color: kBackgroundColor,
-                                suffixIcon: Icon(
-                                  Icons.location_on,
-                                  color: Colors.white,
-                                ),
-                                onTap: () => _onSelectLocation(),
-                                validator: (val) => val != null && val.isEmpty
-                                    ? 'Required'
-                                    : null,
-                              ),
-                              CustomButton(
-                                label: 'Next',
-                                onTap: _onSaveTapped,
-                              ),
-                            ],
-                          ),
+                              onTap: () => _onSelectLocation(),
+                              validator: (val) => val != null && val.isEmpty
+                                  ? 'Required'
+                                  : null,
+                            ),
+                            CustomButton(
+                              label: 'Next',
+                              onTap: _onSaveTapped,
+                            ),
+                          ],
                         ),
                       ),
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          )),
+          ),
+        ),
+      ),
     );
   }
 
@@ -459,75 +475,6 @@ class _ProductAddScreenState extends State<ProductAddScreen> {
         _selectedMedia.add(selectedMedia);
         showImageError = false;
       });
-    }
-  }
-
-  _onSelectOfferType(BuildContext context) async {
-    final type = await showDialog<String?>(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) {
-          return Dialog(
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 30.0, vertical: 10.0),
-              child: ListView(
-                shrinkWrap: true,
-                // mainAxisSize: MainAxisSize.min,
-                // crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Offer Type',
-                        style: Style.subtitle2.copyWith(
-                          color: kBackgroundColor,
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap: () => Navigator.pop(context, null),
-                        child: Icon(
-                          FontAwesomeIcons.times,
-                          color: kBackgroundColor,
-                          size: 20.0,
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 8.0),
-                  ListTile(
-                    title: Text('Product'),
-                    contentPadding: EdgeInsets.zero,
-                    onTap: () => Navigator.pop(context, 'product'),
-                    selectedColor: Color(0xFFBB3F03),
-                    selected: _selectedOfferType == 'product',
-                  ),
-                  ListTile(
-                    title: Text('Service'),
-                    contentPadding: EdgeInsets.zero,
-                    onTap: () => Navigator.pop(context, 'service'),
-                    selectedColor: Color(0xFFBB3F03),
-                    selected: _selectedOfferType == 'service',
-                  ),
-                  ListTile(
-                    title: Text('Event'),
-                    contentPadding: EdgeInsets.zero,
-                    onTap: () => Navigator.pop(context, 'event'),
-                    selectedColor: Color(0xFFBB3F03),
-                    selected: _selectedOfferType == 'event',
-                  ),
-                ],
-              ),
-            ),
-          );
-        });
-
-    if (type != null) {
-      setState(() {
-        _selectedOfferType = type;
-      });
-
-      _offerTypeTextController.text = type[0].toUpperCase() + type.substring(1);
     }
   }
 

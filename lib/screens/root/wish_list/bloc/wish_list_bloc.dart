@@ -19,8 +19,6 @@ class WishListBloc extends Bloc<WishListEvent, WishListState> {
     final _userRepo = UserRepository();
 
     on<WishListEvent>((event, emit) async {
-      emit(WishListLoading());
-
       try {
         _user = await _authService.getCurrentUser();
 
@@ -37,6 +35,7 @@ class WishListBloc extends Bloc<WishListEvent, WishListState> {
         }
 
         if (event is UpdateItemsWanted) {
+          emit(WishListLoading());
           final updated = await _userRepo.updateUserWantedItems(event.wants);
           if (updated) emit(UpdateItemsWantedSuccess());
         }

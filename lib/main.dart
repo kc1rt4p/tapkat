@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:device_preview/device_preview.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -17,6 +18,7 @@ import 'package:tapkat/screens/login/login_screen.dart';
 import 'package:tapkat/screens/root/root_screen.dart';
 import 'package:tapkat/services/auth_service.dart';
 import 'package:geolocator/geolocator.dart' as geoLocator;
+import 'package:tapkat/services/http/api_service.dart';
 import 'package:tapkat/utilities/application.dart' as application;
 
 _loadUserLocation() async {
@@ -46,6 +48,7 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
 
+  application.deviceId = await ApiService.getDeviceId();
   await _loadUserLocation();
 
   runApp(Phoenix(child: const MyApp()));
@@ -117,7 +120,7 @@ class _MyAppState extends State<MyApp> {
           ),
         ],
         child: DevicePreview(
-          enabled: true,
+          enabled: kDebugMode,
           builder: (context) => MaterialApp(
             useInheritedMediaQuery: true,
             locale: DevicePreview.locale(context),

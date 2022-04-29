@@ -114,7 +114,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             if (application.currentUserModel != null) {
               emit(AuthSignedIn(user));
             }
-          }
+          } else
+            emit(AuthError('Unable to login with facebook'));
         }
 
         if (event is SignInGoogle) {

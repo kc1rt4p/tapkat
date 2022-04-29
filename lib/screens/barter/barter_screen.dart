@@ -264,11 +264,13 @@ class _BarterScreenState extends State<BarterScreen> {
               setState(() {
                 _panelClosed = true;
               });
+              application.chatOpened = false;
             },
             onPanelOpened: () {
               setState(() {
                 _panelClosed = false;
               });
+              application.chatOpened = true;
             },
             collapsed: _buildCollapsed(),
             panel: _buildPanel(),
@@ -563,6 +565,7 @@ class _BarterScreenState extends State<BarterScreen> {
                     onTap: () async {
                       if (!_panelClosed) {
                         _panelController.close();
+                        _chatFocusNode.unfocus();
                         application.chatOpened = false;
                         return;
                       }
@@ -696,6 +699,8 @@ class _BarterScreenState extends State<BarterScreen> {
                                 child: InkWell(
                                   onTap: () {
                                     _panelController.close();
+                                    _chatFocusNode.unfocus();
+
                                     application.chatOpened = false;
                                   },
                                   child: Container(
@@ -729,7 +734,11 @@ class _BarterScreenState extends State<BarterScreen> {
           ),
           Container(
             margin: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom),
+                bottom: MediaQuery.of(context).viewInsets.bottom -
+                            kToolbarHeight >=
+                        0
+                    ? MediaQuery.of(context).viewInsets.bottom - kToolbarHeight
+                    : 0),
             color: kBackgroundColor,
             padding: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 10.0),
             width: double.infinity,
@@ -1687,6 +1696,7 @@ class _BarterScreenState extends State<BarterScreen> {
             InkWell(
               onTap: () {
                 _panelController.close();
+                _chatFocusNode.unfocus();
                 application.chatOpened = false;
               },
               child: Container(
@@ -2290,6 +2300,8 @@ class _BarterScreenState extends State<BarterScreen> {
                         TextInputType.numberWithOptions(decimal: true),
                     validator: (val) {
                       if (val == null || val.length < 1) return 'Required';
+
+                      return null;
                     },
                   ),
                 ),

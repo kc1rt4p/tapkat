@@ -92,6 +92,7 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
   Widget build(BuildContext context) {
     SizeConfig().init(context);
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: ProgressHUD(
         backgroundColor: Colors.white,
         indicatorColor: kBackgroundColor,
@@ -232,6 +233,29 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
                               ],
                             ),
                           ),
+                          // CustomTextFormField(
+                          //   label: 'Offer Type',
+                          //   hintText: 'Tap to select type',
+                          //   controller: _offerTypeTextController,
+                          //   isReadOnly: true,
+                          //   color: kBackgroundColor,
+                          //   suffixIcon: Icon(
+                          //     FontAwesomeIcons.chevronDown,
+                          //     color: Colors.white,
+                          //   ),
+                          //   onTap: () => _onSelectOfferType(context),
+                          //   validator: (val) =>
+                          //       val != null && val.isEmpty ? 'Required' : null,
+                          // ),
+                          CustomTextFormField(
+                            label: 'Description',
+                            hintText: 'Enter a description',
+                            controller: _descTextController,
+                            color: kBackgroundColor,
+                            maxLines: 3,
+                            validator: (val) =>
+                                val != null && val.isEmpty ? 'Required' : null,
+                          ),
 
                           Container(
                             width: double.infinity,
@@ -256,15 +280,15 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
                                 ),
                                 SizedBox(height: 12.0),
                                 _types.isNotEmpty
-                                    ? Center(
+                                    ? FittedBox(
                                         child: ToggleSwitch(
                                           initialLabelIndex: _initialTypeIndex,
-                                          inactiveBgColor: kBackgroundColor,
-                                          minWidth:
-                                              SizeConfig.screenWidth * 0.25,
-                                          activeFgColor: Colors.black,
-                                          inactiveFgColor: Colors.white,
+                                          minWidth: double.infinity,
+                                          minHeight: 25.0,
                                           borderColor: [Color(0xFFEBFBFF)],
+                                          activeBgColor: [
+                                            kBackgroundColor,
+                                          ],
                                           totalSwitches: _types.length,
                                           labels: _types
                                               .map((pt) => pt.name!)
@@ -272,36 +296,12 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
                                           onToggle: (index) {
                                             _selectedOfferType =
                                                 _types[index!].code!;
-                                            print(_selectedOfferType);
                                           },
                                         ),
                                       )
                                     : Container(),
                               ],
                             ),
-                          ),
-                          // CustomTextFormField(
-                          //   label: 'Offer Type',
-                          //   hintText: 'Tap to select type',
-                          //   controller: _offerTypeTextController,
-                          //   isReadOnly: true,
-                          //   color: kBackgroundColor,
-                          //   suffixIcon: Icon(
-                          //     FontAwesomeIcons.chevronDown,
-                          //     color: Colors.white,
-                          //   ),
-                          //   onTap: () => _onSelectOfferType(context),
-                          //   validator: (val) =>
-                          //       val != null && val.isEmpty ? 'Required' : null,
-                          // ),
-                          CustomTextFormField(
-                            label: 'Description',
-                            hintText: 'Enter a description',
-                            controller: _descTextController,
-                            color: kBackgroundColor,
-                            maxLines: 3,
-                            validator: (val) =>
-                                val != null && val.isEmpty ? 'Required' : null,
                           ),
                           CustomTextFormField(
                             label: 'Location',
@@ -339,36 +339,42 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
                                   ),
                                 ),
                                 SizedBox(height: 12.0),
-                                Center(
-                                  child: ToggleSwitch(
-                                    initialLabelIndex: productStatusList
-                                        .map((s) => s.toLowerCase())
-                                        .toList()
-                                        .indexOf(_selectedStatus),
-                                    inactiveBgColor: kBackgroundColor,
-                                    minWidth: SizeConfig.screenWidth * 0.25,
-                                    activeFgColor: Colors.black,
-                                    inactiveFgColor: Colors.white,
-                                    borderColor: [Color(0xFFEBFBFF)],
-                                    totalSwitches: productStatusList.length,
-                                    fontSize: SizeConfig.textScaleFactor * 11,
-                                    labels: productStatusList
-                                        .map((pt) => pt.toUpperCase())
-                                        .toList(),
-                                    onToggle: (index) {
-                                      setState(() {
-                                        _selectedStatus =
-                                            productStatusList[index ?? 0];
-                                      });
-                                      print(productStatusList
-                                          .map((s) => s.toLowerCase())
-                                          .toList()
-                                          .indexOf(_product.status != null
-                                              ? _product.status!.toLowerCase()
-                                              : _selectedStatus));
-                                    },
-                                  ),
-                                ),
+                                productStatusList.length > 0
+                                    ? FittedBox(
+                                        child: ToggleSwitch(
+                                          initialLabelIndex: productStatusList
+                                              .map((s) => s.toLowerCase())
+                                              .toList()
+                                              .indexOf(_selectedStatus),
+                                          minWidth: double.infinity,
+                                          minHeight: 25.0,
+                                          activeBgColor: [
+                                            kBackgroundColor,
+                                          ],
+                                          borderColor: [Color(0xFFEBFBFF)],
+                                          totalSwitches:
+                                              productStatusList.length,
+                                          labels: productStatusList
+                                              .map((pt) => pt.toUpperCase())
+                                              .toList(),
+                                          onToggle: (index) {
+                                            setState(() {
+                                              _selectedStatus =
+                                                  productStatusList[index ?? 0];
+                                            });
+                                            print(productStatusList
+                                                .map((s) => s.toLowerCase())
+                                                .toList()
+                                                .indexOf(_product.status != null
+                                                    ? _product.status!
+                                                        .toLowerCase()
+                                                    : _selectedStatus));
+                                          },
+                                          fontSize:
+                                              SizeConfig.textScaleFactor * 12,
+                                        ),
+                                      )
+                                    : Container(),
                               ],
                             ),
                           ),

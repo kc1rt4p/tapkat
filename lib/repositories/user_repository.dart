@@ -29,6 +29,7 @@ class UserRepository {
         .patch(url: 'users/${application.currentUser!.uid}', body: {
       'userid': application.currentUser!.uid,
       'regtoken': await FirebaseMessaging.instance.getToken(),
+      'deviceid': application.deviceId,
     });
 
     return updated.data['status'] == 'SUCCESS';

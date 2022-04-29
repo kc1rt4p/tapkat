@@ -168,7 +168,16 @@ class AuthService {
 
   Future<User?> signInWithFacebook() async {
     // Trigger the sign-in flow
-    final LoginResult loginResult = await FacebookAuth.instance.login();
+    final LoginResult loginResult =
+        await FacebookAuth.instance.login(permissions: [
+      'email',
+      'public_profile',
+      'user_friends',
+    ]);
+
+    print('fb login result: ${loginResult.message}');
+
+    if (loginResult.status == LoginStatus.failed) return null;
 
     // Create a credential from the access token
     final OAuthCredential facebookAuthCredential =

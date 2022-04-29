@@ -83,414 +83,377 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
-    return Scaffold(
-      body: ProgressHUD(
-        barrierEnabled: false,
-        indicatorColor: kBackgroundColor,
-        backgroundColor: Colors.white,
-        child: MultiBlocListener(
-          listeners: [
-            BlocListener(
-              bloc: _profileBloc,
-              listener: (context, state) {
-                print('current state profile: $state');
-                if (state is ProfileLoading) {
-                  ProgressHUD.of(context)!.show();
+    return ProgressHUD(
+      barrierEnabled: false,
+      indicatorColor: kBackgroundColor,
+      backgroundColor: Colors.white,
+      child: MultiBlocListener(
+        listeners: [
+          BlocListener(
+            bloc: _profileBloc,
+            listener: (context, state) {
+              print('current state profile: $state');
+              if (state is ProfileLoading) {
+                ProgressHUD.of(context)!.show();
+              } else {
+                ProgressHUD.of(context)!.dismiss();
+              }
+
+              if (state is UpdateUserInfoSuccess) {
+                setState(() {
+                  editProfile = !editProfile;
+                });
+
+                _profileBloc.add(InitializeProfileScreen());
+              }
+
+              if (state is ProfileScreenInitialized) {
+                setState(() {
+                  _user = state.user;
+                  _list = state.list;
+                  _userModel = state.userModel;
+                });
+
+                _displayNameTextController.text =
+                    _userModel!.display_name ?? 'Unknown';
+                _emailTextController.text = _userModel!.email ?? 'Unknown';
+                _phoneTextController.text =
+                    _userModel!.phone_number ?? 'Unknown';
+                _locationTextController.text = (_userModel!.address != null &&
+                        _userModel!.city != null &&
+                        _userModel!.country != null)
+                    ? (_userModel!.address ?? '') +
+                        ', ' +
+                        (_userModel!.city ?? '') +
+                        ', ' +
+                        (_userModel!.country ?? '')
+                    : '';
+
+                _refreshController.refreshCompleted();
+                _pagingController.refresh();
+
+                if (state.list.isNotEmpty) {
+                  lastProduct = state.list.last;
+                  if (state.list.length == productCount) {
+                    _pagingController.appendPage(state.list, currentPage + 1);
+                  } else {
+                    _pagingController.appendLastPage(state.list);
+                  }
                 } else {
-                  ProgressHUD.of(context)!.dismiss();
+                  _pagingController.appendLastPage([]);
                 }
-
-                if (state is UpdateUserInfoSuccess) {
-                  setState(() {
-                    editProfile = !editProfile;
-                  });
-
-                  _profileBloc.add(InitializeProfileScreen());
-                }
-
-                if (state is ProfileScreenInitialized) {
-                  setState(() {
-                    _user = state.user;
-                    _list = state.list;
-                    _userModel = state.userModel;
-                  });
-
-                  _displayNameTextController.text =
-                      _userModel!.display_name ?? 'Unknown';
-                  _emailTextController.text = _userModel!.email ?? 'Unknown';
-                  _phoneTextController.text =
-                      _userModel!.phone_number ?? 'Unknown';
-                  _locationTextController.text = (_userModel!.address != null &&
-                          _userModel!.city != null &&
-                          _userModel!.country != null)
-                      ? (_userModel!.address ?? '') +
-                          ', ' +
-                          (_userModel!.city ?? '') +
-                          ', ' +
-                          (_userModel!.country ?? '')
-                      : '';
-
-                  _refreshController.refreshCompleted();
-                  _pagingController.refresh();
-
-                  if (state.list.isNotEmpty) {
-                    lastProduct = state.list.last;
-                    if (state.list.length == productCount) {
-                      _pagingController.appendPage(state.list, currentPage + 1);
-                    } else {
-                      _pagingController.appendLastPage(state.list);
-                    }
-                  } else {
-                    _pagingController.appendLastPage([]);
-                  }
-                  _pagingController.addPageRequestListener((pageKey) {
-                    if (lastProduct != null) {
-                      _productBloc.add(
-                        GetNextProducts(
-                          listType: 'user',
-                          lastProductId: lastProduct!.productid!,
-                          startAfterVal: lastProduct!.price.toString(),
-                          sortBy: 'distance',
-                          userId: _user!.uid,
-                          distance: 50000,
-                        ),
-                      );
-                    }
-                  });
-                }
-              },
-            ),
-            BlocListener(
-              bloc: _productBloc,
-              listener: (context, state) {
-                if (state is GetProductsSuccess) {
-                  if (state.list.isNotEmpty) {
-                    lastProduct = state.list.last;
-                    if (state.list.length == productCount) {
-                      _pagingController.appendPage(state.list, currentPage + 1);
-                    } else {
-                      _pagingController.appendLastPage(state.list);
-                    }
-                  } else {
-                    _pagingController.appendLastPage([]);
-                  }
-                }
-              },
-            ),
-          ],
-          child: Container(
-            color: Color(0xFFEBFBFF),
-            child: Column(
-              children: [
-                CustomAppBar(
-                  label: 'Your Store',
-                  hideBack: true,
-                  leading: GestureDetector(
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => SettingsScreen(),
+                _pagingController.addPageRequestListener((pageKey) {
+                  if (lastProduct != null) {
+                    _productBloc.add(
+                      GetNextProducts(
+                        listType: 'user',
+                        lastProductId: lastProduct!.productid!,
+                        startAfterVal: lastProduct!.price.toString(),
+                        sortBy: 'distance',
+                        userId: _user!.uid,
+                        distance: 50000,
                       ),
-                    ),
-                    child: Icon(
-                      FontAwesomeIcons.cog,
-                      color: Colors.white,
+                    );
+                  }
+                });
+              }
+            },
+          ),
+          BlocListener(
+            bloc: _productBloc,
+            listener: (context, state) {
+              if (state is GetProductsSuccess) {
+                if (state.list.isNotEmpty) {
+                  lastProduct = state.list.last;
+                  if (state.list.length == productCount) {
+                    _pagingController.appendPage(state.list, currentPage + 1);
+                  } else {
+                    _pagingController.appendLastPage(state.list);
+                  }
+                } else {
+                  _pagingController.appendLastPage([]);
+                }
+              }
+            },
+          ),
+        ],
+        child: Container(
+          color: Color(0xFFEBFBFF),
+          child: Column(
+            children: [
+              CustomAppBar(
+                label: 'Your Store',
+                hideBack: true,
+                leading: GestureDetector(
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => SettingsScreen(),
                     ),
                   ),
-                  action: GestureDetector(
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => NotificationListScreen(),
-                      ),
+                  child: Icon(
+                    FontAwesomeIcons.cog,
+                    color: Colors.white,
+                  ),
+                ),
+                action: GestureDetector(
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => NotificationListScreen(),
                     ),
-                    child: Icon(
-                      FontAwesomeIcons.bell,
-                      color: Colors.white,
+                  ),
+                  child: Icon(
+                    FontAwesomeIcons.bell,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              Visibility(
+                visible: !application.currentUser!.emailVerified,
+                child: Container(
+                  width: double.infinity,
+                  color: Style.secondaryColor,
+                  padding: EdgeInsets.all(5.0),
+                  child: Center(
+                    child: Text(
+                      'Your email is not yet verified\nSome features will not be available',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: SizeConfig.textScaleFactor * 12),
                     ),
                   ),
                 ),
-                Visibility(
-                  visible: !application.currentUser!.emailVerified,
+              ),
+              Expanded(
+                child: SmartRefresher(
+                  controller: _refreshController,
+                  onRefresh: () => _profileBloc.add(InitializeProfileScreen()),
                   child: Container(
-                    width: double.infinity,
-                    color: Style.secondaryColor,
-                    padding: EdgeInsets.all(5.0),
-                    child: Center(
-                      child: Text(
-                        'Your email is not yet verified\nSome features will not be available',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: SizeConfig.textScaleFactor * 12),
-                      ),
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: SmartRefresher(
-                    controller: _refreshController,
-                    onRefresh: () =>
-                        _profileBloc.add(InitializeProfileScreen()),
-                    child: Container(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: 20.0, vertical: 10.0),
-                      child: _user != null
-                          ? Column(
-                              children: [
-                                Container(
-                                  width: double.infinity,
-                                  decoration: BoxDecoration(
-                                    color: kBackgroundColor,
-                                    borderRadius: BorderRadius.circular(10.0),
-                                  ),
-                                  padding: EdgeInsets.symmetric(
-                                    vertical: 5.0,
-                                    horizontal: 10.0,
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Text(
-                                        'Info',
-                                        style: Style.subtitle2
-                                            .copyWith(color: Colors.white),
-                                      ),
-                                      Spacer(),
-                                      GestureDetector(
-                                        onTap: _userModel != null
-                                            ? () async {
-                                                await Navigator.push(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                    builder: (context) =>
-                                                        EditProfileScreen(
-                                                      user: _userModel!,
-                                                    ),
-                                                  ),
-                                                );
-
-                                                _profileBloc.add(
-                                                    InitializeProfileScreen());
-                                              }
-                                            : () {},
-                                        child: Icon(
-                                          FontAwesomeIcons.solidEdit,
-                                          color: Colors.white,
-                                          size: SizeConfig.textScaleFactor * 14,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+                    child: _user != null
+                        ? Column(
+                            children: [
+                              Container(
+                                width: double.infinity,
+                                decoration: BoxDecoration(
+                                  color: kBackgroundColor,
+                                  borderRadius: BorderRadius.circular(10.0),
                                 ),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 16.0),
-                                  child: Row(
-                                    children: [
-                                      Column(
-                                        children: [
-                                          InkWell(
-                                            onTap: _onPhotoTapped,
-                                            child: _buildPhoto(),
-                                          ),
-                                          _userModel != null
-                                              ? Container(
-                                                  margin: EdgeInsets.only(
-                                                      bottom: 3.0),
-                                                  padding: EdgeInsets.symmetric(
-                                                      horizontal: 10.0),
-                                                  child: Row(
-                                                    children: [
-                                                      Icon(
-                                                        Icons.people_alt,
-                                                        size: SizeConfig
-                                                                .textScaleFactor *
-                                                            12,
-                                                      ),
-                                                      SizedBox(width: 5.0),
-                                                      Text(
-                                                        _userModel!.likes !=
-                                                                null
-                                                            ? _userModel!.likes
-                                                                .toString()
-                                                            : '0',
-                                                        textAlign:
-                                                            TextAlign.right,
-                                                        style: Style.fieldText.copyWith(
-                                                            fontSize: SizeConfig
-                                                                    .textScaleFactor *
-                                                                12),
-                                                      ),
-                                                      VerticalDivider(),
-                                                      InkWell(
-                                                        onTap: () =>
-                                                            Navigator.push(
-                                                          context,
-                                                          MaterialPageRoute(
-                                                            builder: (context) =>
-                                                                UserReviewListScreen(
-                                                                    userId: _userModel!
-                                                                        .userid!),
-                                                          ),
-                                                        ),
-                                                        child: Container(
-                                                          child: Row(
-                                                            children: [
-                                                              Icon(
-                                                                Icons.star,
-                                                                size: SizeConfig
-                                                                        .textScaleFactor *
-                                                                    12,
-                                                              ),
-                                                              SizedBox(
-                                                                  width: 5.0),
-                                                              Text(
-                                                                _userModel!.rating !=
-                                                                        null
-                                                                    ? _userModel!
-                                                                        .rating!
-                                                                        .toStringAsFixed(
-                                                                            1)
-                                                                    : '0',
-                                                                textAlign:
-                                                                    TextAlign
-                                                                        .right,
-                                                                style: Style
-                                                                    .fieldText
-                                                                    .copyWith(
-                                                                        fontSize:
-                                                                            SizeConfig.textScaleFactor *
-                                                                                12),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ],
+                                padding: EdgeInsets.symmetric(
+                                  vertical: 5.0,
+                                  horizontal: 10.0,
+                                ),
+                                child: Row(
+                                  children: [
+                                    Text(
+                                      'Info',
+                                      style: Style.subtitle2
+                                          .copyWith(color: Colors.white),
+                                    ),
+                                    Spacer(),
+                                    GestureDetector(
+                                      onTap: _userModel != null
+                                          ? () async {
+                                              await Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      EditProfileScreen(
+                                                    user: _userModel!,
                                                   ),
-                                                )
-                                              : Container(),
-                                        ],
-                                      ),
-                                      Expanded(
-                                        child: Container(
-                                          margin: EdgeInsets.symmetric(
-                                            vertical: 5.0,
-                                          ),
-                                          width: double.infinity,
-                                          child: Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.center,
-                                            children: [
-                                              _buildInfoItem(
-                                                label: 'Name',
-                                                controller:
-                                                    _displayNameTextController,
-                                              ),
-                                              _buildInfoItem(
-                                                label: 'Email',
-                                                controller:
-                                                    _emailTextController,
-                                              ),
-                                              _buildInfoItem(
-                                                label: 'Phone',
-                                                controller:
-                                                    _phoneTextController,
-                                              ),
-                                              _buildInfoItem(
-                                                label: 'Location',
-                                                controller:
-                                                    _locationTextController,
-                                                suffix: Icon(
-                                                  FontAwesomeIcons.mapMarked,
-                                                  color: kBackgroundColor,
-                                                  size: 12.0,
                                                 ),
-                                                onTap: _onSelectLocation,
-                                                readOnly: true,
+                                              );
+
+                                              _profileBloc.add(
+                                                  InitializeProfileScreen());
+                                            }
+                                          : () {},
+                                      child: Icon(
+                                        FontAwesomeIcons.solidEdit,
+                                        color: Colors.white,
+                                        size: SizeConfig.textScaleFactor * 14,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16.0),
+                                child: Row(
+                                  children: [
+                                    Column(
+                                      children: [
+                                        InkWell(
+                                          onTap: _onPhotoTapped,
+                                          child: _buildPhoto(),
+                                        ),
+                                        _userModel != null
+                                            ? Container(
+                                                margin: EdgeInsets.only(
+                                                    bottom: 3.0),
+                                                padding: EdgeInsets.symmetric(
+                                                    horizontal: 10.0),
+                                                child: Row(
+                                                  children: [
+                                                    Icon(
+                                                      Icons.people_alt,
+                                                      size: SizeConfig
+                                                              .textScaleFactor *
+                                                          12,
+                                                    ),
+                                                    SizedBox(width: 5.0),
+                                                    Text(
+                                                      _userModel!.likes != null
+                                                          ? _userModel!.likes
+                                                              .toString()
+                                                          : '0',
+                                                      textAlign:
+                                                          TextAlign.right,
+                                                      style: Style.fieldText.copyWith(
+                                                          fontSize: SizeConfig
+                                                                  .textScaleFactor *
+                                                              12),
+                                                    ),
+                                                    VerticalDivider(),
+                                                    InkWell(
+                                                      onTap: () =>
+                                                          Navigator.push(
+                                                        context,
+                                                        MaterialPageRoute(
+                                                          builder: (context) =>
+                                                              UserReviewListScreen(
+                                                                  userId: _userModel!
+                                                                      .userid!),
+                                                        ),
+                                                      ),
+                                                      child: Container(
+                                                        child: Row(
+                                                          children: [
+                                                            Icon(
+                                                              Icons.star,
+                                                              size: SizeConfig
+                                                                      .textScaleFactor *
+                                                                  12,
+                                                            ),
+                                                            SizedBox(
+                                                                width: 5.0),
+                                                            Text(
+                                                              _userModel!.rating !=
+                                                                      null
+                                                                  ? _userModel!
+                                                                      .rating!
+                                                                      .toStringAsFixed(
+                                                                          1)
+                                                                  : '0',
+                                                              textAlign:
+                                                                  TextAlign
+                                                                      .right,
+                                                              style: Style
+                                                                  .fieldText
+                                                                  .copyWith(
+                                                                      fontSize:
+                                                                          SizeConfig.textScaleFactor *
+                                                                              12),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              )
+                                            : Container(),
+                                      ],
+                                    ),
+                                    Expanded(
+                                      child: Container(
+                                        margin: EdgeInsets.symmetric(
+                                          vertical: 5.0,
+                                        ),
+                                        width: double.infinity,
+                                        child: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          children: [
+                                            _buildInfoItem(
+                                              label: 'Name',
+                                              controller:
+                                                  _displayNameTextController,
+                                            ),
+                                            _buildInfoItem(
+                                              label: 'Email',
+                                              controller: _emailTextController,
+                                            ),
+                                            _buildInfoItem(
+                                              label: 'Phone',
+                                              controller: _phoneTextController,
+                                            ),
+                                            _buildInfoItem(
+                                              label: 'Location',
+                                              controller:
+                                                  _locationTextController,
+                                              suffix: Icon(
+                                                FontAwesomeIcons.mapMarked,
+                                                color: kBackgroundColor,
+                                                size: 12.0,
                                               ),
-                                            ],
-                                          ),
+                                              onTap: _onSelectLocation,
+                                              readOnly: true,
+                                            ),
+                                          ],
                                         ),
                                       ),
-                                    ],
-                                  ),
+                                    ),
+                                  ],
                                 ),
-                                Visibility(
-                                  visible:
-                                      !application.currentUser!.emailVerified,
-                                  child: CustomButton(
-                                    label: 'Verify your account',
-                                    onTap: () {
-                                      DialogMessage.show(
-                                        context,
-                                        message:
-                                            'Click on the verification link sent to your email address: ${application.currentUser!.email}',
-                                        buttonText: 'Resend',
-                                        firstButtonClicked: () =>
-                                            _authBloc.add(ResendEmail()),
-                                      );
-                                      return;
-                                    },
-                                  ),
+                              ),
+                              Visibility(
+                                visible:
+                                    !application.currentUser!.emailVerified,
+                                child: CustomButton(
+                                  label: 'Verify your account',
+                                  onTap: () {
+                                    DialogMessage.show(
+                                      context,
+                                      message:
+                                          'Click on the verification link sent to your email address: ${application.currentUser!.email}',
+                                      buttonText: 'Resend',
+                                      firstButtonClicked: () =>
+                                          _authBloc.add(ResendEmail()),
+                                    );
+                                    return;
+                                  },
                                 ),
-                                Visibility(
-                                  visible:
-                                      application.currentUser!.emailVerified,
-                                  child: Expanded(
-                                    child: Container(
-                                      width: double.infinity,
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          InkWell(
-                                            onTap: () => Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (context) =>
-                                                    UserRatingsScreen(
-                                                        user: _userModel!),
-                                              ),
-                                            ),
-                                            child: Container(
-                                              width: double.infinity,
-                                              margin:
-                                                  EdgeInsets.only(bottom: 8.0),
-                                              decoration: BoxDecoration(
-                                                color: kBackgroundColor,
-                                                borderRadius:
-                                                    BorderRadius.circular(10.0),
-                                              ),
-                                              padding: EdgeInsets.symmetric(
-                                                vertical: 5.0,
-                                                horizontal: 10.0,
-                                              ),
-                                              child: Row(
-                                                children: [
-                                                  Text(
-                                                    'Reviewed Products & Users',
-                                                    style: Style.subtitle2
-                                                        .copyWith(
-                                                            color:
-                                                                Colors.white),
-                                                  ),
-                                                  Spacer(),
-                                                  Icon(
-                                                    FontAwesomeIcons
-                                                        .chevronRight,
-                                                    color: Colors.white,
-                                                    size: 18.0,
-                                                  ),
-                                                ],
-                                              ),
+                              ),
+                              Visibility(
+                                visible: application.currentUser!.emailVerified,
+                                child: Expanded(
+                                  child: Container(
+                                    width: double.infinity,
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        InkWell(
+                                          onTap: () => Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  UserRatingsScreen(
+                                                      user: _userModel!),
                                             ),
                                           ),
-                                          Container(
+                                          child: Container(
                                             width: double.infinity,
+                                            margin:
+                                                EdgeInsets.only(bottom: 8.0),
                                             decoration: BoxDecoration(
                                               color: kBackgroundColor,
                                               borderRadius:
@@ -503,66 +466,92 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                             child: Row(
                                               children: [
                                                 Text(
-                                                  'Products',
+                                                  'Reviewed Products & Users',
                                                   style: Style.subtitle2
                                                       .copyWith(
                                                           color: Colors.white),
                                                 ),
                                                 Spacer(),
-                                                GestureDetector(
-                                                  onTap: () async {
-                                                    if (!application
-                                                        .currentUser!
-                                                        .emailVerified) {
-                                                      DialogMessage.show(
-                                                        context,
-                                                        message:
-                                                            'Click on the verification link sent to your email address: ${application.currentUser!.email}',
-                                                        buttonText: 'Resend',
-                                                        firstButtonClicked:
-                                                            () => _authBloc.add(
-                                                                ResendEmail()),
-                                                      );
-                                                      return;
-                                                    }
-                                                    await Navigator.push(
-                                                      context,
-                                                      MaterialPageRoute(
-                                                        builder: (context) =>
-                                                            ProductAddScreen(),
-                                                      ),
-                                                    );
-
-                                                    _profileBloc.add(
-                                                        InitializeProfileScreen());
-                                                  },
-                                                  child: Icon(
-                                                    FontAwesomeIcons.plus,
-                                                    color: Colors.white,
-                                                    size: 18.0,
-                                                  ),
+                                                Icon(
+                                                  FontAwesomeIcons.chevronRight,
+                                                  color: Colors.white,
+                                                  size: 18.0,
                                                 ),
                                               ],
                                             ),
                                           ),
-                                          Expanded(
-                                            child: Container(
-                                              child: _buildGridView(),
-                                            ),
+                                        ),
+                                        Container(
+                                          width: double.infinity,
+                                          decoration: BoxDecoration(
+                                            color: kBackgroundColor,
+                                            borderRadius:
+                                                BorderRadius.circular(10.0),
                                           ),
-                                        ],
-                                      ),
+                                          padding: EdgeInsets.symmetric(
+                                            vertical: 5.0,
+                                            horizontal: 10.0,
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              Text(
+                                                'Products',
+                                                style: Style.subtitle2.copyWith(
+                                                    color: Colors.white),
+                                              ),
+                                              Spacer(),
+                                              GestureDetector(
+                                                onTap: () async {
+                                                  if (!application.currentUser!
+                                                      .emailVerified) {
+                                                    DialogMessage.show(
+                                                      context,
+                                                      message:
+                                                          'Click on the verification link sent to your email address: ${application.currentUser!.email}',
+                                                      buttonText: 'Resend',
+                                                      firstButtonClicked: () =>
+                                                          _authBloc.add(
+                                                              ResendEmail()),
+                                                    );
+                                                    return;
+                                                  }
+                                                  await Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          ProductAddScreen(),
+                                                    ),
+                                                  );
+
+                                                  _profileBloc.add(
+                                                      InitializeProfileScreen());
+                                                },
+                                                child: Icon(
+                                                  FontAwesomeIcons.plus,
+                                                  color: Colors.white,
+                                                  size: 18.0,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        Expanded(
+                                          child: Container(
+                                            child: _buildGridView(),
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ),
-                              ],
-                            )
-                          : Container(),
-                    ),
+                              ),
+                            ],
+                          )
+                        : Container(),
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

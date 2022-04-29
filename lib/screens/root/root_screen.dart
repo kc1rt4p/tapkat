@@ -157,9 +157,6 @@ class _RootScreenState extends State<RootScreen> {
     // permissionStatus == PermissionStatus.denied ||
     if (settings.authorizationStatus != AuthorizationStatus.authorized) return;
 
-    print(
-        '----------= PUSH ALERT: ${application.currentUserModel!.pushalert} =-----------');
-
     await flutterLocalNotificationsPlugin.initialize(initializationSettings,
         onSelectNotification: (val) {
       Navigator.push(
@@ -222,7 +219,7 @@ class _RootScreenState extends State<RootScreen> {
   @override
   void dispose() {
     _barterBloc.close();
-    _connectivityStream!.cancel();
+    // _connectivityStream!.cancel();
     super.dispose();
   }
 
@@ -231,7 +228,7 @@ class _RootScreenState extends State<RootScreen> {
     final bool showFab = MediaQuery.of(context).viewInsets.bottom == 0.0;
     SizeConfig().init(context);
     return Scaffold(
-      resizeToAvoidBottomInset: true,
+      resizeToAvoidBottomInset: false,
       body: MultiBlocProvider(
         providers: [
           BlocProvider(
@@ -265,10 +262,11 @@ class _RootScreenState extends State<RootScreen> {
               listener: (context, state) {
                 print('ROOT AUTH STATE:::: $state');
                 if (state is GetCurrentUsersuccess) {
-                  initNotifications();
                   if (application.currentUserLocation == null) {
                     application.currentUserLocation = state.userModel!.location;
                   }
+
+                  initNotifications();
                   _barterBloc.add(GetUnreadBarterMessages());
                 }
               },

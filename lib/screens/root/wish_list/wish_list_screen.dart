@@ -82,209 +82,207 @@ class _WishListScreenState extends State<WishListScreen> {
   @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
-    return Scaffold(
-      body: ProgressHUD(
-        barrierEnabled: false,
-        indicatorColor: kBackgroundColor,
-        backgroundColor: Colors.white,
-        child: MultiBlocListener(
-          listeners: [
-            BlocListener(
-              bloc: _wishListBloc,
-              listener: (context, state) {
-                // print('current state: $state');
-                // if (state is WishListLoading) {
-                //   ProgressHUD.of(context)!.show();
-                //   setState(() {
-                //     _loading = true;
-                //   });
-                // } else {
-                //   ProgressHUD.of(context)!.dismiss();
-                //   setState(() {
-                //     _loading = false;
-                //   });
-                // }
+    return ProgressHUD(
+      barrierEnabled: false,
+      indicatorColor: kBackgroundColor,
+      backgroundColor: Colors.white,
+      child: MultiBlocListener(
+        listeners: [
+          BlocListener(
+            bloc: _wishListBloc,
+            listener: (context, state) {
+              print('current state: $state');
+              if (state is WishListLoading) {
+                ProgressHUD.of(context)!.show();
+                setState(() {
+                  _loading = true;
+                });
+              } else {
+                ProgressHUD.of(context)!.dismiss();
+                setState(() {
+                  _loading = false;
+                });
+              }
 
-                if (state is UpdateItemsWantedSuccess) {
-                  setState(() {
-                    application.currentUserModel!.items_wanted =
-                        List.from(_wants);
-                  });
-                }
+              if (state is UpdateItemsWantedSuccess) {
+                setState(() {
+                  application.currentUserModel!.items_wanted =
+                      List.from(_wants);
+                  _origWants = List.from(_wants);
+                });
+              }
 
-                if (state is AddLikeSuccess) {
-                  _wishListBloc.add(InitializeWishListScreen());
-                }
+              if (state is AddLikeSuccess) {
+                _wishListBloc.add(InitializeWishListScreen());
+              }
 
-                if (state is WishListInitialized) {
-                  _refreshController.refreshCompleted();
-                  _productPagingController.refresh();
-                  _storePagingController.refresh();
+              if (state is WishListInitialized) {
+                _refreshController.refreshCompleted();
+                _productPagingController.refresh();
+                _storePagingController.refresh();
 
-                  if (state.productList.isNotEmpty) {
-                    _lastProduct = state.productList.last;
-                    if (state.productList.length == productCount) {
-                      _productPagingController.appendPage(
-                          state.productList, currentPage + 1);
-                    } else {
-                      _productPagingController
-                          .appendLastPage(state.productList);
-                    }
+                if (state.productList.isNotEmpty) {
+                  _lastProduct = state.productList.last;
+                  if (state.productList.length == productCount) {
+                    _productPagingController.appendPage(
+                        state.productList, currentPage + 1);
                   } else {
-                    _productPagingController.appendLastPage([]);
+                    _productPagingController.appendLastPage(state.productList);
                   }
-
-                  _productPagingController.addPageRequestListener((pageKey) {
-                    if (_lastProduct != null) {
-                      _wishListBloc.add(
-                        GetNextLikedItems(
-                          lastProductId: _lastProduct!.productid!,
-                          lastProductDate: _lastProduct!.like_date!,
-                        ),
-                      );
-                    }
-                  });
-
-                  if (state.storeList.isNotEmpty) {
-                    _lastStore = state.storeList.last;
-                    if (state.storeList.length == productCount) {
-                      _storePagingController.appendPage(
-                          state.storeList, currentPage + 1);
-                    } else {
-                      _storePagingController.appendLastPage(state.storeList);
-                    }
-                  } else {
-                    _storePagingController.appendLastPage([]);
-                  }
-
-                  _storePagingController.addPageRequestListener((pageKey) {
-                    if (_lastStore != null) {
-                      _wishListBloc.add(
-                        GetNextFollowedStores(
-                          lastStoreId: _lastStore!.userid!,
-                          lastStoreDate: _lastStore!.like_date!,
-                        ),
-                      );
-                    }
-                  });
+                } else {
+                  _productPagingController.appendLastPage([]);
                 }
 
-                if (state is WishListError) {
-                  print('wish list error: ${state.message}');
-                }
-              },
-            ),
-            BlocListener(
-              bloc: _productBloc,
-              listener: (context, state) {
-                print('current wish list state: $state');
-                if (state is UnlikeSuccess) {
-                  _wishListBloc.add(InitializeWishListScreen());
-                }
-              },
-            ),
-            BlocListener(
-              bloc: _storeBloc,
-              listener: (context, state) {
-                if (state is EditUserLikeSuccess) {
-                  _wishListBloc.add(InitializeWishListScreen());
-                }
-              },
-              child: Container(),
-            ),
-          ],
-          child: Container(
-            color: Color(0xFFEBFBFF),
-            child: Column(
-              children: [
-                CustomAppBar(
-                  label: 'Your Wish List',
-                  hideBack: true,
-                ),
-                Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 16.0,
-                  ),
-                  child: Column(
-                    children: [
-                      CustomSearchBar(
-                        controller: _keywordTextController,
-                        backgroundColor: Color(0xFF005F73).withOpacity(0.3),
-                        onSubmitted: (val) => _onSearchSubmitted(val),
+                _productPagingController.addPageRequestListener((pageKey) {
+                  if (_lastProduct != null) {
+                    _wishListBloc.add(
+                      GetNextLikedItems(
+                        lastProductId: _lastProduct!.productid!,
+                        lastProductDate: _lastProduct!.like_date!,
                       ),
-                    ],
-                  ),
+                    );
+                  }
+                });
+
+                if (state.storeList.isNotEmpty) {
+                  _lastStore = state.storeList.last;
+                  if (state.storeList.length == productCount) {
+                    _storePagingController.appendPage(
+                        state.storeList, currentPage + 1);
+                  } else {
+                    _storePagingController.appendLastPage(state.storeList);
+                  }
+                } else {
+                  _storePagingController.appendLastPage([]);
+                }
+
+                _storePagingController.addPageRequestListener((pageKey) {
+                  if (_lastStore != null) {
+                    _wishListBloc.add(
+                      GetNextFollowedStores(
+                        lastStoreId: _lastStore!.userid!,
+                        lastStoreDate: _lastStore!.like_date!,
+                      ),
+                    );
+                  }
+                });
+              }
+
+              if (state is WishListError) {
+                print('wish list error: ${state.message}');
+              }
+            },
+          ),
+          BlocListener(
+            bloc: _productBloc,
+            listener: (context, state) {
+              print('current wish list state: $state');
+              if (state is UnlikeSuccess) {
+                _wishListBloc.add(InitializeWishListScreen());
+              }
+            },
+          ),
+          BlocListener(
+            bloc: _storeBloc,
+            listener: (context, state) {
+              if (state is EditUserLikeSuccess) {
+                _wishListBloc.add(InitializeWishListScreen());
+              }
+            },
+            child: Container(),
+          ),
+        ],
+        child: Container(
+          color: Color(0xFFEBFBFF),
+          child: Column(
+            children: [
+              CustomAppBar(
+                label: 'Your Wish List',
+                hideBack: true,
+              ),
+              Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: 16.0,
                 ),
-                ToggleSwitch(
-                  activeBgColor: [
-                    kBackgroundColor,
+                child: Column(
+                  children: [
+                    CustomSearchBar(
+                      controller: _keywordTextController,
+                      backgroundColor: Color(0xFF005F73).withOpacity(0.3),
+                      onSubmitted: (val) => _onSearchSubmitted(val),
+                    ),
                   ],
-                  initialLabelIndex: (() {
-                    switch (_selectedView) {
-                      case 'products':
-                        return 0;
-                      case 'stores':
-                        return 1;
-                      case 'wants':
-                        return 2;
+                ),
+              ),
+              ToggleSwitch(
+                activeBgColor: [
+                  kBackgroundColor,
+                ],
+                initialLabelIndex: (() {
+                  switch (_selectedView) {
+                    case 'products':
+                      return 0;
+                    case 'stores':
+                      return 1;
+                    case 'wants':
+                      return 2;
+                  }
+                }()),
+                minWidth: double.infinity,
+                minHeight: 25.0,
+                borderColor: [Color(0xFFEBFBFF)],
+                totalSwitches: 3,
+                customTextStyles: [
+                  TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: SizeConfig.textScaleFactor * 13,
+                    color: Colors.white,
+                  ),
+                  TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: SizeConfig.textScaleFactor * 13,
+                    color: Colors.white,
+                  ),
+                  TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: SizeConfig.textScaleFactor * 13,
+                    color: Colors.white,
+                  ),
+                ],
+                labels: [
+                  'Likes',
+                  'Follows',
+                  'Wants',
+                ],
+                onToggle: (index) {
+                  setState(() {
+                    switch (index) {
+                      case 0:
+                        _selectedView = 'products';
+                        break;
+                      case 1:
+                        _selectedView = 'stores';
+                        break;
+                      case 2:
+                        _selectedView = 'wants';
+                        break;
                     }
-                  }()),
-                  minWidth: double.infinity,
-                  minHeight: 25.0,
-                  borderColor: [Color(0xFFEBFBFF)],
-                  totalSwitches: 3,
-                  customTextStyles: [
-                    TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: SizeConfig.textScaleFactor * 13,
-                      color: Colors.white,
-                    ),
-                    TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: SizeConfig.textScaleFactor * 13,
-                      color: Colors.white,
-                    ),
-                    TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: SizeConfig.textScaleFactor * 13,
-                      color: Colors.white,
-                    ),
-                  ],
-                  labels: [
-                    'Likes',
-                    'Follows',
-                    'Wants',
-                  ],
-                  onToggle: (index) {
-                    setState(() {
-                      switch (index) {
-                        case 0:
-                          _selectedView = 'products';
-                          break;
-                        case 1:
-                          _selectedView = 'stores';
-                          break;
-                        case 2:
-                          _selectedView = 'wants';
-                          break;
-                      }
-                    });
+                  });
+                },
+              ),
+              Expanded(
+                child: SmartRefresher(
+                  controller: _refreshController,
+                  onRefresh: () {
+                    _lastProduct = null;
+                    _lastStore = null;
+                    _wants = application.currentUserModel!.items_wanted ?? [];
+                    _wishListBloc.add(InitializeWishListScreen());
                   },
+                  child: _buildSelectedView(),
                 ),
-                Expanded(
-                  child: SmartRefresher(
-                    controller: _refreshController,
-                    onRefresh: () {
-                      _lastProduct = null;
-                      _lastStore = null;
-                      _wants = application.currentUserModel!.items_wanted ?? [];
-                      _wishListBloc.add(InitializeWishListScreen());
-                    },
-                    child: _buildSelectedView(),
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

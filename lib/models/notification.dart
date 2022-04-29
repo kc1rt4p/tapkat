@@ -11,6 +11,7 @@ class NotificationModel {
   String? body;
   bool? read;
   String? timestamp;
+  String? deviceid;
 
   NotificationModel({
     this.notificationid,
@@ -23,6 +24,7 @@ class NotificationModel {
     this.body,
     this.read,
     this.timestamp,
+    this.deviceid,
   });
 
   factory NotificationModel.fromJson(Map<String, dynamic> json) =>
@@ -37,6 +39,7 @@ class NotificationModel {
         body: json['body'] as String?,
         read: json['read'] as bool?,
         timestamp: json['timestamp'] as String?,
+        deviceid: json['deviceid'] as String?,
       );
 
   Map<String, dynamic> toJson() => {
@@ -50,5 +53,6 @@ class NotificationModel {
         'body': this.body,
         'read': this.read,
         'timestamp': this.timestamp,
+        'deviceid': this.deviceid,
       };
 }

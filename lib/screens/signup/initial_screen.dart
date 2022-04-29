@@ -53,6 +53,7 @@ class _InitialSignUpScreenState extends State<InitialSignUpScreen> {
   Widget build(BuildContext context) {
     SizeConfig().init(context);
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: ProgressHUD(
         indicatorColor: kBackgroundColor,
         backgroundColor: Colors.white,
@@ -145,7 +146,8 @@ class _InitialSignUpScreenState extends State<InitialSignUpScreen> {
                                 child: Column(
                                   children: [
                                     CustomTextFormField(
-                                      hintText: 'Enter your email address',
+                                      hintText:
+                                          'Enter your email address or phone number',
                                       label: 'Email Address',
                                       controller: _emailTextController,
                                       validator: (val) =>
@@ -344,8 +346,8 @@ class _InitialSignUpScreenState extends State<InitialSignUpScreen> {
             name: _currentUserLoc!.name ?? '',
             geometry: Geometry(
               location: Location(
-                lat: _currentUserPosition!.latitude,
-                lng: _currentUserPosition!.longitude,
+                lat: position.latitude!.toDouble(),
+                lng: position.longitude!.toDouble(),
               ),
             ),
             addressComponents: [

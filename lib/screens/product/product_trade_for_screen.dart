@@ -33,6 +33,7 @@ class _ProductTradeForScreenState extends State<ProductTradeForScreen> {
   Widget build(BuildContext context) {
     SizeConfig().init(context);
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: Column(
         children: [
           CustomAppBar(

@@ -29,6 +29,11 @@
         </intent>
     </queries>
 
+    <queries>
+        <provider android:authorities="com.facebook.katana.provider.PlatformProvider" /> <!-- allows app to access Facebook app features -->
+        <provider android:authorities="com.facebook.orca.provider.PlatformProvider" /> <!-- allows sharing to Messenger app -->
+    </queries>
+
    <application
         android:label="tapkat"
         android:name="${applicationName}"
@@ -94,7 +99,7 @@
         <meta-data android:name = "com.google.firebase.messaging.default_notification_icon"
           android:resource = "@drawable/ic_stat_notif_icon"/>
           <meta-data
-android:name="com.google.firebase.messaging.default_notification_color"
-android:resource="@color/colorPrimary" />
+            android:name="com.google.firebase.messaging.default_notification_color"
+            android:resource="@color/colorPrimary" />
     </application>
 </manifest>
