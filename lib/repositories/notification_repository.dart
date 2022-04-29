@@ -1,11 +1,8 @@
 import 'dart:io';
 
 import 'package:device_info_plus/device_info_plus.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:tapkat/services/http/api_service.dart';
-import 'package:tapkat/services/tapkat_encryption.dart';
 import 'package:tapkat/utilities/application.dart' as application;
-import 'package:tapkat/utilities/constants.dart';
 
 class NotificationRepository {
   final _apiService = ApiService();

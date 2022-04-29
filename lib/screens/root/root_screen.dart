@@ -66,7 +66,7 @@ class _RootScreenState extends State<RootScreen> {
   late AuthBloc _authBloc;
   late BarterBloc _barterBloc;
 
-  final _currentVerDate = DateTime(2022, 4, 27, 1);
+  final _currentVerDate = DateTime(2022, 4, 29, 1);
 
   final _appConfig = new LocalStorage('app_config.json');
 
