@@ -66,7 +66,7 @@ class _RootScreenState extends State<RootScreen> {
   late AuthBloc _authBloc;
   late BarterBloc _barterBloc;
 
-  final _currentVerDate = DateTime(2022, 4, 29, 1);
+  final _currentVerDate = DateTime(2022, 5, 3, 12);
 
   final _appConfig = new LocalStorage('app_config.json');
 
@@ -126,6 +126,7 @@ class _RootScreenState extends State<RootScreen> {
   initNotifications() async {
     final _firebaseMessaging = FirebaseMessaging.instance;
     final _firstLoginDate = await _appConfig.getItem('first_login_date');
+    print('_____ FIRST LOGIN DATE:::: $_firstLoginDate');
     // final permissionStatus =
     //     await notif.NotificationPermissions.getNotificationPermissionStatus();
     final settings = await _firebaseMessaging.requestPermission(
@@ -137,6 +138,21 @@ class _RootScreenState extends State<RootScreen> {
       provisional: false,
       sound: true,
     );
+
+    List<String> userIds = [];
+
+    if (_firstLoginDate != null) {
+      (_firstLoginDate as Map<String, dynamic>).forEach((key, value) {
+        if (key != application.currentUser!.uid) {
+          print('DELETING $key --0000000000000000000000000000000000000000');
+          userIds.add(key);
+        }
+      });
+    }
+
+    if (userIds.isNotEmpty) {
+      _rootBloc.add(DeleteRegistrationTokens(userIds));
+    }
 
     if (_firstLoginDate == null) {
       await _appConfig.setItem('first_login_date', {
@@ -153,7 +169,7 @@ class _RootScreenState extends State<RootScreen> {
 
       _rootBloc.add(UpdateUserToken());
     }
-    print('----------= status: ${settings.authorizationStatus}');
+
     // permissionStatus == PermissionStatus.denied ||
     if (settings.authorizationStatus != AuthorizationStatus.authorized) return;
 

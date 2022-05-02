@@ -27,6 +27,14 @@ class ResendEmailSuccess extends AuthState {}
 
 class AuthSignedOut extends AuthState {}
 
+class PhoneVerifiedButNoRecord extends AuthState {}
+
+class PhoneOtpSentSuccess extends AuthState {
+  final String verificationId;
+
+  PhoneOtpSentSuccess(this.verificationId);
+}
+
 class AuthSignedIn extends AuthState {
   final User user;
 

@@ -144,7 +144,8 @@ class _MyAppState extends State<MyApp> {
                 stream: FirebaseAuth.instance.authStateChanges(),
                 builder: (context, snapshot) {
                   if (snapshot.hasData) {
-                    if (snapshot.data != null) {
+                    if (snapshot.data != null &&
+                        application.currentUserModel != null) {
                       return RootScreen();
                     }
                   }

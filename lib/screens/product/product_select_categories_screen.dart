@@ -214,8 +214,6 @@ class _SelectProductCategoryScreenState
       ),
     );
 
-    if (tradefor == null) return;
-
     if (tradefor is List<String>) productRequest.tradefor = tradefor;
 
     if (widget.updating) {

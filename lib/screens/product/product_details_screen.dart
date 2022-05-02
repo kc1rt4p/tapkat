@@ -276,7 +276,6 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                       child: Row(
                                         children: [
                                           Expanded(
-                                            flex: 1,
                                             child: Text(
                                               _product != null &&
                                                       _product!.price != null &&
@@ -295,7 +294,10 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                           ),
                                           SizedBox(width: 16.0),
                                           Visibility(
-                                            visible: !widget.ownItem,
+                                            visible: _product != null &&
+                                                _product!.userid !=
+                                                    application
+                                                        .currentUser!.uid,
                                             child: InkWell(
                                               onTap: () {
                                                 Navigator.push(
@@ -312,11 +314,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                 );
                                               },
                                               child: Container(
-                                                margin:
-                                                    EdgeInsets.only(left: 8.0),
                                                 padding: EdgeInsets.symmetric(
-                                                    horizontal: 20.0,
-                                                    vertical: 10.0),
+                                                    horizontal: 10.0,
+                                                    vertical: 5.0),
                                                 decoration: BoxDecoration(
                                                   color: Color(0xFFBB3F03),
                                                   borderRadius:
@@ -347,7 +347,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                         vertical: 10.0,
                                       ),
                                       child: Divider(
-                                        thickness: 0.3,
+                                        thickness: 0.5,
                                         color: kBackgroundColor,
                                       ),
                                     ),
@@ -580,12 +580,6 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                       FontAwesomeIcons.share,
                                                       color: Color(0xFF94D2BD),
                                                     ),
-                                                    SizedBox(width: 20.0),
-                                                    Icon(
-                                                      FontAwesomeIcons
-                                                          .solidCommentDots,
-                                                      color: Color(0xFF94D2BD),
-                                                    ),
                                                   ],
                                                 ),
                                               ],
@@ -688,31 +682,70 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                       child: Container(
                                         padding: EdgeInsets.symmetric(
                                             horizontal: 20.0, vertical: 5),
-                                        child: CustomButton(
-                                          label: 'BARTER',
-                                          onTap: () {
-                                            if (!application
-                                                .currentUser!.emailVerified) {
-                                              DialogMessage.show(
-                                                context,
-                                                message:
-                                                    'Click on the verification link sent to your email address: ${application.currentUser!.email}',
-                                                buttonText: 'Resend',
-                                                firstButtonClicked: () =>
-                                                    _authBloc
-                                                        .add(ResendEmail()),
-                                              );
-                                              return;
-                                            }
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (context) =>
-                                                    BarterScreen(
-                                                        product: _product!),
+                                        child: Row(
+                                          children: [
+                                            Expanded(
+                                              child: CustomButton(
+                                                bgColor: Style.secondaryColor,
+                                                label: 'CHAT',
+                                                onTap: () {
+                                                  if (!application.currentUser!
+                                                      .emailVerified) {
+                                                    DialogMessage.show(
+                                                      context,
+                                                      message:
+                                                          'Click on the verification link sent to your email address: ${application.currentUser!.email}',
+                                                      buttonText: 'Resend',
+                                                      firstButtonClicked: () =>
+                                                          _authBloc.add(
+                                                              ResendEmail()),
+                                                    );
+                                                    return;
+                                                  }
+                                                  Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          BarterScreen(
+                                                        product: _product!,
+                                                        showChatFirst: true,
+                                                      ),
+                                                    ),
+                                                  );
+                                                },
                                               ),
-                                            );
-                                          },
+                                            ),
+                                            SizedBox(width: 10.0),
+                                            Expanded(
+                                              child: CustomButton(
+                                                label: 'BARTER',
+                                                onTap: () {
+                                                  if (!application.currentUser!
+                                                      .emailVerified) {
+                                                    DialogMessage.show(
+                                                      context,
+                                                      message:
+                                                          'Click on the verification link sent to your email address: ${application.currentUser!.email}',
+                                                      buttonText: 'Resend',
+                                                      firstButtonClicked: () =>
+                                                          _authBloc.add(
+                                                              ResendEmail()),
+                                                    );
+                                                    return;
+                                                  }
+                                                  Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          BarterScreen(
+                                                              product:
+                                                                  _product!),
+                                                    ),
+                                                  );
+                                                },
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
                                     )

@@ -10,6 +10,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:tapkat/models/user.dart';
+import 'package:tapkat/repositories/user_repository.dart';
 import 'package:tapkat/schemas/users_record.dart';
 import 'package:tapkat/utilities/helper.dart';
 import 'package:tapkat/utilities/application.dart' as application;
@@ -25,6 +26,7 @@ class AuthService {
   UserModel? currentUserModel;
   TapkatFirebaseUser? currentUser;
   bool get loggedIn => currentUser?.loggedIn ?? false;
+  final _userRepo = UserRepository();
   Stream<TapkatFirebaseUser> tapkatFirebaseUserStream() => FirebaseAuth.instance
       .authStateChanges()
       .debounce((user) => user == null && !loggedIn
@@ -75,7 +77,9 @@ class AuthService {
   }
 
   Future<void> resendEmail() async {
-    FirebaseAuth.instance.currentUser!.sendEmailVerification();
+    await FirebaseAuth.instance.currentUser!.sendEmailVerification();
+    application.lastEmailResendVerification =
+        DateTime.now().millisecondsSinceEpoch;
   }
 
   Future maybeCreateUser(User user) async {

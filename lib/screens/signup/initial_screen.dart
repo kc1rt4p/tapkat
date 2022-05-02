@@ -47,6 +47,9 @@ class _InitialSignUpScreenState extends State<InitialSignUpScreen> {
     _authBloc = BlocProvider.of<AuthBloc>(context);
     super.initState();
     _loadUserLocation();
+    if (application.currentUser != null) {
+      _mobileNumberTextController.text = application.currentUser!.phoneNumber!;
+    }
   }
 
   @override
@@ -146,8 +149,7 @@ class _InitialSignUpScreenState extends State<InitialSignUpScreen> {
                                 child: Column(
                                   children: [
                                     CustomTextFormField(
-                                      hintText:
-                                          'Enter your email address or phone number',
+                                      hintText: 'Enter your email address',
                                       label: 'Email Address',
                                       controller: _emailTextController,
                                       validator: (val) =>
@@ -155,35 +157,44 @@ class _InitialSignUpScreenState extends State<InitialSignUpScreen> {
                                               ? 'Required'
                                               : null,
                                     ),
-                                    CustomTextFormField(
-                                      hintText: 'Enter your password',
-                                      label: 'Password',
-                                      controller: _passwordTextController,
-                                      obscureText: true,
-                                      validator: (val) =>
-                                          val != null && val.isEmpty
-                                              ? 'Required'
-                                              : null,
-                                    ),
-                                    CustomTextFormField(
-                                      hintText: 'Confirm your password',
-                                      label: 'Confirm Password',
-                                      controller:
-                                          _confirmPasswordTextController,
-                                      obscureText: true,
-                                      validator: (val) {
-                                        if (val != null && val.isEmpty)
-                                          return 'Required';
-                                        if (val !=
-                                            _passwordTextController.text.trim())
-                                          return 'Passwords don\'t match!';
+                                    Visibility(
+                                      visible: application.currentUser == null,
+                                      child: Column(
+                                        children: [
+                                          CustomTextFormField(
+                                            hintText: 'Enter your password',
+                                            label: 'Password',
+                                            controller: _passwordTextController,
+                                            obscureText: true,
+                                            validator: (val) =>
+                                                val != null && val.isEmpty
+                                                    ? 'Required'
+                                                    : null,
+                                          ),
+                                          CustomTextFormField(
+                                            hintText: 'Confirm your password',
+                                            label: 'Confirm Password',
+                                            controller:
+                                                _confirmPasswordTextController,
+                                            obscureText: true,
+                                            validator: (val) {
+                                              if (val != null && val.isEmpty)
+                                                return 'Required';
+                                              if (val !=
+                                                  _passwordTextController.text
+                                                      .trim())
+                                                return 'Passwords don\'t match!';
 
-                                        return null;
-                                      },
+                                              return null;
+                                            },
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                     CustomTextFormField(
-                                      hintText: 'Enter your username',
-                                      label: 'Username',
+                                      hintText:
+                                          'Enter the display name you want',
+                                      label: 'Display Name',
                                       controller: _usernameTextController,
                                       validator: (val) =>
                                           val != null && val.isEmpty
@@ -194,6 +205,7 @@ class _InitialSignUpScreenState extends State<InitialSignUpScreen> {
                                       hintText: 'Enter your mobile number',
                                       label: 'Mobile Number',
                                       controller: _mobileNumberTextController,
+                                      keyboardType: TextInputType.phone,
                                       validator: (val) =>
                                           val != null && val.isEmpty
                                               ? 'Required'

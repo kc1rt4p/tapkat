@@ -8,6 +8,7 @@ import 'package:tapkat/models/location.dart';
 import 'package:tapkat/models/request/update_user.dart';
 import 'package:tapkat/models/user.dart';
 import 'package:tapkat/repositories/user_repository.dart';
+import 'package:tapkat/schemas/index.dart';
 import 'package:tapkat/schemas/users_record.dart';
 import 'package:tapkat/services/auth_service.dart';
 import 'package:tapkat/services/firebase.dart';
@@ -21,6 +22,7 @@ part 'auth_state.dart';
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final authService = AuthService();
   final userRepo = UserRepository();
+  final firebaseAuth = FirebaseAuth.instance;
 
   AuthBloc() : super(AuthInitial()) {
     on<AuthEvent>((event, emit) async {
@@ -59,14 +61,18 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
       if (event is SignUp) {
         try {
-          final user = await authService.createAccountWithEmail(
-            event.context,
-            event.email,
-            event.password,
-          );
+          User? user;
+          if (application.currentUser == null) {
+            user = await authService.createAccountWithEmail(
+              event.context,
+              event.email,
+              event.password,
+            );
+          } else {
+            user = application.currentUser;
+          }
 
           if (user != null) {
-            application.currentUser = user;
             final _location = event.location;
 
             final updateUser = UpdateUserModel(
@@ -89,16 +95,20 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
                   : null,
             );
 
-            await UsersRecord.collection
-                .doc(user.uid)
-                .update(updateUser.toJson());
+            if (application.currentUser != null) {
+              await authService.maybeCreateUser(user);
+            } else {
+              await UsersRecord.collection
+                  .doc(user.uid)
+                  .update(updateUser.toJson());
+            }
 
             final userModel = await userRepo.getUser(user.uid);
             if (userModel != null) {
               application.currentUserModel = userModel;
+              application.currentUser = user;
+              emit(ShowSignUpPhoto());
             }
-
-            emit(ShowSignUpPhoto());
           }
         } on FirebaseAuthException catch (e) {
           emit(AuthError(e.message ?? e.toString()));
@@ -171,6 +181,48 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           emit(AuthSignedIn(authService.currentUser!.user!));
           // emit(ShowSignUpSocialMedia());
         }
+      }
+
+      if (event is SignInWithMobileNumber) {
+        userRepo.sendOtp(
+          event.phoneNumber,
+          Duration(seconds: 30),
+          (error) {
+            add(PhoneAuthError(error.message));
+          },
+          (phoneAuthCredential) {},
+          (verificationId, forceResendingToken) {
+            add(PhoneOtpSent(verificationId));
+          },
+          (verificationId) {},
+        );
+      }
+
+      if (event is VerifyPhoneOtp) {
+        final userCredential =
+            await userRepo.verifyAndLogin(event.verificationId, event.otpCode);
+        final user = userCredential.user;
+
+        if (user != null) {
+          application.currentUser = user;
+
+          final userModel = await userRepo.getUser(user.uid);
+          if (userModel != null) {
+            application.currentUserModel = userModel;
+
+            emit(AuthSignedIn(user));
+          } else {
+            emit(PhoneVerifiedButNoRecord());
+          }
+        }
+      }
+
+      if (event is PhoneAuthError) {
+        emit(AuthError(event.message ?? ''));
+      }
+
+      if (event is PhoneOtpSent) {
+        emit(PhoneOtpSentSuccess(event.verificationId));
       }
 
       if (event is SignInWithEmail) {

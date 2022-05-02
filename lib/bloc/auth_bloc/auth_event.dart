@@ -49,7 +49,30 @@ class SignInWithGoogle extends AuthEvent {}
 
 class SignInWithApple extends AuthEvent {}
 
-class SignUpMobileNumber extends AuthEvent {}
+class SignInWithMobileNumber extends AuthEvent {
+  final String phoneNumber;
+
+  SignInWithMobileNumber(this.phoneNumber);
+}
+
+class PhoneAuthError extends AuthEvent {
+  final String? message;
+
+  PhoneAuthError(this.message);
+}
+
+class PhoneOtpSent extends AuthEvent {
+  final String verificationId;
+
+  PhoneOtpSent(this.verificationId);
+}
+
+class VerifyPhoneOtp extends AuthEvent {
+  final String verificationId;
+  final String otpCode;
+
+  VerifyPhoneOtp(this.verificationId, this.otpCode);
+}
 
 class SignUp extends AuthEvent {
   final String email;

@@ -228,20 +228,20 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             Expanded(
-              child: SmartRefresher(
-                onRefresh: () => _homeBloc.add(InitializeHomeScreen()),
-                controller: _refreshController,
-                child: Container(
-                  height: double.maxFinite,
-                  width: double.infinity,
-                  padding: EdgeInsets.fromLTRB(15.0, 15, 15.0, 0.0),
-                  decoration: BoxDecoration(
-                    color: Color(0xFFEBFBFF),
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(30.0),
-                      topRight: Radius.circular(30.0),
-                    ),
+              child: Container(
+                height: double.maxFinite,
+                width: double.infinity,
+                padding: EdgeInsets.fromLTRB(15.0, 15, 15.0, 0.0),
+                decoration: BoxDecoration(
+                  color: Color(0xFFEBFBFF),
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(30.0),
+                    topRight: Radius.circular(30.0),
                   ),
+                ),
+                child: SmartRefresher(
+                  onRefresh: () => _homeBloc.add(InitializeHomeScreen()),
+                  controller: _refreshController,
                   child: SingleChildScrollView(
                     child: Container(
                       child: Column(
