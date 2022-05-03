@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_progress_hud/flutter_progress_hud.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
 import 'package:tapkat/screens/signup/initial_screen.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
@@ -33,6 +34,10 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _signInWithPhone = false;
   bool _verifyingPhone = false;
   String? _verificationId;
+  String? _phoneNumber;
+  bool _showPhoneError = false;
+  String _phoneErrorMsg = '';
+  PhoneNumber _selectedPhoneCountry = PhoneNumber(isoCode: 'SG');
 
   @override
   void initState() {
@@ -156,18 +161,132 @@ class _LoginScreenState extends State<LoginScreen> {
                                                 keyboardType:
                                                     TextInputType.number,
                                               )
-                                            : CustomTextFormField(
-                                                hintText:
-                                                    'Enter your phone number',
-                                                label: 'Phone number',
-                                                controller:
-                                                    _phoneTextController,
-                                                keyboardType:
-                                                    TextInputType.phone,
-                                                validator: (val) =>
-                                                    val != null && val.isEmpty
-                                                        ? 'Required'
-                                                        : null,
+                                            : Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Container(
+                                                    width: double.infinity,
+                                                    padding:
+                                                        EdgeInsets.symmetric(
+                                                      horizontal: 10.0,
+                                                    ),
+                                                    decoration: BoxDecoration(
+                                                      color: Color(0xFFE2E2E2)
+                                                          .withOpacity(0.15),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              12.0),
+                                                      border: Border.all(
+                                                        color: kBackgroundColor,
+                                                      ),
+                                                    ),
+                                                    child:
+                                                        InternationalPhoneNumberInput(
+                                                      initialValue:
+                                                          _selectedPhoneCountry,
+                                                      spaceBetweenSelectorAndTextField:
+                                                          0,
+                                                      textFieldController:
+                                                          _phoneTextController,
+                                                      selectorConfig:
+                                                          SelectorConfig(
+                                                        trailingSpace: false,
+                                                        selectorType:
+                                                            PhoneInputSelectorType
+                                                                .DIALOG,
+                                                        setSelectorButtonAsPrefixIcon:
+                                                            true,
+                                                        leadingPadding: 0,
+                                                      ),
+                                                      inputDecoration:
+                                                          InputDecoration(
+                                                        hintStyle: TextStyle(
+                                                          color: Colors.white
+                                                              .withOpacity(0.3),
+                                                          fontSize: SizeConfig
+                                                                  .textScaleFactor *
+                                                              15,
+                                                        ),
+                                                        border:
+                                                            InputBorder.none,
+                                                        contentPadding:
+                                                            EdgeInsets.zero,
+                                                        hintText:
+                                                            'Enter your phone number',
+                                                        isDense: true,
+                                                      ),
+                                                      onInputChanged:
+                                                          (phoneNumber) {
+                                                        setState(() {
+                                                          _phoneNumber =
+                                                              phoneNumber
+                                                                  .phoneNumber;
+                                                          _selectedPhoneCountry =
+                                                              phoneNumber;
+                                                        });
+                                                      },
+                                                      textStyle: TextStyle(
+                                                        color: Colors.white,
+                                                        fontFamily: 'Poppins',
+                                                        fontSize: SizeConfig
+                                                                .textScaleFactor *
+                                                            15,
+                                                      ),
+                                                      selectorTextStyle:
+                                                          TextStyle(
+                                                        color: Colors.white,
+                                                        fontFamily: 'Poppins',
+                                                        fontSize: SizeConfig
+                                                                .textScaleFactor *
+                                                            15,
+                                                      ),
+                                                      validator: (val) {
+                                                        if (val != null) {
+                                                          if (val.isEmpty) {
+                                                            setState(() {
+                                                              _showPhoneError =
+                                                                  true;
+                                                              _phoneErrorMsg =
+                                                                  'Required';
+                                                            });
+                                                            return null;
+                                                          } else {
+                                                            setState(() {
+                                                              _phoneErrorMsg =
+                                                                  '';
+                                                              _showPhoneError =
+                                                                  false;
+                                                            });
+                                                            return null;
+                                                          }
+                                                        } else {
+                                                          setState(() {
+                                                            _phoneErrorMsg = '';
+                                                            _showPhoneError =
+                                                                false;
+                                                          });
+                                                          return null;
+                                                        }
+                                                      },
+                                                      countries: ['PH', 'SG'],
+                                                    ),
+                                                  ),
+                                                  Visibility(
+                                                    visible: _showPhoneError,
+                                                    child: Text(
+                                                      _phoneErrorMsg,
+                                                      style: TextStyle(
+                                                        fontSize: 12.0,
+                                                        color:
+                                                            Colors.red.shade400,
+                                                        fontStyle:
+                                                            FontStyle.italic,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  SizedBox(height: 16.0),
+                                                ],
                                               )
                                         : Column(
                                             children: [
@@ -325,13 +444,14 @@ class _LoginScreenState extends State<LoginScreen> {
 
   _onLogInTapped() {
     if (!_formKey.currentState!.validate()) return;
+    if (_showPhoneError) return;
 
     if (_signInWithPhone) {
       if (_verifyingPhone) {
         _authBloc.add(
             VerifyPhoneOtp(_verificationId!, _otpTextController.text.trim()));
       } else {
-        _authBloc.add(SignInWithMobileNumber(_phoneTextController.text.trim()));
+        _authBloc.add(SignInWithMobileNumber(_phoneNumber!));
       }
     } else {
       _authBloc.add(SignInWithEmail(

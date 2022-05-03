@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_phoenix/flutter_phoenix.dart';
 import 'package:google_maps_webservice/places.dart';
+import 'package:tapkat/backend.dart';
 import 'package:tapkat/models/location.dart';
 import 'package:tapkat/models/request/update_user.dart';
 import 'package:tapkat/models/user.dart';
@@ -96,17 +97,18 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             );
 
             if (application.currentUser != null) {
-              await authService.maybeCreateUser(user);
-            } else {
-              await UsersRecord.collection
-                  .doc(user.uid)
-                  .update(updateUser.toJson());
+              await maybeCreateUser(user);
             }
+
+            await UsersRecord.collection
+                .doc(user.uid)
+                .update(updateUser.toJson());
+
+            application.currentUser = user;
 
             final userModel = await userRepo.getUser(user.uid);
             if (userModel != null) {
               application.currentUserModel = userModel;
-              application.currentUser = user;
               emit(ShowSignUpPhoto());
             }
           }
