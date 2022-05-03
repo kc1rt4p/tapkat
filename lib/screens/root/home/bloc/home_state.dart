@@ -45,10 +45,18 @@ class LoadedRecommendedList extends HomeState {
 
 class HomeLoading extends HomeState {}
 
+class LoadingFreeList extends HomeState {}
+
 class GetUserFavoritesSuccess extends HomeState {
   final List<ProductModel> list;
 
   GetUserFavoritesSuccess(this.list);
+}
+
+class LoadedFreeList extends HomeState {
+  final List<ProductModel> list;
+
+  LoadedFreeList(this.list);
 }
 
 class LoadingRecommendedList extends HomeState {}

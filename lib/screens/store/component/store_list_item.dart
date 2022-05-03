@@ -39,8 +39,8 @@ class _StoreListItemState extends State<StoreListItem> {
                       ? CachedNetworkImage(
                           imageUrl: widget.store.photo_url!,
                           imageBuilder: (context, imageProvider) => Container(
-                            height: SizeConfig.screenHeight * 0.15,
-                            width: SizeConfig.screenHeight * 0.19,
+                            height: SizeConfig.screenHeight * 0.1,
+                            width: SizeConfig.screenHeight * 0.12,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.only(
                                 topLeft: Radius.circular(20.0),
@@ -55,8 +55,8 @@ class _StoreListItemState extends State<StoreListItem> {
                             ),
                           ),
                           placeholder: (context, text) => Container(
-                            height: SizeConfig.screenHeight * 0.15,
-                            width: SizeConfig.screenHeight * 0.19,
+                            height: SizeConfig.screenHeight * 0.1,
+                            width: SizeConfig.screenHeight * 0.12,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.only(
                                 topLeft: Radius.circular(20.0),
@@ -71,8 +71,8 @@ class _StoreListItemState extends State<StoreListItem> {
                             ),
                           ),
                           errorWidget: (context, url, error) => Container(
-                            height: SizeConfig.screenHeight * 0.15,
-                            width: SizeConfig.screenHeight * 0.19,
+                            height: SizeConfig.screenHeight * 0.1,
+                            width: SizeConfig.screenHeight * 0.12,
                             child: Icon(
                               Icons.error,
                               color: kBackgroundColor,
@@ -98,7 +98,7 @@ class _StoreListItemState extends State<StoreListItem> {
             ),
             Container(
               color: Colors.white,
-              width: SizeConfig.screenHeight * 0.19,
+              width: SizeConfig.screenHeight * 0.12,
               padding: EdgeInsets.all(3.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -109,7 +109,7 @@ class _StoreListItemState extends State<StoreListItem> {
                     textAlign: TextAlign.center,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      fontSize: SizeConfig.textScaleFactor * 12,
+                      fontSize: SizeConfig.textScaleFactor * 11,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
