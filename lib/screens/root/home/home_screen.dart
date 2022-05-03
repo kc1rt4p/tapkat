@@ -264,47 +264,30 @@ class _HomeScreenState extends State<HomeScreen> {
                         children: [
                           BarterList(
                             loading: _loadingTopStores,
+                            loadingSize: 50.0,
                             context: context,
                             items: _topStoreList.map((store) {
                               return Center(
-                                child: StreamBuilder<
-                                        QuerySnapshot<Map<String, dynamic>>>(
-                                    stream: barterRef
-                                        .where('userid',
-                                            isEqualTo: store.userid)
-                                        .where('likerid',
-                                            isEqualTo:
-                                                application.currentUser!.uid)
-                                        .snapshots(),
-                                    builder: (context, snapshot) {
-                                      bool liked = false;
-
-                                      if (snapshot.data != null) {
-                                        if (snapshot.data!.docs.isNotEmpty)
-                                          liked = true;
-                                      }
-
-                                      return StoreListItem(
-                                        StoreModel(
-                                          display_name: store.display_name,
-                                          userid: store.userid,
-                                          photo_url: store.photo_url,
-                                        ),
-                                        removeLike: true,
-                                        onTap: () => Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) => StoreScreen(
-                                              userId: store.userid!,
-                                              userName: store.display_name!,
-                                            ),
-                                          ),
-                                        ),
-                                      );
-                                    }),
+                                child: StoreListItem(
+                                  StoreModel(
+                                    display_name: store.display_name,
+                                    userid: store.userid,
+                                    photo_url: store.photo_url,
+                                  ),
+                                  removeLike: true,
+                                  onTap: () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => StoreScreen(
+                                        userId: store.userid!,
+                                        userName: store.display_name!,
+                                      ),
+                                    ),
+                                  ),
+                                ),
                               );
                             }).toList(),
-                            label: 'Top Stores',
+                            label: 'Top Users',
                             onViewAllTapped: () => Navigator.push(
                               context,
                               MaterialPageRoute(
