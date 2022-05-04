@@ -10,6 +10,7 @@ class CustomButton extends StatefulWidget {
   final bool removeMargin;
   final bool enabled;
   final double? fontSize;
+  final double? width;
   const CustomButton({
     Key? key,
     required this.label,
@@ -20,6 +21,7 @@ class CustomButton extends StatefulWidget {
     this.removeMargin = false,
     this.enabled = true,
     this.fontSize,
+    this.width,
   }) : super(key: key);
 
   @override
@@ -33,7 +35,7 @@ class _CustomButtonState extends State<CustomButton> {
       onTap: widget.enabled ? widget.onTap : null,
       child: Container(
         margin: !widget.removeMargin ? EdgeInsets.only(bottom: 12.0) : null,
-        width: double.infinity,
+        width: widget.width ?? double.infinity,
         padding: EdgeInsets.symmetric(
           vertical: 8.0,
         ),

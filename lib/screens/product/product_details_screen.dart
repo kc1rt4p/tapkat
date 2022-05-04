@@ -277,11 +277,21 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                         children: [
                                           Expanded(
                                             child: Text(
+                                              // _product != null &&
+                                              //         _product!.price != null &&
+                                              //         _product!.currency != null
+                                              //     ? '${_product!.currency!} ${_product!.price!.toStringAsFixed(2)}'
+                                              //     : '',
                                               _product != null &&
-                                                      _product!.price != null &&
-                                                      _product!.currency != null
-                                                  ? '${_product!.currency!} ${_product!.price!.toStringAsFixed(2)}'
-                                                  : '',
+                                                      _product!.free!
+                                                  ? 'FREE'
+                                                  : _product != null &&
+                                                          _product!.price !=
+                                                              null &&
+                                                          _product!.currency !=
+                                                              null
+                                                      ? '${_product!.currency!} ${_product!.price!.toStringAsFixed(2)}'
+                                                      : '',
                                               style: TextStyle(
                                                 color: kBackgroundColor,
                                                 fontFamily: 'Poppins',
@@ -690,7 +700,10 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                 label: 'CHAT',
                                                 onTap: () {
                                                   if (!application.currentUser!
-                                                      .emailVerified) {
+                                                          .emailVerified &&
+                                                      !application
+                                                          .currentUserModel!
+                                                          .verifiedByPhone!) {
                                                     DialogMessage.show(
                                                       context,
                                                       message:
@@ -721,7 +734,10 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                 label: 'BARTER',
                                                 onTap: () {
                                                   if (!application.currentUser!
-                                                      .emailVerified) {
+                                                          .emailVerified &&
+                                                      !application
+                                                          .currentUserModel!
+                                                          .verifiedByPhone!) {
                                                     DialogMessage.show(
                                                       context,
                                                       message:
@@ -856,22 +872,21 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                         //
                       },
                       markers: [
-                        TapkatMarker(
-                            _product!.productid!,
-                            LatLng(
-                              _product!.address != null &&
-                                      _product!.address!.location != null
-                                  ? _product!.address!.location!.latitude!
-                                      .toDouble()
-                                  : 0.00,
-                              _product!.address != null &&
-                                      _product!.address!.location != null
-                                  ? _product!.address!.location!.longitude!
-                                      .toDouble()
-                                  : 0.00,
-                            ),
-                            () => _onMarkerTapped(_product!),
-                            _product),
+                        Marker(
+                          markerId: MarkerId(_product!.productid!),
+                          position: LatLng(
+                            _product!.address != null &&
+                                    _product!.address!.location != null
+                                ? _product!.address!.location!.latitude!
+                                    .toDouble()
+                                : 0.00,
+                            _product!.address != null &&
+                                    _product!.address!.location != null
+                                ? _product!.address!.location!.longitude!
+                                    .toDouble()
+                                : 0.00,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -1046,9 +1061,11 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                         ),
                         SizedBox(height: 8.0),
                         Text(
-                          product.price == null
-                              ? ''
-                              : '\$ ${product.price!.toStringAsFixed(2)}',
+                          product.free!
+                              ? 'FREE'
+                              : product.price == null
+                                  ? ''
+                                  : '\$ ${product.price!.toStringAsFixed(2)}',
                           style: Style.subtitle2.copyWith(
                             color: kBackgroundColor,
                             fontWeight: FontWeight.bold,

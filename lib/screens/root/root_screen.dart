@@ -66,7 +66,7 @@ class _RootScreenState extends State<RootScreen> {
   late AuthBloc _authBloc;
   late BarterBloc _barterBloc;
 
-  final _currentVerDate = DateTime(2022, 5, 3, 2);
+  final _currentVerDate = DateTime(2022, 5, 4, 6);
 
   final _appConfig = new LocalStorage('app_config.json');
 
@@ -346,7 +346,8 @@ class _RootScreenState extends State<RootScreen> {
   }
 
   _onAddTapped() async {
-    if (!application.currentUser!.emailVerified) {
+    if (!application.currentUser!.emailVerified &&
+        !application.currentUserModel!.verifiedByPhone!) {
       DialogMessage.show(
         context,
         message:
@@ -433,7 +434,9 @@ class _RootScreenState extends State<RootScreen> {
     return Expanded(
       child: InkWell(
         onTap: () {
-          if (index == 2 && !application.currentUser!.emailVerified) {
+          if (index == 2 &&
+              (!application.currentUser!.emailVerified &&
+                  !application.currentUserModel!.verifiedByPhone!)) {
             DialogMessage.show(
               context,
               message:

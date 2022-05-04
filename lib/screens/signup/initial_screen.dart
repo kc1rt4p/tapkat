@@ -148,19 +148,20 @@ class _InitialSignUpScreenState extends State<InitialSignUpScreen> {
                                 key: _formKey,
                                 child: Column(
                                   children: [
-                                    CustomTextFormField(
-                                      hintText: 'Enter your email address',
-                                      label: 'Email Address',
-                                      controller: _emailTextController,
-                                      validator: (val) =>
-                                          val != null && val.isEmpty
-                                              ? 'Required'
-                                              : null,
-                                    ),
                                     Visibility(
                                       visible: application.currentUser == null,
                                       child: Column(
                                         children: [
+                                          CustomTextFormField(
+                                            hintText:
+                                                'Enter your email address',
+                                            label: 'Email Address',
+                                            controller: _emailTextController,
+                                            validator: (val) =>
+                                                val != null && val.isEmpty
+                                                    ? 'Required'
+                                                    : null,
+                                          ),
                                           CustomTextFormField(
                                             hintText: 'Enter your password',
                                             label: 'Password',

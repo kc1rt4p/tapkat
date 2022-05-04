@@ -99,7 +99,7 @@ class ProductRequestModel {
       'acquired_by': this.acquired_by ?? '',
       'status': this.status ?? '',
       'tradefor': this.tradefor ?? [],
-      'free': this.free ?? false,
+      'free': this.free,
     };
 
     if (updating) {

@@ -66,7 +66,7 @@ class TapkatGoogleMap extends StatefulWidget {
   // final Completer<GoogleMapController> controller;
   final Function(LatLng) onCameraIdle;
   final LatLng initialLocation;
-  final Iterable<TapkatMarker> markers;
+  final List<Marker> markers;
   final GoogleMarkerColor markerColor;
   final MapType mapType;
   final GoogleMapStyle style;
@@ -128,35 +128,7 @@ class _TapkatGoogleMapState extends State<TapkatGoogleMap> {
           compassEnabled: widget.showCompass,
           mapToolbarEnabled: widget.showMapToolbar,
           trafficEnabled: widget.showTraffic,
-          markers: widget.markers
-              .map(
-                (m) => Marker(
-                  markerId: MarkerId(m.markerId),
-                  position: m.location.toGoogleMaps(),
-                  icon: BitmapDescriptor.defaultMarkerWithHue(
-                      googleMarkerColorMap[widget.markerColor]!),
-                  onTap: () async {
-                    await m.onTap?.call();
-                    if (widget.centerMapOnMarkerTap) {
-                      final controller = await _controller.future;
-                      await controller.animateCamera(
-                        CameraUpdate.newLatLng(m.location.toGoogleMaps()),
-                      );
-                      currentMapCenter = m.location.toGoogleMaps();
-                      onCameraIdle();
-                    }
-                  },
-                  // infoWindow: m.product != null
-                  //     ? InfoWindow(
-                  //         title: m.product!.productname,
-                  //         snippet: m.product!.price == null
-                  //             ? ''
-                  //             : '\$ ${m.product!.price!.toStringAsFixed(2)}',
-                  //       )
-                  //     : InfoWindow.noText,
-                ),
-              )
-              .toSet(),
+          markers: widget.markers.toSet(),
         ),
       );
 }

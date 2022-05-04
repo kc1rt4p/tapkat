@@ -1,3 +1,6 @@
+import 'dart:typed_data';
+import 'dart:ui';
+
 import 'package:clippy_flutter/clippy_flutter.dart';
 import 'package:custom_info_window/custom_info_window.dart';
 import 'package:flutter/material.dart';
@@ -6,6 +9,7 @@ import 'package:flutter_progress_hud/flutter_progress_hud.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart' as gmf;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:http/http.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:tapkat/models/product.dart';
@@ -22,6 +26,7 @@ import 'package:tapkat/widgets/custom_app_bar.dart';
 import 'package:tapkat/widgets/custom_search_bar.dart';
 import 'package:tapkat/widgets/tapkat_map.dart';
 import 'package:tapkat/utilities/application.dart' as application;
+import 'package:toggle_switch/toggle_switch.dart';
 
 class ProductListScreen extends StatefulWidget {
   final bool showAdd;
@@ -70,12 +75,14 @@ class _ProductListScreenState extends State<ProductListScreen> {
   ProductModel? lastProduct;
 
   bool _loading = false;
+  List<Marker> _markers = [];
 
   String _selectedSortBy = 'distance';
   List<String> sortByOptions = [
     'Distance',
     'Name',
     'Price',
+    'Rating',
   ];
   int _selectedRadius = 5000;
   List<int> radiusOptions = [1000, 5000, 10000, 20000, 50000];
@@ -102,10 +109,12 @@ class _ProductListScreenState extends State<ProductListScreen> {
     switch (widget.listType) {
       case 'reco':
         _title = 'Recommended For You';
-        sortByOptions.add('Rating');
         break;
       case 'demand':
         _title = 'What\'s Hot?';
+        break;
+      case 'free':
+        _title = 'Free Items';
         break;
       default:
         _title = 'Your items';
@@ -263,31 +272,31 @@ class _ProductListScreenState extends State<ProductListScreen> {
                               onSubmitted: (val) => _onSearchSubmitted(val),
                             ),
                           ),
-                          Visibility(
-                            visible: !widget.ownListing,
-                            child: Row(
-                              children: [
-                                SizedBox(width: 10.0),
-                                InkWell(
-                                  onTap: _onSelectView,
-                                  child: Container(
-                                    padding: EdgeInsets.all(8.0),
-                                    decoration: BoxDecoration(
-                                      color: Color(0xFF005F73).withOpacity(0.3),
-                                      borderRadius: BorderRadius.circular(10.0),
-                                    ),
-                                    child: Icon(
-                                      _selectedView != 'map'
-                                          ? FontAwesomeIcons.mapMarkedAlt
-                                          : FontAwesomeIcons.thLarge,
-                                      size: 16.0,
-                                      color: kBackgroundColor,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+                          // Visibility(
+                          //   visible: !widget.ownListing,
+                          //   child: Row(
+                          //     children: [
+                          //       SizedBox(width: 10.0),
+                          //       InkWell(
+                          //         onTap: _onSelectView,
+                          //         child: Container(
+                          //           padding: EdgeInsets.all(8.0),
+                          //           decoration: BoxDecoration(
+                          //             color: Color(0xFF005F73).withOpacity(0.3),
+                          //             borderRadius: BorderRadius.circular(10.0),
+                          //           ),
+                          //           child: Icon(
+                          //             _selectedView != 'map'
+                          //                 ? FontAwesomeIcons.mapMarkedAlt
+                          //                 : FontAwesomeIcons.thLarge,
+                          //             size: 16.0,
+                          //             color: kBackgroundColor,
+                          //           ),
+                          //         ),
+                          //       ),
+                          //     ],
+                          //   ),
+                          // ),
                         ],
                       ),
                       Container(
@@ -453,6 +462,40 @@ class _ProductListScreenState extends State<ProductListScreen> {
                       ),
                     ],
                   ),
+                ),
+                ToggleSwitch(
+                  activeBgColor: [kBackgroundColor],
+                  initialLabelIndex: _selectedView == 'grid' ? 0 : 1,
+                  minWidth: SizeConfig.screenWidth,
+                  minHeight: 20.0,
+                  borderColor: [Color(0xFFEBFBFF)],
+                  totalSwitches: 2,
+                  customTextStyles: [
+                    TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: SizeConfig.textScaleFactor * 15,
+                      color: Colors.white,
+                    ),
+                    TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: SizeConfig.textScaleFactor * 15,
+                      color: Colors.white,
+                    ),
+                  ],
+                  icons: [
+                    Icons.grid_view,
+                    Icons.map,
+                  ],
+                  inactiveFgColor: Colors.white60,
+                  labels: [
+                    'Grid',
+                    'Map',
+                  ],
+                  onToggle: (index) {
+                    setState(() {
+                      _selectedView = index == 0 ? 'grid' : 'map';
+                    });
+                  },
                 ),
                 Expanded(
                   child: Container(
@@ -783,119 +826,112 @@ class _ProductListScreenState extends State<ProductListScreen> {
       barrierColor: Color(0x99000000),
       context: context,
       builder: (context) {
-        return Container(
-          color: Colors.white,
-          padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: SizeConfig.screenWidth * .2,
-                    height: SizeConfig.screenWidth * .2,
-                    decoration: BoxDecoration(
-                      image: DecorationImage(
-                        image: product.mediaPrimary != null
-                            ? NetworkImage(product.mediaPrimary!.url!)
-                            : AssetImage('assets/images/image_placeholder.jpg')
-                                as ImageProvider<Object>,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: 12.0),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          product.productname ?? '',
-                          style: Style.subtitle2.copyWith(
-                            color: kBackgroundColor,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        SizedBox(height: 8.0),
-                        Text(
-                          product.price == null
-                              ? ''
-                              : '\$ ${product.price!.toStringAsFixed(2)}',
-                          style: Style.subtitle2.copyWith(
-                            color: kBackgroundColor,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        SizedBox(height: 8.0),
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.location_pin,
-                              size: 20.0,
-                              color: Colors.red,
-                            ),
-                            Text(
-                              product.address!.address!.isNotEmpty
-                                  ? product.address!.address!
-                                  : 'No address',
-                              style: Style.subtitle2
-                                  .copyWith(color: kBackgroundColor),
-                            )
-                          ],
-                        ),
-                        SizedBox(height: 8.0),
-                        Row(
-                          children: [
-                            ...List.generate(5, (i) {
-                              return Padding(
-                                padding:
-                                    EdgeInsets.only(right: i != 5 ? 5.0 : 0.0),
-                                child: Icon(
-                                  i <
-                                          (product.rating != null
-                                              ? product.rating!.round()
-                                              : 0)
-                                      ? Icons.star
-                                      : Icons.star_border,
-                                  color: Color(0xFFFFC107),
-                                  size: 20.0,
-                                ),
-                              );
-                            }),
-                            Text(
-                              product.rating != null
-                                  ? product.rating!.toStringAsFixed(1)
-                                  : '0',
-                              style: TextStyle(fontSize: 16.0),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  SizedBox(width: 10.0),
-                  InkWell(
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ProductDetailsScreen(
-                          productId: product.productid ?? '',
-                          ownItem: widget.ownListing,
-                        ),
-                      ),
-                    ),
-                    child: Container(
-                      child: Icon(
-                        Icons.chevron_right,
-                        color: kBackgroundColor,
-                        size: 30.0,
-                      ),
-                    ),
-                  ),
-                ],
+        return InkWell(
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ProductDetailsScreen(
+                productId: product.productid ?? '',
+                ownItem: widget.ownListing,
               ),
-            ],
+            ),
+          ),
+          child: Container(
+            color: Colors.white,
+            padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: SizeConfig.screenWidth * .25,
+                      height: SizeConfig.screenWidth * .25,
+                      decoration: BoxDecoration(
+                        image: DecorationImage(
+                          image: product.mediaPrimary != null
+                              ? NetworkImage(product.mediaPrimary!.url!)
+                              : AssetImage(
+                                      'assets/images/image_placeholder.jpg')
+                                  as ImageProvider<Object>,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 16.0),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            product.productname ?? '',
+                            style: Style.subtitle2.copyWith(
+                              color: kBackgroundColor,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(height: 8.0),
+                          Text(
+                            product.price == null
+                                ? ''
+                                : '\$ ${product.price!.toStringAsFixed(2)}',
+                            style: Style.subtitle2.copyWith(
+                              color: kBackgroundColor,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(height: 8.0),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.location_pin,
+                                size: 20.0,
+                                color: Colors.red,
+                              ),
+                              Text(
+                                product.address!.address!.isNotEmpty
+                                    ? product.address!.address!
+                                    : 'No address',
+                                style: Style.subtitle2
+                                    .copyWith(color: kBackgroundColor),
+                              )
+                            ],
+                          ),
+                          SizedBox(height: 8.0),
+                          Row(
+                            children: [
+                              ...List.generate(5, (i) {
+                                return Padding(
+                                  padding: EdgeInsets.only(
+                                      right: i != 5 ? 5.0 : 0.0),
+                                  child: Icon(
+                                    i <
+                                            (product.rating != null
+                                                ? product.rating!.round()
+                                                : 0)
+                                        ? Icons.star
+                                        : Icons.star_border,
+                                    color: Color(0xFFFFC107),
+                                    size: 20.0,
+                                  ),
+                                );
+                              }),
+                              Text(
+                                product.rating != null
+                                    ? product.rating!.toStringAsFixed(1)
+                                    : '0',
+                                style: TextStyle(fontSize: 16.0),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -903,9 +939,11 @@ class _ProductListScreenState extends State<ProductListScreen> {
   }
 
   Widget _buildMapView() {
+    _buildMarkers();
     return Stack(
       children: [
         Container(
+          padding: EdgeInsets.fromLTRB(20.0, 5.0, 20.0, 10.0),
           child: TapkatGoogleMap(
             showLocation: true,
             onCameraIdle: (latLng) => googleMapsCenter = latLng,
@@ -918,88 +956,10 @@ class _ProductListScreenState extends State<ProductListScreen> {
             },
             onMapCreated: (controller) {
               googleMapsController = controller;
-              // _list.forEach((product) {
-              //   googleMapsController
-              //       .showMarkerInfoWindow(MarkerId(product.productid!));
-              // });
               _customInfoWindowController.googleMapController = controller;
-              _list.forEach((product) async {
-                await Future.delayed(Duration(milliseconds: 500), () {
-                  _customInfoWindowController.addInfoWindow!(
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          padding: EdgeInsets.all(8.0),
-                          decoration: BoxDecoration(
-                            color: kBackgroundColor,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Text(
-                                product.productname ?? '',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                    overflow: TextOverflow.ellipsis),
-                              ),
-                              SizedBox(height: 8.0),
-                              Text(
-                                product.price == null
-                                    ? ''
-                                    : '\$ ${product.price!.toStringAsFixed(2)}',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Triangle.isosceles(
-                          edge: Edge.BOTTOM,
-                          child: Container(
-                            color: kBackgroundColor,
-                            width: 20.0,
-                            height: 10.0,
-                          ),
-                        ),
-                      ],
-                    ),
-                    gmf.LatLng(
-                      product.address != null &&
-                              product.address!.location != null
-                          ? product.address!.location!.latitude!.toDouble()
-                          : 0.00,
-                      product.address != null &&
-                              product.address!.location != null
-                          ? product.address!.location!.longitude!.toDouble()
-                          : 0.00,
-                    ),
-                  );
-                });
-              });
             },
-            markers: _list
-                .map(
-                  (product) => TapkatMarker(
-                      product.productid!,
-                      LatLng(
-                        product.address != null &&
-                                product.address!.location != null
-                            ? product.address!.location!.latitude!.toDouble()
-                            : 0.00,
-                        product.address != null &&
-                                product.address!.location != null
-                            ? product.address!.location!.longitude!.toDouble()
-                            : 0.00,
-                      ),
-                      () => _onMarkerTapped(product),
-                      product),
-                )
-                .toList(),
+            centerMapOnMarkerTap: true,
+            markers: _markers,
           ),
         ),
         CustomInfoWindow(
@@ -1010,6 +970,73 @@ class _ProductListScreenState extends State<ProductListScreen> {
         ),
       ],
     );
+  }
+
+  _buildMarkers() async {
+    List<Marker> markers = [];
+
+    await Future.forEach<ProductModel>(_list, (product) async {
+      // var thumbnail = '';
+
+      // if (product.mediaPrimary != null && product.mediaPrimary!.url_t != null) {
+      //   thumbnail = product.mediaPrimary!.url_t!;
+      // }
+
+      // if (thumbnail.isEmpty &&
+      //     product.media != null &&
+      //     product.media!.isNotEmpty) {
+      //   thumbnail = product.media!.first.url_t ?? '';
+      // }
+      // BitmapDescriptor? _bitmapDescriptor;
+      // if (thumbnail.isEmpty) {
+      //   _bitmapDescriptor = await BitmapDescriptor.fromAssetImage(
+      //       ImageConfiguration(), 'assets/images/image_placeholder.jpg');
+      // } else {
+      //   final response = await get(Uri.parse(thumbnail));
+      //   if (response.statusCode == 200) {
+      //     _bitmapDescriptor = BitmapDescriptor.fromBytes(response.bodyBytes);
+      //   }
+      // }
+
+      // if (_bitmapDescriptor != null) {
+      //   markers.add(
+      //     Marker(
+      //       markerId: MarkerId(product.productid!),
+      //       onTap: () => _onMarkerTapped(product),
+      //       position: LatLng(
+      //         product.address != null && product.address!.location != null
+      //             ? product.address!.location!.latitude!.toDouble()
+      //             : 0.00,
+      //         product.address != null && product.address!.location != null
+      //             ? product.address!.location!.longitude!.toDouble()
+      //             : 0.00,
+      //       ),
+      //       icon: _bitmapDescriptor,
+      //     ),
+      //   );
+      // }
+      markers.add(
+        Marker(
+          markerId: MarkerId(product.productid!),
+          onTap: () => _onMarkerTapped(product),
+          position: LatLng(
+            product.address != null && product.address!.location != null
+                ? product.address!.location!.latitude!.toDouble()
+                : 0.00,
+            product.address != null && product.address!.location != null
+                ? product.address!.location!.longitude!.toDouble()
+                : 0.00,
+          ),
+          icon: BitmapDescriptor.defaultMarkerWithHue(10.0),
+        ),
+      );
+    });
+
+    if (markers.isNotEmpty) {
+      setState(() {
+        _markers = List.from(markers);
+      });
+    }
   }
 
   _onSelectView() {

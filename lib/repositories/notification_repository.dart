@@ -13,15 +13,18 @@ class NotificationRepository {
     required String receiver,
     required String barterId,
   }) async {
-    final response = await _apiService.post(url: 'alert/send', body: {
-      'title': title,
-      'body': body,
-      'sender': sender,
-      'receiver': receiver,
-      'barterid': barterId,
-      'msg_type': 'N01',
-      'sendername': application.currentUserModel!.display_name,
-    });
+    final response = await _apiService.post(
+      url: 'alert/send',
+      body: {
+        'title': title,
+        'body': body,
+        'sender': sender,
+        'receiver': receiver,
+        'barterid': barterId,
+        'msg_type': 'N01',
+        'sendername': application.currentUserModel!.display_name,
+      },
+    );
 
     return response.data['status'] == 'SUCCESS';
   }

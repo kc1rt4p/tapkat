@@ -95,7 +95,7 @@ class ProductModel {
               .map((item) => item.toString())
               .toList()
           : [],
-      free: json['free'] as bool?,
+      free: json['free'] != null ? json['free'] as bool? : false,
     );
   }
 

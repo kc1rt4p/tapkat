@@ -94,6 +94,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
               country: _location.addressComponents.last != null
                   ? _location.addressComponents.last!.longName
                   : null,
+              verifiedByPhone: application.currentUser != null,
             );
 
             if (application.currentUser != null) {
