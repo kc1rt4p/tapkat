@@ -1,4 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dio/dio.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:mime_type/mime_type.dart';
@@ -13,6 +15,8 @@ import 'package:tapkat/utilities/application.dart' as application;
 
 class UserRepository {
   final _apiService = ApiService();
+  final usersRef = FirebaseFirestore.instance.collection('users');
+  final _firebaseAuth = FirebaseAuth.instance;
 
   Future<UserModel?> getUser(String userId) async {
     final result = await _apiService.get(
@@ -24,6 +28,12 @@ class UserRepository {
     return UserModel.fromJson(result.data['user']);
   }
 
+  Future<bool> checkIfPhoneExists(String phoneNumber) async {
+    final querySnapshot =
+        await usersRef.where('phone_number', isEqualTo: phoneNumber).get();
+    return querySnapshot.docs.length > 0;
+  }
+
   Future<bool> updateUserFCMToken() async {
     final updated = await _apiService
         .patch(url: 'users/${application.currentUser!.uid}', body: {
@@ -33,6 +43,15 @@ class UserRepository {
     });
 
     return updated.data['status'] == 'SUCCESS';
+  }
+
+  Future<bool> deleteRegistrationToken(String id) async {
+    final deleted = await _apiService.delete(url: 'users/regtoken', body: {
+      'userid': id,
+      'deviceid': application.deviceId,
+    });
+
+    return deleted.data['status'] == 'SUCCESS';
   }
 
   Future<bool> updatePushAlert(bool enable) async {
@@ -285,5 +304,33 @@ class UserRepository {
     );
 
     return response.data['status'] == 'SUCCESS';
+  }
+
+  Future<void> sendOtp(
+      String phoneNumber,
+      Duration timeOut,
+      PhoneVerificationFailed phoneVerificationFailed,
+      PhoneVerificationCompleted phoneVerificationCompleted,
+      PhoneCodeSent phoneCodeSent,
+      PhoneCodeAutoRetrievalTimeout autoRetrievalTimeout) async {
+    _firebaseAuth.verifyPhoneNumber(
+        phoneNumber: phoneNumber,
+        timeout: timeOut,
+        verificationCompleted: phoneVerificationCompleted,
+        verificationFailed: phoneVerificationFailed,
+        codeSent: phoneCodeSent,
+        codeAutoRetrievalTimeout: autoRetrievalTimeout);
+  }
+
+  Future<UserCredential> verifyAndLogin(
+      String verificationId, String smsCode) async {
+    AuthCredential authCredential = PhoneAuthProvider.credential(
+        verificationId: verificationId, smsCode: smsCode);
+
+    return await _firebaseAuth.signInWithCredential(authCredential);
+  }
+
+  Future<User?> getFirebaseUser() async {
+    return _firebaseAuth.currentUser;
   }
 }

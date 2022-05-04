@@ -276,13 +276,22 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                       child: Row(
                                         children: [
                                           Expanded(
-                                            flex: 1,
                                             child: Text(
+                                              // _product != null &&
+                                              //         _product!.price != null &&
+                                              //         _product!.currency != null
+                                              //     ? '${_product!.currency!} ${_product!.price!.toStringAsFixed(2)}'
+                                              //     : '',
                                               _product != null &&
-                                                      _product!.price != null &&
-                                                      _product!.currency != null
-                                                  ? '${_product!.currency!} ${_product!.price!.toStringAsFixed(2)}'
-                                                  : '',
+                                                      _product!.free!
+                                                  ? 'FREE'
+                                                  : _product != null &&
+                                                          _product!.price !=
+                                                              null &&
+                                                          _product!.currency !=
+                                                              null
+                                                      ? '${_product!.currency!} ${_product!.price!.toStringAsFixed(2)}'
+                                                      : '',
                                               style: TextStyle(
                                                 color: kBackgroundColor,
                                                 fontFamily: 'Poppins',
@@ -295,7 +304,10 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                           ),
                                           SizedBox(width: 16.0),
                                           Visibility(
-                                            visible: !widget.ownItem,
+                                            visible: _product != null &&
+                                                _product!.userid !=
+                                                    application
+                                                        .currentUser!.uid,
                                             child: InkWell(
                                               onTap: () {
                                                 Navigator.push(
@@ -312,11 +324,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                 );
                                               },
                                               child: Container(
-                                                margin:
-                                                    EdgeInsets.only(left: 8.0),
                                                 padding: EdgeInsets.symmetric(
-                                                    horizontal: 20.0,
-                                                    vertical: 10.0),
+                                                    horizontal: 10.0,
+                                                    vertical: 5.0),
                                                 decoration: BoxDecoration(
                                                   color: Color(0xFFBB3F03),
                                                   borderRadius:
@@ -347,7 +357,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                         vertical: 10.0,
                                       ),
                                       child: Divider(
-                                        thickness: 0.3,
+                                        thickness: 0.5,
                                         color: kBackgroundColor,
                                       ),
                                     ),
@@ -580,12 +590,6 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                       FontAwesomeIcons.share,
                                                       color: Color(0xFF94D2BD),
                                                     ),
-                                                    SizedBox(width: 20.0),
-                                                    Icon(
-                                                      FontAwesomeIcons
-                                                          .solidCommentDots,
-                                                      color: Color(0xFF94D2BD),
-                                                    ),
                                                   ],
                                                 ),
                                               ],
@@ -688,31 +692,76 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                       child: Container(
                                         padding: EdgeInsets.symmetric(
                                             horizontal: 20.0, vertical: 5),
-                                        child: CustomButton(
-                                          label: 'BARTER',
-                                          onTap: () {
-                                            if (!application
-                                                .currentUser!.emailVerified) {
-                                              DialogMessage.show(
-                                                context,
-                                                message:
-                                                    'Click on the verification link sent to your email address: ${application.currentUser!.email}',
-                                                buttonText: 'Resend',
-                                                firstButtonClicked: () =>
-                                                    _authBloc
-                                                        .add(ResendEmail()),
-                                              );
-                                              return;
-                                            }
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (context) =>
-                                                    BarterScreen(
-                                                        product: _product!),
+                                        child: Row(
+                                          children: [
+                                            Expanded(
+                                              child: CustomButton(
+                                                bgColor: Style.secondaryColor,
+                                                label: 'CHAT',
+                                                onTap: () {
+                                                  if (!application.currentUser!
+                                                          .emailVerified &&
+                                                      !application
+                                                          .currentUserModel!
+                                                          .verifiedByPhone!) {
+                                                    DialogMessage.show(
+                                                      context,
+                                                      message:
+                                                          'Click on the verification link sent to your email address: ${application.currentUser!.email}',
+                                                      buttonText: 'Resend',
+                                                      firstButtonClicked: () =>
+                                                          _authBloc.add(
+                                                              ResendEmail()),
+                                                    );
+                                                    return;
+                                                  }
+                                                  Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          BarterScreen(
+                                                        product: _product!,
+                                                        showChatFirst: true,
+                                                      ),
+                                                    ),
+                                                  );
+                                                },
                                               ),
-                                            );
-                                          },
+                                            ),
+                                            SizedBox(width: 10.0),
+                                            Expanded(
+                                              child: CustomButton(
+                                                label: 'BARTER',
+                                                onTap: () {
+                                                  if (!application.currentUser!
+                                                          .emailVerified &&
+                                                      !application
+                                                          .currentUserModel!
+                                                          .verifiedByPhone!) {
+                                                    DialogMessage.show(
+                                                      context,
+                                                      message:
+                                                          'Click on the verification link sent to your email address: ${application.currentUser!.email}',
+                                                      buttonText: 'Resend',
+                                                      firstButtonClicked: () =>
+                                                          _authBloc.add(
+                                                              ResendEmail()),
+                                                    );
+                                                    return;
+                                                  }
+                                                  Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          BarterScreen(
+                                                              product:
+                                                                  _product!),
+                                                    ),
+                                                  );
+                                                },
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
                                     )
@@ -823,22 +872,21 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                         //
                       },
                       markers: [
-                        TapkatMarker(
-                            _product!.productid!,
-                            LatLng(
-                              _product!.address != null &&
-                                      _product!.address!.location != null
-                                  ? _product!.address!.location!.latitude!
-                                      .toDouble()
-                                  : 0.00,
-                              _product!.address != null &&
-                                      _product!.address!.location != null
-                                  ? _product!.address!.location!.longitude!
-                                      .toDouble()
-                                  : 0.00,
-                            ),
-                            () => _onMarkerTapped(_product!),
-                            _product),
+                        Marker(
+                          markerId: MarkerId(_product!.productid!),
+                          position: LatLng(
+                            _product!.address != null &&
+                                    _product!.address!.location != null
+                                ? _product!.address!.location!.latitude!
+                                    .toDouble()
+                                : 0.00,
+                            _product!.address != null &&
+                                    _product!.address!.location != null
+                                ? _product!.address!.location!.longitude!
+                                    .toDouble()
+                                : 0.00,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -1013,9 +1061,11 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                         ),
                         SizedBox(height: 8.0),
                         Text(
-                          product.price == null
-                              ? ''
-                              : '\$ ${product.price!.toStringAsFixed(2)}',
+                          product.free!
+                              ? 'FREE'
+                              : product.price == null
+                                  ? ''
+                                  : '\$ ${product.price!.toStringAsFixed(2)}',
                           style: Style.subtitle2.copyWith(
                             color: kBackgroundColor,
                             fontWeight: FontWeight.bold,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tapkat/utilities/size_config.dart';
 
 class CustomSearchBar extends StatefulWidget {
   final TextEditingController controller;
@@ -71,6 +72,7 @@ class _CustomSearchBarState extends State<CustomSearchBar> {
                     child: Icon(
                       Icons.search,
                       color: widget.textColor,
+                      size: SizeConfig.textScaleFactor * 16,
                     ),
                   ),
                   Visibility(

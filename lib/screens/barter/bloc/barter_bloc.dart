@@ -115,6 +115,15 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
             }
           }
 
+          if (event is GetCurrentUserItems) {
+            final list = await _productRepository.getFirstProducts(
+              'user',
+              sortBy: 'name',
+              userId: application.currentUser!.uid,
+            );
+            emit(GetCurrentUserItemsSuccess(list));
+          }
+
           if (event is RateProduct) {
             final added =
                 await _productRepository.addProductReview(event.review);

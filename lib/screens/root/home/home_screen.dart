@@ -43,6 +43,7 @@ class _HomeScreenState extends State<HomeScreen> {
   late RootBloc _rootBloc;
   final _authBloc = AuthBloc();
   List<ProductModel> _recommendedList = [];
+  List<ProductModel> _freeList = [];
   List<ProductModel> _trendingList = [];
   List<ProductModel> _myProductList = [];
   List<StoreModel> _topStoreList = [];
@@ -57,6 +58,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _loadingTrendingList = true;
   bool _loadingUserProducts = true;
   bool _loadingTopStores = true;
+  bool _loadingFreeList = true;
 
   User? _user;
   UserModel? _userModel;
@@ -148,6 +150,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 });
               }
 
+              if (state is LoadedFreeList) {
+                setState(() {
+                  _freeList = state.list;
+                  _loadingFreeList = false;
+                });
+              }
+
               if (state is LoadedTrendingList) {
                 setState(() {
                   _trendingList = state.trending;
@@ -192,6 +201,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   _loadingTrendingList = true;
                 });
               }
+
+              if (state is LoadingFreeList) {
+                setState(() {
+                  _loadingFreeList = true;
+                });
+              }
             },
           ),
           BlocListener(
@@ -228,25 +243,68 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             Expanded(
-              child: SmartRefresher(
-                onRefresh: () => _homeBloc.add(InitializeHomeScreen()),
-                controller: _refreshController,
-                child: Container(
-                  height: double.maxFinite,
-                  width: double.infinity,
-                  padding: EdgeInsets.fromLTRB(15.0, 15, 15.0, 0.0),
-                  decoration: BoxDecoration(
-                    color: Color(0xFFEBFBFF),
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(30.0),
-                      topRight: Radius.circular(30.0),
-                    ),
+              child: Container(
+                height: double.maxFinite,
+                width: double.infinity,
+                padding: EdgeInsets.fromLTRB(15.0, 15, 15.0, 0.0),
+                decoration: BoxDecoration(
+                  color: Color(0xFFEBFBFF),
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(30.0),
+                    topRight: Radius.circular(30.0),
                   ),
+                ),
+                child: SmartRefresher(
+                  onRefresh: () => _homeBloc.add(InitializeHomeScreen()),
+                  controller: _refreshController,
                   child: SingleChildScrollView(
                     child: Container(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          BarterList(
+                            loading: _loadingTopStores,
+                            loadingSize: 50.0,
+                            context: context,
+                            items: _topStoreList.map((store) {
+                              return Center(
+                                child: StoreListItem(
+                                  StoreModel(
+                                    display_name: store.display_name,
+                                    userid: store.userid,
+                                    photo_url: store.photo_url,
+                                  ),
+                                  removeLike: true,
+                                  onTap: () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => StoreScreen(
+                                        userId: store.userid!,
+                                        userName: store.display_name!,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                            label: 'Top Users',
+                            onViewAllTapped: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => StoreListScreen(),
+                              ),
+                            ),
+                            onMapBtnTapped: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ProductListScreen(
+                                  listType: 'demand',
+                                  showAdd: false,
+                                  initialView: 'map',
+                                ),
+                              ),
+                            ),
+                          ),
                           BarterList(
                             loading: _loadingRecoList,
                             context: context,
@@ -309,59 +367,29 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ),
                           BarterList(
-                            loading: _loadingTopStores,
+                            loading: _loadingFreeList,
                             context: context,
-                            items: _topStoreList.map((store) {
-                              return Center(
-                                child: StreamBuilder<
-                                        QuerySnapshot<Map<String, dynamic>>>(
-                                    stream: barterRef
-                                        .where('userid',
-                                            isEqualTo: store.userid)
-                                        .where('likerid',
-                                            isEqualTo:
-                                                application.currentUser!.uid)
-                                        .snapshots(),
-                                    builder: (context, snapshot) {
-                                      bool liked = false;
-
-                                      if (snapshot.data != null) {
-                                        if (snapshot.data!.docs.isNotEmpty)
-                                          liked = true;
-                                      }
-
-                                      return StoreListItem(
-                                        StoreModel(
-                                          display_name: store.display_name,
-                                          userid: store.userid,
-                                          photo_url: store.photo_url,
-                                        ),
-                                        removeLike: true,
-                                        onTap: () => Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) => StoreScreen(
-                                              userId: store.userid!,
-                                              userName: store.display_name!,
-                                            ),
-                                          ),
-                                        ),
-                                      );
-                                    }),
-                              );
-                            }).toList(),
-                            label: 'Top Stores',
+                            items: _freeList
+                                .map((product) => _buildProductItem(
+                                      product: product,
+                                    ))
+                                .toList(),
+                            label: 'Free products',
                             onViewAllTapped: () => Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => StoreListScreen(),
+                                builder: (context) => ProductListScreen(
+                                  listType: 'free',
+                                  showAdd: false,
+                                  userId: application.currentUser!.uid,
+                                ),
                               ),
                             ),
                             onMapBtnTapped: () => Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => ProductListScreen(
-                                  listType: 'demand',
+                                  listType: 'free',
                                   showAdd: false,
                                   initialView: 'map',
                                 ),

@@ -250,9 +250,11 @@ class _BarterListItemState extends State<BarterListItem> {
                             ),
                             SizedBox(height: 5.0),
                             Text(
-                              product.price != null
-                                  ? product.price!.toStringAsFixed(2)
-                                  : '0.00',
+                              product.free != null && product.free!
+                                  ? 'FREE'
+                                  : product.price != null
+                                      ? product.price!.toStringAsFixed(2)
+                                      : '0.00',
                               style: TextStyle(
                                 fontSize: widget.fontSize ??
                                     SizeConfig.textScaleFactor * 10,

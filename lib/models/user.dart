@@ -9,6 +9,7 @@ class UserModel {
   String? city;
   String? country;
   String? postcode;
+  bool? verifiedByPhone;
   String? photo_url;
   String? pushalert;
   String? regtoken;
@@ -33,6 +34,7 @@ class UserModel {
     this.city,
     this.country,
     this.postcode,
+    this.verifiedByPhone,
     this.photo_url,
     this.pushalert,
     this.regtoken,
@@ -58,6 +60,9 @@ class UserModel {
       city: json['city'] as String?,
       country: json['country'] as String?,
       postcode: json['postcode'] as String?,
+      verifiedByPhone: json['verifiedByPhone'] != null
+          ? json['verifiedByPhone'] as bool?
+          : false,
       photo_url: json['photo_url'] as String?,
       pushalert: json['pushalert'] as String?,
       regtoken: json['regtoken'] as String?,
@@ -94,6 +99,7 @@ class UserModel {
       'city': this.city,
       'country': this.country,
       'postcode': this.postcode,
+      'verifiedByPhone': this.verifiedByPhone,
       'photo_url': this.photo_url,
       'pushalert': this.pushalert,
       'regtoken': this.regtoken,

@@ -22,6 +22,13 @@ class RootBloc extends Bloc<RootEvent, RootState> {
               await _userRepo.getUser(application.currentUser!.uid);
         }
       }
+
+      if (event is DeleteRegistrationTokens) {
+        await Future.forEach<String>(event.ids, (id) async {
+          await _userRepo.deleteRegistrationToken(id);
+        });
+        emit(DeleteRegistrationTokensSuccess());
+      }
     });
   }
 }

@@ -68,6 +68,7 @@ Stream<List<T?>> queryCollection<T>(
 Future maybeCreateUser(User user) async {
   final userRecord = UsersRecord.collection.doc(user.uid);
   final userExists = await userRecord.get().then((u) => u.exists);
+
   if (userExists) {
     return;
   }

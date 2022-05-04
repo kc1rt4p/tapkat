@@ -210,7 +210,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
               Visibility(
-                visible: !application.currentUser!.emailVerified,
+                visible: !application.currentUser!.emailVerified &&
+                    !application.currentUserModel!.verifiedByPhone!,
                 child: Container(
                   width: double.infinity,
                   color: Style.secondaryColor,
@@ -416,7 +417,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               ),
                               Visibility(
                                 visible:
-                                    !application.currentUser!.emailVerified,
+                                    !application.currentUser!.emailVerified &&
+                                        !application
+                                            .currentUserModel!.verifiedByPhone!,
                                 child: CustomButton(
                                   label: 'Verify your account',
                                   onTap: () {
@@ -433,7 +436,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 ),
                               ),
                               Visibility(
-                                visible: application.currentUser!.emailVerified,
+                                visible:
+                                    application.currentUser!.emailVerified ||
+                                        application
+                                            .currentUserModel!.verifiedByPhone!,
                                 child: Expanded(
                                   child: Container(
                                     width: double.infinity,
@@ -503,7 +509,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                               GestureDetector(
                                                 onTap: () async {
                                                   if (!application.currentUser!
-                                                      .emailVerified) {
+                                                          .emailVerified &&
+                                                      !application
+                                                          .currentUserModel!
+                                                          .verifiedByPhone!) {
                                                     DialogMessage.show(
                                                       context,
                                                       message:

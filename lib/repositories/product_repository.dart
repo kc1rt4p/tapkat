@@ -260,15 +260,12 @@ class ProductRepository {
       });
     }
 
-    if (listType == 'demand') {
-    } else {
-      body.addAll({
-        'sortby': sortBy == 'name' ? 'productname' : sortBy.toLowerCase(),
-        'startafterval': startAfterVal,
-        'productid': lastProductId,
-        'sortdirection': sortBy == 'rating' ? 'descending' : 'ascending',
-      });
-    }
+    body.addAll({
+      'sortby': sortBy == 'name' ? 'productname' : sortBy.toLowerCase(),
+      'startafterval': startAfterVal,
+      'productid': lastProductId,
+      'sortdirection': sortBy == 'rating' ? 'descending' : 'ascending',
+    });
 
     if (listType == 'reco' && interests != null) {
       body.addAll({'interests': interests});
@@ -367,16 +364,15 @@ class ProductRepository {
       });
     }
 
-    if (listType != 'demand') {
-      body.addAll({
-        'sortby': sortBy == 'name' ? 'productname' : sortBy.toLowerCase(),
-        'sortdirection': sortBy == 'rating' ? 'descending' : 'ascending',
-      });
+    body.addAll({
+      'sortby': sortBy == 'name' ? 'productname' : sortBy.toLowerCase(),
+      'sortdirection': sortBy == 'rating' ? 'descending' : 'ascending',
+    });
 
-      if (listType == 'reco' && interests != null) {
-        body.addAll({'interests': interests});
-      }
+    if (listType == 'reco' && interests != null) {
+      body.addAll({'interests': interests});
     }
+
     final response = await _apiService.post(
       url: 'products/$listType/searchfirst',
       body: body,

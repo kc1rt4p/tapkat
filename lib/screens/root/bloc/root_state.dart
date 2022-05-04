@@ -16,3 +16,5 @@ class MoveToTab extends RootState {
 }
 
 class UpdateUserTokenSuccess extends RootState {}
+
+class DeleteRegistrationTokensSuccess extends RootState {}

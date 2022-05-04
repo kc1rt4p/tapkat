@@ -17,6 +17,7 @@ class BarterList extends StatefulWidget {
   final bool ownList;
   final bool loading;
   final bool removeMapBtn;
+  final double? loadingSize;
 
   const BarterList({
     Key? key,
@@ -32,6 +33,7 @@ class BarterList extends StatefulWidget {
     this.ownList = false,
     this.loading = false,
     this.removeMapBtn = false,
+    this.loadingSize,
   }) : super(key: key);
 
   @override
@@ -131,7 +133,7 @@ class _BarterListState extends State<BarterList> {
           widget.loading
               ? Container(
                   width: double.infinity,
-                  height: 180.0,
+                  height: widget.loadingSize ?? 180.0,
                   child: SizedBox(
                     height: 50.0,
                     width: 50.0,

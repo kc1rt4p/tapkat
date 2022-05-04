@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_progress_hud/flutter_progress_hud.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:http/http.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:tapkat/backend.dart';
@@ -24,6 +25,7 @@ import 'package:tapkat/widgets/barter_list_item.dart';
 import 'package:tapkat/widgets/custom_app_bar.dart';
 import 'package:tapkat/widgets/custom_search_bar.dart';
 import 'package:tapkat/widgets/tapkat_map.dart';
+import 'package:toggle_switch/toggle_switch.dart';
 
 class SearchResultScreen extends StatefulWidget {
   final String keyword;
@@ -69,6 +71,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
   List<ProductCategoryModel> _categoryList = [];
 
   bool _loading = false;
+  List<Marker> _markers = [];
 
   String _selectedSortBy = 'distance';
   List<String> sortByOptions = [
@@ -227,35 +230,10 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                             horizontal: 20.0,
                             vertical: 10.0,
                           ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: CustomSearchBar(
-                                  controller: _keyWordTextController,
-                                  onSubmitted: (val) => _onSearchSubmitted(val),
-                                  backgroundColor:
-                                      Color(0xFF005F73).withOpacity(0.3),
-                                ),
-                              ),
-                              SizedBox(width: 10.0),
-                              InkWell(
-                                onTap: _onSelectView,
-                                child: Container(
-                                  padding: EdgeInsets.all(8.0),
-                                  decoration: BoxDecoration(
-                                    color: Color(0xFF005F73).withOpacity(0.3),
-                                    borderRadius: BorderRadius.circular(10.0),
-                                  ),
-                                  child: Icon(
-                                    _selectedView != 'map'
-                                        ? FontAwesomeIcons.mapMarkedAlt
-                                        : FontAwesomeIcons.thLarge,
-                                    size: 16.0,
-                                    color: kBackgroundColor,
-                                  ),
-                                ),
-                              ),
-                            ],
+                          child: CustomSearchBar(
+                            controller: _keyWordTextController,
+                            onSubmitted: (val) => _onSearchSubmitted(val),
+                            backgroundColor: Color(0xFF005F73).withOpacity(0.3),
                           ),
                         ),
                         Container(
@@ -425,6 +403,40 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                               ),
                             ],
                           ),
+                        ),
+                        ToggleSwitch(
+                          activeBgColor: [kBackgroundColor],
+                          initialLabelIndex: _selectedView == 'grid' ? 0 : 1,
+                          minWidth: SizeConfig.screenWidth,
+                          minHeight: 20.0,
+                          borderColor: [Color(0xFFEBFBFF)],
+                          totalSwitches: 2,
+                          customTextStyles: [
+                            TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: SizeConfig.textScaleFactor * 15,
+                              color: Colors.white,
+                            ),
+                            TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: SizeConfig.textScaleFactor * 15,
+                              color: Colors.white,
+                            ),
+                          ],
+                          icons: [
+                            Icons.grid_view,
+                            Icons.map,
+                          ],
+                          inactiveFgColor: Colors.white60,
+                          labels: [
+                            'Grid',
+                            'Map',
+                          ],
+                          onToggle: (index) {
+                            setState(() {
+                              _selectedView = index == 0 ? 'grid' : 'map';
+                            });
+                          },
                         ),
                         Expanded(
                           child: searchResults.isNotEmpty
@@ -698,31 +710,85 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
   }
 
   _buildMapView() {
+    _buildMarkers();
     return Container(
+      padding: EdgeInsets.fromLTRB(20.0, 5.0, 20.0, 10.0),
       child: TapkatGoogleMap(
         onCameraIdle: (latLng) => googleMapsCenter = latLng,
         initialLocation: googleMapsCenter ?? LatLng(1.3631246, 103.8325137),
         onMapCreated: (controller) {
           googleMapsController = controller;
         },
-        markers: searchResults
-            .map(
-              (product) => TapkatMarker(
-                  product.productid!,
-                  LatLng(
-                    product.address != null && product.address!.location != null
-                        ? product.address!.location!.latitude!.toDouble()
-                        : 0.00,
-                    product.address != null && product.address!.location != null
-                        ? product.address!.location!.longitude!.toDouble()
-                        : 0.00,
-                  ),
-                  () => _onMarkerTapped(product),
-                  product),
-            )
-            .toList(),
+        markers: _markers,
       ),
     );
+  }
+
+  _buildMarkers() async {
+    List<Marker> markers = [];
+
+    await Future.forEach<ProductModel>(searchResults, (product) async {
+      // var thumbnail = '';
+
+      // if (product.mediaPrimary != null && product.mediaPrimary!.url_t != null) {
+      //   thumbnail = product.mediaPrimary!.url_t!;
+      // }
+
+      // if (thumbnail.isEmpty &&
+      //     product.media != null &&
+      //     product.media!.isNotEmpty) {
+      //   thumbnail = product.media!.first.url_t ?? '';
+      // }
+      // BitmapDescriptor? _bitmapDescriptor;
+      // if (thumbnail.isEmpty) {
+      //   _bitmapDescriptor = await BitmapDescriptor.fromAssetImage(
+      //       ImageConfiguration(), 'assets/images/image_placeholder.jpg');
+      // } else {
+      //   final response = await get(Uri.parse(thumbnail));
+      //   if (response.statusCode == 200) {
+      //     _bitmapDescriptor = BitmapDescriptor.fromBytes(response.bodyBytes);
+      //   }
+      // }
+
+      // if (_bitmapDescriptor != null) {
+      //   markers.add(
+      //     Marker(
+      //       markerId: MarkerId(product.productid!),
+      //       onTap: () => _onMarkerTapped(product),
+      //       position: LatLng(
+      //         product.address != null && product.address!.location != null
+      //             ? product.address!.location!.latitude!.toDouble()
+      //             : 0.00,
+      //         product.address != null && product.address!.location != null
+      //             ? product.address!.location!.longitude!.toDouble()
+      //             : 0.00,
+      //       ),
+      //       icon: _bitmapDescriptor,
+      //     ),
+      //   );
+      // }
+      markers.add(
+        Marker(
+          markerId: MarkerId(product.productid!),
+          onTap: () => _onMarkerTapped(product),
+          position: LatLng(
+            product.address != null && product.address!.location != null
+                ? product.address!.location!.latitude!.toDouble()
+                : 0.00,
+            product.address != null && product.address!.location != null
+                ? product.address!.location!.longitude!.toDouble()
+                : 0.00,
+          ),
+          icon: BitmapDescriptor.defaultMarkerWithHue(10.0),
+        ),
+      );
+    });
+
+    if (markers.isNotEmpty) {
+      setState(() {
+        _markers = List.from(markers);
+      });
+    }
   }
 
   Future<dynamic> _onMarkerTapped(ProductModel product) async {

@@ -14,3 +14,9 @@ class MoveTab extends RootEvent {
 }
 
 class UpdateUserToken extends RootEvent {}
+
+class DeleteRegistrationTokens extends RootEvent {
+  final List<String> ids;
+
+  DeleteRegistrationTokens(this.ids);
+}

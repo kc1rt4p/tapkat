@@ -403,7 +403,6 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
 
   void _onUpdateTapped() {
     var productRequest = ProductRequestModel.fromProduct(_product);
-    print('product request: ${productRequest.toJson()}');
     productRequest.productname = _nameTextController.text.trim();
     productRequest.productdesc = _descTextController.text.trim();
     productRequest.price = double.parse(_priceTextController.text.trim());

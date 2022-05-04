@@ -147,3 +147,5 @@ class MarkMessagesAsRead extends BarterEvent {
 
   MarkMessagesAsRead(this.barterId);
 }
+
+class GetCurrentUserItems extends BarterEvent {}

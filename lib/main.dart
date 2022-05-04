@@ -12,6 +12,7 @@ import 'package:flutter_phoenix/flutter_phoenix.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
 import 'package:tapkat/models/location.dart';
+import 'package:tapkat/models/user.dart';
 import 'package:tapkat/screens/barter/bloc/barter_bloc.dart';
 import 'package:tapkat/screens/login/email_verification_screen.dart';
 import 'package:tapkat/screens/login/login_screen.dart';
@@ -71,6 +72,8 @@ class _MyAppState extends State<MyApp> {
   final GlobalKey<NavigatorState> navigatorKey =
       new GlobalKey<NavigatorState>();
 
+  UserModel? _userModel;
+
   @override
   void initState() {
     _authBloc = AuthBloc();
@@ -99,10 +102,17 @@ class _MyAppState extends State<MyApp> {
               if (state is AuthInitialized) {
                 _userStream = state.stream.listen((user) {
                   if (user.user != null) {
+                    _authBloc.add(GetCurrentuser());
                     setState(() {
                       _user = user;
                     });
                   }
+                });
+              }
+
+              if (state is GetCurrentUsersuccess) {
+                setState(() {
+                  _userModel = state.userModel;
                 });
               }
 
@@ -146,7 +156,7 @@ class _MyAppState extends State<MyApp> {
                 stream: FirebaseAuth.instance.authStateChanges(),
                 builder: (context, snapshot) {
                   if (snapshot.hasData) {
-                    if (snapshot.data != null) {
+                    if (snapshot.data != null && _userModel != null) {
                       return RootScreen();
                     }
                   }

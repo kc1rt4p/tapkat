@@ -13,6 +13,7 @@ class UpdateUserModel {
   String? address;
   String? postcode;
   String? phone_number;
+  bool? verifiedByPhone;
   LocationModel? location;
   List<String>? interests;
   List<String>? items_wanted;
@@ -34,6 +35,7 @@ class UpdateUserModel {
     this.city,
     this.address,
     this.postcode,
+    this.verifiedByPhone,
     this.phone_number,
     this.location,
     this.interests,
@@ -58,6 +60,7 @@ class UpdateUserModel {
       "city": this.city,
       "address": this.address,
       "postcode": this.postcode,
+      'verifiedByPhone': this.verifiedByPhone,
       "phone_number": this.phone_number,
       "location": this.location != null ? this.location!.toJson() : null,
       'interests': this.interests,

@@ -18,6 +18,7 @@ abstract class UsersRecord implements Built<UsersRecord, UsersRecordBuilder> {
   @BuiltValueField(wireName: 'photo_url')
   String? get photoUrl;
 
+  @BuiltValueField(wireName: 'userid')
   String? get uid;
 
   @BuiltValueField(wireName: 'created_time')

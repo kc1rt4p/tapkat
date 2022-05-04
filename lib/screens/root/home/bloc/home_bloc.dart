@@ -25,6 +25,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
           emit(LoadingUserList());
           emit(LoadingTrendingList());
           emit(LoadingTopStoreList());
+          emit(LoadingFreeList());
 
           LocationModel _location = application.currentUserLocation ??
               application.currentUserModel!.location ??
@@ -87,7 +88,23 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
             userId: application.currentUser!.uid,
             sortBy: 'distance',
           );
+
           emit(LoadedTrendingList(trendingList));
+          add(LoadFreeList());
+        }
+
+        if (event is LoadFreeList) {
+          emit(LoadingFreeList());
+          LocationModel _location = application.currentUserLocation ??
+              application.currentUserModel!.location ??
+              LocationModel(latitude: 0, longitude: 0);
+          final list = await _productRepo.getFirstProducts(
+            'free',
+            location: _location,
+            userId: application.currentUser!.uid,
+            sortBy: 'distance',
+          );
+          emit(LoadedFreeList(list));
           add(LoadUserList());
         }
 

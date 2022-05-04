@@ -7,6 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_progress_hud/flutter_progress_hud.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:http/http.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:shimmer/shimmer.dart';
@@ -72,6 +73,8 @@ class _StoreScreenState extends State<StoreScreen> {
   bool _isFollowing = false;
 
   bool _isLoading = true;
+
+  List<Marker> _markers = [];
 
   @override
   void initState() {
@@ -272,9 +275,6 @@ class _StoreScreenState extends State<StoreScreen> {
                             SizedBox(width: 20.0),
                             Expanded(
                               child: Container(
-                                margin: EdgeInsets.symmetric(
-                                  vertical: 10.0,
-                                ),
                                 width: double.infinity,
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
@@ -310,9 +310,9 @@ class _StoreScreenState extends State<StoreScreen> {
                                         size: 12.0,
                                       ),
                                     ),
-                                    SizedBox(height: 12.0),
+                                    SizedBox(height: 8.0),
                                     _buildSocialMediaBtns(),
-                                    SizedBox(height: 12.0),
+                                    SizedBox(height: 8.0),
                                     StreamBuilder<
                                         QuerySnapshot<Map<String, dynamic>>>(
                                       stream: _storeLikeStream,
@@ -402,7 +402,6 @@ class _StoreScreenState extends State<StoreScreen> {
                       )
                     : Container(
                         padding: EdgeInsets.symmetric(
-                          vertical: 8.0,
                           horizontal: 20.0,
                         ),
                         child: Row(
@@ -612,12 +611,21 @@ class _StoreScreenState extends State<StoreScreen> {
                                   ),
                                 ],
                               ),
-                              child: Icon(
-                                _selectedView != 'map'
-                                    ? FontAwesomeIcons.mapMarkedAlt
-                                    : FontAwesomeIcons.thLarge,
-                                size: 16.0,
-                                color: Colors.white,
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    _selectedView != 'map'
+                                        ? FontAwesomeIcons.mapMarkedAlt
+                                        : FontAwesomeIcons.thLarge,
+                                    size: 16.0,
+                                    color: Colors.white,
+                                  ),
+                                  SizedBox(width: 8.0),
+                                  Text(_selectedView != 'map' ? 'Map' : 'Grid',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                      )),
+                                ],
                               ),
                             ),
                           ),
@@ -647,31 +655,85 @@ class _StoreScreenState extends State<StoreScreen> {
   }
 
   _buildMapView() {
+    _buildMarkers();
     return Container(
+      padding: EdgeInsets.fromLTRB(20.0, 5.0, 20.0, 10.0),
       child: TapkatGoogleMap(
         onCameraIdle: (latLng) => googleMapsCenter = latLng,
         initialLocation: googleMapsCenter ?? LatLng(1.3631246, 103.8325137),
         onMapCreated: (controller) {
           googleMapsController = controller;
         },
-        markers: _list
-            .map(
-              (product) => TapkatMarker(
-                  product.productid!,
-                  LatLng(
-                    product.address != null && product.address!.location != null
-                        ? product.address!.location!.latitude!.toDouble()
-                        : 0.00,
-                    product.address != null && product.address!.location != null
-                        ? product.address!.location!.longitude!.toDouble()
-                        : 0.00,
-                  ),
-                  () => _onMarkerTapped(product),
-                  product),
-            )
-            .toList(),
+        markers: _markers,
       ),
     );
+  }
+
+  _buildMarkers() async {
+    List<Marker> markers = [];
+
+    await Future.forEach<ProductModel>(_list, (product) async {
+      // var thumbnail = '';
+
+      // if (product.mediaPrimary != null && product.mediaPrimary!.url_t != null) {
+      //   thumbnail = product.mediaPrimary!.url_t!;
+      // }
+
+      // if (thumbnail.isEmpty &&
+      //     product.media != null &&
+      //     product.media!.isNotEmpty) {
+      //   thumbnail = product.media!.first.url_t ?? '';
+      // }
+      // BitmapDescriptor? _bitmapDescriptor;
+      // if (thumbnail.isEmpty) {
+      //   _bitmapDescriptor = await BitmapDescriptor.fromAssetImage(
+      //       ImageConfiguration(), 'assets/images/image_placeholder.jpg');
+      // } else {
+      //   final response = await get(Uri.parse(thumbnail));
+      //   if (response.statusCode == 200) {
+      //     _bitmapDescriptor = BitmapDescriptor.fromBytes(response.bodyBytes);
+      //   }
+      // }
+
+      // if (_bitmapDescriptor != null) {
+      //   markers.add(
+      //     Marker(
+      //       markerId: MarkerId(product.productid!),
+      //       onTap: () => _onMarkerTapped(product),
+      //       position: LatLng(
+      //         product.address != null && product.address!.location != null
+      //             ? product.address!.location!.latitude!.toDouble()
+      //             : 0.00,
+      //         product.address != null && product.address!.location != null
+      //             ? product.address!.location!.longitude!.toDouble()
+      //             : 0.00,
+      //       ),
+      //       icon: _bitmapDescriptor,
+      //     ),
+      //   );
+      // }
+      markers.add(
+        Marker(
+          markerId: MarkerId(product.productid!),
+          onTap: () => _onMarkerTapped(product),
+          position: LatLng(
+            product.address != null && product.address!.location != null
+                ? product.address!.location!.latitude!.toDouble()
+                : 0.00,
+            product.address != null && product.address!.location != null
+                ? product.address!.location!.longitude!.toDouble()
+                : 0.00,
+          ),
+          icon: BitmapDescriptor.defaultMarkerWithHue(10.0),
+        ),
+      );
+    });
+
+    if (markers.isNotEmpty) {
+      setState(() {
+        _markers = List.from(markers);
+      });
+    }
   }
 
   Future<dynamic> _onMarkerTapped(ProductModel product) async {

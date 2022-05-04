@@ -22,3 +22,5 @@ class LoadProductsInCategories extends HomeEvent {}
 class LoadTopStores extends HomeEvent {}
 
 class TestHeader extends HomeEvent {}
+
+class LoadFreeList extends HomeEvent {}

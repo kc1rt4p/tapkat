@@ -11,6 +11,12 @@ class BarterInitial extends BarterState {}
 
 class BarterLoading extends BarterState {}
 
+class GetCurrentUserItemsSuccess extends BarterState {
+  final List<ProductModel> list;
+
+  GetCurrentUserItemsSuccess(this.list);
+}
+
 class BarterTransactionsInitialized extends BarterState {
   // final List<BarterRecordModel> fromOthersList;
   // final List<BarterRecordModel> byYouList;
