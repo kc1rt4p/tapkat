@@ -21,6 +21,7 @@ import 'package:tapkat/services/auth_service.dart';
 import 'package:geolocator/geolocator.dart' as geoLocator;
 import 'package:tapkat/services/http/api_service.dart';
 import 'package:tapkat/utilities/application.dart' as application;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 _loadUserLocation() async {
   try {
@@ -43,6 +44,7 @@ _loadUserLocation() async {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  await dotenv.load(fileName: ".env");
 
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
