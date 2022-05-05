@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -14,10 +15,12 @@ import 'package:tapkat/screens/barter/barter_screen.dart';
 import 'package:tapkat/screens/barter/bloc/barter_bloc.dart';
 import 'package:tapkat/screens/product/bloc/product_bloc.dart';
 import 'package:tapkat/screens/product/product_add_screen.dart';
+import 'package:tapkat/screens/product/product_details_screen.dart';
 import 'package:tapkat/screens/root/barter/barter_transactions_screen.dart';
 import 'package:tapkat/screens/root/home/home_screen.dart';
 import 'package:tapkat/screens/root/profile/profile_screen.dart';
 import 'package:tapkat/screens/root/wish_list/wish_list_screen.dart';
+import 'package:tapkat/services/dynamic_link.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/dialog_message.dart';
 import 'package:tapkat/utilities/size_config.dart';
@@ -42,6 +45,27 @@ final InitializationSettings initializationSettings = InitializationSettings(
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print('__-= BACKGROUND NOTIF: ${message.data}');
+}
+
+void handleLinkData(BuildContext currentContext, PendingDynamicLinkData data) {
+  final Uri uri = data.link;
+  final queryParams = uri.queryParameters;
+  print('__-= deep link: $uri');
+  if (queryParams.length > 0) {
+    print('__-= deep link: $uri');
+    final String productid = queryParams["productid"]!;
+    if (application.currentUserModel != null) {
+      Navigator.push(
+        currentContext,
+        MaterialPageRoute(
+          builder: (context) => ProductDetailsScreen(
+            productId: productid,
+            ownItem: false,
+          ),
+        ),
+      );
+    }
+  }
 }
 
 class RootScreen extends StatefulWidget {
@@ -71,6 +95,7 @@ class _RootScreenState extends State<RootScreen> {
   final _appConfig = new LocalStorage('app_config.json');
 
   StreamSubscription<ConnectivityResult>? _connectivityStream;
+  final _dynamincLinkService = DynamincLinkService();
 
   @override
   void initState() {
@@ -79,6 +104,41 @@ class _RootScreenState extends State<RootScreen> {
     _authBloc.add(GetCurrentuser());
 
     super.initState();
+    fetchLinkData();
+    // testCreateLink();
+  }
+
+  // void testCreateLink() async {
+  //   final link = await DynamincLinkService().createDynamicLink(data: {
+  //     'productid': 'yM2FjnoxtrqEWRmRqiXG',
+  //   });
+  //   handleLinkData(context, PendingDynamicLinkData(link: link));
+  // }
+
+  void fetchLinkData() async {
+    // FirebaseDynamicLinks.getInitialLInk does a call to firebase to get us the real link because we have shortened it.
+    var link = await FirebaseDynamicLinks.instance.getInitialLink();
+    print('_-= $link');
+    var message = await FirebaseDynamicLinks.instance
+        .getDynamicLink(Uri.parse(_dynamincLinkService.Link));
+    print('_-= $message');
+
+    // This link may exist if the app was opened fresh so we'll want to handle it the same way onLink will.
+    if (link != null) handleLinkData(context, link);
+
+    // This will handle incoming links if the application is already opened
+    try {
+      FirebaseDynamicLinks.instance.onLink.listen(
+        (data) {
+          print('--------- INCOMING!!');
+          handleLinkData(context, data);
+        },
+        onError: (error) => print('======-dynamic-link-error==== __ $error __'),
+        onDone: () => print('======-dynamic-link-DONE==== __  __'),
+      );
+    } catch (e) {
+      print('ERROR ON FIREBASE DYNAMIC LINKS::::: ${e.toString()}');
+    }
   }
 
   Future<void> _firebaseMessagingForegroundHandler(

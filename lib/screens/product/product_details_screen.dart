@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:math';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -15,6 +16,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:tapkat/backend.dart';
 import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
 import 'package:tapkat/models/location.dart';
@@ -27,6 +29,7 @@ import 'package:tapkat/screens/product/bloc/product_bloc.dart';
 import 'package:tapkat/screens/product/product_edit_screen.dart';
 import 'package:tapkat/screens/product/product_ratings_screen.dart';
 import 'package:tapkat/screens/store/store_screen.dart';
+import 'package:tapkat/services/dynamic_link.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/dialog_message.dart';
 import 'package:tapkat/utilities/size_config.dart';
@@ -64,6 +67,8 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   late LocationModel _location;
 
   final _refreshController = RefreshController();
+
+  final _dynamicLinkService = DynamincLinkService();
 
   @override
   void initState() {
@@ -586,9 +591,13 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                             .toString()
                                                         : '0'),
                                                     SizedBox(width: 20.0),
-                                                    Icon(
-                                                      FontAwesomeIcons.share,
-                                                      color: Color(0xFF94D2BD),
+                                                    GestureDetector(
+                                                      onTap: _onShareProduct,
+                                                      child: Icon(
+                                                        FontAwesomeIcons.share,
+                                                        color:
+                                                            Color(0xFF94D2BD),
+                                                      ),
                                                     ),
                                                   ],
                                                 ),
@@ -976,6 +985,14 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
               ),
             ),
     );
+  }
+
+  _onShareProduct() async {
+    final link = await _dynamicLinkService.createDynamicLink(data: {
+      'productid': _product!.productid,
+    });
+    print(link.scheme + '/' + link.authority + link.path);
+    Share.share(link.scheme + '://' + link.authority + link.path + link.query);
   }
 
   _onDeleteTapped() {
