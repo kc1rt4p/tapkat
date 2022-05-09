@@ -237,9 +237,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 horizontal: 20.0,
                 vertical: 10.0,
               ),
-              child: CustomSearchBar(
-                controller: _keywordTextController,
-                onSubmitted: (val) => _onSearchSubmitted(val),
+              child: Expanded(
+                child: CustomSearchBar(
+                  controller: _keywordTextController,
+                  onSubmitted: (val) => _onSearchSubmitted(val),
+                ),
               ),
             ),
             Expanded(

@@ -10,7 +10,11 @@ import 'package:tapkat/widgets/custom_app_bar.dart';
 import 'package:tapkat/widgets/custom_button.dart';
 
 class EmailVerificationScreen extends StatefulWidget {
-  const EmailVerificationScreen({Key? key}) : super(key: key);
+  final bool signingUp;
+  const EmailVerificationScreen({
+    Key? key,
+    this.signingUp = false,
+  }) : super(key: key);
 
   @override
   State<EmailVerificationScreen> createState() =>
@@ -18,7 +22,15 @@ class EmailVerificationScreen extends StatefulWidget {
 }
 
 class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
-  final _authBloc = AuthBloc();
+  late AuthBloc _authBloc;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _authBloc = BlocProvider.of<AuthBloc>(context);
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocListener(
@@ -62,12 +74,17 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                     ),
                     SizedBox(height: 12.0),
                     Text(
-                      'We sent an email to make sure you own it',
+                      'We have sent a verification link to your email address',
                       textAlign: TextAlign.center,
                       style: Style.fieldText,
                     ),
                     Text(
-                      'Please check your inbox and follow the instructions',
+                      'Please verify your email in order to enjoy the full features of Tapkat',
+                      textAlign: TextAlign.center,
+                      style: Style.fieldText,
+                    ),
+                    Text(
+                      'You may still log in and browse products before verification',
                       textAlign: TextAlign.center,
                       style: Style.fieldText,
                     ),
@@ -80,6 +97,14 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
               child: CustomButton(
                 onTap: () => _authBloc.add(ResendEmail()),
                 label: 'Resend email',
+              ),
+            ),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 20.0),
+              child: CustomButton(
+                onTap: () => _authBloc.add(SkipSignUpPhoto()),
+                label: 'Skip',
+                bgColor: Style.secondaryColor,
               ),
             ),
           ],

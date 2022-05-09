@@ -1,5 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter_logs/flutter_logs.dart';
 import 'package:tapkat/backend.dart';
 import 'package:tapkat/models/location.dart';
 import 'package:tapkat/models/product.dart';
@@ -15,40 +16,48 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
     final _productRepo = ProductRepository();
     on<SearchEvent>((event, emit) async {
       emit(SearchLoading());
-      if (event is InitializeSearch) {
-        final result = await _productRepo.searchProducts(
-          event.keyword.isNotEmpty ? event.keyword.trim().split(" ") : [],
-          sortBy: event.sortBy.toLowerCase() == 'name'
-              ? 'productname'
-              : event.sortBy,
-          radius: event.distance,
-          category: event.category,
-          location: application.currentUserLocation ??
-              application.currentUserModel!.location ??
-              LocationModel(latitude: 0, longitude: 0),
-        );
-        print('search result count: ${result.length}');
 
-        emit(SearchSuccess(result));
-      }
+      try {
+        if (event is InitializeSearch) {
+          final result = await _productRepo.searchProducts(
+            event.keyword.isNotEmpty ? event.keyword.trim().split(" ") : [],
+            sortBy: event.sortBy.toLowerCase() == 'name'
+                ? 'productname'
+                : event.sortBy,
+            radius: event.distance,
+            category: event.category,
+            location: application.currentUserLocation ??
+                application.currentUserModel!.location ??
+                LocationModel(latitude: 0, longitude: 0),
+          );
+          print('search result count: ${result.length}');
 
-      if (event is SearchNextProducts) {
-        final list = await _productRepo.searchProducts(
-          event.keyword.split(" "),
-          sortBy: event.sortBy == 'name' ? 'productname' : event.sortBy,
-          radius: event.distance,
-          lastProductId: event.lastProductId,
-          startAfterVal: event.startAfterVal,
-          location: application.currentUserLocation ??
-              application.currentUserModel!.location ??
-              LocationModel(latitude: 0, longitude: 0),
-        );
+          emit(SearchSuccess(result));
+        }
 
-        emit(SearchNextProductsSuccess(list));
-      }
+        if (event is SearchNextProducts) {
+          final list = await _productRepo.searchProducts(
+            event.keyword.split(" "),
+            sortBy: event.sortBy == 'name' ? 'productname' : event.sortBy,
+            radius: event.distance,
+            lastProductId: event.lastProductId,
+            startAfterVal: event.startAfterVal,
+            location: application.currentUserLocation ??
+                application.currentUserModel!.location ??
+                LocationModel(latitude: 0, longitude: 0),
+          );
 
-      if (event is GetProductMarkers) {
-        emit(GetProductMarkersSuccess(queryProductMarkersRecord(limit: 20)));
+          emit(SearchNextProductsSuccess(list));
+        }
+
+        if (event is GetProductMarkers) {
+          emit(GetProductMarkersSuccess(queryProductMarkersRecord(limit: 20)));
+        }
+      } catch (e) {
+        FlutterLogs.logToFile(
+            logFileName: "Home Bloc",
+            overwrite: false,
+            logMessage: e.toString());
       }
     });
   }

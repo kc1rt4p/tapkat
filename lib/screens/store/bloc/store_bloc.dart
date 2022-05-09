@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter_logs/flutter_logs.dart';
 import 'package:tapkat/models/store.dart';
 import 'package:tapkat/models/store_like.dart';
 import 'package:tapkat/models/user.dart';
@@ -56,6 +57,10 @@ class StoreBloc extends Bloc<StoreEvent, StoreState> {
       } catch (e) {
         print(e.toString());
         emit(StoreError(e.toString()));
+        FlutterLogs.logToFile(
+            logFileName: "Home Bloc",
+            overwrite: false,
+            logMessage: e.toString());
       }
     });
   }

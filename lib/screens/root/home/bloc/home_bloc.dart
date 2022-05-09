@@ -1,6 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter_logs/flutter_logs.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:tapkat/models/location.dart';
 import 'package:tapkat/models/product.dart';
@@ -113,6 +114,10 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         }
       } catch (e) {
         print('ERROR ON HOME BLOC: ${e.toString()}');
+        FlutterLogs.logToFile(
+            logFileName: "Home Bloc",
+            overwrite: false,
+            logMessage: e.toString());
       }
     });
   }

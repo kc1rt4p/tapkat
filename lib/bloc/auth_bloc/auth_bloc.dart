@@ -195,9 +195,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           },
           (phoneAuthCredential) {},
           (verificationId, forceResendingToken) {
-            add(PhoneOtpSent(verificationId));
+            add(PhoneOtpSent(verificationId, forceResendingToken));
           },
           (verificationId) {},
+          event.forceResendingToken,
         );
       }
 
@@ -225,7 +226,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       }
 
       if (event is PhoneOtpSent) {
-        emit(PhoneOtpSentSuccess(event.verificationId));
+        emit(PhoneOtpSentSuccess(
+            event.verificationId, event.forceResendingToken!));
       }
 
       if (event is SignInWithEmail) {

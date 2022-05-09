@@ -1,6 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_logs/flutter_logs.dart';
 import 'package:tapkat/models/barter_product.dart';
 import 'package:tapkat/models/barter_record_model.dart';
 import 'package:tapkat/models/chat_message.dart';
@@ -455,6 +456,10 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
         }
       } catch (e) {
         emit(BarterError(e.toString()));
+        FlutterLogs.logToFile(
+            logFileName: "Home Bloc",
+            overwrite: false,
+            logMessage: e.toString());
       }
     });
   }

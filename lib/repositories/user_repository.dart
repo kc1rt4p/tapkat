@@ -312,14 +312,17 @@ class UserRepository {
       PhoneVerificationFailed phoneVerificationFailed,
       PhoneVerificationCompleted phoneVerificationCompleted,
       PhoneCodeSent phoneCodeSent,
-      PhoneCodeAutoRetrievalTimeout autoRetrievalTimeout) async {
+      PhoneCodeAutoRetrievalTimeout autoRetrievalTimeout,
+      int? forceResendingToken) async {
     _firebaseAuth.verifyPhoneNumber(
-        phoneNumber: phoneNumber,
-        timeout: timeOut,
-        verificationCompleted: phoneVerificationCompleted,
-        verificationFailed: phoneVerificationFailed,
-        codeSent: phoneCodeSent,
-        codeAutoRetrievalTimeout: autoRetrievalTimeout);
+      phoneNumber: phoneNumber,
+      timeout: timeOut,
+      verificationCompleted: phoneVerificationCompleted,
+      verificationFailed: phoneVerificationFailed,
+      codeSent: phoneCodeSent,
+      codeAutoRetrievalTimeout: autoRetrievalTimeout,
+      forceResendingToken: forceResendingToken,
+    );
   }
 
   Future<UserCredential> verifyAndLogin(

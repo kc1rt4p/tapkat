@@ -1,6 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_logs/flutter_logs.dart';
 import 'package:tapkat/models/notification.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/models/request/product_review_resuest.dart';
@@ -28,112 +29,122 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     on<ProfileEvent>((event, emit) async {
       emit(ProfileLoading());
 
-      final _user = application.currentUser;
-      if (event is InitializeProfileScreen) {
-        if (_user != null) {
-          final userModel = await _userRepo.getUser(_user.uid);
-          application.currentUserModel = userModel;
-          final list = await _productRepo.getFirstProducts(
-            'user',
-            userId: _user.uid,
-            sortBy: 'distance',
+      try {
+        final _user = application.currentUser;
+        if (event is InitializeProfileScreen) {
+          if (_user != null) {
+            final userModel = await _userRepo.getUser(_user.uid);
+            application.currentUserModel = userModel;
+            final list = await _productRepo.getFirstProducts(
+              'user',
+              userId: _user.uid,
+              sortBy: 'distance',
+            );
+
+            emit(ProfileScreenInitialized(
+              user: _user,
+              list: list,
+              userModel: userModel!,
+            ));
+          }
+        }
+
+        if (event is InitializeUserRatingsScreen) {
+          final list1 = await _userRepo.getUserReviews(null, event.userId);
+          emit(GetUserRatingsSuccess(list1));
+
+          final list2 =
+              await _productRepo.getProductRatings(userId: event.userId);
+          emit(GetProductRatingsSuccess(list2));
+        }
+
+        if (event is GetUserRatings) {
+          final list = await _userRepo.getUserReviews(null, event.userId);
+          emit(GetUserRatingsSuccess(list));
+        }
+
+        if (event is GetRatingsForUser) {
+          final list = await _userRepo.getUserReviews(event.userId, null);
+
+          emit(GetUserRatingsSuccess(list));
+        }
+
+        if (event is GetNextUserRatings) {
+          final list = await _userRepo.getNextUserReviews(
+              null, event.userId, event.lastUserId, event.startAfterVal);
+        }
+
+        if (event is GetProductRatings) {
+          final list =
+              await _productRepo.getProductRatings(userId: event.userId);
+          emit(GetProductRatingsSuccess(list));
+        }
+
+        if (event is GetNextProductRatings) {
+          final list = await _productRepo.getNextRatings(
+            secondaryVal: event.lastProductId,
+            startAfterVal: event.startAfterVal,
+            userId: event.userId,
           );
-
-          emit(ProfileScreenInitialized(
-            user: _user,
-            list: list,
-            userModel: userModel!,
-          ));
+          emit(GetNextProductRatingsSuccess(list));
         }
-      }
 
-      if (event is InitializeUserRatingsScreen) {
-        final list1 = await _userRepo.getUserReviews(null, event.userId);
-        emit(GetUserRatingsSuccess(list1));
-
-        final list2 =
-            await _productRepo.getProductRatings(userId: event.userId);
-        emit(GetProductRatingsSuccess(list2));
-      }
-
-      if (event is GetUserRatings) {
-        final list = await _userRepo.getUserReviews(null, event.userId);
-        emit(GetUserRatingsSuccess(list));
-      }
-
-      if (event is GetRatingsForUser) {
-        final list = await _userRepo.getUserReviews(event.userId, null);
-
-        emit(GetUserRatingsSuccess(list));
-      }
-
-      if (event is GetNextUserRatings) {
-        final list = await _userRepo.getNextUserReviews(
-            null, event.userId, event.lastUserId, event.startAfterVal);
-      }
-
-      if (event is GetProductRatings) {
-        final list = await _productRepo.getProductRatings(userId: event.userId);
-        emit(GetProductRatingsSuccess(list));
-      }
-
-      if (event is GetNextProductRatings) {
-        final list = await _productRepo.getNextRatings(
-          secondaryVal: event.lastProductId,
-          startAfterVal: event.startAfterVal,
-          userId: event.userId,
-        );
-        emit(GetNextProductRatingsSuccess(list));
-      }
-
-      if (event is UpdateUserPhoto) {
-        final updated =
-            await _userRepo.updateUserPhoto(_user!.uid, event.photo);
-        if (updated) emit(UpdateUserPhotoSuccess());
-      }
-
-      if (event is UpdateUserInfo) {
-        final updated = await _userRepo.updateUser(event.user);
-        if (updated) emit(UpdateUserInfoSuccess());
-      }
-
-      if (event is UpdatePassword) {
-        final result = await _authService.updatePassword(
-            event.currentPassword, event.newPassword);
-        if (result == true) {
-          emit(UpdatePasswordSuccess());
-        } else {
-          emit(ProfileError(result as String));
+        if (event is UpdateUserPhoto) {
+          final updated =
+              await _userRepo.updateUserPhoto(_user!.uid, event.photo);
+          if (updated) emit(UpdateUserPhotoSuccess());
         }
-      }
 
-      if (event is UpdateUserReview) {
-        final updated = await _userRepo.updateUserReview(event.review);
-        if (updated) emit(UpdateUserReviewSuccess());
-      }
+        if (event is UpdateUserInfo) {
+          final updated = await _userRepo.updateUser(event.user);
+          application.currentUserModel =
+              await _userRepo.getUser(event.user.userid!);
+          if (updated) emit(UpdateUserInfoSuccess());
+        }
 
-      if (event is UpdateProductReview) {
-        final updated = await _productRepo.updateProductReview(event.review);
-        if (updated) emit(UpdateProductReviewSuccess());
-      }
+        if (event is UpdatePassword) {
+          final result = await _authService.updatePassword(
+              event.currentPassword, event.newPassword);
+          if (result == true) {
+            emit(UpdatePasswordSuccess());
+          } else {
+            emit(ProfileError(result as String));
+          }
+        }
 
-      if (event is DeleteProductReview) {
-        final deleted = await _productRepo.deleteRating(event.review);
-        if (deleted) emit(DeleteProductReviewSuccess());
-      }
+        if (event is UpdateUserReview) {
+          final updated = await _userRepo.updateUserReview(event.review);
+          if (updated) emit(UpdateUserReviewSuccess());
+        }
 
-      if (event is DeleteUserReview) {
-        final deleted = await _userRepo.deleteUserReview(event.review);
-      }
+        if (event is UpdateProductReview) {
+          final updated = await _productRepo.updateProductReview(event.review);
+          if (updated) emit(UpdateProductReviewSuccess());
+        }
 
-      if (event is InitializeNotificationList) {
-        final list = await _alertRepo.getNotifications();
-        emit(InitializeNotificationListSuccess(list));
-      }
+        if (event is DeleteProductReview) {
+          final deleted = await _productRepo.deleteRating(event.review);
+          if (deleted) emit(DeleteProductReviewSuccess());
+        }
 
-      if (event is GetNextNotifications) {
-        final list = await _alertRepo.getNotifications(event.startAfterVal);
-        emit(GetNextNotificationsSuccess(list));
+        if (event is DeleteUserReview) {
+          final deleted = await _userRepo.deleteUserReview(event.review);
+        }
+
+        if (event is InitializeNotificationList) {
+          final list = await _alertRepo.getNotifications();
+          emit(InitializeNotificationListSuccess(list));
+        }
+
+        if (event is GetNextNotifications) {
+          final list = await _alertRepo.getNotifications(event.startAfterVal);
+          emit(GetNextNotificationsSuccess(list));
+        }
+      } catch (e) {
+        FlutterLogs.logToFile(
+            logFileName: "Home Bloc",
+            overwrite: false,
+            logMessage: e.toString());
       }
     });
   }

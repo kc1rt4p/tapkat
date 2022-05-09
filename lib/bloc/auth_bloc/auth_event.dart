@@ -51,8 +51,9 @@ class SignInWithApple extends AuthEvent {}
 
 class SignInWithMobileNumber extends AuthEvent {
   final String phoneNumber;
+  final int? forceResendingToken;
 
-  SignInWithMobileNumber(this.phoneNumber);
+  SignInWithMobileNumber(this.phoneNumber, this.forceResendingToken);
 }
 
 class PhoneAuthError extends AuthEvent {
@@ -63,8 +64,9 @@ class PhoneAuthError extends AuthEvent {
 
 class PhoneOtpSent extends AuthEvent {
   final String verificationId;
+  final int? forceResendingToken;
 
-  PhoneOtpSent(this.verificationId);
+  PhoneOtpSent(this.verificationId, this.forceResendingToken);
 }
 
 class VerifyPhoneOtp extends AuthEvent {

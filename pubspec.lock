@@ -572,21 +572,21 @@ packages:
       name: flutter_facebook_auth
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "4.3.0"
+    version: "4.3.3"
   flutter_facebook_auth_platform_interface:
     dependency: transitive
     description:
       name: flutter_facebook_auth_platform_interface
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "3.1.0"
+    version: "3.1.2"
   flutter_facebook_auth_web:
     dependency: transitive
     description:
       name: flutter_facebook_auth_web
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "3.1.0"
+    version: "3.1.2"
   flutter_google_places:
     dependency: "direct main"
     description:
@@ -614,7 +614,7 @@ packages:
       name: flutter_local_notifications
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "9.5.0"
+    version: "9.5.1"
   flutter_local_notifications_linux:
     dependency: transitive
     description:
@@ -634,6 +634,13 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_logs:
+    dependency: "direct main"
+    description:
+      name: flutter_logs
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.1.5"
   flutter_native_splash:
     dependency: "direct dev"
     description:
@@ -994,6 +1001,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "6.2.0"
+  label_marker:
+    dependency: "direct main"
+    description:
+      name: label_marker
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.1"
   libphonenumber:
     dependency: transitive
     description:

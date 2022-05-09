@@ -3,12 +3,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_progress_hud/flutter_progress_hud.dart';
 import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
 import 'package:tapkat/models/request/update_user.dart';
+import 'package:tapkat/screens/login/email_verification_screen.dart';
 import 'package:tapkat/screens/root/profile/bloc/profile_bloc.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/utilities/style.dart';
 import 'package:tapkat/widgets/custom_app_bar.dart';
 import 'package:tapkat/widgets/custom_button.dart';
+import 'package:tapkat/utilities/application.dart' as application;
 
 class ItemsWantedScreen extends StatefulWidget {
   final UpdateUserModel user;
@@ -63,8 +65,19 @@ class _ItemsWantedScreenState extends State<ItemsWantedScreen> {
                       Navigator.popUntil(context, (route) {
                         return count++ == 4;
                       });
+                      //
                     } else {
-                      _authBloc.add(SkipSignUpPhoto());
+                      if (!application.currentUserModel!.verifiedByPhone!) {
+                        Navigator.pushAndRemoveUntil(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => EmailVerificationScreen(
+                                      signingUp: true,
+                                    )),
+                            (route) => route.isFirst);
+                      } else {
+                        _authBloc.add(SkipSignUpPhoto());
+                      }
                     }
                   }
                 },

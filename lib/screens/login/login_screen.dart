@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/gestures.dart';
@@ -39,6 +40,35 @@ class _LoginScreenState extends State<LoginScreen> {
   String _phoneErrorMsg = '';
   PhoneNumber _selectedPhoneCountry = PhoneNumber(isoCode: 'SG');
 
+  late Timer _timer;
+  int currentSeconds = 0;
+  int timerMaxSeconds = 30;
+  bool timerExpired = true;
+  int? _forceResendingToken;
+
+  String get timerText =>
+      '${((timerMaxSeconds - currentSeconds) ~/ 60).toString().padLeft(2, '0')}:${((timerMaxSeconds - currentSeconds) % 60).toString().padLeft(2, '0')}';
+
+  void startTimer() {
+    setState(() {
+      timerExpired = false;
+    });
+    const oneSec = const Duration(seconds: 1);
+    _timer = new Timer.periodic(oneSec, (Timer timer) {
+      if (this.mounted) {
+        setState(() {
+          currentSeconds = timer.tick;
+          if (currentSeconds >= timerMaxSeconds) {
+            timer.cancel();
+            setState(() {
+              timerExpired = true;
+            });
+          }
+        });
+      }
+    });
+  }
+
   @override
   void initState() {
     _authBloc = BlocProvider.of<AuthBloc>(context);
@@ -69,7 +99,10 @@ class _LoginScreenState extends State<LoginScreen> {
               setState(() {
                 _verificationId = state.verificationId;
                 _verifyingPhone = true;
+                _forceResendingToken = state.forceResendingToken;
               });
+              print('FORCE RESENDING TOKEN ::::: ${state.forceResendingToken}');
+              startTimer();
             }
 
             if (state is PhoneVerifiedButNoRecord) {
@@ -149,17 +182,31 @@ class _LoginScreenState extends State<LoginScreen> {
                                     SizedBox(height: 16.0),
                                     _signInWithPhone
                                         ? _verifyingPhone
-                                            ? CustomTextFormField(
-                                                hintText:
-                                                    'Enter the code sent to your phone',
-                                                label: 'OTP code',
-                                                controller: _otpTextController,
-                                                validator: (val) =>
-                                                    val != null && val.isEmpty
-                                                        ? 'Required'
-                                                        : null,
-                                                keyboardType:
-                                                    TextInputType.number,
+                                            ? Column(
+                                                children: [
+                                                  Text(
+                                                    'A one-time password was send to ${_selectedPhoneCountry.dialCode! + _phoneTextController.text}',
+                                                    style: Style.bodyText2
+                                                        .copyWith(
+                                                      color: Colors.white,
+                                                    ),
+                                                  ),
+                                                  SizedBox(height: 5.0),
+                                                  CustomTextFormField(
+                                                    hintText:
+                                                        'Enter the code sent to your phone',
+                                                    label: 'OTP code',
+                                                    controller:
+                                                        _otpTextController,
+                                                    validator: (val) =>
+                                                        val != null &&
+                                                                val.isEmpty
+                                                            ? 'Required'
+                                                            : null,
+                                                    keyboardType:
+                                                        TextInputType.number,
+                                                  ),
+                                                ],
                                               )
                                             : Column(
                                                 crossAxisAlignment:
@@ -329,10 +376,37 @@ class _LoginScreenState extends State<LoginScreen> {
                                               ),
                                             ],
                                           ),
-                                    CustomButton(
-                                      onTap: _onLogInTapped,
-                                      label:
-                                          _verifyingPhone ? 'Submit' : 'Log In',
+                                    Row(
+                                      children: [
+                                        _verifyingPhone
+                                            ? Expanded(
+                                                child: Row(
+                                                  children: [
+                                                    Expanded(
+                                                      child: CustomButton(
+                                                        enabled: timerExpired,
+                                                        onTap: _onResendTapped,
+                                                        label: timerExpired
+                                                            ? 'Resend'
+                                                            : 'Resend ($timerText)',
+                                                        bgColor: Style
+                                                            .secondaryColor,
+                                                      ),
+                                                    ),
+                                                    SizedBox(width: 10.0),
+                                                  ],
+                                                ),
+                                              )
+                                            : Text(''),
+                                        Expanded(
+                                          child: CustomButton(
+                                            onTap: _onLogInTapped,
+                                            label: _verifyingPhone
+                                                ? 'Submit'
+                                                : 'Log In',
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                     SizedBox(height: 20.0),
                                     CustomButton(
@@ -340,6 +414,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                         setState(() {
                                           _signInWithPhone = !_signInWithPhone;
                                         });
+                                        if (!_signInWithPhone) {
+                                          _verifyingPhone = false;
+                                        }
                                       },
                                       label:
                                           'Sign in with ${_signInWithPhone ? 'Email' : 'Phone'}',
@@ -442,6 +519,10 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  _onResendTapped() {
+    _authBloc.add(SignInWithMobileNumber(_phoneNumber!, _forceResendingToken));
+  }
+
   _onLogInTapped() {
     if (!_formKey.currentState!.validate()) return;
     if (_showPhoneError) return;
@@ -451,7 +532,7 @@ class _LoginScreenState extends State<LoginScreen> {
         _authBloc.add(
             VerifyPhoneOtp(_verificationId!, _otpTextController.text.trim()));
       } else {
-        _authBloc.add(SignInWithMobileNumber(_phoneNumber!));
+        _authBloc.add(SignInWithMobileNumber(_phoneNumber!, null));
       }
     } else {
       _authBloc.add(SignInWithEmail(
