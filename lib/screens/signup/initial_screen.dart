@@ -47,9 +47,9 @@ class _InitialSignUpScreenState extends State<InitialSignUpScreen> {
     _authBloc = BlocProvider.of<AuthBloc>(context);
     super.initState();
     _loadUserLocation();
-    if (application.currentUser != null) {
+    if (application.currentUser !=
+        null) if (application.currentUser!.phoneNumber != null)
       _mobileNumberTextController.text = application.currentUser!.phoneNumber!;
-    }
   }
 
   @override

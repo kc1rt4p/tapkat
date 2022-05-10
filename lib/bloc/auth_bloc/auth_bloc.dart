@@ -125,7 +125,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             application.currentUserModel = await userRepo.getUser(user.uid);
 
             if (application.currentUserModel != null) {
-              emit(AuthSignedIn(user));
+              // emit(AuthSignedIn(user));
+              emit(ShowSignUpPhoto());
             }
           } else
             emit(AuthError('Unable to login with facebook'));
@@ -140,7 +141,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
               application.currentUserModel = userModel;
             }
 
-            emit(AuthSignedIn(user));
+            // emit(AuthSignedIn(user));
+
+            emit(ShowSignUpPhoto());
           }
         }
 

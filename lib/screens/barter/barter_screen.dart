@@ -1169,6 +1169,7 @@ class _BarterScreenState extends State<BarterScreen> {
               addBtnTapped: _showRemoteUserItems,
               showAddBtn: _shouldShowAdd(),
             ),
+            SizedBox(height: SizeConfig.screenHeight * 0.05),
             _buildBarterList(
               label: _barterRecord != null &&
                       _barterRecord!.dealStatus != 'completed'
@@ -1286,8 +1287,8 @@ class _BarterScreenState extends State<BarterScreen> {
             ),
             _barterRecord != null && _barterRecord!.dealStatus != 'sold'
                 ? Container(
+                    margin: EdgeInsets.only(top: 20.0),
                     width: double.infinity,
-                    margin: EdgeInsets.only(bottom: 16.0),
                     child: Center(
                       child: Text(
                         'Tap the (+) icon to add items on your barter, you can select multiple items from your gallery.',
@@ -2076,25 +2077,27 @@ class _BarterScreenState extends State<BarterScreen> {
     Function()? addBtnTapped,
   }) {
     return Container(
-      margin: EdgeInsets.only(bottom: 10.0),
       width: double.infinity,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  label,
-                  style: Style.subtitle2.copyWith(
-                      color: kBackgroundColor, fontWeight: FontWeight.bold),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20.0, 5.0, 20.0, 0.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    label,
+                    style: Style.subtitle2.copyWith(
+                        color: kBackgroundColor, fontWeight: FontWeight.bold),
+                  ),
                 ),
-              ),
-              labelAction ?? Container(),
-            ],
+                labelAction ?? Container(),
+              ],
+            ),
           ),
           Container(
-            padding: EdgeInsets.symmetric(vertical: 10.0),
+            padding: EdgeInsets.only(top: 10.0),
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
@@ -2204,7 +2207,7 @@ class _BarterScreenState extends State<BarterScreen> {
                                   product.productid == item.productid),
                               child: Container(
                                 margin: EdgeInsets.only(right: 8.0),
-                                width: SizeConfig.screenWidth * 0.40,
+                                width: SizeConfig.screenHeight * 0.19,
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.only(
                                     topLeft: Radius.circular(20.0),
@@ -2415,7 +2418,7 @@ class _BarterScreenState extends State<BarterScreen> {
           List<ProductModel> selectedItems = [];
           return StatefulBuilder(builder: (context, setState) {
             return Container(
-              padding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 20.0),
+              padding: EdgeInsets.fromLTRB(10.0, 5.0, 10.0, 10.0),
               width: double.infinity,
               decoration: BoxDecoration(
                 color: Colors.white,
@@ -2489,7 +2492,7 @@ class _BarterScreenState extends State<BarterScreen> {
                                       product.productid == item.productid),
                                   child: Container(
                                     margin: EdgeInsets.only(right: 8.0),
-                                    width: SizeConfig.screenWidth * 0.40,
+                                    width: SizeConfig.screenHeight * 0.19,
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.only(
                                         topLeft: Radius.circular(20.0),
@@ -2584,6 +2587,45 @@ class _BarterScreenState extends State<BarterScreen> {
                             ],
                           ),
                         ),
+                  currentUserItems.isNotEmpty
+                      ? Padding(
+                          padding:
+                              const EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 20.0),
+                          child: Center(
+                            child: RichText(
+                                text: TextSpan(
+                              style: TextStyle(
+                                fontSize: SizeConfig.textScaleFactor * 14,
+                                color: kBackgroundColor,
+                              ),
+                              children: [
+                                TextSpan(text: 'Tap '),
+                                TextSpan(
+                                  text: 'here',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: SizeConfig.textScaleFactor * 14,
+                                  ),
+                                  recognizer: new TapGestureRecognizer()
+                                    ..onTap = () async {
+                                      Navigator.pop(context);
+                                      final data = await Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              settings: RouteSettings(
+                                                  arguments:
+                                                      Map<String, dynamic>()),
+                                              builder: (context) =>
+                                                  ProductAddScreen()));
+                                      _barterBloc.add(GetCurrentUserItems());
+                                    },
+                                ),
+                                TextSpan(text: ' to add a new offer'),
+                              ],
+                            )),
+                          ),
+                        )
+                      : Text(''),
                   Row(
                     children: [
                       Expanded(

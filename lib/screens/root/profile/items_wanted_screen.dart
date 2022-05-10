@@ -67,7 +67,8 @@ class _ItemsWantedScreenState extends State<ItemsWantedScreen> {
                       });
                       //
                     } else {
-                      if (!application.currentUserModel!.verifiedByPhone!) {
+                      if (!application.currentUserModel!.verifiedByPhone! &&
+                          !application.currentUser!.emailVerified) {
                         Navigator.pushAndRemoveUntil(
                             context,
                             MaterialPageRoute(
