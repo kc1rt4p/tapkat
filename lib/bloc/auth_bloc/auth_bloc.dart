@@ -206,21 +206,25 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       }
 
       if (event is VerifyPhoneOtp) {
-        final userCredential =
-            await userRepo.verifyAndLogin(event.verificationId, event.otpCode);
-        final user = userCredential.user;
+        try {
+          final userCredential = await userRepo.verifyAndLogin(
+              event.verificationId, event.otpCode);
+          final user = userCredential.user;
 
-        if (user != null) {
-          application.currentUser = user;
+          if (user != null) {
+            application.currentUser = user;
 
-          final userModel = await userRepo.getUser(user.uid);
-          if (userModel != null) {
-            application.currentUserModel = userModel;
+            final userModel = await userRepo.getUser(user.uid);
+            if (userModel != null) {
+              application.currentUserModel = userModel;
 
-            emit(AuthSignedIn(user));
-          } else {
-            emit(PhoneVerifiedButNoRecord());
+              emit(AuthSignedIn(user));
+            } else {
+              emit(PhoneVerifiedButNoRecord());
+            }
           }
+        } on FirebaseAuthException catch (e) {
+          emit(AuthError(e.toString()));
         }
       }
 

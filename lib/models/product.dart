@@ -14,6 +14,8 @@ class ProductModel {
   String? display_name;
   MediaPrimaryModel? mediaPrimary;
   List<MediaPrimaryModel>? media;
+
+  List<AddressModel>? meet_location;
   num? price;
   int? likes;
   AddressModel? address;
@@ -49,6 +51,7 @@ class ProductModel {
     this.distance,
     this.tradeFor,
     this.free,
+    this.meet_location,
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
@@ -96,6 +99,11 @@ class ProductModel {
               .toList()
           : [],
       free: json['free'] != null ? json['free'] as bool? : false,
+      meet_location: json['meet_location'] != null
+          ? (json['meet_location'] as List<dynamic>)
+              .map((item) => AddressModel.fromJson(item))
+              .toList()
+          : [],
     );
   }
 
@@ -118,6 +126,7 @@ class ProductModel {
       'status': this.status,
       'tradefor': this.tradeFor,
       'free': this.free,
+      'meet_location': this.meet_location,
     };
     return json..addAll({'productid': this.productid});
   }

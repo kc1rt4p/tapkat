@@ -59,20 +59,33 @@ void main() async {
 
 initLogs() async {
   await FlutterLogs.initLogs(
-      logLevelsEnabled: [LogLevel.ERROR, LogLevel.SEVERE],
-      timeStampFormat: TimeStampFormat.TIME_FORMAT_READABLE,
-      directoryStructure: DirectoryStructure.FOR_DATE,
-      logTypesEnabled: ["device", "network", "errors"],
-      logFileExtension: LogFileExtension.LOG,
-      logsWriteDirectoryName: "TapKat_logs",
-      logsExportDirectoryName: "TapKat_logs/Exported",
-      debugFileOperations: true,
-      isDebuggable: true);
+    logLevelsEnabled: [
+      LogLevel.INFO,
+      LogLevel.WARNING,
+      LogLevel.ERROR,
+      LogLevel.SEVERE,
+    ],
+    timeStampFormat: TimeStampFormat.TIME_FORMAT_READABLE,
+    directoryStructure: DirectoryStructure.FOR_DATE,
+    logTypesEnabled: ["device", "network", "errors"],
+    logFileExtension: LogFileExtension.LOG,
+    logsWriteDirectoryName: "TapKat_logs",
+    logsExportDirectoryName: "TapKat_logs/Exported",
+    debugFileOperations: true,
+    isDebuggable: true,
+  );
   FlutterError.onError = (FlutterErrorDetails details) {
+    FlutterLogs.logError(
+      'ERROR',
+      'error ${details.stack}',
+      details.exception.toString(),
+    );
     FlutterLogs.logToFile(
-        logFileName: "error ${details.stack}",
-        overwrite: false,
-        logMessage: details.exception.toString());
+      logFileName: "error ${details.stack}",
+      overwrite: false,
+      logMessage: details.exception.toString(),
+    );
+    FlutterLogs.exportAllFileLogs();
     FlutterError.presentError(details);
     if (kReleaseMode) exit(1);
   };
@@ -85,7 +98,7 @@ class MyApp extends StatefulWidget {
   State<MyApp> createState() => _MyAppState();
 }
 
-class _MyAppState extends State<MyApp> {
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   late AuthBloc _authBloc;
   late BarterBloc _barterBloc;
   StreamSubscription<TapkatFirebaseUser?>? _userStream;
@@ -101,7 +114,34 @@ class _MyAppState extends State<MyApp> {
     _barterBloc = BarterBloc();
 
     _authBloc.add(InitializeAuth());
+
+    WidgetsBinding.instance!.addObserver(this);
     super.initState();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    switch (state) {
+      case AppLifecycleState.detached:
+        print('DETTACHED!!!');
+        break;
+      case AppLifecycleState.inactive:
+        print('INACTIVE!!!');
+        break;
+      case AppLifecycleState.paused:
+        print('PAUSED!!!');
+        break;
+      default:
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance!.removeObserver(this);
+    _userStream?.cancel();
+    _barterBloc.close();
+    super.dispose();
   }
 
   @override
@@ -194,12 +234,5 @@ class _MyAppState extends State<MyApp> {
       print('____==== ERROR!!!!');
       return Container();
     }
-  }
-
-  @override
-  void dispose() {
-    _userStream?.cancel();
-    _barterBloc.close();
-    super.dispose();
   }
 }

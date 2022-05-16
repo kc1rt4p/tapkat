@@ -1,3 +1,4 @@
+import 'package:tapkat/models/address.dart';
 import 'package:tapkat/models/location.dart';
 import 'package:tapkat/models/product.dart';
 
@@ -15,6 +16,7 @@ class ProductRequestModel {
   String? category;
   String? postcode;
   String? image_url;
+  List<AddressModel>? meet_location;
   String? media_type;
   String? display_name;
   String? status;
@@ -48,6 +50,7 @@ class ProductRequestModel {
     this.acquired_by,
     this.tradefor,
     this.free,
+    this.meet_location,
   });
 
   factory ProductRequestModel.fromProduct(ProductModel product) {
@@ -74,6 +77,7 @@ class ProductRequestModel {
       status: product.status ?? '',
       tradefor: product.tradeFor ?? [],
       free: product.free ?? null,
+      meet_location: product.meet_location ?? null,
     );
   }
 
@@ -100,6 +104,9 @@ class ProductRequestModel {
       'status': this.status ?? '',
       'tradefor': this.tradefor ?? [],
       'free': this.free,
+      'meet_location': this.meet_location != null
+          ? this.meet_location!.map((item) => item.toJson()).toList()
+          : [],
     };
 
     if (updating) {

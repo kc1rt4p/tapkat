@@ -204,25 +204,14 @@ class _SelectProductCategoryScreenState
     productRequest.category =
         _selectedCategory != null ? _selectedCategory!.code : null;
 
-    final tradefor = await Navigator.push(
+    Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => ProductTradeForScreen(
-          list: productRequest.tradefor != null ? productRequest.tradefor! : [],
           updating: widget.updating,
+          productRequest: productRequest,
         ),
       ),
     );
-
-    if (tradefor is List<String>) productRequest.tradefor = tradefor;
-
-    if (widget.updating) {
-      _productBloc.add(EditProduct(productRequest));
-    } else {
-      _productBloc.add(SaveProduct(
-        media: widget.media!,
-        productRequest: productRequest,
-      ));
-    }
   }
 }

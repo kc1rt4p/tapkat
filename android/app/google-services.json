@@ -82,6 +82,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "317757606033-9o80ahhlsoj6ep0097cjkg93tpdn6qv7.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.flutterflow.tapkat",
+            "certificate_hash": "ccb631ac9b905cc4593d40ec36068dfb2f81f6d9"
+          }
+        },
+        {
           "client_id": "317757606033-j4h8jn65ioac94ekmpkrpevan0p0m06f.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {

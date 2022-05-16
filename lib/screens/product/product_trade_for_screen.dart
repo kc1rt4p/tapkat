@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:tapkat/models/request/add_product_request.dart';
+import 'package:tapkat/screens/product/product_meetup_locations.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/utilities/style.dart';
@@ -6,12 +8,12 @@ import 'package:tapkat/widgets/custom_app_bar.dart';
 import 'package:tapkat/widgets/custom_button.dart';
 
 class ProductTradeForScreen extends StatefulWidget {
-  final List<String> list;
   final bool updating;
+  final ProductRequestModel productRequest;
   const ProductTradeForScreen({
     Key? key,
-    required this.list,
     required this.updating,
+    required this.productRequest,
   }) : super(key: key);
 
   @override
@@ -22,10 +24,12 @@ class _ProductTradeForScreenState extends State<ProductTradeForScreen> {
   List<String> _list = [];
   final inputTextController = TextEditingController();
   final focusNode = FocusNode();
+  late ProductRequestModel _productRequest;
 
   @override
   void initState() {
-    _list = widget.list;
+    _productRequest = widget.productRequest;
+    _list = _productRequest.tradefor ?? [];
     super.initState();
   }
 
@@ -46,7 +50,6 @@ class _ProductTradeForScreenState extends State<ProductTradeForScreen> {
               padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
               child: Column(
                 children: [
-                  SizedBox(height: SizeConfig.screenHeight * 0.1),
                   Text('What do you want to get in return for this item?',
                       style: Style.subtitle2),
                   SizedBox(height: 25.0),
@@ -128,45 +131,70 @@ class _ProductTradeForScreenState extends State<ProductTradeForScreen> {
                       ),
                     ),
                   ),
-                  SizedBox(height: 25.0),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: CustomButton(
-                          label: 'Skip',
-                          onTap: () => Navigator.pop(context, 'skip'),
-                          bgColor: Style.secondaryColor,
+                  Visibility(
+                    visible: _list.isNotEmpty,
+                    child: Align(
+                      alignment: Alignment.bottomRight,
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _list.clear();
+                          });
+                        },
+                        child: Padding(
+                          padding: EdgeInsets.fromLTRB(0.0, 5.0, 5.0, 0.0),
+                          child: Text(
+                            'Clear items',
+                            style: TextStyle(
+                              color: kBackgroundColor,
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
                         ),
                       ),
-                      SizedBox(width: 10.0),
-                      Expanded(
-                        child: CustomButton(
-                          enabled: _list.isNotEmpty,
-                          bgColor: Colors.red.shade400,
-                          label: 'Clear',
-                          onTap: () {
-                            setState(() {
-                              _list.clear();
-                            });
-                          },
-                        ),
-                      ),
-                      SizedBox(width: 10.0),
-                      Expanded(
-                        child: CustomButton(
-                          enabled: _list.isNotEmpty,
-                          bgColor: kBackgroundColor,
-                          label: 'Submit',
-                          onTap: () => Navigator.pop(context, _list),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ],
               ),
             ),
           ),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 5.0),
+            child: Row(
+              children: [
+                // Expanded(
+                //   child: CustomButton(
+                //     label: 'Skip',
+                //     onTap: () => Navigator.pop(context, 'skip'),
+                //     bgColor: Style.secondaryColor,
+                //   ),
+                // ),
+                Expanded(
+                  child: CustomButton(
+                    enabled: _list.isNotEmpty,
+                    bgColor: kBackgroundColor,
+                    label: 'Next',
+                    onTap: _onSubmit,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
+      ),
+    );
+  }
+
+  _onSubmit() {
+    _productRequest.tradefor = _list;
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ProductMeetUpLocationsScreen(
+          updating: widget.updating,
+          productRequest: _productRequest,
+        ),
       ),
     );
   }
