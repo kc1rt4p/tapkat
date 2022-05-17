@@ -11,6 +11,7 @@ import 'package:tapkat/models/product.dart';
 import 'package:tapkat/models/store.dart';
 import 'package:tapkat/models/user.dart';
 import 'package:tapkat/schemas/user_likes_record.dart';
+import 'package:tapkat/screens/barter/barter_screen.dart';
 import 'package:tapkat/screens/product/bloc/product_bloc.dart';
 import 'package:tapkat/screens/product/product_details_screen.dart';
 import 'package:tapkat/screens/product/product_list_screen.dart';
@@ -308,11 +309,26 @@ class _HomeScreenState extends State<HomeScreen> {
                           BarterList(
                             loading: _loadingRecoList,
                             context: context,
-                            items: _recommendedList
-                                .map((product) => _buildProductItem(
-                                      product: product,
-                                    ))
-                                .toList(),
+                            items: _recommendedList.map((product) {
+                              return DragTarget(
+                                  builder:
+                                      (context, candidateData, rejectedData) =>
+                                          _buildProductItem(product: product),
+                                  onAccept: (ProductModel product2) {
+                                    if (product.userid !=
+                                        application.currentUser!.uid) {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => BarterScreen(
+                                            product: product,
+                                            initialOffer: product2,
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                  });
+                            }).toList(),
                             label: 'Recommended For You',
                             onViewAllTapped: () => Navigator.push(
                               context,
@@ -339,11 +355,27 @@ class _HomeScreenState extends State<HomeScreen> {
                           BarterList(
                             loading: _loadingTrendingList,
                             context: context,
-                            items: _trendingList
-                                .map((product) => _buildProductItem(
-                                      product: product,
-                                    ))
-                                .toList(),
+                            items: _trendingList.map((product) {
+                              return DragTarget(
+                                  builder:
+                                      (context, candidateData, rejectedData) =>
+                                          _buildProductItem(product: product),
+                                  onAccept: (ProductModel product2) {
+                                    if (product.userid !=
+                                        application.currentUser!.uid) {
+                                      print(product.toJson());
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => BarterScreen(
+                                            product: product,
+                                            initialOffer: product2,
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                  });
+                            }).toList(),
                             label: 'What\'s Hot',
                             onViewAllTapped: () => Navigator.push(
                               context,
@@ -369,11 +401,24 @@ class _HomeScreenState extends State<HomeScreen> {
                           BarterList(
                             loading: _loadingFreeList,
                             context: context,
-                            items: _freeList
-                                .map((product) => _buildProductItem(
-                                      product: product,
-                                    ))
-                                .toList(),
+                            items: _freeList.map((product) {
+                              return DragTarget(
+                                  builder:
+                                      (context, candidateData, rejectedData) =>
+                                          _buildProductItem(product: product),
+                                  onAccept: (ProductModel product2) {
+                                    print(product.toJson());
+                                    // Navigator.push(
+                                    //   context,
+                                    //   MaterialPageRoute(
+                                    //     builder: (context) => BarterScreen(
+                                    //       product: product,
+                                    // initialOffer: product2,
+                                    //     ),
+                                    //   ),
+                                    // );
+                                  });
+                            }).toList(),
                             label: 'Free products',
                             onViewAllTapped: () => Navigator.push(
                               context,
@@ -403,9 +448,46 @@ class _HomeScreenState extends State<HomeScreen> {
                               loading: _loadingUserProducts,
                               context: context,
                               ownList: true,
-                              items: _myProductList
-                                  .map(
-                                    (product) => BarterListItem(
+                              items: _myProductList.map(
+                                (product) {
+                                  var thumbnail = '';
+
+                                  if (product.mediaPrimary != null &&
+                                      product.mediaPrimary!.url_t != null) {
+                                    thumbnail = product.mediaPrimary!.url_t!;
+                                  }
+
+                                  if (thumbnail.isEmpty &&
+                                      product.media != null &&
+                                      product.media!.isNotEmpty) {
+                                    thumbnail =
+                                        product.media!.first.url_t ?? '';
+                                  }
+                                  return Draggable(
+                                    data: product,
+                                    childWhenDragging: Container(
+                                      height: SizeConfig.screenHeight * 0.16,
+                                      width: SizeConfig.screenHeight * 0.14,
+                                      decoration: BoxDecoration(
+                                        color: kBackgroundColor,
+                                        borderRadius: BorderRadius.only(
+                                          topLeft: Radius.circular(20.0),
+                                          topRight: Radius.circular(20.0),
+                                        ),
+                                      ),
+                                    ),
+                                    feedback: Container(
+                                      height: 100.0,
+                                      width: 100.0,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        image: DecorationImage(
+                                          image: CachedNetworkImageProvider(
+                                              thumbnail),
+                                        ),
+                                      ),
+                                    ),
+                                    child: BarterListItem(
                                       height: SizeConfig.screenHeight * 0.10,
                                       width: SizeConfig.screenHeight * 0.14,
                                       hideLikeBtn: true,
@@ -426,8 +508,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                         );
                                       },
                                     ),
-                                  )
-                                  .toList(),
+                                  );
+                                },
+                              ).toList(),
                               label: 'Your Items',
                               smallItems: true,
                               removeMargin: true,
@@ -441,10 +524,29 @@ class _HomeScreenState extends State<HomeScreen> {
                               loading: _loadingCatProducts,
                               items: cat['products'] != null
                                   ? (cat['products'] as List<ProductModel>)
-                                      .map((product) => _buildProductItem(
-                                            product: product,
-                                          ))
-                                      .toList()
+                                      .map((product) {
+                                      return DragTarget(
+                                          builder: (context, candidateData,
+                                                  rejectedData) =>
+                                              _buildProductItem(
+                                                  product: product),
+                                          onAccept: (ProductModel product2) {
+                                            if (product.userid !=
+                                                application.currentUser!.uid) {
+                                              print(product.toJson());
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      BarterScreen(
+                                                    product: product,
+                                                    initialOffer: product2,
+                                                  ),
+                                                ),
+                                              );
+                                            }
+                                          });
+                                    }).toList()
                                   : [],
                               label: cat['name'] as String,
                               context: context,

@@ -38,6 +38,7 @@ import 'bloc/barter_bloc.dart';
 
 class BarterScreen extends StatefulWidget {
   final ProductModel? product;
+  final ProductModel? initialOffer;
   final BarterRecordModel? barterRecord;
   final bool showChatFirst;
 
@@ -46,6 +47,7 @@ class BarterScreen extends StatefulWidget {
     this.product,
     this.barterRecord,
     this.showChatFirst = false,
+    this.initialOffer,
   }) : super(key: key);
 
   @override
@@ -423,6 +425,38 @@ class _BarterScreenState extends State<BarterScreen> {
                     _origCurrentUserOfferedCash = null;
                     _origRemoteUserOfferedCash = null;
                   });
+
+                  if (widget.initialOffer != null && _barterRecord == null) {
+                    final _initialOffer = widget.initialOffer;
+
+                    print('INITIAL OFFER ===== ${_initialOffer!.toJson()}');
+
+                    var thumbnail = '';
+
+                    if (_initialOffer.mediaPrimary != null &&
+                        _initialOffer.mediaPrimary!.url_t != null) {
+                      thumbnail = _initialOffer.mediaPrimary!.url_t!;
+                    }
+
+                    if (thumbnail.isEmpty &&
+                        _initialOffer.media != null &&
+                        _initialOffer.media!.isNotEmpty) {
+                      thumbnail = _initialOffer.media!.first.url_t ?? '';
+                    }
+
+                    setState(() {
+                      currentUserOffers.add(
+                        BarterProductModel(
+                          productId: _initialOffer.productid,
+                          userId: _initialOffer.userid,
+                          productName: _initialOffer.productname,
+                          imgUrl: thumbnail,
+                          price: _initialOffer.price,
+                        ),
+                      );
+                    });
+                  }
+
                   list.forEach((bProduct) {
                     if (bProduct.productId!.contains('cash')) {
                       print(bProduct.toJson());

@@ -61,38 +61,51 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   padding: EdgeInsets.zero,
                   children: [
                     _buildListHeader(label: 'Account Settings'),
-                    _buildListGroupItem(
-                      label: 'Change Password',
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ChangePasswordScreen(),
-                        ),
+                    Container(
+                      width: double.infinity,
+                      child: Column(
+                        children: [
+                          _buildListGroupItem(
+                            label: 'Change Password',
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ChangePasswordScreen(),
+                              ),
+                            ),
+                          ),
+                          _buildListGroupItem(label: 'Default Country'),
+                          _buildListGroupItem(label: 'Default Currency'),
+                          _buildListGroupItem(label: 'Delete Account'),
+                        ],
                       ),
                     ),
-                    _buildListGroupItem(label: 'Default Location'),
-                    _buildListGroupItem(label: 'Default Currency'),
-                    _buildListGroupItem(label: 'Delete Account'),
                     _buildListHeader(label: 'Notification Settings'),
                     Container(
-                      padding: EdgeInsets.fromLTRB(30, 10, 10, 10),
-                      margin: EdgeInsets.only(bottom: 10.0),
+                      width: double.infinity,
+                      padding: EdgeInsets.fromLTRB(20, 8.0, 10, 8.0),
                       decoration: BoxDecoration(
                         color: Colors.grey.shade100,
                       ),
                       child: Row(
                         children: [
-                          Expanded(
-                            child: Text(
-                              'Push Notifications',
-                              style: Style.subtitle2
-                                  .copyWith(color: kBackgroundColor),
-                            ),
+                          Text(
+                            'Push Notifications',
+                            style: Style.subtitle2.copyWith(
+                                color: kBackgroundColor,
+                                fontSize: SizeConfig.textScaleFactor * 13),
                           ),
-                          Switch(
-                            value: pushNotif == 1,
-                            onChanged: _onPushNotif,
-                            activeColor: kBackgroundColor,
+                          Spacer(),
+                          SizedBox(
+                            height: 30.0,
+                            width: 40.0,
+                            child: FittedBox(
+                              child: Switch(
+                                value: pushNotif == 1,
+                                onChanged: _onPushNotif,
+                                activeColor: kBackgroundColor,
+                              ),
+                            ),
                           ),
                           // ToggleSwitch(
                           //   initialLabelIndex: pushNotif,
@@ -177,14 +190,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return InkWell(
       onTap: onTap,
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 30.0, vertical: 10.0),
-        margin: EdgeInsets.only(bottom: 10.0),
+        width: double.infinity,
+        padding: EdgeInsets.fromLTRB(20, 8.0, 20, 8.0),
         decoration: BoxDecoration(
           color: Colors.grey.shade100,
         ),
         child: Text(
           label,
-          style: Style.subtitle2.copyWith(color: kBackgroundColor),
+          style: Style.subtitle2.copyWith(
+              color: kBackgroundColor,
+              fontSize: SizeConfig.textScaleFactor * 13),
         ),
       ),
     );
@@ -198,11 +213,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
       onTap: onTap,
       child: Container(
         padding: EdgeInsets.all(10.0),
-        margin: EdgeInsets.only(bottom: 10.0),
         child: Text(
           label,
-          style: Style.subtitle2
-              .copyWith(color: kBackgroundColor, fontWeight: FontWeight.bold),
+          style: Style.subtitle2.copyWith(
+              color: kBackgroundColor,
+              fontWeight: FontWeight.bold,
+              fontSize: SizeConfig.textScaleFactor * 14),
         ),
       ),
     );
