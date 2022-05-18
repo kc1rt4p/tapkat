@@ -374,7 +374,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                           children: [
                                             Icon(
                                               Icons.location_pin,
-                                              size: 16.0,
+                                              size: 13.0,
                                             ),
                                             Text(
                                               _product != null &&
@@ -391,7 +391,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                   : '',
                                               overflow: TextOverflow.ellipsis,
                                               style: TextStyle(
-                                                fontSize: 14.0,
+                                                fontSize:
+                                                    SizeConfig.textScaleFactor *
+                                                        12,
                                                 fontWeight: FontWeight.w600,
                                               ),
                                             ),

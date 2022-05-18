@@ -118,6 +118,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         }
       }
 
+      if (event is UpdateOnlineStatus) {
+        final updated = await userRepo.updateUserOnlineStatus(event.isOnline);
+        if (updated) emit(UpdateOnlineStatusSucces());
+      }
+
       try {
         if (event is SignInFacebook) {
           final user = await authService.signInWithFacebook();

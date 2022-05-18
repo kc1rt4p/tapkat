@@ -69,6 +69,12 @@ class PhoneOtpSent extends AuthEvent {
   PhoneOtpSent(this.verificationId, this.forceResendingToken);
 }
 
+class UpdateOnlineStatus extends AuthEvent {
+  final bool isOnline;
+
+  UpdateOnlineStatus(this.isOnline);
+}
+
 class VerifyPhoneOtp extends AuthEvent {
   final String verificationId;
   final String otpCode;

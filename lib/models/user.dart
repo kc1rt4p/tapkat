@@ -24,6 +24,7 @@ class UserModel {
   String? yt_profile;
   String? tt_profile;
   String? tw_profile;
+  bool? is_online;
 
   UserModel({
     this.userid,
@@ -48,6 +49,7 @@ class UserModel {
     this.yt_profile,
     this.tt_profile,
     this.tw_profile,
+    this.is_online,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -86,6 +88,7 @@ class UserModel {
       yt_profile: json['yt_profile'] as String?,
       tt_profile: json['tt_profile'] as String?,
       tw_profile: json['tw_profile'] as String?,
+      is_online: json['is_online'] as bool?,
     );
   }
 
@@ -113,6 +116,7 @@ class UserModel {
       'yt_profile': this.yt_profile,
       'tt_profile': this.tt_profile,
       'tw_profile': this.tw_profile,
+      'is_online': this.is_online,
     };
   }
 }

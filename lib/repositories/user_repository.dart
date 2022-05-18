@@ -28,6 +28,22 @@ class UserRepository {
     return UserModel.fromJson(result.data['user']);
   }
 
+  Stream<bool> streamBarterProducts(String userId) {
+    return usersRef.doc(userId).snapshots().map((query) {
+      final jsonData = query.data();
+      if (jsonData != null) {
+        final user = UserModel.fromJson(jsonData);
+        return user.is_online ?? false;
+      }
+
+      return false;
+    });
+    // return barterRef.doc(barterId).collection('products').snapshots().map(
+    //     (query) => query.docs
+    //         .map((doc) => BarterProductModel.fromJson(doc.data()))
+    //         .toList());
+  }
+
   Future<bool> checkIfPhoneExists(String phoneNumber) async {
     final querySnapshot =
         await usersRef.where('phone_number', isEqualTo: phoneNumber).get();
@@ -59,6 +75,16 @@ class UserRepository {
         .patch(url: 'users/${application.currentUser!.uid}', body: {
       'userid': application.currentUser!.uid,
       'pushalert': enable ? 'Y' : 'N',
+    });
+
+    return updated.data['status'] == 'SUCCESS';
+  }
+
+  Future<bool> updateUserOnlineStatus(bool isOnline) async {
+    final updated = await _apiService
+        .patch(url: 'users/${application.currentUser!.uid}', body: {
+      'userid': application.currentUser!.uid,
+      'is_online': isOnline,
     });
 
     return updated.data['status'] == 'SUCCESS';
