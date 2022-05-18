@@ -1,7 +1,9 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
+import 'package:tapkat/models/localization.dart';
 import 'package:tapkat/screens/root/profile/change_password_screen.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/dialog_message.dart';
@@ -23,6 +25,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   late AuthBloc _authBloc;
 
   int pushNotif = 0;
+
+  List<LocalizationModel> _localizations = [];
+  LocalizationModel? _selectedLocalization;
 
   @override
   void initState() {
@@ -74,7 +79,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               ),
                             ),
                           ),
-                          _buildListGroupItem(label: 'Default Country'),
+                          InkWell(
+                              onTap: _onCountrySelect,
+                              child: _buildListGroupItem(
+                                  label: 'Default Country')),
                           _buildListGroupItem(label: 'Default Currency'),
                           _buildListGroupItem(label: 'Delete Account'),
                         ],
@@ -140,6 +148,60 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
       ),
     );
+  }
+
+  _onCountrySelect() async {
+    final sortBy = await showDialog<String?>(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) {
+          return Dialog(
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 30.0, vertical: 16.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Default Country',
+                        style: Style.subtitle2.copyWith(
+                            color: kBackgroundColor,
+                            fontWeight: FontWeight.bold),
+                      ),
+                      GestureDetector(
+                        onTap: () => Navigator.pop(context, null),
+                        child: Icon(
+                          FontAwesomeIcons.times,
+                          color: kBackgroundColor,
+                          size: 20.0,
+                        ),
+                      ),
+                    ],
+                  ),
+                  ListView(
+                    shrinkWrap: true,
+                    // mainAxisSize: MainAxisSize.min,
+                    // crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(height: 8.0),
+                      ..._localizations.map(
+                        (item) => ListTile(
+                          title: Text(item.country ?? ''),
+                          contentPadding: EdgeInsets.zero,
+                          onTap: () => Navigator.pop(context, item),
+                          selectedColor: Color(0xFFBB3F03),
+                          selected: _selectedLocalization == item,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
+        });
   }
 
   _onPushNotif(bool enable) async {

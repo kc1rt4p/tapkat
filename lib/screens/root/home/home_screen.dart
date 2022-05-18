@@ -408,15 +408,15 @@ class _HomeScreenState extends State<HomeScreen> {
                                           _buildProductItem(product: product),
                                   onAccept: (ProductModel product2) {
                                     print(product.toJson());
-                                    // Navigator.push(
-                                    //   context,
-                                    //   MaterialPageRoute(
-                                    //     builder: (context) => BarterScreen(
-                                    //       product: product,
-                                    // initialOffer: product2,
-                                    //     ),
-                                    //   ),
-                                    // );
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => BarterScreen(
+                                          product: product,
+                                          initialOffer: product2,
+                                        ),
+                                      ),
+                                    );
                                   });
                             }).toList(),
                             label: 'Free products',

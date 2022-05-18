@@ -167,7 +167,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                 _product != null
                                     ? _buildPhotos()
                                     : Container(
-                                        height: SizeConfig.screenHeight * .35,
+                                        height: SizeConfig.screenHeight * .3,
                                         width: double.infinity,
                                         decoration: BoxDecoration(
                                           image: DecorationImage(
@@ -238,7 +238,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Container(
-                                      margin: EdgeInsets.only(bottom: 16.0),
+                                      margin: EdgeInsets.only(bottom: 8.0),
                                       child: Row(
                                         children: [
                                           Expanded(
@@ -254,7 +254,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                   color: Colors.black,
                                                   fontSize: SizeConfig
                                                           .textScaleFactor *
-                                                      18),
+                                                      15),
                                             ),
                                           ),
                                           Visibility(
@@ -302,7 +302,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                 fontFamily: 'Poppins',
                                                 fontSize:
                                                     SizeConfig.textScaleFactor *
-                                                        18,
+                                                        15,
                                                 fontWeight: FontWeight.w500,
                                               ),
                                             ),
@@ -411,6 +411,11 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                             .longitude,
                                                         _location.latitude,
                                                         _location.longitude),
+                                                    style: TextStyle(
+                                                      fontSize: SizeConfig
+                                                              .textScaleFactor *
+                                                          13,
+                                                    ),
                                                   )
                                                 : Container(),
                                           ],
@@ -456,10 +461,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                                     .textScaleFactor *
                                                                 13,
                                                             tapOnlyMode: true,
-                                                            itemPadding: EdgeInsets
-                                                                .symmetric(
-                                                                    horizontal:
-                                                                        4.0),
+
                                                             itemBuilder:
                                                                 (context, _) =>
                                                                     Icon(
@@ -498,7 +500,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                                         1)
                                                                 : '0',
                                                             style: TextStyle(
-                                                                fontSize: 16.0),
+                                                                fontSize: SizeConfig
+                                                                        .textScaleFactor *
+                                                                    13),
                                                           ),
                                                         ],
                                                       ),
@@ -576,8 +580,11 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                                           .solidHeart
                                                                       : FontAwesomeIcons
                                                                           .heart,
-                                                                  color: Color(
-                                                                      0xFF94D2BD),
+                                                                  color: Style
+                                                                      .secondaryColor,
+                                                                  size: SizeConfig
+                                                                          .textScaleFactor *
+                                                                      15,
                                                                 ),
                                                               );
                                                             },
@@ -590,13 +597,15 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                         ? _product!.likes!
                                                             .toString()
                                                         : '0'),
-                                                    SizedBox(width: 20.0),
+                                                    SizedBox(width: 10.0),
                                                     GestureDetector(
                                                       onTap: _onShareProduct,
                                                       child: Icon(
                                                         FontAwesomeIcons.share,
-                                                        color:
-                                                            Color(0xFF94D2BD),
+                                                        color: kBackgroundColor,
+                                                        size: SizeConfig
+                                                                .textScaleFactor *
+                                                            15,
                                                       ),
                                                     ),
                                                   ],
@@ -617,18 +626,21 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                       ),
                                     ),
                                     Container(
-                                      padding: EdgeInsets.only(bottom: 16.0),
                                       width: double.infinity,
                                       child: Column(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
                                           Container(
-                                            margin:
-                                                EdgeInsets.only(bottom: 16.0),
                                             child: Text(
                                               'Product Description',
-                                              style: Style.subtitle2,
+                                              style: Style.subtitle2.copyWith(
+                                                color: kBackgroundColor,
+                                                fontWeight: FontWeight.w600,
+                                                fontSize:
+                                                    SizeConfig.textScaleFactor *
+                                                        14,
+                                              ),
                                             ),
                                           ),
                                           Container(
@@ -641,10 +653,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                         ],
                                       ),
                                     ),
-                                    _product != null
-                                        ? Text(
-                                            'Last updated ${timeago.format(_product!.updated_time ?? DateTime.now())}.')
-                                        : Container(),
+
                                     Padding(
                                       padding: EdgeInsets.symmetric(
                                         vertical: 10.0,
@@ -657,34 +666,122 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                     _product != null &&
                                             _product!.tradeFor != null
                                         ? Container(
-                                            margin:
-                                                EdgeInsets.only(bottom: 10.0),
-                                            child: Row(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
                                               children: [
-                                                Text('Trade for: '),
-                                                Expanded(
-                                                  child: Wrap(
-                                                    children: [
-                                                      ...List.generate(
-                                                          _product!.tradeFor!
-                                                              .length, (index) {
-                                                        if (index <
-                                                            _product!.tradeFor!
-                                                                    .length -
-                                                                1)
-                                                          return Text(
-                                                              '${_product!.tradeFor![index]}, ');
-                                                        else
-                                                          return Text(
-                                                              '${_product!.tradeFor![index]}');
-                                                      })
-                                                    ],
+                                                Text(
+                                                  'Preferred Items',
+                                                  style:
+                                                      Style.subtitle2.copyWith(
+                                                    color: kBackgroundColor,
+                                                    fontWeight: FontWeight.w600,
+                                                    fontSize: SizeConfig
+                                                            .textScaleFactor *
+                                                        14,
                                                   ),
+                                                ),
+                                                Wrap(
+                                                  children: [
+                                                    ...List.generate(
+                                                        _product!.tradeFor!
+                                                            .length, (index) {
+                                                      if (index <
+                                                          _product!.tradeFor!
+                                                                  .length -
+                                                              1)
+                                                        return Text(
+                                                            '${_product!.tradeFor![index]}, ');
+                                                      else
+                                                        return Text(
+                                                            '${_product!.tradeFor![index]}');
+                                                    })
+                                                  ],
                                                 ),
                                               ],
                                             ),
                                           )
                                         : Text(''),
+                                    _product != null &&
+                                            _product!.meet_location != null &&
+                                            _product!.meet_location!.isNotEmpty
+                                        ? Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Padding(
+                                                padding: EdgeInsets.symmetric(
+                                                  vertical: 10.0,
+                                                ),
+                                                child: Divider(
+                                                  thickness: 0.6,
+                                                  color: kBackgroundColor,
+                                                ),
+                                              ),
+                                              Container(
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      'Meetup Locations',
+                                                      style: Style.subtitle2
+                                                          .copyWith(
+                                                        color: kBackgroundColor,
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                        fontSize: SizeConfig
+                                                                .textScaleFactor *
+                                                            14,
+                                                      ),
+                                                    ),
+                                                    SizedBox(height: 5.0),
+                                                    Wrap(
+                                                      direction: Axis.vertical,
+                                                      children: _product!
+                                                          .meet_location!
+                                                          .map((loc) {
+                                                        return Container(
+                                                          margin:
+                                                              EdgeInsets.only(
+                                                                  bottom: 5.0),
+                                                          child: Row(
+                                                            children: [
+                                                              Icon(
+                                                                  Icons
+                                                                      .location_pin,
+                                                                  size: 15.0),
+                                                              SizedBox(
+                                                                  width: 8.0),
+                                                              Text(
+                                                                  loc.address ??
+                                                                      '',
+                                                                  style: TextStyle(
+                                                                      fontSize:
+                                                                          SizeConfig.textScaleFactor *
+                                                                              12)),
+                                                            ],
+                                                          ),
+                                                        );
+                                                      }).toList(),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              SizedBox(height: 16.0),
+                                            ],
+                                          )
+                                        : Text(''),
+                                    _product != null
+                                        ? Text(
+                                            'Last updated ${timeago.format(_product!.updated_time ?? DateTime.now())}.',
+                                            style: TextStyle(
+                                              fontSize:
+                                                  SizeConfig.textScaleFactor *
+                                                      10,
+                                            ),
+                                          )
+                                        : Container(),
                                   ],
                                 ),
                               ),
@@ -825,6 +922,18 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
     );
   }
 
+  String _getProductDistance(ProductModel product) {
+    if (product.distance == null) return '';
+    final distance = product.distance;
+    if (product.distance! > 1)
+      return product.distance!.toStringAsFixed(1) + ' Km';
+
+    final meters = product.distance! * 1000;
+    if (meters < 100) return 'within 100m';
+    if (meters < 300) return 'within 300m';
+    return 'within 900m';
+  }
+
   _onMapViewTapped() {
     showGeneralDialog(
         context: context,
@@ -930,7 +1039,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
     }
 
     return Container(
-      height: SizeConfig.screenHeight * .35,
+      height: SizeConfig.screenHeight * .3,
       child: _product!.media!.isEmpty
           ? Container(
               decoration: BoxDecoration(
@@ -1026,9 +1135,10 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
         c(lat1 * p) * c(lat2 * p) * (1 - c((lon2 - lon1) * p)) / 2;
 
     final distance = 12742 * asin(sqrt(a));
-    if (distance > 1000) return distance.toStringAsFixed(1);
+    if (distance > 1000) return distance.toStringAsFixed(1) + ' Km';
 
     final meters = distance * 1000;
+    print('-----===== $distance');
     if (meters < 100) return 'within 100m';
     if (meters < 300) return 'within 300m';
     return 'within 900m';
