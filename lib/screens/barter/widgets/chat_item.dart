@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:tapkat/models/chat_message.dart';
@@ -46,13 +47,40 @@ Container buildChatItem(ChatMessageModel msg, User? currentUser) {
                   fontSize: 12.0,
                 ),
               ),
+              msg.images != null && msg.images!.isNotEmpty
+                  ? Container(
+                      margin: EdgeInsets.only(top: 5.0),
+                      child: Wrap(
+                        children: msg.images!
+                            .map(
+                              (img) => Container(
+                                height: 100.0,
+                                width: 150.0,
+                                margin: EdgeInsets.only(right: 5.0),
+                                padding: EdgeInsets.all(5.0),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  image: DecorationImage(
+                                    image: CachedNetworkImageProvider(img),
+                                    scale: 1.0,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              ),
+                            )
+                            .toList(),
+                      ),
+                    )
+                  : SizedBox(),
               SizedBox(height: 2.0),
-              Text(
-                msg.message ?? '',
-                style: TextStyle(
-                  color: Colors.white,
-                ),
-              ),
+              msg.message != null && msg.message!.isNotEmpty
+                  ? Text(
+                      msg.message ?? '',
+                      style: TextStyle(
+                        color: Colors.white,
+                      ),
+                    )
+                  : SizedBox(),
             ],
           ),
         ),

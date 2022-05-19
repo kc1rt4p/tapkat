@@ -13,6 +13,7 @@ import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/models/user.dart';
+import 'package:tapkat/repositories/user_repository.dart';
 import 'package:tapkat/schemas/product_markers_record.dart';
 import 'package:tapkat/schemas/user_likes_record.dart';
 import 'package:tapkat/screens/product/bloc/product_bloc.dart';
@@ -76,6 +77,8 @@ class _StoreScreenState extends State<StoreScreen> {
   bool _isLoading = true;
 
   Set<Marker> _markers = {};
+
+  final _userRepo = UserRepository();
 
   @override
   void initState() {
@@ -972,54 +975,64 @@ class _StoreScreenState extends State<StoreScreen> {
     if (!await launch(website)) throw 'Could not launch $website';
   }
 
-  Stack _buildPhoto() {
-    return Stack(
-      children: [
-        Container(
-          padding: EdgeInsets.all(5.0),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(100.0),
-            image: DecorationImage(
-              image: _storeOwner != null &&
-                      (_storeOwner!.photo_url != null &&
-                          _storeOwner!.photo_url != '')
-                  ? CachedNetworkImageProvider(_storeOwner!.photo_url!)
-                  : AssetImage('assets/images/profile_placeholder.png')
-                      as ImageProvider<Object>,
-              scale: 1.0,
-              fit: BoxFit.cover,
+  Widget _buildPhoto() {
+    return StreamBuilder<bool>(
+      stream: _userRepo.streamUserOnlineStatus(_storeOwner!.userid!),
+      builder: (context, snapshot) {
+        bool online = false;
+        print('snapshot~~~~~${snapshot.data}');
+        if (snapshot.hasData) {
+          online = snapshot.data ?? false;
+        }
+        return Stack(
+          children: [
+            Container(
+              padding: EdgeInsets.all(5.0),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(100.0),
+                image: DecorationImage(
+                  image: _storeOwner != null &&
+                          (_storeOwner!.photo_url != null &&
+                              _storeOwner!.photo_url != '')
+                      ? CachedNetworkImageProvider(_storeOwner!.photo_url!)
+                      : AssetImage('assets/images/profile_placeholder.png')
+                          as ImageProvider<Object>,
+                  scale: 1.0,
+                  fit: BoxFit.cover,
+                ),
+              ),
+              height: SizeConfig.screenWidth * .26,
+              width: SizeConfig.screenWidth * .26,
             ),
-          ),
-          height: SizeConfig.screenWidth * .26,
-          width: SizeConfig.screenWidth * .26,
-        ),
-        // Container(
-        //   height: SizeConfig.textScaleFactor * 15,
-        //   width: SizeConfig.textScaleFactor * 15,
-        //   decoration: BoxDecoration(
-        //     color: Colors.white,
-        //     shape: BoxShape.circle,
-        //   ),
-        //   child: Center(
-        //     child: Stack(
-        //       alignment: Alignment.center,
-        //       children: [
-        //         Icon(
-        //           Icons.local_library,
-        //           color: Colors.red,
-        //         ),
-        //         Text(
-        //           _storeOwner!.likes.toString(),
-        //           style: TextStyle(
-        //             fontSize: SizeConfig.textScaleFactor * 11,
-        //           ),
-        //         ),
-        //       ],
-        //     ),
-        //   ),
-        // ),
-      ],
+            Positioned(
+              top: 20,
+              right: 15,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Container(
+                    height: 12.0,
+                    width: 12.0,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  Container(
+                    height: 10.0,
+                    width: 10.0,
+                    decoration: BoxDecoration(
+                      color: online ? Colors.green : Colors.grey,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

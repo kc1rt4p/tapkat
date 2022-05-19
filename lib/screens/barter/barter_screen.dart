@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
@@ -28,6 +29,7 @@ import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/dialog_message.dart';
 import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/utilities/style.dart';
+import 'package:tapkat/utilities/upload_media.dart';
 import 'package:tapkat/widgets/barter_list_item.dart';
 import 'package:tapkat/widgets/custom_button.dart';
 import 'package:tapkat/widgets/custom_textformfield.dart';
@@ -100,6 +102,8 @@ class _BarterScreenState extends State<BarterScreen> {
   UserModel? _currentUserModel;
 
   BarterProductModel? _productToReview;
+
+  List<SelectedMedia> _selectedMedia = [];
 
   @override
   void setState(fn) {
@@ -680,6 +684,11 @@ class _BarterScreenState extends State<BarterScreen> {
                 }
 
                 if (state is SendMessageSuccess) {
+                  if (_selectedMedia.isNotEmpty) {
+                    setState(() {
+                      _selectedMedia.clear();
+                    });
+                  }
                   _messageTextController.clear();
                 }
 
@@ -813,74 +822,179 @@ class _BarterScreenState extends State<BarterScreen> {
             ),
           ),
           Container(
-            margin: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom -
-                            kToolbarHeight >=
-                        0
-                    ? MediaQuery.of(context).viewInsets.bottom - kToolbarHeight
-                    : 0),
             color: kBackgroundColor,
-            padding: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 10.0),
             width: double.infinity,
-            height: kToolbarHeight + 10,
-            child: Row(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Expanded(
-                  child: TextFormField(
-                    style: TextStyle(
-                      color: kBackgroundColor,
-                      fontSize: 18.0,
-                    ),
-                    textAlignVertical: TextAlignVertical.center,
-                    controller: _messageTextController,
-                    maxLines: 3,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10.0),
+                _selectedMedia.isNotEmpty
+                    ? Container(
+                        padding: EdgeInsets.all(8.0),
+                        color: Colors.white,
+                        width: double.infinity,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Text('Attachments',
+                                    style: Style.subtitle2.copyWith(
+                                        fontSize:
+                                            SizeConfig.textScaleFactor * 14)),
+                                Spacer(),
+                                GestureDetector(
+                                    onTap: () =>
+                                        setState(() => _selectedMedia.clear()),
+                                    child: Icon(Icons.close)),
+                              ],
+                            ),
+                            SizedBox(height: 8.0),
+                            Wrap(
+                              children: _selectedMedia
+                                  .map((item) => Container(
+                                        margin: EdgeInsets.only(right: 5.0),
+                                        child: Stack(
+                                          children: [
+                                            Container(
+                                              height: 100.0,
+                                              width: 150.0,
+                                              padding: EdgeInsets.all(5.0),
+                                              decoration: BoxDecoration(
+                                                color: Colors.white,
+                                                image: DecorationImage(
+                                                  image: FileImage(
+                                                    File(item.rawPath!),
+                                                  ),
+                                                  scale: 1.0,
+                                                  fit: BoxFit.cover,
+                                                ),
+                                              ),
+                                            ),
+                                            Positioned(
+                                              top: 5.0,
+                                              right: 10.0,
+                                              child: InkWell(
+                                                onTap: () => setState(() =>
+                                                    _selectedMedia
+                                                        .remove(item)),
+                                                child: Container(
+                                                  height: 25.0,
+                                                  width: 25.0,
+                                                  decoration: BoxDecoration(
+                                                    color: Style.secondaryColor,
+                                                    shape: BoxShape.circle,
+                                                  ),
+                                                  child: Center(
+                                                    child: Icon(
+                                                      Icons.delete,
+                                                      color: Colors.white,
+                                                      size: SizeConfig
+                                                              .textScaleFactor *
+                                                          16,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ))
+                                  .toList(),
+                            ),
+                          ],
+                        ),
+                      )
+                    : Container(),
+                Container(
+                  padding: EdgeInsets.fromLTRB(15.0, 10.0, 10.0, 10.0),
+                  height: kToolbarHeight,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          style: TextStyle(
+                            color: kBackgroundColor,
+                            fontSize: SizeConfig.textScaleFactor * 14,
+                          ),
+                          textAlignVertical: TextAlignVertical.center,
+                          controller: _messageTextController,
+                          maxLines: 3,
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10.0),
+                            ),
+                            filled: true,
+                            fillColor: Colors.white,
+                            isDense: true,
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: 10.0,
+                              vertical: 5.0,
+                            ),
+                            hintText: 'Enter your message here',
+                          ),
+                          focusNode: _chatFocusNode,
+                        ),
                       ),
-                      filled: true,
-                      fillColor: Colors.white,
-                      isDense: true,
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: 10.0,
-                        vertical: 5.0,
+                      SizedBox(width: 10.0),
+                      InkWell(
+                        onTap: _onAddFile,
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                            vertical: 8.0,
+                            horizontal: 10.0,
+                          ),
+                          child: Icon(
+                            FontAwesomeIcons.fileImage,
+                            color: Colors.white,
+                            size: SizeConfig.textScaleFactor * 17,
+                          ),
+                        ),
                       ),
-                      hintText: 'Enter your message here',
-                    ),
-                    focusNode: _chatFocusNode,
+                      InkWell(
+                        onTap: _onChatTapped,
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                            vertical: 8.0,
+                            horizontal: 10.0,
+                          ),
+                          child: Icon(
+                            FontAwesomeIcons.paperPlane,
+                            color: Colors.white,
+                            size: SizeConfig.textScaleFactor * 17,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                SizedBox(width: 10.0),
-                InkWell(
-                  onTap: _onChatTapped,
-                  child: Container(
-                    padding: EdgeInsets.symmetric(
-                      vertical: 10.0,
-                      horizontal: 14.0,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(10.0),
-                      boxShadow: [
-                        BoxShadow(
-                          offset: Offset(0, 1),
-                          blurRadius: 2.0,
-                          color: Colors.blue,
-                        ),
-                      ],
-                    ),
-                    child: Icon(
-                      FontAwesomeIcons.paperPlane,
-                      color: kBackgroundColor,
-                    ),
-                  ),
-                )
               ],
             ),
           ),
         ],
       ),
     );
+  }
+
+  _onAddFile() async {
+    if (_selectedMedia.length > 9) {
+      DialogMessage.show(context,
+          message: 'You\'ve exceeded the number of files to attach');
+      return;
+    }
+
+    final selectedMedia = await selectMediaWithSourceBottomSheet(
+      context: context,
+      allowPhoto: true,
+    );
+
+    if (selectedMedia != null &&
+        validateFileFormat(selectedMedia.storagePath, context)) {
+      if (!_selectedMedia.contains(selectedMedia)) {
+        setState(() {
+          _selectedMedia.add(selectedMedia);
+        });
+      }
+    }
   }
 
   List<Widget> _buildUserButtons([bool removeChat = false]) {
@@ -2719,7 +2833,8 @@ class _BarterScreenState extends State<BarterScreen> {
   }
 
   _onChatTapped() {
-    if (_messageTextController.text.trim().isEmpty) return;
+    if (_messageTextController.text.trim().isEmpty && _selectedMedia.isEmpty)
+      return;
 
     _barterBloc.add(
       SendMessage(
@@ -2728,6 +2843,7 @@ class _BarterScreenState extends State<BarterScreen> {
           message: _messageTextController.text.trim(),
           userId: _currentUserModel!.userid,
           userName: _currentUserModel!.display_name,
+          imagesFile: _selectedMedia,
         ),
       ),
     );

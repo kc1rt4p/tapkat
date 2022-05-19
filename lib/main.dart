@@ -81,7 +81,7 @@ initLogs() async {
       details.exception.toString(),
     );
     FlutterLogs.logToFile(
-      logFileName: "error ${details.stack}",
+      logFileName: DateTime.now().millisecondsSinceEpoch.toString(),
       overwrite: false,
       logMessage: details.exception.toString(),
     );

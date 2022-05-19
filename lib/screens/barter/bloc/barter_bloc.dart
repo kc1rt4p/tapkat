@@ -16,7 +16,9 @@ import 'package:tapkat/repositories/product_repository.dart';
 import 'package:tapkat/repositories/user_repository.dart';
 import 'package:tapkat/schemas/barter_record.dart';
 import 'package:tapkat/services/auth_service.dart';
+import 'package:tapkat/services/firebase.dart';
 import 'package:tapkat/utilities/application.dart' as application;
+import 'package:tapkat/utilities/upload_media.dart';
 
 part 'barter_event.dart';
 part 'barter_state.dart';
@@ -398,6 +400,19 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
 
           if (event is SendMessage) {
             event.message.dateCreated = DateTime.now();
+
+            List<String> fileUrls = [];
+            if (event.message.imagesFile != null &&
+                event.message.imagesFile!.isNotEmpty) {
+              final files = event.message.imagesFile!;
+              await Future.forEach(files, (SelectedMedia file) async {
+                final url = await uploadData(file.storagePath, file.bytes);
+                fileUrls.add(url!);
+              });
+            }
+
+            event.message.images = fileUrls;
+
             final _barterRecord = await _barterRepository
                 .getBarterRecord(event.message.barterId!);
             final sent = await _barterRepository.addMessage(event.message);

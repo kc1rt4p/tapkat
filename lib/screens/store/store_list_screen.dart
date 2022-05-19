@@ -5,6 +5,7 @@ import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
 import 'package:tapkat/models/store.dart';
 import 'package:tapkat/models/user.dart';
+import 'package:tapkat/repositories/user_repository.dart';
 import 'package:tapkat/screens/store/bloc/store_bloc.dart';
 import 'package:tapkat/screens/store/component/store_list_item.dart';
 import 'package:tapkat/screens/store/store_screen.dart';
@@ -32,6 +33,7 @@ class _StoreListScreenState extends State<StoreListScreen> {
   int currentPage = 0;
 
   UserModel? _userModel;
+  final _userRepo = UserRepository();
 
   final barterRef = FirebaseFirestore.instance.collection('userstore_likes');
 
@@ -141,24 +143,83 @@ class _StoreListScreenState extends State<StoreListScreen> {
                 ),
                 builderDelegate: PagedChildBuilderDelegate<StoreModel>(
                   itemBuilder: (context, store, index) {
-                    return FittedBox(
-                      child: StoreListItem(
-                        StoreModel(
-                          display_name: store.display_name,
-                          userid: store.userid,
-                          photo_url: store.photo_url,
-                        ),
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => StoreScreen(
-                              userId: store.userid!,
-                              userName: store.display_name!,
-                            ),
+                    return StreamBuilder<bool>(
+                      stream: _userRepo.streamUserOnlineStatus(store.userid!),
+                      builder: (context, snapshot) {
+                        bool online = false;
+                        print('snapshot~~~~~${snapshot.data}');
+                        if (snapshot.hasData) {
+                          online = snapshot.data ?? false;
+                        }
+                        return FittedBox(
+                          child: Stack(
+                            children: [
+                              StoreListItem(
+                                StoreModel(
+                                  display_name: store.display_name,
+                                  userid: store.userid,
+                                  photo_url: store.photo_url,
+                                ),
+                                removeLike: true,
+                                onTap: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => StoreScreen(
+                                      userId: store.userid!,
+                                      userName: store.display_name!,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Positioned(
+                                top: 10,
+                                right: 5,
+                                child: Stack(
+                                  alignment: Alignment.center,
+                                  children: [
+                                    Container(
+                                      height: 12.0,
+                                      width: 12.0,
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        shape: BoxShape.circle,
+                                      ),
+                                    ),
+                                    Container(
+                                      height: 10.0,
+                                      width: 10.0,
+                                      decoration: BoxDecoration(
+                                        color:
+                                            online ? Colors.green : Colors.grey,
+                                        shape: BoxShape.circle,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                      ),
+                        );
+                      },
                     );
+                    // return FittedBox(
+                    //   child: StoreListItem(
+                    //     StoreModel(
+                    //       display_name: store.display_name,
+                    //       userid: store.userid,
+                    //       photo_url: store.photo_url,
+                    //     ),
+                    //     onTap: () => Navigator.push(
+                    //       context,
+                    //       MaterialPageRoute(
+                    //         builder: (context) => StoreScreen(
+                    //           userId: store.userid!,
+                    //           userName: store.display_name!,
+                    //         ),
+                    //       ),
+                    //     ),
+                    //   ),
+                    // );
                   },
                 ),
               ),

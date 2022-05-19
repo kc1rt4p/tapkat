@@ -10,6 +10,7 @@ import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/models/store.dart';
 import 'package:tapkat/models/user.dart';
+import 'package:tapkat/repositories/user_repository.dart';
 import 'package:tapkat/schemas/user_likes_record.dart';
 import 'package:tapkat/screens/barter/barter_screen.dart';
 import 'package:tapkat/screens/product/bloc/product_bloc.dart';
@@ -43,6 +44,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final _storeBloc = StoreBloc();
   late RootBloc _rootBloc;
   final _authBloc = AuthBloc();
+  final _userRepo = UserRepository();
   List<ProductModel> _recommendedList = [];
   List<ProductModel> _freeList = [];
   List<ProductModel> _trendingList = [];
@@ -268,24 +270,66 @@ class _HomeScreenState extends State<HomeScreen> {
                             loadingSize: 50.0,
                             context: context,
                             items: _topStoreList.map((store) {
-                              return Center(
-                                child: StoreListItem(
-                                  StoreModel(
-                                    display_name: store.display_name,
-                                    userid: store.userid,
-                                    photo_url: store.photo_url,
-                                  ),
-                                  removeLike: true,
-                                  onTap: () => Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => StoreScreen(
-                                        userId: store.userid!,
-                                        userName: store.display_name!,
-                                      ),
+                              return StreamBuilder<bool>(
+                                stream: _userRepo
+                                    .streamUserOnlineStatus(store.userid!),
+                                builder: (context, snapshot) {
+                                  bool online = false;
+                                  print('snapshot~~~~~${snapshot.data}');
+                                  if (snapshot.hasData) {
+                                    online = snapshot.data ?? false;
+                                  }
+                                  return Center(
+                                    child: Stack(
+                                      children: [
+                                        StoreListItem(
+                                          StoreModel(
+                                            display_name: store.display_name,
+                                            userid: store.userid,
+                                            photo_url: store.photo_url,
+                                          ),
+                                          removeLike: true,
+                                          onTap: () => Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => StoreScreen(
+                                                userId: store.userid!,
+                                                userName: store.display_name!,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        Positioned(
+                                          top: 10,
+                                          right: 5,
+                                          child: Stack(
+                                            alignment: Alignment.center,
+                                            children: [
+                                              Container(
+                                                height: 12.0,
+                                                width: 12.0,
+                                                decoration: BoxDecoration(
+                                                  color: Colors.white,
+                                                  shape: BoxShape.circle,
+                                                ),
+                                              ),
+                                              Container(
+                                                height: 10.0,
+                                                width: 10.0,
+                                                decoration: BoxDecoration(
+                                                  color: online
+                                                      ? Colors.green
+                                                      : Colors.grey,
+                                                  shape: BoxShape.circle,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                  ),
-                                ),
+                                  );
+                                },
                               );
                             }).toList(),
                             label: 'Top Users',

@@ -28,7 +28,7 @@ class UserRepository {
     return UserModel.fromJson(result.data['user']);
   }
 
-  Stream<bool> streamBarterProducts(String userId) {
+  Stream<bool> streamUserOnlineStatus(String userId) {
     return usersRef.doc(userId).snapshots().map((query) {
       final jsonData = query.data();
       if (jsonData != null) {
