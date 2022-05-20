@@ -1,10 +1,13 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_progress_hud/flutter_progress_hud.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
 import 'package:tapkat/models/localization.dart';
+import 'package:tapkat/models/user.dart';
 import 'package:tapkat/screens/root/profile/change_password_screen.dart';
+import 'package:tapkat/screens/settings/bloc/settings_bloc.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/dialog_message.dart';
 import 'package:tapkat/utilities/size_config.dart';
@@ -15,7 +18,11 @@ import 'package:notification_permissions/notification_permissions.dart'
     as notif;
 
 class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({Key? key}) : super(key: key);
+  final UserModel user;
+  const SettingsScreen({
+    Key? key,
+    required this.user,
+  }) : super(key: key);
 
   @override
   _SettingsScreenState createState() => _SettingsScreenState();
@@ -23,7 +30,8 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   late AuthBloc _authBloc;
-
+  late UserModel _user;
+  final _settingsBloc = SettingsBloc();
   int pushNotif = 0;
 
   List<LocalizationModel> _localizations = [];
@@ -31,7 +39,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   void initState() {
+    _user = widget.user;
     _authBloc = BlocProvider.of<AuthBloc>(context);
+    _settingsBloc.add(GetLocalizations());
     super.initState();
     initNotification();
   }
@@ -52,109 +62,140 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
-    return Scaffold(
-      body: Container(
-        child: Column(
-          children: [
-            CustomAppBar(
-              label: 'Settings',
-            ),
-            Expanded(
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-                child: ListView(
-                  padding: EdgeInsets.zero,
-                  children: [
-                    _buildListHeader(label: 'Account Settings'),
-                    Container(
-                      width: double.infinity,
-                      child: Column(
-                        children: [
-                          _buildListGroupItem(
-                            label: 'Change Password',
-                            onTap: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => ChangePasswordScreen(),
+    return ProgressHUD(
+      child: Scaffold(
+        body: Container(
+          child: Column(
+            children: [
+              CustomAppBar(
+                label: 'Settings',
+              ),
+              BlocListener(
+                bloc: _settingsBloc,
+                listener: (context, state) {
+                  if (state is SettingsLoading) {
+                    ProgressHUD.of(context)!.show();
+                  } else {
+                    ProgressHUD.of(context)!.dismiss();
+                  }
+
+                  if (state is GetLocalizationsSuccess) {
+                    setState(() {
+                      _localizations = state.list;
+                    });
+                  }
+
+                  if (state is SetDefaultCountrySuccess) {
+                    setState(() {
+                      _user = state.user;
+                    });
+                  }
+                },
+                child: Expanded(
+                  child: Container(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+                    child: ListView(
+                      padding: EdgeInsets.zero,
+                      children: [
+                        _buildListHeader(label: 'Account Settings'),
+                        Container(
+                          width: double.infinity,
+                          child: Column(
+                            children: [
+                              _buildListGroupItem(
+                                label: 'Change Password',
+                                onTap: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        ChangePasswordScreen(),
+                                  ),
+                                ),
                               ),
-                            ),
-                          ),
-                          InkWell(
-                              onTap: _onCountrySelect,
-                              child: _buildListGroupItem(
-                                  label: 'Default Country')),
-                          _buildListGroupItem(label: 'Default Currency'),
-                          _buildListGroupItem(label: 'Delete Account'),
-                        ],
-                      ),
-                    ),
-                    _buildListHeader(label: 'Notification Settings'),
-                    Container(
-                      width: double.infinity,
-                      padding: EdgeInsets.fromLTRB(20, 8.0, 10, 8.0),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
-                      ),
-                      child: Row(
-                        children: [
-                          Text(
-                            'Push Notifications',
-                            style: Style.subtitle2.copyWith(
-                                color: kBackgroundColor,
-                                fontSize: SizeConfig.textScaleFactor * 13),
-                          ),
-                          Spacer(),
-                          SizedBox(
-                            height: 30.0,
-                            width: 40.0,
-                            child: FittedBox(
-                              child: Switch(
-                                value: pushNotif == 1,
-                                onChanged: _onPushNotif,
-                                activeColor: kBackgroundColor,
+                              InkWell(
+                                  onTap: _onCountrySelect,
+                                  child: _buildListGroupItem(
+                                    label: 'Default Country',
+                                    value: _user.country_code ?? '',
+                                  )),
+                              _buildListGroupItem(
+                                label: 'Default Currency',
+                                value: _user.currency ?? '',
                               ),
-                            ),
+                              _buildListGroupItem(label: 'Delete Account'),
+                            ],
                           ),
-                          // ToggleSwitch(
-                          //   initialLabelIndex: pushNotif,
-                          //   minWidth: 50,
-                          //   minHeight: 20.0,
-                          //   totalSwitches: 2,
-                          //   activeBgColor: [kBackgroundColor],
-                          //   inactiveFgColor: kBackgroundColor,
-                          //   cornerRadius: 5.0,
-                          //   labels: [
-                          //     'Off',
-                          //     'On',
-                          //   ],
-                          //   changeOnTap: false,
-                          //   onToggle: _onPushNotif,
-                          // ),
-                        ],
-                      ),
+                        ),
+                        _buildListHeader(label: 'Notification Settings'),
+                        Container(
+                          width: double.infinity,
+                          padding: EdgeInsets.fromLTRB(20, 8.0, 10, 8.0),
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade100,
+                          ),
+                          child: Row(
+                            children: [
+                              Text(
+                                'Push Notifications',
+                                style: Style.subtitle2.copyWith(
+                                    color: kBackgroundColor,
+                                    fontSize: SizeConfig.textScaleFactor * 13),
+                              ),
+                              Spacer(),
+                              SizedBox(
+                                height: 30.0,
+                                width: 40.0,
+                                child: FittedBox(
+                                  child: Switch(
+                                    value: pushNotif == 1,
+                                    onChanged: _onPushNotif,
+                                    activeColor: kBackgroundColor,
+                                  ),
+                                ),
+                              ),
+                              // ToggleSwitch(
+                              //   initialLabelIndex: pushNotif,
+                              //   minWidth: 50,
+                              //   minHeight: 20.0,
+                              //   totalSwitches: 2,
+                              //   activeBgColor: [kBackgroundColor],
+                              //   inactiveFgColor: kBackgroundColor,
+                              //   cornerRadius: 5.0,
+                              //   labels: [
+                              //     'Off',
+                              //     'On',
+                              //   ],
+                              //   changeOnTap: false,
+                              //   onToggle: _onPushNotif,
+                              // ),
+                            ],
+                          ),
+                        ),
+                        _buildListHeader(label: 'Privacy & Security'),
+                        _buildListHeader(label: 'Help & FAQ'),
+                        _buildListHeader(label: 'Contact Us'),
+                        _buildListHeader(
+                          label: 'Log Out',
+                          onTap: _onSignOut,
+                        ),
+                      ],
                     ),
-                    _buildListHeader(label: 'Privacy & Security'),
-                    _buildListHeader(label: 'Help & FAQ'),
-                    _buildListHeader(label: 'Contact Us'),
-                    _buildListHeader(
-                      label: 'Log Out',
-                      onTap: _onSignOut,
-                    ),
-                  ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
   _onCountrySelect() async {
-    final sortBy = await showDialog<String?>(
+    final localization = await showDialog<LocalizationModel?>(
         context: context,
         barrierDismissible: false,
-        builder: (context) {
+        builder: (dContext) {
           return Dialog(
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 30.0, vertical: 16.0),
@@ -190,7 +231,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         (item) => ListTile(
                           title: Text(item.country ?? ''),
                           contentPadding: EdgeInsets.zero,
-                          onTap: () => Navigator.pop(context, item),
+                          onTap: () => Navigator.pop(dContext, item),
                           selectedColor: Color(0xFFBB3F03),
                           selected: _selectedLocalization == item,
                         ),
@@ -202,6 +243,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           );
         });
+
+    if (localization != null) {
+      _settingsBloc.add(SetDefaultCountry(localization));
+    }
   }
 
   _onPushNotif(bool enable) async {
@@ -248,6 +293,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   InkWell _buildListGroupItem({
     required String label,
     Function()? onTap,
+    String? value,
   }) {
     return InkWell(
       onTap: onTap,
@@ -257,11 +303,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
         decoration: BoxDecoration(
           color: Colors.grey.shade100,
         ),
-        child: Text(
-          label,
-          style: Style.subtitle2.copyWith(
-              color: kBackgroundColor,
-              fontSize: SizeConfig.textScaleFactor * 13),
+        child: Row(
+          children: [
+            Text(
+              label,
+              style: Style.subtitle2.copyWith(
+                  color: kBackgroundColor,
+                  fontSize: SizeConfig.textScaleFactor * 13),
+            ),
+            Spacer(),
+            value != null
+                ? Text(
+                    value,
+                    style: Style.subtitle2.copyWith(
+                      color: kBackgroundColor,
+                      fontSize: SizeConfig.textScaleFactor * 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  )
+                : SizedBox(),
+          ],
         ),
       ),
     );

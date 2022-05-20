@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:mime_type/mime_type.dart';
+import 'package:tapkat/models/localization.dart';
 import 'package:tapkat/models/request/update_user.dart';
 import 'package:tapkat/models/request/user_review_request.dart';
 import 'package:tapkat/models/store.dart';
@@ -56,6 +57,17 @@ class UserRepository {
       'userid': application.currentUser!.uid,
       'regtoken': await FirebaseMessaging.instance.getToken(),
       'deviceid': application.deviceId,
+    });
+
+    return updated.data['status'] == 'SUCCESS';
+  }
+
+  Future<bool> updateDefaultCountry(LocalizationModel localization) async {
+    final updated = await _apiService
+        .patch(url: 'users/${application.currentUser!.uid}', body: {
+      'userid': application.currentUser!.uid,
+      'country_code': localization.country_code,
+      'currency': localization.currency,
     });
 
     return updated.data['status'] == 'SUCCESS';

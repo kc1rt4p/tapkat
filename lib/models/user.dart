@@ -18,6 +18,8 @@ class UserModel {
   LocationModel? location;
   int? likes;
   double? rating;
+  String? country_code;
+  String? currency;
 
   String? fb_profile;
   String? ig_profile;
@@ -50,6 +52,8 @@ class UserModel {
     this.tt_profile,
     this.tw_profile,
     this.is_online,
+    this.country_code,
+    this.currency,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -89,6 +93,8 @@ class UserModel {
       tt_profile: json['tt_profile'] as String?,
       tw_profile: json['tw_profile'] as String?,
       is_online: json['is_online'] as bool?,
+      country_code: json['country_code'] as String?,
+      currency: json['currency'] as String?,
     );
   }
 
@@ -117,6 +123,8 @@ class UserModel {
       'tt_profile': this.tt_profile,
       'tw_profile': this.tw_profile,
       'is_online': this.is_online,
+      'country_code': this.country_code,
+      'currency': this.currency,
     };
   }
 }

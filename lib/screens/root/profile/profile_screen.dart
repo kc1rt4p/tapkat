@@ -185,12 +185,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 label: 'Your Store',
                 hideBack: true,
                 leading: GestureDetector(
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => SettingsScreen(),
-                    ),
-                  ),
+                  onTap: () {
+                    if (_userModel != null) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              SettingsScreen(user: _userModel!),
+                        ),
+                      );
+                    }
+                  },
                   child: Icon(
                     FontAwesomeIcons.cog,
                     color: Colors.white,
