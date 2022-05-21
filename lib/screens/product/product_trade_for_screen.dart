@@ -171,7 +171,6 @@ class _ProductTradeForScreenState extends State<ProductTradeForScreen> {
                 // ),
                 Expanded(
                   child: CustomButton(
-                    enabled: _list.isNotEmpty,
                     bgColor: kBackgroundColor,
                     label: 'Next',
                     onTap: _onSubmit,

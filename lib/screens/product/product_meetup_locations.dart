@@ -18,6 +18,7 @@ import 'package:tapkat/widgets/custom_textformfield.dart';
 import 'package:flutter_google_places/flutter_google_places.dart';
 import 'package:google_maps_webservice/places.dart';
 import 'package:google_api_headers/google_api_headers.dart';
+import 'package:tapkat/utilities/application.dart' as application;
 
 class ProductMeetUpLocationsScreen extends StatefulWidget {
   final ProductRequestModel productRequest;
@@ -47,6 +48,14 @@ class _ProductMeetUpLocationsScreenState
     // TODO: implement initState
     _productRequest = widget.productRequest;
     _list = List.from(_productRequest.meet_location ?? []);
+    if (!widget.updating) {
+      _list.add(AddressModel(
+        city: application.currentUserModel!.city,
+        country: application.currentUserModel!.country,
+        address: application.currentUserModel!.address,
+        location: application.currentUserModel!.location,
+      ));
+    }
     super.initState();
   }
 
