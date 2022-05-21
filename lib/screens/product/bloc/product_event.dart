@@ -17,6 +17,8 @@ class SaveProduct extends ProductEvent {
   });
 }
 
+class GetLocalizations extends ProductEvent {}
+
 class GetCategories extends ProductEvent {}
 
 class AddProductImage extends ProductEvent {

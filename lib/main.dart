@@ -21,6 +21,8 @@ import 'package:tapkat/screens/login/login_screen.dart';
 import 'package:tapkat/screens/root/root_screen.dart';
 import 'package:tapkat/services/auth_service.dart';
 import 'package:geolocator/geolocator.dart' as geoLocator;
+
+import 'package:geocoding/geocoding.dart' as geoCoding;
 import 'package:tapkat/services/http/api_service.dart';
 import 'package:tapkat/utilities/application.dart' as application;
 
@@ -31,6 +33,10 @@ _loadUserLocation() async {
         await geoLocator.GeolocatorPlatform.instance.isLocationServiceEnabled();
     if (per1 != PermissionStatus.denied && per2) {
       final userLoc = await geoLocator.Geolocator.getCurrentPosition();
+      final places = await geoCoding.placemarkFromCoordinates(
+          userLoc.latitude, userLoc.longitude);
+      final place = places.first;
+      application.currentCountry = place.isoCountryCode;
       print('-=======< using device location');
       application.currentUserLocation = LocationModel(
         latitude: userLoc.latitude,

@@ -422,9 +422,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               ),
                               Visibility(
                                 visible:
-                                    !application.currentUser!.emailVerified &&
-                                        !application
-                                            .currentUserModel!.verifiedByPhone!,
+                                    !application.currentUser!.emailVerified ||
+                                        (application.currentUserModel!
+                                                    .signing_method !=
+                                                null &&
+                                            application.currentUserModel!
+                                                    .signing_method ==
+                                                'EMAIL'),
                                 child: CustomButton(
                                   label: 'Verify your account',
                                   onTap: () {
@@ -443,8 +447,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               Visibility(
                                 visible:
                                     application.currentUser!.emailVerified ||
-                                        application
-                                            .currentUserModel!.verifiedByPhone!,
+                                        (application.currentUserModel!
+                                                    .signing_method !=
+                                                null &&
+                                            application.currentUserModel!
+                                                    .signing_method ==
+                                                'PHONE'),
                                 child: Expanded(
                                   child: Container(
                                     width: double.infinity,
@@ -514,10 +522,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                               GestureDetector(
                                                 onTap: () async {
                                                   if (!application.currentUser!
-                                                          .emailVerified &&
-                                                      !application
-                                                          .currentUserModel!
-                                                          .verifiedByPhone!) {
+                                                          .emailVerified ||
+                                                      (application.currentUserModel!
+                                                                  .signing_method !=
+                                                              null &&
+                                                          application
+                                                                  .currentUserModel!
+                                                                  .signing_method ==
+                                                              'EMAIL')) {
                                                     DialogMessage.show(
                                                       context,
                                                       message:

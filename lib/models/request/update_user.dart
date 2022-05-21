@@ -9,6 +9,8 @@ class UpdateUserModel {
   String? type;
   String? email;
   String? country;
+  String? country_code;
+  String? currency;
   String? city;
   String? address;
   String? postcode;
@@ -22,6 +24,7 @@ class UpdateUserModel {
   String? yt_profile;
   String? tt_profile;
   String? tw_profile;
+  String? signing_method;
 
   UpdateUserModel({
     this.userid,
@@ -32,6 +35,8 @@ class UpdateUserModel {
     this.type,
     this.email,
     this.country,
+    this.country_code,
+    this.currency,
     this.city,
     this.address,
     this.postcode,
@@ -45,6 +50,7 @@ class UpdateUserModel {
     this.yt_profile,
     this.tt_profile,
     this.tw_profile,
+    this.signing_method,
   });
 
   Map<String, dynamic> toJson() {
@@ -57,6 +63,8 @@ class UpdateUserModel {
       "type": this.type,
       "email": this.email,
       "country": this.country,
+      "country_code": this.country_code,
+      "currency": this.currency,
       "city": this.city,
       "address": this.address,
       "postcode": this.postcode,
@@ -70,6 +78,7 @@ class UpdateUserModel {
       'yt_profile': this.yt_profile ?? null,
       'tt_profile': this.tt_profile ?? null,
       'tw_profile': this.tw_profile ?? null,
+      'signing_method': this.signing_method ?? '',
     };
   }
 }

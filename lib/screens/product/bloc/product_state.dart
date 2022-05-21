@@ -17,6 +17,12 @@ class SaveProductSuccess extends ProductState {
   SaveProductSuccess(this.productId);
 }
 
+class GetLocalizationsSuccess extends ProductState {
+  final List<LocalizationModel> locList;
+
+  GetLocalizationsSuccess(this.locList);
+}
+
 class GetCategoriesSuccess extends ProductState {
   final List<ProductCategoryModel> list;
 
@@ -26,8 +32,9 @@ class GetCategoriesSuccess extends ProductState {
 class InitializeAddUpdateProductSuccess extends ProductState {
   final List<ProductCategoryModel> categories;
   final List<ProductTypeModel> types;
+  final List<LocalizationModel> locList;
 
-  InitializeAddUpdateProductSuccess(this.categories, this.types);
+  InitializeAddUpdateProductSuccess(this.categories, this.types, this.locList);
 }
 
 class GetProductRatingsSucess extends ProductState {

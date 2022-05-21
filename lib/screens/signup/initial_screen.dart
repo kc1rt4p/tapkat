@@ -10,6 +10,7 @@ import 'package:google_api_headers/google_api_headers.dart';
 import 'package:google_maps_webservice/places.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
+import 'package:tapkat/models/localization.dart';
 import 'package:tapkat/screens/signup/photo_selection_screen.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/constants.dart';
@@ -42,9 +43,12 @@ class _InitialSignUpScreenState extends State<InitialSignUpScreen> {
   geoCoding.Placemark? _currentUserLoc;
   geoLocator.Position? _currentUserPosition;
 
+  List<LocalizationModel> _locList = [];
+
   @override
   void initState() {
     _authBloc = BlocProvider.of<AuthBloc>(context);
+    _authBloc.add(InitiateSignUpScreen());
     super.initState();
     _loadUserLocation();
     if (application.currentUser !=
@@ -68,6 +72,12 @@ class _InitialSignUpScreenState extends State<InitialSignUpScreen> {
               ProgressHUD.of(context)!.show();
             } else {
               ProgressHUD.of(context)!.dismiss();
+            }
+
+            if (state is InitiatedSignUpScreen) {
+              setState(() {
+                _locList = state.locList;
+              });
             }
 
             if (state is ShowSignUpPhoto) {
@@ -282,6 +292,15 @@ class _InitialSignUpScreenState extends State<InitialSignUpScreen> {
 
   _onCreateAccount() {
     if (!_formKey.currentState!.validate()) return;
+    LocalizationModel? _loc;
+    final countryCode = _currentUserLoc!.isoCountryCode;
+
+    LocalizationModel? localization;
+
+    _locList.forEach((loc) {
+      if (loc.country_code == countryCode) localization = loc;
+    });
+
     _authBloc.add(
       SignUp(
         email: _emailTextController.text.trim(),
@@ -290,6 +309,7 @@ class _InitialSignUpScreenState extends State<InitialSignUpScreen> {
         location: _selectedLocation!,
         mobileNumber: _mobileNumberTextController.text.trim(),
         context: context,
+        loc: localization,
       ),
     );
   }
@@ -354,6 +374,7 @@ class _InitialSignUpScreenState extends State<InitialSignUpScreen> {
         placemarks.forEach((placemark) => print(placemark.toJson()));
         setState(() {
           _currentUserLoc = placemarks.first;
+
           _selectedLocation = PlaceDetails(
             placeId: '',
             name: _currentUserLoc!.name ?? '',

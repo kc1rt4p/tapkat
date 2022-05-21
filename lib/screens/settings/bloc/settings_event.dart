@@ -14,3 +14,5 @@ class SetDefaultCountry extends SettingsEvent {
 
   SetDefaultCountry(this.country);
 }
+
+class InitiateSignUpScreen extends SettingsEvent {}

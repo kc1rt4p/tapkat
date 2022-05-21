@@ -14,6 +14,7 @@ import 'package:google_api_headers/google_api_headers.dart';
 import 'package:google_maps_webservice/places.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
+import 'package:tapkat/models/localization.dart';
 import 'package:tapkat/models/location.dart';
 import 'package:tapkat/models/product_category.dart';
 import 'package:tapkat/models/product_type.dart';
@@ -54,6 +55,9 @@ class _ProductAddScreenState extends State<ProductAddScreen> {
   bool showImageError = false;
   String? _selectedOfferType;
   PlaceDetails? _selectedLocation;
+
+  List<LocalizationModel> _locList = [];
+  LocalizationModel? _selectedLocalization;
 
   final _formKey = GlobalKey<FormState>();
 
@@ -118,6 +122,16 @@ class _ProductAddScreenState extends State<ProductAddScreen> {
                     _productCategories = state.categories;
                     _productTypes = state.types;
                     _selectedOfferType = _productTypes[0].code;
+                    _locList = state.locList;
+
+                    if (application.currentUserModel!.currency != null &&
+                        application.currentUserModel!.currency!.isNotEmpty)
+                      _selectedLocalization = _locList.firstWhere((loc) =>
+                          loc.currency ==
+                          application.currentUserModel!.currency);
+                    else
+                      _selectedLocalization = _locList.firstWhere((loc) =>
+                          loc.country_code == application.currentCountry);
                   });
                 }
 
@@ -199,6 +213,20 @@ class _ProductAddScreenState extends State<ProductAddScreen> {
                                       keyboardType: TextInputType.number,
                                       isReadOnly: isFree,
                                       removeMargin: true,
+                                      prefix: InkWell(
+                                        onTap: _onCurrencySelect,
+                                        child: Container(
+                                          margin: EdgeInsets.only(right: 8.0),
+                                          child: Text(
+                                              _selectedLocalization != null
+                                                  ? _selectedLocalization!
+                                                      .currency!
+                                                  : 'PHP',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                              )),
+                                        ),
+                                      ),
                                     ),
                                   ),
                                   SizedBox(width: 10.0),
@@ -338,6 +366,66 @@ class _ProductAddScreenState extends State<ProductAddScreen> {
     );
   }
 
+  _onCurrencySelect() async {
+    final localization = await showDialog<LocalizationModel?>(
+        context: context,
+        barrierDismissible: false,
+        builder: (dContext) {
+          return Dialog(
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 30.0, vertical: 16.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Default Country',
+                        style: Style.subtitle2.copyWith(
+                            color: kBackgroundColor,
+                            fontWeight: FontWeight.bold),
+                      ),
+                      GestureDetector(
+                        onTap: () => Navigator.pop(context, null),
+                        child: Icon(
+                          FontAwesomeIcons.times,
+                          color: kBackgroundColor,
+                          size: 20.0,
+                        ),
+                      ),
+                    ],
+                  ),
+                  ListView(
+                    shrinkWrap: true,
+                    // mainAxisSize: MainAxisSize.min,
+                    // crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(height: 8.0),
+                      ..._locList.map(
+                        (item) => ListTile(
+                          title: Text(item.currency ?? ''),
+                          contentPadding: EdgeInsets.zero,
+                          onTap: () => Navigator.pop(dContext, item),
+                          selectedColor: Color(0xFFBB3F03),
+                          selected: _selectedLocalization == item,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
+        });
+
+    if (localization != null) {
+      setState(() {
+        _selectedLocalization = localization;
+      });
+    }
+  }
+
   _loadUserLocation() async {
     if (await Permission.location.isDenied) return;
     if (!(await geoLocator.GeolocatorPlatform.instance
@@ -421,6 +509,10 @@ class _ProductAddScreenState extends State<ProductAddScreen> {
             : null,
         media_type: 'image',
       );
+
+      if (_selectedLocalization != null) {
+        newProduct.currency = _selectedLocalization!.currency;
+      }
 
       if (_selectedLocation != null) {
         newProduct.address = _selectedLocation!.addressComponents[0] != null

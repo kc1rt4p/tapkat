@@ -89,6 +89,7 @@ class SignUp extends AuthEvent {
   final PlaceDetails location;
   final BuildContext context;
   final String mobileNumber;
+  final LocalizationModel? loc;
 
   SignUp({
     required this.email,
@@ -97,6 +98,7 @@ class SignUp extends AuthEvent {
     required this.location,
     required this.context,
     required this.mobileNumber,
+    this.loc,
   });
 }
 
@@ -114,3 +116,5 @@ class SkipSignUpSocialMedia extends AuthEvent {}
 class SignUpPhotoSuccess extends AuthEvent {}
 
 class GetCurrentuser extends AuthEvent {}
+
+class InitiateSignUpScreen extends AuthEvent {}

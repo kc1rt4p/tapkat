@@ -44,6 +44,12 @@ class AuthSignedIn extends AuthState {
 
 class AuthLoading extends AuthState {}
 
+class InitiatedSignUpScreen extends AuthState {
+  final List<LocalizationModel> locList;
+
+  InitiatedSignUpScreen(this.locList);
+}
+
 class UpdateOnlineStatusSucces extends AuthState {}
 
 class AuthError extends AuthState {

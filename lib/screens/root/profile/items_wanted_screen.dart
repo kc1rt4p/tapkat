@@ -67,8 +67,11 @@ class _ItemsWantedScreenState extends State<ItemsWantedScreen> {
                       });
                       //
                     } else {
-                      if (!application.currentUserModel!.verifiedByPhone! &&
-                          !application.currentUser!.emailVerified) {
+                      if (!application.currentUserModel!.verifiedByPhone! ||
+                          (application.currentUserModel!.signing_method !=
+                                  null &&
+                              application.currentUserModel!.signing_method ==
+                                  'EMAIL')) {
                         Navigator.pushAndRemoveUntil(
                             context,
                             MaterialPageRoute(
@@ -176,44 +179,46 @@ class _ItemsWantedScreenState extends State<ItemsWantedScreen> {
                             ),
                           ),
                         ),
-                        SizedBox(height: 25.0),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: CustomButton(
-                                label: 'Skip',
-                                onTap: () => _onSaveTapped(),
-                                bgColor: Style.secondaryColor,
-                              ),
-                            ),
-                            SizedBox(width: 10.0),
-                            Expanded(
-                              child: CustomButton(
-                                enabled: _list.isNotEmpty,
-                                bgColor: Colors.red.shade400,
-                                label: 'Clear',
-                                onTap: () {
-                                  setState(() {
-                                    _list.clear();
-                                  });
-                                },
-                              ),
-                            ),
-                            SizedBox(width: 10.0),
-                            Expanded(
-                              child: CustomButton(
-                                enabled: _list.isNotEmpty,
-                                bgColor: kBackgroundColor,
-                                label: 'Submit',
-                                onTap: () => _onSaveTapped(),
-                              ),
-                            ),
-                          ],
-                        ),
                       ],
                     ),
                   ),
                 ),
+              ),
+            ),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 3.0),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: CustomButton(
+                      label: 'Skip',
+                      onTap: () => _onSaveTapped(),
+                      bgColor: Style.secondaryColor,
+                    ),
+                  ),
+                  SizedBox(width: 10.0),
+                  Expanded(
+                    child: CustomButton(
+                      enabled: _list.isNotEmpty,
+                      bgColor: Colors.red.shade400,
+                      label: 'Clear',
+                      onTap: () {
+                        setState(() {
+                          _list.clear();
+                        });
+                      },
+                    ),
+                  ),
+                  SizedBox(width: 10.0),
+                  Expanded(
+                    child: CustomButton(
+                      enabled: _list.isNotEmpty,
+                      bgColor: kBackgroundColor,
+                      label: 'Submit',
+                      onTap: () => _onSaveTapped(),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],

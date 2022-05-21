@@ -808,10 +808,14 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                 label: 'CHAT',
                                                 onTap: () {
                                                   if (!application.currentUser!
-                                                          .emailVerified &&
-                                                      !application
-                                                          .currentUserModel!
-                                                          .verifiedByPhone!) {
+                                                          .emailVerified ||
+                                                      (application.currentUserModel!
+                                                                  .signing_method !=
+                                                              null &&
+                                                          application
+                                                                  .currentUserModel!
+                                                                  .signing_method ==
+                                                              'EMAIL')) {
                                                     DialogMessage.show(
                                                       context,
                                                       message:
@@ -842,10 +846,14 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                 label: 'BARTER',
                                                 onTap: () {
                                                   if (!application.currentUser!
-                                                          .emailVerified &&
-                                                      !application
-                                                          .currentUserModel!
-                                                          .verifiedByPhone!) {
+                                                          .emailVerified ||
+                                                      (application.currentUserModel!
+                                                                  .signing_method !=
+                                                              null &&
+                                                          application
+                                                                  .currentUserModel!
+                                                                  .signing_method ==
+                                                              'EMAIL')) {
                                                     DialogMessage.show(
                                                       context,
                                                       message:

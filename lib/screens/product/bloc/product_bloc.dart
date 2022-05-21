@@ -1,7 +1,9 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_logs/flutter_logs.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:tapkat/models/localization.dart';
 import 'package:tapkat/models/location.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/models/product_category.dart';
@@ -10,6 +12,7 @@ import 'package:tapkat/models/request/add_product_request.dart';
 import 'package:tapkat/models/request/product_review_resuest.dart';
 import 'package:tapkat/models/upload_product_image_response.dart';
 import 'package:tapkat/repositories/product_repository.dart';
+import 'package:tapkat/repositories/reference_repository.dart';
 import 'package:tapkat/utilities/upload_media.dart';
 import 'package:geolocator/geolocator.dart' as geoLocator;
 import 'package:tapkat/utilities/application.dart' as application;
@@ -20,6 +23,7 @@ part 'product_state.dart';
 class ProductBloc extends Bloc<ProductEvent, ProductState> {
   ProductBloc() : super(ProductInitial()) {
     final _productRepo = ProductRepository();
+    final _referenceRepo = ReferenceRepository();
 
     on<ProductEvent>((event, emit) async {
       try {
@@ -76,6 +80,11 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
           emit(SaveProductSuccess(productId));
         }
 
+        if (event is GetLocalizations) {
+          final locList = await _referenceRepo.getLocalizations();
+          emit(GetLocalizationsSuccess(locList));
+        }
+
         if (event is DeleteImages) {
           emit(ProductLoading());
           final result = await _productRepo.deleteImages(
@@ -112,10 +121,12 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
         if (event is InitializeAddUpdateProduct) {
           emit(ProductLoading());
           final data = await _productRepo.getProductRefData();
+          final locList = await _referenceRepo.getLocalizations();
           if (data != null) {
             emit(InitializeAddUpdateProductSuccess(
               data['categories'],
               data['types'],
+              locList,
             ));
           } else {
             emit(ProductError('Unable to get product types & categories'));

@@ -18,3 +18,5 @@ List<ChatMessageModel> unreadBarterMessages = [];
 var currentContext = NavigatorService.instance.navigatorKey.currentContext!;
 
 int? lastEmailResendVerification;
+
+String? currentCountry;

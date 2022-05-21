@@ -46,6 +46,10 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
             title: 'Resend Email',
           );
         }
+
+        if (state is AuthSignedIn) {
+          Navigator.popUntil(context, (route) => route.isFirst);
+        }
       },
       child: Scaffold(
         body: Column(

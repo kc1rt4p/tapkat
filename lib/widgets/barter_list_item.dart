@@ -249,17 +249,49 @@ class _BarterListItemState extends State<BarterListItem> {
                               ),
                             ),
                             SizedBox(height: 5.0),
-                            Text(
-                              product.free != null && product.free!
-                                  ? 'FREE'
-                                  : product.price != null
-                                      ? product.price!.toStringAsFixed(2)
-                                      : '0.00',
-                              style: TextStyle(
-                                fontSize: widget.fontSize ??
-                                    SizeConfig.textScaleFactor * 10,
-                                fontWeight: FontWeight.bold,
-                              ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                product.free != null && product.free!
+                                    ? SizedBox()
+                                    : Padding(
+                                        padding:
+                                            const EdgeInsets.only(right: 2.0),
+                                        child: Text(
+                                          product.currency != null &&
+                                                  product.currency!.isNotEmpty
+                                              ? product.currency!
+                                              : application.currentUserModel!
+                                                              .currency !=
+                                                          null &&
+                                                      application
+                                                          .currentUserModel!
+                                                          .currency!
+                                                          .isNotEmpty
+                                                  ? application
+                                                      .currentUserModel!
+                                                      .currency!
+                                                  : '',
+                                          style: TextStyle(
+                                            fontSize: widget.fontSize ??
+                                                SizeConfig.textScaleFactor * 10,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                Text(
+                                  product.free != null && product.free!
+                                      ? 'FREE'
+                                      : product.price != null
+                                          ? product.price!.toStringAsFixed(2)
+                                          : '0.00',
+                                  style: TextStyle(
+                                    fontSize: widget.fontSize ??
+                                        SizeConfig.textScaleFactor * 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),

@@ -20,16 +20,22 @@ class ApiService {
 
   _init() async {
     final deviceid = application.deviceId ?? await getDeviceId();
-    final userid = application.currentUser!.uid;
+
     final time = DateTime.now().millisecondsSinceEpoch;
 
     header = {
-      'userid': application.currentUser!.uid,
       'deviceid': deviceid,
       'time': DateTime.now().millisecondsSinceEpoch,
-      'authorization':
-          TapKatEncryption.encryptMsg(userid + deviceid! + time.toString()),
     };
+
+    if (application.currentUser != null) {
+      final userid = application.currentUser!.uid;
+      header!.addAll({
+        'userid': application.currentUser!.uid,
+        'authorization':
+            TapKatEncryption.encryptMsg(userid + deviceid! + time.toString()),
+      });
+    }
   }
 
   Future<Response> get(

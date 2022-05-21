@@ -5,9 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_phoenix/flutter_phoenix.dart';
 import 'package:google_maps_webservice/places.dart';
 import 'package:tapkat/backend.dart';
+import 'package:tapkat/models/localization.dart';
 import 'package:tapkat/models/location.dart';
 import 'package:tapkat/models/request/update_user.dart';
 import 'package:tapkat/models/user.dart';
+import 'package:tapkat/repositories/reference_repository.dart';
 import 'package:tapkat/repositories/user_repository.dart';
 import 'package:tapkat/schemas/index.dart';
 import 'package:tapkat/schemas/users_record.dart';
@@ -23,6 +25,7 @@ part 'auth_state.dart';
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final authService = AuthService();
   final userRepo = UserRepository();
+  final referenceRepo = ReferenceRepository();
   final firebaseAuth = FirebaseAuth.instance;
 
   AuthBloc() : super(AuthInitial()) {
@@ -48,6 +51,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       if (event is ResendEmail) {
         authService.resendEmail();
         emit(ResendEmailSuccess());
+      }
+
+      if (event is InitiateSignUpScreen) {
+        final locList = await referenceRepo.getLocalizations();
+        emit(InitiatedSignUpScreen(locList));
       }
 
       if (event is UpdatePushAlert) {
@@ -94,11 +102,18 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
               country: _location.addressComponents.last != null
                   ? _location.addressComponents.last!.longName
                   : null,
-              verifiedByPhone: application.currentUser != null,
             );
 
+            if (event.loc != null) {
+              updateUser.country_code = event.loc!.country_code;
+              updateUser.currency = event.loc!.currency;
+            }
+
             if (application.currentUser != null) {
+              updateUser.signing_method = 'PHONE';
               await maybeCreateUser(user);
+            } else {
+              updateUser.signing_method = 'EMAIL';
             }
 
             await UsersRecord.collection

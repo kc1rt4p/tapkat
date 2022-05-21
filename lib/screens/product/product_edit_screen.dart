@@ -8,6 +8,7 @@ import 'package:flutter_progress_hud/flutter_progress_hud.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_api_headers/google_api_headers.dart';
 import 'package:google_maps_webservice/places.dart';
+import 'package:tapkat/models/localization.dart';
 import 'package:tapkat/models/media_primary_model.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/models/product_category.dart';
@@ -25,6 +26,7 @@ import 'package:tapkat/widgets/custom_app_bar.dart';
 import 'package:tapkat/widgets/custom_button.dart';
 import 'package:tapkat/widgets/custom_textformfield.dart';
 import 'package:toggle_switch/toggle_switch.dart';
+import 'package:tapkat/utilities/application.dart' as application;
 
 class ProductEditScreen extends StatefulWidget {
   final ProductModel product;
@@ -63,6 +65,8 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
   int _initialTypeIndex = 0;
   String _selectedStatus = 'available';
   bool isFree = false;
+  List<LocalizationModel> _locList = [];
+  LocalizationModel? _selectedLocalization;
 
   @override
   void initState() {
@@ -118,6 +122,22 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
 
             if (state is InitializeAddUpdateProductSuccess) {
               setState(() {
+                _locList = state.locList;
+
+                if (_product.currency != null &&
+                    _product.currency!.isNotEmpty) {
+                  _selectedLocalization = _locList
+                      .firstWhere((loc) => loc.currency == _product.currency);
+                } else {
+                  if (application.currentUserModel!.currency != null &&
+                      application.currentUserModel!.currency!.isNotEmpty)
+                    _selectedLocalization = _locList.firstWhere((loc) =>
+                        loc.currency == application.currentUserModel!.currency);
+                  else
+                    _selectedLocalization = _locList.firstWhere((loc) =>
+                        loc.country_code == application.currentCountry);
+                }
+
                 _categories = state.categories;
                 _types = state.types;
                 _selectedOfferType = _types
@@ -198,6 +218,20 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
                                     keyboardType: TextInputType.number,
                                     isReadOnly: isFree,
                                     removeMargin: true,
+                                    prefix: InkWell(
+                                      onTap: _onCurrencySelect,
+                                      child: Container(
+                                        margin: EdgeInsets.only(right: 8.0),
+                                        child: Text(
+                                            _selectedLocalization != null
+                                                ? _selectedLocalization!
+                                                    .currency!
+                                                : 'PHP',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                            )),
+                                      ),
+                                    ),
                                   ),
                                 ),
                                 SizedBox(width: 10.0),
@@ -401,6 +435,66 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
     );
   }
 
+  _onCurrencySelect() async {
+    final localization = await showDialog<LocalizationModel?>(
+        context: context,
+        barrierDismissible: false,
+        builder: (dContext) {
+          return Dialog(
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 30.0, vertical: 16.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Default Country',
+                        style: Style.subtitle2.copyWith(
+                            color: kBackgroundColor,
+                            fontWeight: FontWeight.bold),
+                      ),
+                      GestureDetector(
+                        onTap: () => Navigator.pop(context, null),
+                        child: Icon(
+                          FontAwesomeIcons.times,
+                          color: kBackgroundColor,
+                          size: 20.0,
+                        ),
+                      ),
+                    ],
+                  ),
+                  ListView(
+                    shrinkWrap: true,
+                    // mainAxisSize: MainAxisSize.min,
+                    // crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(height: 8.0),
+                      ..._locList.map(
+                        (item) => ListTile(
+                          title: Text(item.currency ?? ''),
+                          contentPadding: EdgeInsets.zero,
+                          onTap: () => Navigator.pop(dContext, item),
+                          selectedColor: Color(0xFFBB3F03),
+                          selected: _selectedLocalization == item,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
+        });
+
+    if (localization != null) {
+      setState(() {
+        _selectedLocalization = localization;
+      });
+    }
+  }
+
   void _onUpdateTapped() {
     var productRequest = ProductRequestModel.fromProduct(_product);
     productRequest.productname = _nameTextController.text.trim();
@@ -419,6 +513,10 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
           _selectedLocation!.geometry!.location.lat;
       productRequest.location!.longitude =
           _selectedLocation!.geometry!.location.lng;
+    }
+
+    if (_selectedLocalization != null) {
+      productRequest.currency = _selectedLocalization!.currency;
     }
 
     if (_selectedOfferType != null) productRequest.type = _selectedOfferType;
