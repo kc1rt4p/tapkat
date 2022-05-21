@@ -30,10 +30,9 @@ class UserRepository {
   }
 
   Stream<bool> streamUserOnlineStatus(String userId) {
-    return usersRef.doc(userId).snapshots().map((query) {
-      final jsonData = query.data();
-      if (jsonData != null) {
-        final user = UserModel.fromJson(jsonData);
+    return usersRef.where('userid', isEqualTo: userId).snapshots().map((query) {
+      if (query.docs.isNotEmpty) {
+        final user = UserModel.fromJson(query.docs.first.data());
         return user.is_online ?? false;
       }
 
