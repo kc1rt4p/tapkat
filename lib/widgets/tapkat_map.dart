@@ -176,6 +176,17 @@ Map<GoogleMarkerColor, double> googleMarkerColorMap = {
 Future<dynamic> onMarkerTapped(
     BuildContext currentContext, ProductModel product) async {
   print(product.address!.toJson());
+  var thumbnail = '';
+
+  if (product.mediaPrimary != null && product.mediaPrimary!.url_t != null) {
+    thumbnail = product.mediaPrimary!.url_t!;
+  }
+
+  if (thumbnail.isEmpty && product.media != null && product.media!.isNotEmpty) {
+    thumbnail = product.media!.first.url_t ?? '';
+  }
+
+  product.mediaPrimary!.url_t = thumbnail;
   await showModalBottomSheet(
     isScrollControlled: true,
     backgroundColor: Color(0x79FFFFFF),
@@ -207,7 +218,7 @@ Future<dynamic> onMarkerTapped(
                     decoration: BoxDecoration(
                       image: DecorationImage(
                         image: product.mediaPrimary != null
-                            ? NetworkImage(product.mediaPrimary!.url!)
+                            ? NetworkImage(product.mediaPrimary!.url_t!)
                             : AssetImage('assets/images/image_placeholder.jpg')
                                 as ImageProvider<Object>,
                         fit: BoxFit.cover,

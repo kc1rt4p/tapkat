@@ -62,7 +62,7 @@ dependencies:
   curl_logger_dio_interceptor: ^0.0.2
   http_parser: ^4.0.0
   http: ^0.13.4
-  photo_view: ^0.13.0
+  photo_view: ^0.14.0
   flutter_image_compress: ^1.1.0
   permission_handler: ^8.3.0
   custom_info_window: ^1.0.1

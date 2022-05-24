@@ -727,10 +727,6 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
   }
 
   _buildMarkers() async {
-    Set<Marker> markers = {};
-
-    await Future.forEach<ProductModel>(searchResults, (product) async {});
-
     searchResults.forEach((product) {
       _markers
           .addLabelMarker(

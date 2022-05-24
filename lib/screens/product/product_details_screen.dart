@@ -69,6 +69,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   final _refreshController = RefreshController();
 
   final _dynamicLinkService = DynamincLinkService();
+  final _photoViewController = PageController();
 
   @override
   void initState() {
@@ -1066,6 +1067,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
             )
           : PhotoViewGallery.builder(
               itemCount: _product!.media!.length,
+              pageController: _photoViewController,
               scrollPhysics: const BouncingScrollPhysics(),
               builder: (BuildContext context, int index) {
                 final img = _product!.media![index];
@@ -1076,10 +1078,6 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                       ? img.url!
                       : 'https://storage.googleapis.com/map-surf-assets/noimage.jpg'),
                   initialScale: PhotoViewComputedScale.contained * 0.8,
-                  heroAttributes: PhotoViewHeroAttributes(
-                      tag: _product!.productid! +
-                          index.toString() +
-                          DateTime.now().millisecondsSinceEpoch.toString()),
                 );
               },
               onPageChanged: (index) {

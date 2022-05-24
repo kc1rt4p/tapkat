@@ -848,8 +848,6 @@ class _ProductListScreenState extends State<ProductListScreen> {
   }
 
   _buildMarkers() async {
-    await Future.forEach<ProductModel>(_list, (product) async {});
-
     _list.forEach((product) {
       _markers
           .addLabelMarker(

@@ -153,7 +153,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         DialogMessage.show(
           navigatorKey.currentContext!,
           message:
-              'The app crashed unexpectedly.\nClick on “Send Logs” to send the error logs to TapKat support via email.\nNone of your personally identifiable private information will be sent to TapKat.',
+              'The app crashed unexpectedly.\n\nClick on “Send Logs” to send the error logs to TapKat support via email.\n\nNone of your personally identifiable private information will be sent to TapKat.',
           buttonText: 'Send Logs',
           firstButtonClicked: () async {
             await FlutterEmailSender.send(email);
