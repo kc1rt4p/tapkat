@@ -11,6 +11,7 @@ import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/widgets/custom_app_bar.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:tapkat/utilities/application.dart' as application;
 
 class NotificationListScreen extends StatefulWidget {
   const NotificationListScreen({Key? key}) : super(key: key);
@@ -30,6 +31,7 @@ class _NotificationListScreenState extends State<NotificationListScreen> {
   @override
   void initState() {
     // TODO: implement initState
+    application.currentScreen = 'Notification List Screen';
     super.initState();
     _profileBloc.add(InitializeNotificationList());
   }

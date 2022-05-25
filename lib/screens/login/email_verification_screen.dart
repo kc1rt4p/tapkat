@@ -8,6 +8,7 @@ import 'package:tapkat/utilities/dialog_message.dart';
 import 'package:tapkat/utilities/style.dart';
 import 'package:tapkat/widgets/custom_app_bar.dart';
 import 'package:tapkat/widgets/custom_button.dart';
+import 'package:tapkat/utilities/application.dart' as application;
 
 class EmailVerificationScreen extends StatefulWidget {
   final bool signingUp;
@@ -26,6 +27,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
 
   @override
   void initState() {
+    application.currentScreen = 'Email Verification Screen';
     // TODO: implement initState
     super.initState();
     _authBloc = BlocProvider.of<AuthBloc>(context);

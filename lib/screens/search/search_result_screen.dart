@@ -26,6 +26,7 @@ import 'package:tapkat/widgets/custom_app_bar.dart';
 import 'package:tapkat/widgets/custom_search_bar.dart';
 import 'package:tapkat/widgets/tapkat_map.dart';
 import 'package:toggle_switch/toggle_switch.dart';
+import 'package:tapkat/utilities/application.dart' as application;
 
 import 'package:label_marker/label_marker.dart';
 
@@ -87,6 +88,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
 
   @override
   void initState() {
+    application.currentScreen = 'Search Result Screen';
     _keyWordTextController.text = widget.keyword;
     _productBloc.add(InitializeAddUpdateProduct());
 

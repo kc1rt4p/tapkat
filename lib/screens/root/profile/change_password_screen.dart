@@ -7,6 +7,7 @@ import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/dialog_message.dart';
 import 'package:tapkat/widgets/custom_app_bar.dart';
 import 'package:tapkat/widgets/custom_button.dart';
+import 'package:tapkat/utilities/application.dart' as application;
 
 class ChangePasswordScreen extends StatefulWidget {
   const ChangePasswordScreen({Key? key}) : super(key: key);
@@ -30,6 +31,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
   @override
   void initState() {
+    application.currentScreen = 'Change Password Screen';
     // TODO: implement initState
     super.initState();
     _authBloc = BlocProvider.of<AuthBloc>(context);

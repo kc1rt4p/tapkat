@@ -6,6 +6,8 @@ import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/utilities/style.dart';
 import 'package:tapkat/widgets/custom_button.dart';
 
+import 'package:tapkat/utilities/application.dart' as application;
+
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
 
@@ -18,6 +20,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   void initState() {
+    application.currentScreen = 'Splash Screen';
     _authBloc = BlocProvider.of(context);
     super.initState();
   }

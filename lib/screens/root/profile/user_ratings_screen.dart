@@ -18,6 +18,7 @@ import 'package:tapkat/widgets/custom_app_bar.dart';
 import 'package:tapkat/widgets/custom_button.dart';
 import 'package:tapkat/widgets/custom_textformfield.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:tapkat/utilities/application.dart' as application;
 
 class UserRatingsScreen extends StatefulWidget {
   final UserModel user;
@@ -51,6 +52,7 @@ class _UserRatingsScreenState extends State<UserRatingsScreen> {
 
   @override
   void initState() {
+    application.currentScreen = 'User Ratings Screen';
     // TODO: implement initState
     _profileBloc.add(InitializeUserRatingsScreen(widget.user.userid!));
     super.initState();

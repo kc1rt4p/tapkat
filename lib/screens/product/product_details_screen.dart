@@ -73,6 +73,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
 
   @override
   void initState() {
+    application.currentScreen = 'Product Details Screen';
     _productBloc.add(GetProductDetails(widget.productId));
 
     super.initState();

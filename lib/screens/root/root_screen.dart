@@ -90,7 +90,7 @@ class _RootScreenState extends State<RootScreen> {
   late AuthBloc _authBloc;
   late BarterBloc _barterBloc;
 
-  final _currentVerDate = DateTime(2022, 5, 25, 04);
+  final _currentVerDate = DateTime(2022, 5, 25, 10);
 
   final _appConfig = new LocalStorage('app_config.json');
 
@@ -99,6 +99,7 @@ class _RootScreenState extends State<RootScreen> {
 
   @override
   void initState() {
+    application.currentScreen = 'Root Screen';
     _barterBloc = BlocProvider.of<BarterBloc>(context);
     _authBloc = BlocProvider.of<AuthBloc>(context);
     _authBloc.add(GetCurrentuser());
@@ -389,6 +390,14 @@ class _RootScreenState extends State<RootScreen> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(50.0),
+                boxShadow: [
+                  BoxShadow(
+                    offset: Offset(0, -3),
+                    color: Colors.black54,
+                    spreadRadius: 0,
+                    blurRadius: 1,
+                  ),
+                ],
               ),
               padding: EdgeInsets.all(5.0),
               child: FloatingActionButton(
@@ -397,6 +406,7 @@ class _RootScreenState extends State<RootScreen> {
                 backgroundColor: Color(0xFFBB3F03),
                 child: Icon(Icons.add, size: 25.0),
                 onPressed: _onAddTapped,
+                elevation: 4.0,
               ),
             )
           : null,
@@ -439,12 +449,19 @@ class _RootScreenState extends State<RootScreen> {
   }
 
   Widget _buildBottomNavBar() {
-    print(application.unreadBarterMessages.length);
     return Container(
       height: kToolbarHeight - 10,
       color: Color(0xFFEBFBFF),
       child: Container(
         decoration: BoxDecoration(
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black54,
+              offset: Offset(0, 0),
+              spreadRadius: 0.5,
+              blurRadius: 2,
+            ),
+          ],
           color: Colors.white,
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(20.0),

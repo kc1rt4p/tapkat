@@ -7,6 +7,7 @@ import 'package:tapkat/utilities/style.dart';
 import 'package:tapkat/utilities/upload_media.dart';
 import 'package:tapkat/widgets/custom_app_bar.dart';
 import 'package:tapkat/widgets/custom_button.dart';
+import 'package:tapkat/utilities/application.dart' as application;
 
 class ProductTradeForScreen extends StatefulWidget {
   final bool updating;
@@ -32,6 +33,7 @@ class _ProductTradeForScreenState extends State<ProductTradeForScreen> {
 
   @override
   void initState() {
+    application.currentScreen = 'Product Trade For Screen';
     _productRequest = widget.productRequest;
     _list = _productRequest.tradefor ?? [];
     super.initState();

@@ -62,6 +62,7 @@ void main() async {
   ]);
 
   application.deviceId = await ApiService.getDeviceId();
+  application.deviceName = await ApiService.getDeviceName();
   await _loadUserLocation();
 
   runApp(Phoenix(child: const MyApp()));
@@ -122,7 +123,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       FlutterLogs.logToFile(
         logFileName: timeString,
         overwrite: false,
-        logMessage: details.exception.toString(),
+        logMessage:
+            'ERROR: ${details.exception.toString()}\n\n\nSTACK TRACE: ${details.stack.toString()}\n\n\n${details.stackFilter}',
       );
       FlutterLogs.exportAllFileLogs();
       FlutterError.presentError(details);
@@ -136,7 +138,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       //       }
 
       final email = Email(
-        body: details.exception.toString(),
+        body:
+            'CURRENT SCREEN: ${application.currentScreen}\n\nDEVICE NAME: ${application.deviceName}\n\nDEVICE ID: ${application.deviceId}\n\n\nERROR: ${details.exception.toString()}\n\n\nSTACK TRACE: ${details.stack.toString()}\n\n\nSUMMARY: ${details.summary}',
         subject: 'TapKat Error - $timeString',
         recipients: [
           'tapkat_support@cloud-next.com.au',

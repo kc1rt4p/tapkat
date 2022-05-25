@@ -7,7 +7,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_progress_hud/flutter_progress_hud.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:http/http.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:shimmer/shimmer.dart';
@@ -15,7 +14,6 @@ import 'package:tapkat/models/product.dart';
 import 'package:tapkat/models/user.dart';
 import 'package:tapkat/repositories/user_repository.dart';
 import 'package:tapkat/schemas/product_markers_record.dart';
-import 'package:tapkat/schemas/user_likes_record.dart';
 import 'package:tapkat/screens/product/bloc/product_bloc.dart';
 import 'package:tapkat/screens/product/product_details_screen.dart';
 import 'package:tapkat/screens/reviews/user_review_list_screen.dart';
@@ -31,8 +29,7 @@ import 'package:tapkat/widgets/custom_search_bar.dart';
 import 'package:tapkat/widgets/tapkat_map.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:label_marker/label_marker.dart';
-
-import '../../backend.dart';
+import 'package:tapkat/utilities/application.dart' as application;
 
 class StoreScreen extends StatefulWidget {
   final String userId;
@@ -82,6 +79,7 @@ class _StoreScreenState extends State<StoreScreen> {
 
   @override
   void initState() {
+    application.currentScreen = 'Store Screen';
     _storeBloc.add(InitializeStoreScreen(widget.userId));
 
     super.initState();

@@ -10,6 +10,7 @@ import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/utilities/upload_media.dart';
 import 'package:tapkat/widgets/custom_app_bar.dart';
 import 'package:tapkat/widgets/custom_button.dart';
+import 'package:tapkat/utilities/application.dart' as application;
 
 import 'bloc/product_bloc.dart';
 
@@ -40,6 +41,7 @@ class _SelectProductCategoryScreenState
 
   @override
   void initState() {
+    application.currentScreen = 'Product Select Categories Screen';
     // TODO: implement initState
     _categories.addAll(widget.categories);
     print(widget.productRequest.toJson());

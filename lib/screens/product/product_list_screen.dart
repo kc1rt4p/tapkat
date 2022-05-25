@@ -87,6 +87,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
   @override
   void initState() {
+    application.currentScreen = 'Product List Screen';
     _setTitle();
 
     _productBloc.add(InitializeAddUpdateProduct());

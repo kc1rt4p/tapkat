@@ -12,6 +12,7 @@ import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/utilities/style.dart';
 import 'package:tapkat/utilities/upload_media.dart';
 import 'package:tapkat/widgets/custom_button.dart';
+import 'package:tapkat/utilities/application.dart' as application;
 
 class SignUpPhotoSelectionScreen extends StatefulWidget {
   const SignUpPhotoSelectionScreen({Key? key}) : super(key: key);
@@ -29,6 +30,7 @@ class _SignUpPhotoSelectionScreenState
 
   @override
   void initState() {
+    application.currentScreen = 'Sign Up Photo Selection';
     _authBloc = BlocProvider.of<AuthBloc>(context);
     _authBloc.add(GetCurrentuser());
     super.initState();

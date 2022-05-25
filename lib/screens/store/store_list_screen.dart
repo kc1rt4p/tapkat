@@ -39,6 +39,7 @@ class _StoreListScreenState extends State<StoreListScreen> {
 
   @override
   void initState() {
+    application.currentScreen = 'Store List Screen';
     _storeBloc.add(GetFirstTopStores());
     _authBloc.add(GetCurrentuser());
     super.initState();

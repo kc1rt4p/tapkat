@@ -114,6 +114,7 @@ class _BarterScreenState extends State<BarterScreen> {
 
   @override
   void initState() {
+    application.currentScreen = 'Barter Screen';
     _authBloc.add(GetCurrentuser());
     _barterBloc = BlocProvider.of<BarterBloc>(context);
 

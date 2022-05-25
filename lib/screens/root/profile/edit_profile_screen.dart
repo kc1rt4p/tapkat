@@ -24,6 +24,7 @@ import 'package:tapkat/widgets/custom_button.dart';
 import 'package:tapkat/widgets/custom_textformfield.dart';
 import 'package:geocoding/geocoding.dart' as geoCoding;
 import 'package:geolocator/geolocator.dart' as geoLocator;
+import 'package:tapkat/utilities/application.dart' as application;
 
 class EditProfileScreen extends StatefulWidget {
   final UserModel user;
@@ -54,6 +55,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   @override
   void initState() {
+    application.currentScreen = 'Edit Profile Screen';
     _userModel = widget.user;
 
     _displayNameTextController.text = _userModel.display_name ?? '';

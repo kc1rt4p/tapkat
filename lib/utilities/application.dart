@@ -9,6 +9,7 @@ import 'package:tapkat/services/navigator_service.dart';
 User? currentUser;
 UserModel? currentUserModel;
 String? deviceId;
+String? deviceName;
 
 bool chatOpened = false;
 LocationModel? currentUserLocation;
@@ -20,3 +21,5 @@ var currentContext = NavigatorService.instance.navigatorKey.currentContext!;
 int? lastEmailResendVerification;
 
 String? currentCountry;
+
+String? currentScreen;

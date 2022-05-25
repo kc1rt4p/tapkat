@@ -36,6 +36,7 @@ class _ItemsWantedScreenState extends State<ItemsWantedScreen> {
 
   @override
   void initState() {
+    application.currentScreen = 'Items Wanted Screen';
     _authBloc = BlocProvider.of<AuthBloc>(context);
     _list = widget.user.items_wanted ?? [];
     super.initState();

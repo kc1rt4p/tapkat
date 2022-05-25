@@ -49,6 +49,7 @@ class _ProductMeetUpLocationsScreenState
   @override
   void initState() {
     // TODO: implement initState
+    application.currentScreen = 'Product MeetUp Screen';
     _productRequest = widget.productRequest;
     _list = List.from(_productRequest.meet_location ?? []);
     if (!widget.updating) {

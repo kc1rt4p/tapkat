@@ -12,6 +12,7 @@ import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/widgets/custom_app_bar.dart';
 import 'package:tapkat/widgets/custom_button.dart';
+import 'package:tapkat/utilities/application.dart' as application;
 
 class InterestSelectionScreen extends StatefulWidget {
   final UserModel user;
@@ -37,6 +38,7 @@ class _InterestSelectionScreenState extends State<InterestSelectionScreen> {
 
   @override
   void initState() {
+    application.currentScreen = 'Interests Selection Screen';
     _user = widget.user;
     _productBloc.add(InitializeAddUpdateProduct());
     if (widget.signingUp) _authBloc = BlocProvider.of<AuthBloc>(context);

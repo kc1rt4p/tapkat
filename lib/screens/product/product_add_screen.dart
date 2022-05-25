@@ -73,6 +73,7 @@ class _ProductAddScreenState extends State<ProductAddScreen> {
 
   @override
   void initState() {
+    application.currentScreen = 'Product Add Screen';
     _authBloc = BlocProvider.of<AuthBloc>(context);
     _authBloc.add(GetCurrentuser());
     _loadUserLocation();

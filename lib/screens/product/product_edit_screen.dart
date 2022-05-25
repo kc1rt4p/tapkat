@@ -70,6 +70,7 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
 
   @override
   void initState() {
+    application.currentScreen = 'Product Edit Screen';
     _product = widget.product;
     print(_product.toJson());
     _selectedOfferType = _product.type;

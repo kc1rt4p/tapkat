@@ -39,6 +39,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   void initState() {
+    application.currentScreen = 'Settings Screen';
     _user = widget.user;
     _authBloc = BlocProvider.of<AuthBloc>(context);
     _settingsBloc.add(GetLocalizations());

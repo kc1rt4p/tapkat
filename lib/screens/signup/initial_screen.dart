@@ -47,6 +47,7 @@ class _InitialSignUpScreenState extends State<InitialSignUpScreen> {
 
   @override
   void initState() {
+    application.currentScreen = 'Sign Up - Initial Screen';
     _authBloc = BlocProvider.of<AuthBloc>(context);
     _authBloc.add(InitiateSignUpScreen());
     super.initState();

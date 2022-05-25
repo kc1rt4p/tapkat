@@ -44,6 +44,7 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
 
   @override
   void initState() {
+    application.currentScreen = 'Barter Transactions Screen';
     _barterBloc = BlocProvider.of<BarterBloc>(context);
     super.initState();
 

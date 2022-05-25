@@ -10,6 +10,7 @@ import 'package:tapkat/utilities/style.dart';
 import 'package:tapkat/widgets/custom_app_bar.dart';
 import 'package:tapkat/widgets/custom_button.dart';
 import 'package:tapkat/widgets/custom_textformfield.dart';
+import 'package:tapkat/utilities/application.dart' as application;
 
 class UserSocialMediaAccountsScreen extends StatefulWidget {
   final UserModel user;
@@ -36,6 +37,7 @@ class _UserSocialMediaAccountsScreenState
 
   @override
   void initState() {
+    application.currentScreen = 'Social Media Screen';
     _authBloc = BlocProvider.of<AuthBloc>(context);
     if (widget.op == 'edit') {
       fbTextEditingController.text = widget.user.fb_profile ?? '';

@@ -69,6 +69,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   void initState() {
+    application.currentScreen = 'Profile Screen';
     _authBloc = BlocProvider.of<AuthBloc>(context);
     _profileBloc.add(InitializeProfileScreen());
     super.initState();

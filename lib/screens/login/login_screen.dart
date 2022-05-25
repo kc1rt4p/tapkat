@@ -16,6 +16,7 @@ import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/utilities/style.dart';
 import 'package:tapkat/widgets/custom_button.dart';
 import 'package:tapkat/widgets/custom_textformfield.dart';
+import 'package:tapkat/utilities/application.dart' as application;
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -71,6 +72,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   void initState() {
+    application.currentScreen = 'Login Screen';
     _authBloc = BlocProvider.of<AuthBloc>(context);
     super.initState();
   }

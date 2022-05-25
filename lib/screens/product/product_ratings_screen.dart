@@ -13,6 +13,7 @@ import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/utilities/style.dart';
 import 'package:tapkat/widgets/custom_app_bar.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:tapkat/utilities/application.dart' as application;
 
 class ProductRatingsScreen extends StatefulWidget {
   final ProductModel product;
@@ -38,6 +39,7 @@ class _ProductRatingsScreenState extends State<ProductRatingsScreen> {
 
   @override
   void initState() {
+    application.currentScreen = 'Product Ratings';
     // TODO: implement initState
     product = widget.product;
     super.initState();

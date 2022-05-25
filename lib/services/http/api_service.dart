@@ -123,4 +123,16 @@ class ApiService {
       return androidDeviceInfo.androidId; // unique ID on Android
     }
   }
+
+  static Future<String?> getDeviceName() async {
+    var deviceInfo = DeviceInfoPlugin();
+    if (Platform.isIOS) {
+      // import 'dart:io'
+      var iosDeviceInfo = await deviceInfo.iosInfo;
+      return iosDeviceInfo.localizedModel; // unique ID on iOS
+    } else {
+      var androidDeviceInfo = await deviceInfo.androidInfo;
+      return androidDeviceInfo.device; // unique ID on Android
+    }
+  }
 }
