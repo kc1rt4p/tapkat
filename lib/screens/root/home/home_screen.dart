@@ -73,7 +73,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void initState() {
-    application.currentScreen = 'Home Screen';
+    application.currentScreen = 'HOME SCREEN';
     _rootBloc = BlocProvider.of<RootBloc>(context);
     _productBloc.add(GetCategories());
     _authBloc.add(GetCurrentuser());
@@ -280,7 +280,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   if (snapshot.hasData) {
                                     online = snapshot.data ?? false;
                                   }
-                                  return Expanded(
+                                  return Center(
                                     child: Stack(
                                       children: [
                                         StoreListItem(
