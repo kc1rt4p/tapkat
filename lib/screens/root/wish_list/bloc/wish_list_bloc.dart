@@ -24,6 +24,7 @@ class WishListBloc extends Bloc<WishListEvent, WishListState> {
         _user = await _authService.getCurrentUser();
 
         if (event is InitializeWishListScreen) {
+          emit(WishListLoading());
           final productList = await _productRepo.getUserFavourites(_user!.uid);
           final storeList = await _userRepo.getUserLikedStores(_user!.uid);
           if (_user != null) {

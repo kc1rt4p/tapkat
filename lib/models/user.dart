@@ -1,4 +1,5 @@
 import 'package:tapkat/models/location.dart';
+import 'package:tapkat/schemas/index.dart';
 
 class UserModel {
   String? userid;
@@ -85,7 +86,12 @@ class UserModel {
               .toList()
           : null,
       location: json['location'] != null
-          ? LocationModel.fromJson(json['location'])
+          ? json['location'] is GeoPoint
+              ? LocationModel.fromJson({
+                  '_latitude': (json['location'] as GeoPoint).latitude,
+                  '_longitude': (json['location'] as GeoPoint).longitude
+                })
+              : LocationModel.fromJson(json['location'])
           : null,
       likes: json['likes'] as int?,
       rating: json['rating'] != null ? json['rating'] + 0.00 as double? : 0.00,

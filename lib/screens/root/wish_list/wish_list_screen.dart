@@ -1,19 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_progress_hud/flutter_progress_hud.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
-import 'package:tapkat/backend.dart';
 import 'package:tapkat/models/address.dart';
 import 'package:tapkat/models/media_primary_model.dart';
 import 'package:tapkat/models/product.dart';
-import 'package:tapkat/models/request/add_product_request.dart';
 import 'package:tapkat/models/store.dart';
 import 'package:tapkat/models/store_like.dart';
-import 'package:tapkat/models/user.dart';
-import 'package:tapkat/schemas/user_likes_record.dart';
 import 'package:tapkat/screens/product/bloc/product_bloc.dart';
 import 'package:tapkat/screens/product/product_details_screen.dart';
 import 'package:tapkat/screens/root/profile/bloc/profile_bloc.dart';
@@ -41,14 +36,11 @@ class WishListScreen extends StatefulWidget {
 }
 
 class _WishListScreenState extends State<WishListScreen> {
-  List<ProductModel> _list = [];
   final _wishListBloc = WishListBloc();
   final _storeBloc = StoreBloc();
   final _productBloc = ProductBloc();
-  final _profileBloc = ProfileBloc();
   final _keywordTextController = TextEditingController();
   final _refreshController = RefreshController();
-  bool _loading = true;
   String _selectedView = 'products';
 
   final inputTextController = TextEditingController();
@@ -91,17 +83,12 @@ class _WishListScreenState extends State<WishListScreen> {
           BlocListener(
             bloc: _wishListBloc,
             listener: (context, state) {
-              print('current state: $state');
+              print('wishListBloc current state: $state');
               if (state is WishListLoading) {
                 ProgressHUD.of(context)!.show();
-                setState(() {
-                  _loading = true;
-                });
               } else {
+                _refreshController.refreshCompleted();
                 ProgressHUD.of(context)!.dismiss();
-                setState(() {
-                  _loading = false;
-                });
               }
 
               if (state is UpdateItemsWantedSuccess) {
@@ -117,6 +104,7 @@ class _WishListScreenState extends State<WishListScreen> {
               }
 
               if (state is WishListInitialized) {
+                ProgressHUD.of(context)!.dismiss();
                 _refreshController.refreshCompleted();
                 _productPagingController.refresh();
                 _storePagingController.refresh();
@@ -176,7 +164,7 @@ class _WishListScreenState extends State<WishListScreen> {
           BlocListener(
             bloc: _productBloc,
             listener: (context, state) {
-              print('current wish list state: $state');
+              print('prodcutBloc state: $state');
               if (state is UnlikeSuccess) {
                 _wishListBloc.add(InitializeWishListScreen());
               }
@@ -185,6 +173,7 @@ class _WishListScreenState extends State<WishListScreen> {
           BlocListener(
             bloc: _storeBloc,
             listener: (context, state) {
+              print('_storeBloc state: $state');
               if (state is EditUserLikeSuccess) {
                 _wishListBloc.add(InitializeWishListScreen());
               }

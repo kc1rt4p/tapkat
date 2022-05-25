@@ -140,7 +140,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         subject: 'TapKat Error - $timeString',
         recipients: [
           'tapkat_support@cloud-next.com.au',
-          'patrick.felix@cloud-next.com.au'
         ],
         cc: [],
         bcc: [],

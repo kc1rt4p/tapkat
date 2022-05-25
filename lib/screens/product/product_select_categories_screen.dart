@@ -210,6 +210,7 @@ class _SelectProductCategoryScreenState
         builder: (context) => ProductTradeForScreen(
           updating: widget.updating,
           productRequest: productRequest,
+          media: widget.media,
         ),
       ),
     );

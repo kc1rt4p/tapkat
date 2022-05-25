@@ -11,6 +11,7 @@ import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/constants.dart';
 import 'package:tapkat/utilities/dialog_message.dart';
 import 'package:tapkat/utilities/style.dart';
+import 'package:tapkat/utilities/upload_media.dart';
 import 'package:tapkat/widgets/custom_app_bar.dart';
 import 'package:tapkat/widgets/custom_button.dart';
 import 'package:tapkat/widgets/custom_textformfield.dart';
@@ -21,12 +22,14 @@ import 'package:google_api_headers/google_api_headers.dart';
 import 'package:tapkat/utilities/application.dart' as application;
 
 class ProductMeetUpLocationsScreen extends StatefulWidget {
+  final List<SelectedMedia>? media;
   final ProductRequestModel productRequest;
   final bool updating;
   const ProductMeetUpLocationsScreen({
     Key? key,
     required this.productRequest,
     required this.updating,
+    this.media,
   }) : super(key: key);
 
   @override
@@ -214,7 +217,11 @@ class _ProductMeetUpLocationsScreenState
   void _onSubmit() {
     _productRequest.meet_location = _list;
 
-    _productBloc.add(EditProduct(_productRequest));
+    if (widget.updating)
+      _productBloc.add(EditProduct(_productRequest));
+    else
+      _productBloc.add(SaveProduct(
+          productRequest: _productRequest, media: widget.media ?? []));
   }
 
   void _onAddLocation() {

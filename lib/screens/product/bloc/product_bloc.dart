@@ -89,6 +89,18 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
           emit(ProductLoading());
           final result = await _productRepo.deleteImages(
               event.imgUrls, _user!.uid, event.productId);
+          final product = await _productRepo.getProduct(event.productId);
+
+          if (product.mediaPrimary != null &&
+              (product.mediaPrimary!.url_t == null ||
+                  product.mediaPrimary!.url_t!.isEmpty)) {
+            if (product.media != null && product.media!.isNotEmpty) {
+              final updateProduct = ProductRequestModel.fromProduct(product);
+              updateProduct.image_url =
+                  product.media!.first.url ?? product.media!.first.url_t;
+              await _productRepo.updateProduct(updateProduct);
+            }
+          }
 
           if (result) emit(DeleteImagesSuccess(event.imgUrls));
         }

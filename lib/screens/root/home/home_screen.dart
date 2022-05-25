@@ -332,7 +332,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 },
                               );
                             }).toList(),
-                            label: 'Top Users',
+                            label: 'Stores Around You',
                             onViewAllTapped: () => Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -584,7 +584,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             data: product,
                             childWhenDragging: Container(
                               height: SizeConfig.screenHeight * 0.12,
-                              width: SizeConfig.screenHeight * 0.11,
+                              width: SizeConfig.screenHeight * 0.12,
                               decoration: BoxDecoration(
                                 color: kBackgroundColor,
                                 borderRadius: BorderRadius.only(
@@ -605,7 +605,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             child: BarterListItem(
                               height: SizeConfig.screenHeight * 0.07,
-                              width: SizeConfig.screenHeight * 0.11,
+                              width: SizeConfig.screenHeight * 0.12,
                               hideLikeBtn: true,
                               hideDistance: true,
                               showRating: false,

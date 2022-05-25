@@ -274,7 +274,7 @@ class _BarterListItemState extends State<BarterListItem> {
                                                   : '',
                                           style: TextStyle(
                                             fontSize: widget.fontSize ??
-                                                SizeConfig.textScaleFactor * 10,
+                                                SizeConfig.textScaleFactor * 8,
                                             fontWeight: FontWeight.bold,
                                           ),
                                         ),

@@ -282,6 +282,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         application.currentUserModel = null;
         application.chatOpened = false;
         application.unreadBarterMessages = [];
+        await userRepo.updateUserOnlineStatus(false);
         signOut();
         emit(AuthSignedOut());
         Phoenix.rebirth(event.context);

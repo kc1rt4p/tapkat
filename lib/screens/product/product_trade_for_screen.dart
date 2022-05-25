@@ -4,16 +4,20 @@ import 'package:tapkat/screens/product/product_meetup_locations.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/utilities/style.dart';
+import 'package:tapkat/utilities/upload_media.dart';
 import 'package:tapkat/widgets/custom_app_bar.dart';
 import 'package:tapkat/widgets/custom_button.dart';
 
 class ProductTradeForScreen extends StatefulWidget {
   final bool updating;
   final ProductRequestModel productRequest;
+
+  final List<SelectedMedia>? media;
   const ProductTradeForScreen({
     Key? key,
     required this.updating,
     required this.productRequest,
+    this.media,
   }) : super(key: key);
 
   @override
@@ -193,6 +197,7 @@ class _ProductTradeForScreenState extends State<ProductTradeForScreen> {
         builder: (context) => ProductMeetUpLocationsScreen(
           updating: widget.updating,
           productRequest: _productRequest,
+          media: widget.media,
         ),
       ),
     );
