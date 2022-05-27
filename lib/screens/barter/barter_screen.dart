@@ -1799,20 +1799,42 @@ class _BarterScreenState extends State<BarterScreen> {
               _showAddCashDialog('recipient');
             }
           },
-          child: Container(
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: kBackgroundColor,
-                width: 1.5,
+          child: Stack(
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: kBackgroundColor,
+                    width: 1.5,
+                  ),
+                  borderRadius: BorderRadius.circular(8.0),
+                  image: DecorationImage(
+                    image: AssetImage('assets/images/cash_icon.png'),
+                    fit: BoxFit.cover,
+                    colorFilter:
+                        ColorFilter.mode(kBackgroundColor, BlendMode.color),
+                  ),
+                ),
               ),
-              borderRadius: BorderRadius.circular(8.0),
-              image: DecorationImage(
-                image: AssetImage('assets/images/cash_icon.png'),
-                fit: BoxFit.cover,
-                colorFilter:
-                    ColorFilter.mode(kBackgroundColor, BlendMode.color),
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: Container(
+                  height: SizeConfig.textScaleFactor * 11,
+                  width: double.infinity,
+                  color: kBackgroundColor,
+                  child: FittedBox(
+                    child: Text(
+                      '${application.currentUserModel!.currency ?? ''} ${_remoteUserOfferedCash!.toStringAsFixed(2)}',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: SizeConfig.textScaleFactor * 9,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
         ),
       );
@@ -1841,20 +1863,42 @@ class _BarterScreenState extends State<BarterScreen> {
       offerWidgets.add(
         InkWell(
           onTap: () => _showAddCashDialog('user'),
-          child: Container(
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: kBackgroundColor,
-                width: 1.5,
+          child: Stack(
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: kBackgroundColor,
+                    width: 1.5,
+                  ),
+                  borderRadius: BorderRadius.circular(8.0),
+                  image: DecorationImage(
+                    image: AssetImage('assets/images/cash_icon.png'),
+                    fit: BoxFit.cover,
+                    colorFilter:
+                        ColorFilter.mode(kBackgroundColor, BlendMode.color),
+                  ),
+                ),
               ),
-              borderRadius: BorderRadius.circular(8.0),
-              image: DecorationImage(
-                image: AssetImage('assets/images/cash_icon.png'),
-                fit: BoxFit.cover,
-                colorFilter:
-                    ColorFilter.mode(kBackgroundColor, BlendMode.color),
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: Container(
+                  height: SizeConfig.textScaleFactor * 11,
+                  width: double.infinity,
+                  color: kBackgroundColor,
+                  child: FittedBox(
+                    child: Text(
+                      '${application.currentUserModel!.currency ?? ''} ${_currentUserOfferedCash!.toStringAsFixed(2)}',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: SizeConfig.textScaleFactor * 9,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
         ),
       );
@@ -1900,73 +1944,99 @@ class _BarterScreenState extends State<BarterScreen> {
                   application.chatOpened = false;
                 },
                 child: Container(
-                  child: Row(
+                  child: Column(
                     children: [
-                      Expanded(
-                        child: Container(
-                          height: SizeConfig.screenHeight * 0.1,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Expanded(
-                                child: wantWidgets.isNotEmpty
-                                    ? Directionality(
-                                        textDirection: TextDirection.ltr,
-                                        child: GridView.count(
-                                          scrollDirection: Axis.horizontal,
-                                          padding: EdgeInsets.symmetric(
-                                              vertical: 2.0),
-                                          mainAxisSpacing: 5.0,
-                                          crossAxisCount: 1,
-                                          reverse: true,
-                                          children: wantWidgets,
-                                        ),
-                                      )
-                                    : Container(),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Container(
+                              height: SizeConfig.screenHeight * 0.1,
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text('You will receive',
+                                      style: TextStyle(
+                                        fontSize:
+                                            SizeConfig.textScaleFactor * 13,
+                                        color: kBackgroundColor,
+                                        fontWeight: FontWeight.bold,
+                                      )),
+                                  Expanded(
+                                    child: wantWidgets.isNotEmpty
+                                        ? Directionality(
+                                            textDirection: TextDirection.ltr,
+                                            child: GridView.count(
+                                              scrollDirection: Axis.horizontal,
+                                              padding: EdgeInsets.symmetric(
+                                                  vertical: 2.0),
+                                              mainAxisSpacing: 5.0,
+                                              crossAxisCount: 1,
+                                              reverse: true,
+                                              children: wantWidgets,
+                                            ),
+                                          )
+                                        : Container(),
+                                  ),
+                                ],
                               ),
-                              SizedBox(height: 5.0),
-                              Text(
-                                  'Cash: \$ ${_remoteUserOfferedCash ?? '0.00'}'),
-                            ],
+                            ),
                           ),
-                        ),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.fromLTRB(10.0, 0.0, 10.0, 17.0),
-                        child: Icon(
-                          Icons.sync_alt_outlined,
-                          size: 25.0,
-                          color: kBackgroundColor,
-                        ),
-                      ),
-                      Expanded(
-                        child: Container(
-                          height: SizeConfig.screenHeight * 0.1,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                child: offerWidgets.isNotEmpty
-                                    ? Directionality(
-                                        textDirection: TextDirection.rtl,
-                                        child: GridView.count(
-                                          scrollDirection: Axis.horizontal,
-                                          padding: EdgeInsets.symmetric(
-                                              vertical: 2.0),
-                                          mainAxisSpacing: 5.0,
-                                          crossAxisCount: 1,
-                                          reverse: true,
-                                          children: offerWidgets,
-                                        ),
-                                      )
-                                    : Container(),
+                          Padding(
+                            padding: EdgeInsets.fromLTRB(10.0, 17.0, 10.0, 0.0),
+                            child: Align(
+                              alignment: Alignment.center,
+                              child: Icon(
+                                Icons.sync_alt_outlined,
+                                size: SizeConfig.textScaleFactor * 15,
+                                color: kBackgroundColor,
                               ),
-                              SizedBox(height: 5.0),
-                              Text(
-                                  'Cash: \$ ${_currentUserOfferedCash ?? '0.00'}'),
-                            ],
+                            ),
+                          ),
+                          Expanded(
+                            child: Container(
+                              height: SizeConfig.screenHeight * 0.1,
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('You will send',
+                                      style: TextStyle(
+                                        fontSize:
+                                            SizeConfig.textScaleFactor * 13,
+                                        color: kBackgroundColor,
+                                        fontWeight: FontWeight.bold,
+                                      )),
+                                  Expanded(
+                                    child: offerWidgets.isNotEmpty
+                                        ? Directionality(
+                                            textDirection: TextDirection.rtl,
+                                            child: GridView.count(
+                                              scrollDirection: Axis.horizontal,
+                                              padding: EdgeInsets.symmetric(
+                                                  vertical: 2.0),
+                                              mainAxisSpacing: 5.0,
+                                              crossAxisCount: 1,
+                                              reverse: true,
+                                              children: offerWidgets,
+                                            ),
+                                          )
+                                        : Container(),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 8.0),
+                      Center(
+                        child: Text(
+                          'Tap here to edit your offer',
+                          style: TextStyle(
+                            fontSize: SizeConfig.textScaleFactor * 13,
+                            fontWeight: FontWeight.w600,
+                            decoration: TextDecoration.underline,
                           ),
                         ),
                       ),

@@ -145,7 +145,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             application.currentUserModel = await userRepo.getUser(user.uid);
 
             if (application.currentUserModel != null) {
-              // emit(AuthSignedIn(user));
+              await userRepo.updateUserOnlineStatus(true);
+              emit(AuthSignedIn(user));
+            } else {
               emit(ShowSignUpPhoto());
             }
           } else
@@ -159,11 +161,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             final userModel = await userRepo.getUser(user.uid);
             if (userModel != null) {
               application.currentUserModel = userModel;
+              await userRepo.updateUserOnlineStatus(true);
+              emit(AuthSignedIn(user));
+            } else {
+              emit(ShowSignUpPhoto());
             }
-
-            // emit(AuthSignedIn(user));
-
-            emit(ShowSignUpPhoto());
           }
         }
 
@@ -238,6 +240,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             if (userModel != null) {
               application.currentUserModel = userModel;
 
+              await userRepo.updateUserOnlineStatus(true);
+
               emit(AuthSignedIn(user));
             } else {
               emit(PhoneVerifiedButNoRecord());
@@ -269,8 +273,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             final userModel = await userRepo.getUser(user.uid);
             if (userModel != null) {
               application.currentUserModel = userModel;
+              // await userRepo.updateUserOnlineStatus(true);
+              emit(AuthSignedIn(user));
             }
-            emit(AuthSignedIn(user));
           }
         } on FirebaseAuthException catch (e) {
           emit(AuthError(e.message ?? e.toString()));
@@ -278,14 +283,18 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       }
 
       if (event is SignOut) {
-        application.currentUser = null;
-        application.currentUserModel = null;
-        application.chatOpened = false;
-        application.unreadBarterMessages = [];
-        await userRepo.updateUserOnlineStatus(false);
-        signOut();
-        emit(AuthSignedOut());
-        Phoenix.rebirth(event.context);
+        try {
+          await userRepo.updateUserOnlineStatus(false);
+          application.currentUser = null;
+          application.currentUserModel = null;
+          application.chatOpened = false;
+          application.unreadBarterMessages = [];
+          signOut();
+          emit(AuthSignedOut());
+          Phoenix.rebirth(event.context);
+        } catch (e) {
+          emit(AuthError(e.toString()));
+        }
       }
     });
   }

@@ -82,6 +82,12 @@ class _BarterListItemState extends State<BarterListItem> {
           }
         }
 
+        if (product.media != null && product.media!.isNotEmpty) {
+          for (var media in product.media!) {
+            print(media.toJson());
+          }
+        }
+
         var thumbnail = '';
 
         if (product.mediaPrimary != null &&

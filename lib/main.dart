@@ -227,6 +227,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                 if (state is AuthSignedIn) {
                   setState(() {
                     _user = TapkatFirebaseUser(state.user);
+                    _userModel = application.currentUserModel;
                   });
                 }
 

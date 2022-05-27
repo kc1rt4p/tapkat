@@ -172,8 +172,6 @@ class ProductRepository {
       );
     }
 
-    print('ready to upload: ${formData.files.length}');
-
     final response = await _apiService.post(
       url: 'products/upload',
       formData: formData,
