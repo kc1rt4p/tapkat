@@ -41,7 +41,8 @@ _loadUserLocation() async {
           userLoc.latitude, userLoc.longitude);
       final place = places.first;
       application.currentCountry = place.isoCountryCode;
-      print('-=======< using device location');
+      print(
+          '-=======< using device location: ${userLoc.latitude}, ${userLoc.longitude}');
       application.currentUserLocation = LocationModel(
         latitude: userLoc.latitude,
         longitude: userLoc.longitude,

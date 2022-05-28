@@ -32,6 +32,7 @@ Future<SelectedMedia?> selectMediaWithSourceBottomSheet({
   String pickerFontFamily = 'Roboto',
   Color textColor = const Color(0xFF111417),
   Color backgroundColor = const Color(0xFFF5F5F5),
+  String? fileName,
 }) async {
   final createUploadMediaListTile =
       (String label, MediaSource mediaSource) => ListTile(

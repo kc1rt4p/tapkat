@@ -246,6 +246,8 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                           Expanded(
                                             child: Text(
                                               _product != null &&
+                                                      _product!.productname !=
+                                                          null &&
                                                       _product!.productname!
                                                           .isNotEmpty
                                                   ? _product!.productname!
@@ -812,11 +814,11 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                   if (!application.currentUser!
                                                           .emailVerified ||
                                                       (application.currentUserModel!
-                                                                  .signing_method !=
+                                                                  .signin_method !=
                                                               null &&
                                                           application
                                                                   .currentUserModel!
-                                                                  .signing_method ==
+                                                                  .signin_method ==
                                                               'EMAIL')) {
                                                     DialogMessage.show(
                                                       context,
@@ -850,11 +852,11 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                   if (!application.currentUser!
                                                           .emailVerified ||
                                                       (application.currentUserModel!
-                                                                  .signing_method !=
+                                                                  .signin_method !=
                                                               null &&
                                                           application
                                                                   .currentUserModel!
-                                                                  .signing_method ==
+                                                                  .signin_method ==
                                                               'EMAIL')) {
                                                     DialogMessage.show(
                                                       context,

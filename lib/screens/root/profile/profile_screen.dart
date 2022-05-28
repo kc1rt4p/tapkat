@@ -425,10 +425,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 visible:
                                     !application.currentUser!.emailVerified ||
                                         (application.currentUserModel!
-                                                    .signing_method !=
+                                                    .signin_method !=
                                                 null &&
                                             application.currentUserModel!
-                                                    .signing_method ==
+                                                    .signin_method ==
                                                 'EMAIL'),
                                 child: CustomButton(
                                   label: 'Verify your account',
@@ -449,10 +449,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 visible:
                                     application.currentUser!.emailVerified ||
                                         (application.currentUserModel!
-                                                    .signing_method !=
+                                                    .signin_method !=
                                                 null &&
                                             application.currentUserModel!
-                                                    .signing_method ==
+                                                    .signin_method ==
                                                 'PHONE'),
                                 child: Expanded(
                                   child: Container(
@@ -525,11 +525,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                   if (!application.currentUser!
                                                           .emailVerified ||
                                                       (application.currentUserModel!
-                                                                  .signing_method !=
+                                                                  .signin_method !=
                                                               null &&
                                                           application
                                                                   .currentUserModel!
-                                                                  .signing_method ==
+                                                                  .signin_method ==
                                                               'EMAIL')) {
                                                     DialogMessage.show(
                                                       context,

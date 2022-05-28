@@ -110,10 +110,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             }
 
             if (application.currentUser != null) {
-              updateUser.signing_method = 'PHONE';
+              updateUser.signin_method = 'PHONE';
               await maybeCreateUser(user);
             } else {
-              updateUser.signing_method = 'EMAIL';
+              updateUser.signin_method = 'EMAIL';
             }
 
             await UsersRecord.collection

@@ -24,7 +24,7 @@ class UpdateUserModel {
   String? yt_profile;
   String? tt_profile;
   String? tw_profile;
-  String? signing_method;
+  String? signin_method;
 
   UpdateUserModel({
     this.userid,
@@ -50,7 +50,7 @@ class UpdateUserModel {
     this.yt_profile,
     this.tt_profile,
     this.tw_profile,
-    this.signing_method,
+    this.signin_method,
   });
 
   Map<String, dynamic> toJson() {
@@ -78,7 +78,7 @@ class UpdateUserModel {
       'yt_profile': this.yt_profile ?? null,
       'tt_profile': this.tt_profile ?? null,
       'tw_profile': this.tw_profile ?? null,
-      'signing_method': this.signing_method ?? '',
+      'signin_method': this.signin_method ?? '',
     };
   }
 }

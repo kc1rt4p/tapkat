@@ -28,7 +28,7 @@ class UserModel {
   String? tt_profile;
   String? tw_profile;
   bool? is_online;
-  String? signing_method;
+  String? signin_method;
 
   UserModel({
     this.userid,
@@ -56,7 +56,7 @@ class UserModel {
     this.is_online,
     this.country_code,
     this.currency,
-    this.signing_method,
+    this.signin_method,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -103,7 +103,7 @@ class UserModel {
       is_online: json['is_online'] as bool?,
       country_code: json['country_code'] as String?,
       currency: json['currency'] as String?,
-      signing_method: json['signing_method'] as String?,
+      signin_method: json['signin_method'] as String?,
     );
   }
 
@@ -134,7 +134,7 @@ class UserModel {
       'is_online': this.is_online,
       'country_code': this.country_code,
       'currency': this.currency,
-      'signing_method': this.signing_method,
+      'signin_method': this.signin_method,
     };
   }
 }

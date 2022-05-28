@@ -69,9 +69,9 @@ class _ItemsWantedScreenState extends State<ItemsWantedScreen> {
                       //
                     } else {
                       if (!application.currentUserModel!.verifiedByPhone! ||
-                          (application.currentUserModel!.signing_method !=
+                          (application.currentUserModel!.signin_method !=
                                   null &&
-                              application.currentUserModel!.signing_method ==
+                              application.currentUserModel!.signin_method ==
                                   'EMAIL')) {
                         Navigator.pushAndRemoveUntil(
                             context,

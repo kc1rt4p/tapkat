@@ -418,8 +418,8 @@ class _RootScreenState extends State<RootScreen> {
 
   _onAddTapped() async {
     if (!application.currentUser!.emailVerified ||
-        (application.currentUserModel!.signing_method != null &&
-            application.currentUserModel!.signing_method == 'EMAIL')) {
+        (application.currentUserModel!.signin_method != null &&
+            application.currentUserModel!.signin_method == 'EMAIL')) {
       DialogMessage.show(
         context,
         message:
@@ -515,8 +515,8 @@ class _RootScreenState extends State<RootScreen> {
         onTap: () {
           if (index == 2 &&
               (!application.currentUser!.emailVerified ||
-                  (application.currentUserModel!.signing_method != null &&
-                      application.currentUserModel!.signing_method ==
+                  (application.currentUserModel!.signin_method != null &&
+                      application.currentUserModel!.signin_method ==
                           'EMAIL'))) {
             DialogMessage.show(
               context,
