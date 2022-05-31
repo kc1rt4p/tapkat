@@ -28,6 +28,8 @@
 	<string>YES</string>
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>YES</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+    <string>Yes</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>YES</string>
 	<key>UIBackgroundModes</key>
