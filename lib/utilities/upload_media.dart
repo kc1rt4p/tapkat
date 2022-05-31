@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -140,8 +141,29 @@ Future<SelectedMedia?> selectMedia({
   if (mediaBytes == null) {
     return null;
   }
-  final path = storagePath(currentUserUid, pickedMedia!.name, isVideo);
-  return SelectedMedia(pickedMedia.name, path, mediaBytes, pickedMedia.path);
+  final timestamp = DateTime.now().millisecondsSinceEpoch.toString();
+  final _newFile = await changeFileNameOnly(File(pickedMedia!.path), timestamp);
+
+  final path = storagePath(currentUserUid, pickedMedia.path, isVideo);
+
+  print('current path: $path');
+  print('storage path: ${_newFile.path.split('/').last}');
+  return SelectedMedia(
+      timestamp + '.jpg',
+      _newFile.path.split('/').last + timestamp + '.jpg',
+      _newFile.readAsBytesSync(),
+      _newFile.path);
+}
+
+Future<File> changeFileNameOnly(File file, String newFileName) {
+  var path = file.path;
+  var lastSeparator = path.lastIndexOf(Platform.pathSeparator);
+  final split = path.split(Platform.pathSeparator);
+  var newPath = path.substring(0, lastSeparator + 1) +
+      newFileName +
+      '.' +
+      split[split.length - 1].split('.')[1];
+  return file.rename(newPath);
 }
 
 bool validateFileFormat(String filePath, BuildContext context) {
