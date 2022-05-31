@@ -816,7 +816,10 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
           '\n${response.errorMessage}'),
       mode: Mode.overlay,
       types: [],
-      components: [],
+      components: [
+        Component(Component.country, 'ph'),
+        Component(Component.country, 'sg')
+      ],
       strictbounds: false,
     );
 

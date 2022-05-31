@@ -22,6 +22,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "4.0.0"
+  animate_do:
+    dependency: "direct main"
+    description:
+      name: animate_do
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.1.0"
   archive:
     dependency: transitive
     description:
@@ -597,10 +604,12 @@ packages:
   flutter_google_places:
     dependency: "direct main"
     description:
-      name: flutter_google_places
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "0.3.0"
+      path: "."
+      ref: "v0.3.2"
+      resolved-ref: fa34845e80254c247909f40655d204e1b9aca18f
+      url: "https://github.com/fluttercommunity/flutter_google_places"
+    source: git
+    version: "0.3.2"
   flutter_image_compress:
     dependency: "direct main"
     description:
@@ -1364,7 +1373,7 @@ packages:
       name: rxdart
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.26.0"
+    version: "0.27.4"
   sanitize_html:
     dependency: transitive
     description:

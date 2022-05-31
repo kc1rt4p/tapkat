@@ -1,3 +1,4 @@
+import 'package:animate_do/animate_do.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -5,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_progress_hud/flutter_progress_hud.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
+import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:tapkat/backend.dart';
 import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
 import 'package:tapkat/models/product.dart';
@@ -25,6 +27,7 @@ import 'package:tapkat/screens/store/store_list_screen.dart';
 import 'package:tapkat/screens/store/store_screen.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/size_config.dart';
+import 'package:tapkat/utilities/style.dart';
 import 'package:tapkat/widgets/barter_list.dart';
 import 'package:tapkat/widgets/barter_list_item.dart';
 import 'package:tapkat/widgets/custom_search_bar.dart';
@@ -45,6 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
   late RootBloc _rootBloc;
   final _authBloc = AuthBloc();
   final _userRepo = UserRepository();
+  final _panelController = PanelController();
   List<ProductModel> _recommendedList = [];
   List<ProductModel> _freeList = [];
   List<ProductModel> _trendingList = [];
@@ -62,6 +66,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _loadingUserProducts = true;
   bool _loadingTopStores = true;
   bool _loadingFreeList = true;
+  bool _showYourItems = false;
 
   User? _user;
   UserModel? _userModel;
@@ -85,7 +90,6 @@ class _HomeScreenState extends State<HomeScreen> {
     SizeConfig().init(context);
     return ProgressHUD(
       indicatorColor: kBackgroundColor,
-      backgroundColor: Colors.white,
       barrierEnabled: false,
       child: MultiBlocListener(
         listeners: [
@@ -109,7 +113,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 });
               }
             },
-            child: Container(),
           ),
           BlocListener(
             bloc: _homeBloc,
@@ -236,7 +239,6 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           children: [
             Container(
-              color: kBackgroundColor,
               padding: EdgeInsets.symmetric(
                 horizontal: 20.0,
                 vertical: 10.0,
@@ -556,84 +558,256 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-            _myProductList.isNotEmpty
-                ? Container(
-                    color: Colors.white,
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 20.0,
-                      vertical: 10.0,
+            SlidingUpPanel(
+              isDraggable: false,
+              controller: _panelController,
+              backdropEnabled: false,
+              minHeight: 50.0,
+              maxHeight: SizeConfig.screenHeight * 0.20,
+              onPanelClosed: () {
+                setState(() {
+                  _showYourItems = false;
+                });
+                application.chatOpened = false;
+              },
+              onPanelOpened: () {
+                setState(() {
+                  _showYourItems = true;
+                });
+                application.chatOpened = true;
+              },
+              collapsed: InkWell(
+                onTap: () {
+                  _panelController.open();
+                },
+                child: Container(
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 15.0, vertical: 5.0),
+                  color: Color(0xFFEBFBFF),
+                  child: Row(
+                    children: [
+                      Text(
+                        'Your Items',
+                        style: Style.subtitle2.copyWith(
+                          color: kBackgroundColor,
+                          fontWeight: FontWeight.bold,
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
+                      Icon(
+                        _showYourItems
+                            ? Icons.arrow_drop_down
+                            : Icons.arrow_drop_up,
+                        color: kBackgroundColor,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              panel: Container(
+                color: Color(0xFFEBFBFF),
+                padding: EdgeInsets.symmetric(
+                  horizontal: 20.0,
+                  vertical: 10.0,
+                ),
+                child: SingleChildScrollView(
+                  child: BarterList(
+                    onLabelTapped: () {
+                      _panelController.close();
+                    },
+                    labelSuffix: Icon(
+                      _showYourItems
+                          ? Icons.arrow_drop_down
+                          : Icons.arrow_drop_up,
+                      color: kBackgroundColor,
                     ),
-                    child: BarterList(
-                      loading: _loadingUserProducts,
-                      context: context,
-                      ownList: true,
-                      items: _myProductList.map(
-                        (product) {
-                          var thumbnail = '';
+                    loading: _loadingUserProducts,
+                    context: context,
+                    ownList: true,
+                    items: _myProductList.map(
+                      (product) {
+                        var thumbnail = '';
 
-                          if (product.mediaPrimary != null &&
-                              product.mediaPrimary!.url_t != null) {
-                            thumbnail = product.mediaPrimary!.url_t!;
-                          }
-
-                          if (thumbnail.isEmpty &&
-                              product.media != null &&
-                              product.media!.isNotEmpty) {
-                            thumbnail = product.media!.first.url_t ?? '';
-                          }
-                          return LongPressDraggable(
-                            data: product,
-                            childWhenDragging: Container(
-                              height: SizeConfig.screenHeight * 0.12,
-                              width: SizeConfig.screenHeight * 0.12,
-                              decoration: BoxDecoration(
-                                color: kBackgroundColor,
-                                borderRadius: BorderRadius.only(
-                                  topLeft: Radius.circular(20.0),
-                                  topRight: Radius.circular(20.0),
-                                ),
+                        if (product.media != null &&
+                            product.media!.isNotEmpty) {
+                          if (product.media!.first.url_t != null &&
+                              product.media!.first.url_t!.isNotEmpty)
+                            thumbnail = product.media!.first.url_t!;
+                        }
+                        return LongPressDraggable(
+                          data: product,
+                          childWhenDragging: Container(
+                            height: SizeConfig.screenHeight * 0.12,
+                            width: SizeConfig.screenHeight * 0.12,
+                            decoration: BoxDecoration(
+                              color: kBackgroundColor,
+                              borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(20.0),
+                                topRight: Radius.circular(20.0),
                               ),
                             ),
-                            feedback: Container(
-                              height: 100.0,
-                              width: 100.0,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                image: DecorationImage(
-                                  image: CachedNetworkImageProvider(thumbnail),
-                                ),
+                          ),
+                          feedback: Container(
+                            height: 100.0,
+                            width: 100.0,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              image: DecorationImage(
+                                image: CachedNetworkImageProvider(thumbnail),
                               ),
                             ),
-                            child: BarterListItem(
-                              height: SizeConfig.screenHeight * 0.07,
-                              width: SizeConfig.screenHeight * 0.12,
-                              hideLikeBtn: true,
-                              hideDistance: true,
-                              showRating: false,
-                              product: product,
-                              onTapped: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => ProductDetailsScreen(
-                                      productId: product.productid ?? '',
-                                      ownItem: false,
-                                    ),
+                          ),
+                          child: BarterListItem(
+                            height: SizeConfig.screenHeight * 0.07,
+                            width: SizeConfig.screenHeight * 0.12,
+                            hideLikeBtn: true,
+                            hideDistance: true,
+                            showRating: false,
+                            product: product,
+                            onTapped: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => ProductDetailsScreen(
+                                    productId: product.productid ?? '',
+                                    ownItem: false,
                                   ),
-                                );
-                              },
-                            ),
-                          );
-                        },
-                      ).toList(),
-                      label: 'Your Items',
-                      smallItems: true,
-                      removeMargin: true,
-                      onViewAllTapped: () => _rootBloc.add(MoveTab(3)),
-                      removeMapBtn: true,
-                    ),
-                  )
-                : SizedBox(),
+                                ),
+                              );
+                            },
+                          ),
+                        );
+                      },
+                    ).toList(),
+                    label: 'Your Items',
+                    smallItems: true,
+                    removeMargin: true,
+                    onViewAllTapped: () => _rootBloc.add(MoveTab(3)),
+                    removeMapBtn: true,
+                  ),
+                ),
+              ),
+            ),
+            // _myProductList.isNotEmpty && _showYourItems
+            //     ? SlideInUp(
+            //         from: 50,
+            //         child: Container(
+            //           color: Color(0xFFEBFBFF),
+            //           padding: EdgeInsets.symmetric(
+            //             horizontal: 20.0,
+            //             vertical: 10.0,
+            //           ),
+            //           child: BarterList(
+            //             onLabelTapped: () =>
+            //                 setState(() => _showYourItems = !_showYourItems),
+            //             labelSuffix: Icon(
+            //               _showYourItems
+            //                   ? Icons.arrow_drop_down
+            //                   : Icons.arrow_drop_up,
+            //               color: kBackgroundColor,
+            //             ),
+            //             loading: _loadingUserProducts,
+            //             context: context,
+            //             ownList: true,
+            //             items: _myProductList.map(
+            //               (product) {
+            //                 var thumbnail = '';
+
+            //                 if (product.mediaPrimary != null &&
+            //                     product.mediaPrimary!.url_t != null) {
+            //                   thumbnail = product.mediaPrimary!.url_t!;
+            //                 }
+
+            //                 if (thumbnail.isEmpty &&
+            //                     product.media != null &&
+            //                     product.media!.isNotEmpty) {
+            //                   thumbnail = product.media!.first.url_t ?? '';
+            //                 }
+            //                 return LongPressDraggable(
+            //                   data: product,
+            //                   childWhenDragging: Container(
+            //                     height: SizeConfig.screenHeight * 0.12,
+            //                     width: SizeConfig.screenHeight * 0.12,
+            //                     decoration: BoxDecoration(
+            //                       color: kBackgroundColor,
+            //                       borderRadius: BorderRadius.only(
+            //                         topLeft: Radius.circular(20.0),
+            //                         topRight: Radius.circular(20.0),
+            //                       ),
+            //                     ),
+            //                   ),
+            //                   feedback: Container(
+            //                     height: 100.0,
+            //                     width: 100.0,
+            //                     decoration: BoxDecoration(
+            //                       shape: BoxShape.circle,
+            //                       image: DecorationImage(
+            //                         image:
+            //                             CachedNetworkImageProvider(thumbnail),
+            //                       ),
+            //                     ),
+            //                   ),
+            //                   child: BarterListItem(
+            //                     height: SizeConfig.screenHeight * 0.07,
+            //                     width: SizeConfig.screenHeight * 0.12,
+            //                     hideLikeBtn: true,
+            //                     hideDistance: true,
+            //                     showRating: false,
+            //                     product: product,
+            //                     onTapped: () {
+            //                       Navigator.push(
+            //                         context,
+            //                         MaterialPageRoute(
+            //                           builder: (context) =>
+            //                               ProductDetailsScreen(
+            //                             productId: product.productid ?? '',
+            //                             ownItem: false,
+            //                           ),
+            //                         ),
+            //                       );
+            //                     },
+            //                   ),
+            //                 );
+            //               },
+            //             ).toList(),
+            //             label: 'Your Items',
+            //             smallItems: true,
+            //             removeMargin: true,
+            //             onViewAllTapped: () => _rootBloc.add(MoveTab(3)),
+            //             removeMapBtn: true,
+            //           ),
+            //         ),
+            //       )
+            //     : SlideInDown(
+            //         from: 0,
+            //         child: InkWell(
+            //           onTap: () =>
+            //               setState(() => _showYourItems = !_showYourItems),
+            //           child: Container(
+            //             padding: EdgeInsets.symmetric(
+            //                 horizontal: 15.0, vertical: 5.0),
+            //             color: Color(0xFFEBFBFF),
+            //             child: Row(
+            //               children: [
+            //                 Text(
+            //                   'Your Items',
+            //                   style: Style.subtitle2.copyWith(
+            //                     color: kBackgroundColor,
+            //                     fontWeight: FontWeight.bold,
+            //                     decoration: TextDecoration.underline,
+            //                   ),
+            //                 ),
+            //                 Icon(
+            //                   _showYourItems
+            //                       ? Icons.arrow_drop_down
+            //                       : Icons.arrow_drop_up,
+            //                   color: kBackgroundColor,
+            //                 ),
+            //               ],
+            //             ),
+            //           ),
+            //         ),
+            //       ),
           ],
         ),
       ),

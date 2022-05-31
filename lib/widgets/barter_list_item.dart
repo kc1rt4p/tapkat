@@ -81,24 +81,13 @@ class _BarterListItemState extends State<BarterListItem> {
             }
           }
         }
+        var thumbnail = '';
 
         if (product.media != null && product.media!.isNotEmpty) {
           for (var media in product.media!) {
-            print(media.toJson());
+            thumbnail = media.url_t ?? '';
+            if (thumbnail.isNotEmpty) break;
           }
-        }
-
-        var thumbnail = '';
-
-        if (product.mediaPrimary != null &&
-            product.mediaPrimary!.url_t != null) {
-          thumbnail = product.mediaPrimary!.url_t!;
-        }
-
-        if (thumbnail.isEmpty &&
-            product.media != null &&
-            product.media!.isNotEmpty) {
-          thumbnail = product.media!.first.url_t ?? '';
         }
 
         return InkWell(

@@ -18,6 +18,8 @@ class BarterList extends StatefulWidget {
   final bool loading;
   final bool removeMapBtn;
   final double? loadingSize;
+  final Widget? labelSuffix;
+  final Function()? onLabelTapped;
 
   const BarterList({
     Key? key,
@@ -34,6 +36,8 @@ class BarterList extends StatefulWidget {
     this.loading = false,
     this.removeMapBtn = false,
     this.loadingSize,
+    this.labelSuffix,
+    this.onLabelTapped,
   }) : super(key: key);
 
   @override
@@ -46,14 +50,30 @@ class _BarterListState extends State<BarterList> {
     return Container(
       margin: widget.removeMargin ? null : EdgeInsets.only(bottom: 10.0),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Container(
             child: Row(
               children: [
-                Text(
-                  widget.label,
-                  style: Style.subtitle2.copyWith(
-                      color: kBackgroundColor, fontWeight: FontWeight.bold),
+                InkWell(
+                  onTap: widget.onLabelTapped,
+                  child: Container(
+                    child: Row(
+                      children: [
+                        Text(
+                          widget.label,
+                          style: Style.subtitle2.copyWith(
+                            color: kBackgroundColor,
+                            fontWeight: FontWeight.bold,
+                            decoration: widget.labelSuffix != null
+                                ? TextDecoration.underline
+                                : null,
+                          ),
+                        ),
+                        widget.labelSuffix ?? SizedBox(),
+                      ],
+                    ),
+                  ),
                 ),
                 Spacer(),
                 Row(
