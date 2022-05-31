@@ -90,6 +90,13 @@ class _BarterListItemState extends State<BarterListItem> {
           }
         }
 
+        if (thumbnail.isEmpty) {
+          if (product.mediaPrimary != null &&
+              product.mediaPrimary!.url_t != null &&
+              product.mediaPrimary!.url_t!.isNotEmpty)
+            thumbnail = product.mediaPrimary!.url_t!;
+        }
+
         return InkWell(
           onTap: widget.onTapped,
           child: Container(
