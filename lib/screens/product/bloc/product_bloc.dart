@@ -260,6 +260,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
         }
 
         if (event is Unlike) {
+          emit(Unliking());
           if (_user != null) {
             final result = await _productRepo.likeProduct(
               productRequest: ProductRequestModel(

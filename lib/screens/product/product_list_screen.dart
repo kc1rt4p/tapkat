@@ -167,7 +167,8 @@ class _ProductListScreenState extends State<ProductListScreen> {
               _refreshController.refreshCompleted();
               _pagingController.refresh();
               if (state.list.isNotEmpty) {
-                _list.addAll(state.list);
+                _list = state.list;
+                _buildMarkers();
 
                 lastProduct = state.list.last;
 
@@ -234,6 +235,8 @@ class _ProductListScreenState extends State<ProductListScreen> {
               //     (key, value) => print('==== page $key: ${value.productid}'));
               print('HEYYYY');
               if (state.list.isNotEmpty) {
+                _list.addAll(state.list);
+                _buildMarkers();
                 lastProduct = state.list.last;
                 if (state.list.length == productCount) {
                   _pagingController.appendPage(state.list, currentPage + 1);
@@ -849,26 +852,30 @@ class _ProductListScreenState extends State<ProductListScreen> {
   }
 
   _buildMarkers() async {
-    _list.forEach((product) {
-      _markers
-          .addLabelMarker(
-            LabelMarker(
-              onTap: () => onMarkerTapped(context, product),
-              label: product.productname ?? '',
-              markerId: MarkerId(product.productid!),
-              position: LatLng(
-                product.address != null && product.address!.location != null
-                    ? product.address!.location!.latitude!.toDouble()
-                    : 0.00,
-                product.address != null && product.address!.location != null
-                    ? product.address!.location!.longitude!.toDouble()
-                    : 0.00,
-              ),
-              backgroundColor: kBackgroundColor,
-            ),
-          )
-          .then((value) => setState(() {}));
-    });
+    if (_list.isNotEmpty) {
+      setState(() {
+        _list.forEach((product) {
+          _markers
+              .addLabelMarker(
+                LabelMarker(
+                  onTap: () => onMarkerTapped(context, product),
+                  label: product.productname ?? '',
+                  markerId: MarkerId(product.productid!),
+                  position: LatLng(
+                    product.address != null && product.address!.location != null
+                        ? product.address!.location!.latitude!.toDouble()
+                        : 0.00,
+                    product.address != null && product.address!.location != null
+                        ? product.address!.location!.longitude!.toDouble()
+                        : 0.00,
+                  ),
+                  backgroundColor: kBackgroundColor,
+                ),
+              )
+              .then((value) => setState(() {}));
+        });
+      });
+    }
 
     // if (markers.isNotEmpty) {
     //   setState(() {
@@ -881,6 +888,8 @@ class _ProductListScreenState extends State<ProductListScreen> {
     setState(() {
       _selectedView = _selectedView != 'map' ? 'map' : 'grid';
     });
+
+    if (_selectedView == 'map') _buildMarkers();
   }
 
   Expanded _buildSortOption() {

@@ -145,6 +145,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                   print('hey ${state.list.length}');
                   if (state.list.isNotEmpty) {
                     searchResults.addAll(state.list);
+                    _buildMarkers();
                     lastProduct = state.list.last;
                     if (state.list.length == productCount) {
                       _pagingController.appendPage(state.list, currentPage + 1);
@@ -161,7 +162,8 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                   _pagingController.refresh();
                   if (state.searchResults.isNotEmpty) {
                     lastProduct = state.searchResults.last;
-                    searchResults.addAll(state.searchResults);
+                    searchResults = state.searchResults;
+                    _buildMarkers();
                     if (state.searchResults.length == productCount) {
                       _pagingController.appendPage(
                           state.searchResults, currentPage + 1);
@@ -440,6 +442,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                             setState(() {
                               _selectedView = index == 0 ? 'grid' : 'map';
                             });
+                            if (index == 1) _buildMarkers();
                           },
                         ),
                         Expanded(
@@ -721,7 +724,6 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
         initialLocation: googleMapsCenter ?? LatLng(1.3631246, 103.8325137),
         onMapCreated: (controller) {
           googleMapsController = controller;
-          _buildMarkers();
         },
         markers: _markers.toSet(),
       ),
@@ -729,26 +731,30 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
   }
 
   _buildMarkers() async {
-    searchResults.forEach((product) {
-      _markers
-          .addLabelMarker(
-            LabelMarker(
-              onTap: () => onMarkerTapped(context, product),
-              label: product.productname ?? '',
-              markerId: MarkerId(product.productid!),
-              position: LatLng(
-                product.address != null && product.address!.location != null
-                    ? product.address!.location!.latitude!.toDouble()
-                    : 0.00,
-                product.address != null && product.address!.location != null
-                    ? product.address!.location!.longitude!.toDouble()
-                    : 0.00,
-              ),
-              backgroundColor: kBackgroundColor,
-            ),
-          )
-          .then((value) => setState(() {}));
-    });
+    if (searchResults.isNotEmpty) {
+      setState(() {
+        searchResults.forEach((product) {
+          _markers
+              .addLabelMarker(
+                LabelMarker(
+                  onTap: () => onMarkerTapped(context, product),
+                  label: product.productname ?? '',
+                  markerId: MarkerId(product.productid!),
+                  position: LatLng(
+                    product.address != null && product.address!.location != null
+                        ? product.address!.location!.latitude!.toDouble()
+                        : 0.00,
+                    product.address != null && product.address!.location != null
+                        ? product.address!.location!.longitude!.toDouble()
+                        : 0.00,
+                  ),
+                  backgroundColor: kBackgroundColor,
+                ),
+              )
+              .then((value) => setState(() {}));
+        });
+      });
+    }
 
     // if (markers.isNotEmpty) {
     //   setState(() {

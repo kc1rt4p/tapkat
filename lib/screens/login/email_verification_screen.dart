@@ -101,6 +101,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
             Container(
               padding: EdgeInsets.symmetric(horizontal: 20.0),
               child: CustomButton(
+                bgColor: kBackgroundColor,
                 onTap: () => _authBloc.add(ResendEmail()),
                 label: 'Resend email',
               ),

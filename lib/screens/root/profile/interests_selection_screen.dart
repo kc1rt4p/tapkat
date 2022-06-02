@@ -191,6 +191,7 @@ class _InterestSelectionScreenState extends State<InterestSelectionScreen> {
                     vertical: 10.0,
                   ),
                   child: CustomButton(
+                    bgColor: kBackgroundColor,
                     removeMargin: true,
                     label: 'Next',
                     onTap: _onSaveTapped,
@@ -200,7 +201,6 @@ class _InterestSelectionScreenState extends State<InterestSelectionScreen> {
                   visible: widget.signingUp,
                   child: Column(
                     children: [
-                      SizedBox(height: 10.0),
                       Container(
                         padding: EdgeInsets.symmetric(
                           horizontal: 20.0,

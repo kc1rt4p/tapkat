@@ -32,7 +32,7 @@ class _CustomAppBarState extends State<CustomAppBar> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.fromLTRB(16.0, SizeConfig.paddingTop, 16.0, 0),
+      padding: EdgeInsets.fromLTRB(11.0, SizeConfig.paddingTop, 16.0, 0),
       height: kToolbarHeight + SizeConfig.paddingTop,
       width: SizeConfig.screenWidth,
       decoration: BoxDecoration(
@@ -49,9 +49,12 @@ class _CustomAppBarState extends State<CustomAppBar> {
                   : GestureDetector(
                       onTap:
                           widget.onBackTapped ?? () => Navigator.pop(context),
-                      child: FaIcon(
-                        FontAwesomeIcons.chevronLeft,
-                        color: Colors.white,
+                      child: Container(
+                        padding: EdgeInsets.all(5.0),
+                        child: FaIcon(
+                          FontAwesomeIcons.chevronLeft,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
               widget.label != null

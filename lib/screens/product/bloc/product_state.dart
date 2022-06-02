@@ -71,6 +71,8 @@ class AddLikeSuccess extends ProductState {}
 
 class UnlikeSuccess extends ProductState {}
 
+class Unliking extends ProductState {}
+
 class AddRatingSuccess extends ProductState {}
 
 class DislikeSuccess extends ProductState {}

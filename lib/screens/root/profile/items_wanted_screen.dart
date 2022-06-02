@@ -213,7 +213,6 @@ class _ItemsWantedScreenState extends State<ItemsWantedScreen> {
                   SizedBox(width: 10.0),
                   Expanded(
                     child: CustomButton(
-                      enabled: _list.isNotEmpty,
                       bgColor: kBackgroundColor,
                       label: 'Submit',
                       onTap: () => _onSaveTapped(),

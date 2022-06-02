@@ -1113,24 +1113,28 @@ class _BarterScreenState extends State<BarterScreen> {
               margin: EdgeInsets.only(right: 8.0),
               child: CustomButton(
                 removeMargin: true,
-                enabled: false,
+                enabled: true,
                 label: 'Leave Review',
-                onTap: _onCancelTapped,
+                onTap: () => _barterBloc.add(GetUserReview(
+                    _currentUserModel!.userid == _senderUserId
+                        ? _recipientUserId!
+                        : _senderUserId!,
+                    _currentUserModel!.userid!)),
               ),
             ),
           ),
-          Expanded(
-            child: Container(
-              margin: EdgeInsets.only(right: 8.0),
-              child: CustomButton(
-                enabled: false,
-                removeMargin: true,
-                bgColor: Color(0xFFBB3F03),
-                label: 'Withdraw',
-                onTap: _onCancelTapped,
-              ),
-            ),
-          ),
+          // Expanded(
+          //   child: Container(
+          //     margin: EdgeInsets.only(right: 8.0),
+          //     child: CustomButton(
+          //       enabled: false,
+          //       removeMargin: true,
+          //       bgColor: Color(0xFFBB3F03),
+          //       label: 'Withdraw',
+          //       onTap: _onCancelTapped,
+          //     ),
+          //   ),
+          // ),
         ]);
         break;
       default:

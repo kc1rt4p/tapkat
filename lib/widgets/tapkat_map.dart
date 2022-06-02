@@ -178,12 +178,18 @@ Future<dynamic> onMarkerTapped(
   print(product.address!.toJson());
   var thumbnail = '';
 
-  if (product.mediaPrimary != null && product.mediaPrimary!.url_t != null) {
-    thumbnail = product.mediaPrimary!.url_t!;
+  if (product.media != null && product.media!.isNotEmpty) {
+    for (var media in product.media!) {
+      thumbnail = media.url_t ?? '';
+      if (thumbnail.isNotEmpty) break;
+    }
   }
 
-  if (thumbnail.isEmpty && product.media != null && product.media!.isNotEmpty) {
-    thumbnail = product.media!.first.url_t ?? '';
+  if (thumbnail.isEmpty) {
+    if (product.mediaPrimary != null &&
+        product.mediaPrimary!.url_t != null &&
+        product.mediaPrimary!.url_t!.isNotEmpty)
+      thumbnail = product.mediaPrimary!.url_t!;
   }
 
   product.mediaPrimary!.url_t = thumbnail;
@@ -241,7 +247,7 @@ Future<dynamic> onMarkerTapped(
                         Text(
                           product.price == null
                               ? ''
-                              : '\$ ${product.price!.toStringAsFixed(2)}',
+                              : '${application.currentUserModel!.currency ?? 'PHP'} ${product.price!.toStringAsFixed(2)}',
                           style: Style.subtitle2.copyWith(
                             color: kBackgroundColor,
                             fontWeight: FontWeight.bold,
