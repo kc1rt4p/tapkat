@@ -721,7 +721,9 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
       padding: EdgeInsets.fromLTRB(20.0, 5.0, 20.0, 10.0),
       child: TapkatGoogleMap(
         onCameraIdle: (latLng) => googleMapsCenter = latLng,
-        initialLocation: googleMapsCenter ?? LatLng(1.3631246, 103.8325137),
+        initialLocation: LatLng(
+            application.currentUserLocation!.latitude!.toDouble(),
+            application.currentUserLocation!.longitude!.toDouble()),
         onMapCreated: (controller) {
           googleMapsController = controller;
         },

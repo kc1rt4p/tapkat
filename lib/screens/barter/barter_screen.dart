@@ -127,12 +127,12 @@ class _BarterScreenState extends State<BarterScreen> {
 
   @override
   void dispose() {
-    _barterStreamSub?.cancel();
-    _barterStreamSub = null;
-    _barterChatStreamSub?.cancel();
-    _barterChatStreamSub = null;
-    _barterProductsStream?.cancel();
-    _barterProductsStream = null;
+    // _barterStreamSub?.cancel();
+    // _barterStreamSub = null;
+    // _barterChatStreamSub?.cancel();
+    // _barterChatStreamSub = null;
+    // _barterProductsStream?.cancel();
+    // _barterProductsStream = null;
     DialogMessage.dismiss();
     super.dispose();
   }

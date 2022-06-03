@@ -676,8 +676,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             hideDistance: true,
                             showRating: false,
                             product: product,
-                            onTapped: () {
-                              Navigator.push(
+                            onTapped: () async {
+                              final changed = await Navigator.push(
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) => ProductDetailsScreen(
@@ -686,6 +686,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ),
                                 ),
                               );
+
+                              if (changed == true) {
+                                _homeBloc.add(LoadUserList());
+                              }
                             },
                           ),
                         );

@@ -825,7 +825,9 @@ class _ProductListScreenState extends State<ProductListScreen> {
           child: TapkatGoogleMap(
             showLocation: true,
             onCameraIdle: (latLng) => googleMapsCenter = latLng,
-            initialLocation: googleMapsCenter ?? LatLng(1.3631246, 103.8325137),
+            initialLocation: LatLng(
+                application.currentUserLocation!.latitude!.toDouble(),
+                application.currentUserLocation!.longitude!.toDouble()),
             onCameraMove: (position) {
               _customInfoWindowController.onCameraMove!();
             },

@@ -18,6 +18,7 @@ import 'package:tapkat/screens/product/product_add_screen.dart';
 import 'package:tapkat/screens/product/product_details_screen.dart';
 import 'package:tapkat/screens/root/barter/barter_transactions_screen.dart';
 import 'package:tapkat/screens/root/home/home_screen.dart';
+import 'package:tapkat/screens/root/home/home_screen_new.dart';
 import 'package:tapkat/screens/root/profile/profile_screen.dart';
 import 'package:tapkat/screens/root/wish_list/wish_list_screen.dart';
 import 'package:tapkat/services/dynamic_link.dart';
@@ -78,6 +79,7 @@ class RootScreen extends StatefulWidget {
 class _RootScreenState extends State<RootScreen> {
   final _screens = [
     HomeScreen(),
+    // NewHomeScreen(),
     WishListScreen(),
     BarterTransactionsScreen(),
     ProfileScreen(),
@@ -90,7 +92,7 @@ class _RootScreenState extends State<RootScreen> {
   late AuthBloc _authBloc;
   late BarterBloc _barterBloc;
 
-  final _currentVerDate = DateTime(2022, 6, 3, 01);
+  final _currentVerDate = DateTime(2022, 6, 3, 02);
 
   final _appConfig = new LocalStorage('app_config.json');
 
@@ -295,7 +297,7 @@ class _RootScreenState extends State<RootScreen> {
 
   @override
   void dispose() {
-    _barterBloc.close();
+    // _barterBloc.close();
     // _connectivityStream!.cancel();
     super.dispose();
   }
