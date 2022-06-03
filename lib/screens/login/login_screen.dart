@@ -402,6 +402,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                             : Text(''),
                                         Expanded(
                                           child: CustomButton(
+                                            bgColor: Colors.white,
+                                            textColor: kBackgroundColor,
                                             onTap: _onLogInTapped,
                                             label: _verifyingPhone
                                                 ? 'Submit'

@@ -92,7 +92,7 @@ class _RootScreenState extends State<RootScreen> {
   late AuthBloc _authBloc;
   late BarterBloc _barterBloc;
 
-  final _currentVerDate = DateTime(2022, 6, 3, 02);
+  final _currentVerDate = DateTime(2022, 6, 4, 01);
 
   final _appConfig = new LocalStorage('app_config.json');
 
@@ -257,9 +257,7 @@ class _RootScreenState extends State<RootScreen> {
 
     _connectivityStream =
         Connectivity().onConnectivityChanged.listen((result) async {
-      print('__-==CONNECTION CHANGED');
       if (result != ConnectivityResult.none) {
-        print('__-==internet is back');
         final message = await FirebaseMessaging.instance.getInitialMessage();
 
         if (message != null) {
@@ -404,7 +402,8 @@ class _RootScreenState extends State<RootScreen> {
               padding: EdgeInsets.all(5.0),
               child: FloatingActionButton(
                 mini: true,
-                heroTag: 'addProductBtn',
+                heroTag: 'addProductBtn' +
+                    DateTime.now().millisecondsSinceEpoch.toString(),
                 backgroundColor: Color(0xFFBB3F03),
                 child: Icon(Icons.add, size: 25.0),
                 onPressed: _onAddTapped,

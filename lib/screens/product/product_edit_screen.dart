@@ -97,7 +97,6 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
   Widget build(BuildContext context) {
     SizeConfig().init(context);
     return Scaffold(
-      resizeToAvoidBottomInset: false,
       body: ProgressHUD(
         backgroundColor: Colors.white,
         indicatorColor: kBackgroundColor,
@@ -172,12 +171,12 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
                   label: 'Edit Product',
                 ),
                 Expanded(
-                  child: SingleChildScrollView(
-                    child: Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 20.0,
-                        vertical: 10.0,
-                      ),
+                  child: Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 20.0,
+                      vertical: 10.0,
+                    ),
+                    child: SingleChildScrollView(
                       child: Column(
                         children: [
                           _buildPhoto(),
@@ -413,19 +412,19 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
                               ],
                             ),
                           ),
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 20.0,
+                              vertical: 10.0,
+                            ),
+                            child: CustomButton(
+                              label: 'Next',
+                              onTap: _onUpdateTapped,
+                            ),
+                          ),
                         ],
                       ),
                     ),
-                  ),
-                ),
-                Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 20.0,
-                    vertical: 10.0,
-                  ),
-                  child: CustomButton(
-                    label: 'Next',
-                    onTap: _onUpdateTapped,
                   ),
                 ),
               ],

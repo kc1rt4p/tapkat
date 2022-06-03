@@ -61,7 +61,6 @@ class _InitialSignUpScreenState extends State<InitialSignUpScreen> {
   Widget build(BuildContext context) {
     SizeConfig().init(context);
     return Scaffold(
-      resizeToAvoidBottomInset: false,
       body: ProgressHUD(
         indicatorColor: kBackgroundColor,
         backgroundColor: Colors.white,
@@ -154,9 +153,9 @@ class _InitialSignUpScreenState extends State<InitialSignUpScreen> {
                           width: double.infinity,
                           padding: EdgeInsets.symmetric(horizontal: 30.0),
                           child: Center(
-                            child: SingleChildScrollView(
-                              child: Form(
-                                key: _formKey,
+                            child: Form(
+                              key: _formKey,
+                              child: SingleChildScrollView(
                                 child: Column(
                                   children: [
                                     Visibility(
@@ -243,6 +242,8 @@ class _InitialSignUpScreenState extends State<InitialSignUpScreen> {
                                     ),
                                     SizedBox(height: 16.0),
                                     CustomButton(
+                                      bgColor: Colors.white,
+                                      textColor: kBackgroundColor,
                                       label: 'Create Account',
                                       onTap: _onCreateAccount,
                                     ),

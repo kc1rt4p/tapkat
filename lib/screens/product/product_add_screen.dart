@@ -84,7 +84,6 @@ class _ProductAddScreenState extends State<ProductAddScreen> {
   Widget build(BuildContext context) {
     SizeConfig().init(context);
     return Scaffold(
-      resizeToAvoidBottomInset: false,
       body: ProgressHUD(
         indicatorColor: kBackgroundColor,
         backgroundColor: Colors.white,

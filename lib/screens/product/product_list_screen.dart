@@ -521,6 +521,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
         builder: (context) => SearchResultScreen(
           userid: widget.userId!,
           keyword: val,
+          mapFirst: widget.initialView == 'map',
         ),
       ),
     );

@@ -160,10 +160,16 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                 if (state is SearchSuccess) {
                   _refreshController.refreshCompleted();
                   _pagingController.refresh();
+
+                  setState(() {
+                    _markers.clear();
+                  });
+
                   if (state.searchResults.isNotEmpty) {
-                    lastProduct = state.searchResults.last;
                     searchResults = state.searchResults;
                     _buildMarkers();
+
+                    lastProduct = state.searchResults.last;
                     if (state.searchResults.length == productCount) {
                       _pagingController.appendPage(
                           state.searchResults, currentPage + 1);
@@ -172,7 +178,9 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                     }
 
                     if (widget.mapFirst) {
-                      _onSelectView();
+                      if (_selectedView != 'map') {
+                        _onSelectView();
+                      }
                     }
 
                     _pagingController.addPageRequestListener((pageKey) {
@@ -446,12 +454,11 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                           },
                         ),
                         Expanded(
-                          child: searchResults.isNotEmpty
-                              ? _selectedView == 'grid'
+                          child: _selectedView == 'map'
+                              ? _buildMapView()
+                              : searchResults.isNotEmpty
                                   ? _buildGridView2()
-                                  : _buildMapView()
-                              : !_loading
-                                  ? Container(
+                                  : Container(
                                       padding: EdgeInsets.symmetric(
                                           horizontal: 30.0),
                                       child: Center(
@@ -461,8 +468,24 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                                               .copyWith(color: Colors.grey),
                                         ),
                                       ),
-                                    )
-                                  : Container(),
+                                    ),
+                          // searchResults.isNotEmpty
+                          //     ? _selectedView == 'grid'
+                          //         ? _buildGridView2()
+                          //         : _buildMapView()
+                          //     : !_loading
+                          //         ? Container(
+                          //             padding: EdgeInsets.symmetric(
+                          //                 horizontal: 30.0),
+                          //             child: Center(
+                          //               child: Text(
+                          //                 'No products found',
+                          //                 style: Style.subtitle2
+                          //                     .copyWith(color: Colors.grey),
+                          //               ),
+                          //             ),
+                          //           )
+                          //         : Container(),
                         ),
                       ],
                     ),
@@ -716,7 +739,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
     lastProduct = null;
   }
 
-  _buildMapView() {
+  Widget _buildMapView() {
     return Container(
       padding: EdgeInsets.fromLTRB(20.0, 5.0, 20.0, 10.0),
       child: TapkatGoogleMap(
@@ -741,7 +764,8 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                 LabelMarker(
                   onTap: () => onMarkerTapped(context, product),
                   label: product.productname ?? '',
-                  markerId: MarkerId(product.productid!),
+                  markerId: MarkerId(product.productid! +
+                      DateTime.now().millisecondsSinceEpoch.toString()),
                   position: LatLng(
                     product.address != null && product.address!.location != null
                         ? product.address!.location!.latitude!.toDouble()
@@ -755,6 +779,10 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
               )
               .then((value) => setState(() {}));
         });
+      });
+    } else {
+      setState(() {
+        _markers.clear();
       });
     }
 
