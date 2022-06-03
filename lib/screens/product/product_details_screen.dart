@@ -285,31 +285,95 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                       child: Row(
                                         children: [
                                           Expanded(
-                                            child: Text(
-                                              // _product != null &&
-                                              //         _product!.price != null &&
-                                              //         _product!.currency != null
-                                              //     ? '${_product!.currency!} ${_product!.price!.toStringAsFixed(2)}'
-                                              //     : '',
-                                              _product != null &&
-                                                      _product!.free!
-                                                  ? 'FREE'
-                                                  : _product != null &&
-                                                          _product!.price !=
+                                            child: Row(
+                                              children: [
+                                                _product != null &&
+                                                        _product!.free !=
+                                                            null &&
+                                                        _product!.free!
+                                                    ? SizedBox()
+                                                    : Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                    .only(
+                                                                right: 2.0),
+                                                        child: Text(
+                                                          _product != null &&
+                                                                  _product!
+                                                                          .currency !=
+                                                                      null &&
+                                                                  _product!
+                                                                      .currency!
+                                                                      .isNotEmpty
+                                                              ? _product!
+                                                                  .currency!
+                                                              : application.currentUserModel!
+                                                                              .currency !=
+                                                                          null &&
+                                                                      application
+                                                                          .currentUserModel!
+                                                                          .currency!
+                                                                          .isNotEmpty
+                                                                  ? application
+                                                                      .currentUserModel!
+                                                                      .currency!
+                                                                  : '',
+                                                          style: TextStyle(
+                                                            fontSize: SizeConfig
+                                                                    .textScaleFactor *
+                                                                10,
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                Text(
+                                                  _product != null &&
+                                                          _product!.free !=
                                                               null &&
-                                                          _product!.currency !=
-                                                              null
-                                                      ? '${_product!.currency!} ${_product!.price!.toStringAsFixed(2)}'
-                                                      : '',
-                                              style: TextStyle(
-                                                color: kBackgroundColor,
-                                                fontFamily: 'Poppins',
-                                                fontSize:
-                                                    SizeConfig.textScaleFactor *
+                                                          _product!.free!
+                                                      ? 'FREE'
+                                                      : _product != null &&
+                                                              _product!.price !=
+                                                                  null
+                                                          ? _product!.price!
+                                                              .toStringAsFixed(
+                                                                  2)
+                                                          : '0.00',
+                                                  style: TextStyle(
+                                                    fontSize: SizeConfig
+                                                            .textScaleFactor *
                                                         15,
-                                                fontWeight: FontWeight.w500,
-                                              ),
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ],
                                             ),
+                                            // Text(
+                                            //   // _product != null &&
+                                            //   //         _product!.price != null &&
+                                            //   //         _product!.currency != null
+                                            //   //     ? '${_product!.currency!} ${_product!.price!.toStringAsFixed(2)}'
+                                            //   //     : '',
+                                            //   _product != null &&
+                                            //           _product!.free!
+                                            //       ? 'FREE'
+                                            //       : _product != null &&
+                                            //               _product!.price !=
+                                            //                   null &&
+                                            //               _product!.currency !=
+                                            //                   null
+                                            //           ? '${_product!.currency!} ${_product!.price!.toStringAsFixed(2)}'
+                                            //           : '',
+                                            //   style: TextStyle(
+                                            //     color: kBackgroundColor,
+                                            //     fontFamily: 'Poppins',
+                                            //     fontSize:
+                                            //         SizeConfig.textScaleFactor *
+                                            //             15,
+                                            //     fontWeight: FontWeight.w500,
+                                            //   ),
+                                            // ),
                                           ),
                                           SizedBox(width: 16.0),
                                           Visibility(
@@ -847,6 +911,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                             SizedBox(width: 10.0),
                                             Expanded(
                                               child: CustomButton(
+                                                bgColor: kBackgroundColor,
                                                 label: 'BARTER',
                                                 onTap: () {
                                                   if (!application.currentUser!

@@ -176,6 +176,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     vertical: 2.0,
                   ),
                   child: CustomButton(
+                    bgColor: kBackgroundColor,
                     label: 'Next',
                     onTap: _onNextTapped,
                   ),

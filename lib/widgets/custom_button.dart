@@ -16,7 +16,7 @@ class CustomButton extends StatefulWidget {
     required this.label,
     required this.onTap,
     this.icon,
-    this.bgColor = const Color(0xFF94D2BD),
+    this.bgColor = const Color(0xFF005F73),
     this.textColor = Colors.white,
     this.removeMargin = false,
     this.enabled = true,
