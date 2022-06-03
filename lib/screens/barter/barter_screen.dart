@@ -258,32 +258,33 @@ class _BarterScreenState extends State<BarterScreen> {
     return WillPopScope(
       onWillPop: _onWillPop,
       child: Scaffold(
-        resizeToAvoidBottomInset: false,
         backgroundColor: Color(0xFFEBFBFF),
         body: ProgressHUD(
           indicatorColor: kBackgroundColor,
           backgroundColor: Colors.white,
           barrierEnabled: false,
-          child: SlidingUpPanel(
-            maxHeight: SizeConfig.screenHeight * 0.7,
-            minHeight: SizeConfig.screenHeight * 0.08,
-            controller: _panelController,
-            isDraggable: false,
-            onPanelClosed: () {
-              setState(() {
-                _panelClosed = true;
-              });
-              application.chatOpened = false;
-            },
-            onPanelOpened: () {
-              setState(() {
-                _panelClosed = false;
-              });
-              application.chatOpened = true;
-            },
-            collapsed: _buildCollapsed(),
-            panel: _buildPanel(),
-            body: _buildBody(context),
+          child: Container(
+            child: SlidingUpPanel(
+              maxHeight: SizeConfig.screenHeight * 0.7,
+              minHeight: SizeConfig.screenHeight * 0.08,
+              controller: _panelController,
+              isDraggable: false,
+              onPanelClosed: () {
+                setState(() {
+                  _panelClosed = true;
+                });
+                application.chatOpened = false;
+              },
+              onPanelOpened: () {
+                setState(() {
+                  _panelClosed = false;
+                });
+                application.chatOpened = true;
+              },
+              collapsed: _buildCollapsed(),
+              panel: _buildPanel(),
+              body: _buildBody(context),
+            ),
           ),
         ),
       ),
@@ -698,11 +699,17 @@ class _BarterScreenState extends State<BarterScreen> {
                     currentUserItems = List.from(state.list);
                   });
 
-                  if (currentUserItems.isNotEmpty)
-                    _add_currentUserOfferedItems(currentUserItems
-                        .map(
-                            (item) => BarterProductModel.fromProductModel(item))
-                        .toList());
+                  if (currentUserItems.isNotEmpty) {
+                    currentUserItems.sort(
+                        (a, b) => a.updated_time!.compareTo(b.updated_time!));
+                    _add_currentUserOfferedItems([
+                      BarterProductModel.fromProductModel(currentUserItems.last)
+                    ]);
+                  }
+                  // _add_currentUserOfferedItems(currentUserItems
+                  //     .map(
+                  //         (item) => BarterProductModel.fromProductModel(item))
+                  //     .toList());
                 }
 
                 if (state is BarterChatInitialized) {

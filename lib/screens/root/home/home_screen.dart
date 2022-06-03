@@ -630,9 +630,17 @@ class _HomeScreenState extends State<HomeScreen> {
 
                         if (product.media != null &&
                             product.media!.isNotEmpty) {
-                          if (product.media!.first.url_t != null &&
-                              product.media!.first.url_t!.isNotEmpty)
-                            thumbnail = product.media!.first.url_t!;
+                          for (var media in product.media!) {
+                            thumbnail = media.url_t ?? '';
+                            if (thumbnail.isNotEmpty) break;
+                          }
+                        }
+
+                        if (thumbnail.isEmpty) {
+                          if (product.mediaPrimary != null &&
+                              product.mediaPrimary!.url_t != null &&
+                              product.mediaPrimary!.url_t!.isNotEmpty)
+                            thumbnail = product.mediaPrimary!.url_t!;
                         }
                         return LongPressDraggable(
                           data: product,
@@ -653,7 +661,11 @@ class _HomeScreenState extends State<HomeScreen> {
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               image: DecorationImage(
-                                image: CachedNetworkImageProvider(thumbnail),
+                                image: thumbnail.isNotEmpty
+                                    ? CachedNetworkImageProvider(thumbnail)
+                                    : AssetImage(
+                                            'assets/images/image_placeholder.jpg')
+                                        as ImageProvider,
                               ),
                             ),
                           ),

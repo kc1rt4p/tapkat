@@ -187,7 +187,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   void dispose() {
     WidgetsBinding.instance!.removeObserver(this);
     _userStream?.cancel();
-    _barterBloc.close();
+    // _barterBloc.close();
     super.dispose();
   }
 
