@@ -127,35 +127,58 @@ class _UserReviewListScreenState extends State<UserReviewListScreen> {
                 children: [
                   Row(
                     children: [
-                      Text(
-                        rating.reviewername ?? '',
-                        style: TextStyle(
-                          fontSize: SizeConfig.textScaleFactor * 14,
-                          fontWeight: FontWeight.w500,
+                      Expanded(
+                        child: Text(
+                          rating.reviewername ?? '',
+                          style: TextStyle(
+                            fontSize: SizeConfig.textScaleFactor * 14,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ),
-                      Spacer(),
+                      SizedBox(width: 8.0),
                       Text(
                         timeago.format(DateTime.parse(rating.review_date!)),
                         style: TextStyle(
-                            fontSize: SizeConfig.textScaleFactor * 11),
+                            fontSize: SizeConfig.textScaleFactor * 10),
                       ),
                     ],
                   ),
                   Row(
                     children: [
+                      Container(
+                        width: SizeConfig.screenWidth * .2,
+                        height: SizeConfig.screenWidth * .2,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          image: DecorationImage(
+                            image: rating.user_image_url != null &&
+                                    rating.user_image_url!.isNotEmpty
+                                ? NetworkImage(rating.user_image_url!)
+                                : AssetImage(
+                                        'assets/images/image_placeholder.jpg')
+                                    as ImageProvider<Object>,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 8.0),
                       Expanded(
                         child: Column(
                           children: [
-                            Padding(
+                            Container(
+                              height: 100.0,
+                              width: double.infinity,
                               padding:
                                   const EdgeInsets.symmetric(vertical: 10.0),
-                              child: Text(
-                                rating.review != null &&
-                                        rating.review!.isNotEmpty
-                                    ? '"${rating.review}"'
-                                    : '-',
-                                textAlign: TextAlign.center,
+                              child: SingleChildScrollView(
+                                child: Text(
+                                  rating.review != null &&
+                                          rating.review!.isNotEmpty
+                                      ? '"${rating.review}"'
+                                      : '-',
+                                  textAlign: TextAlign.center,
+                                ),
                               ),
                             ),
                             Align(

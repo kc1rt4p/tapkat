@@ -65,15 +65,18 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
           // }
 
           if (event.media.isNotEmpty) {
-            final upload = await _productRepo.addProductImages(
-              userId: _user!.uid,
-              productId: productId,
-              images: event.media,
-            );
+            print('image count: ${event.media.length}');
+            for (var media in event.media) {
+              final upload = await _productRepo.addProductImages(
+                userId: _user!.uid,
+                productId: productId,
+                images: [media],
+              );
 
-            if (upload == null) {
-              emit(ProductError('Error while uploading product images'));
-              return;
+              if (upload == null) {
+                emit(ProductError('Error while uploading product images'));
+                return;
+              }
             }
           }
 

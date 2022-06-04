@@ -292,10 +292,13 @@ class _UserRatingsScreenState extends State<UserRatingsScreen> {
                 children: [
                   Row(
                     children: [
-                      Text(rating.productname ?? ''),
-                      Spacer(),
+                      Expanded(child: Text(rating.productname ?? '')),
+                      SizedBox(width: 8.0),
                       Text(
-                          timeago.format(rating.review_date ?? DateTime.now())),
+                        timeago.format(rating.review_date ?? DateTime.now()),
+                        style: TextStyle(
+                            fontSize: SizeConfig.textScaleFactor * 10),
+                      ),
                     ],
                   ),
                   SizedBox(height: 8.0),
@@ -692,9 +695,11 @@ class _UserRatingsScreenState extends State<UserRatingsScreen> {
                 children: [
                   Row(
                     children: [
-                      Text(rating.username ?? ''),
-                      Spacer(),
-                      Text(timeago.format(DateTime.parse(rating.review_date!))),
+                      Expanded(child: Text(rating.username ?? '')),
+                      SizedBox(width: 8.0),
+                      Text(timeago.format(DateTime.parse(rating.review_date!)),
+                          style: TextStyle(
+                              fontSize: SizeConfig.textScaleFactor * 10)),
                     ],
                   ),
                   SizedBox(height: 8.0),
@@ -720,15 +725,18 @@ class _UserRatingsScreenState extends State<UserRatingsScreen> {
                       Expanded(
                         child: Column(
                           children: [
-                            Padding(
+                            Container(
+                              height: 100.0,
                               padding:
                                   const EdgeInsets.symmetric(vertical: 10.0),
-                              child: Text(
-                                rating.review != null &&
-                                        rating.review!.isNotEmpty
-                                    ? '"${rating.review}"'
-                                    : '-',
-                                textAlign: TextAlign.center,
+                              child: SingleChildScrollView(
+                                child: Text(
+                                  rating.review != null &&
+                                          rating.review!.isNotEmpty
+                                      ? '"${rating.review}"'
+                                      : '-',
+                                  textAlign: TextAlign.center,
+                                ),
                               ),
                             ),
                             Align(

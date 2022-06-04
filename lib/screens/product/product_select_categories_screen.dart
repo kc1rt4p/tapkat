@@ -113,8 +113,9 @@ class _SelectProductCategoryScreenState
                                   padding: EdgeInsets.only(top: 20.0),
                                   shrinkWrap: true,
                                   childAspectRatio: 3 / 2,
-                                  mainAxisSpacing: 5.0,
                                   crossAxisCount: 3,
+                                  crossAxisSpacing: 10.0,
+                                  mainAxisSpacing: 10.0,
                                   children: _categories
                                       .where((cat) =>
                                           cat.type ==
@@ -134,12 +135,7 @@ class _SelectProductCategoryScreenState
                                                 });
                                               },
                                               child: Container(
-                                                height:
-                                                    SizeConfig.screenHeight *
-                                                        .08,
-                                                width: SizeConfig.screenWidth *
-                                                    .25,
-                                                padding: EdgeInsets.all(10.0),
+                                                padding: EdgeInsets.all(5.0),
                                                 decoration: BoxDecoration(
                                                   borderRadius:
                                                       BorderRadius.circular(

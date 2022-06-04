@@ -1027,7 +1027,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
               child: Column(
                 children: [
                   Container(
-                    padding: EdgeInsets.all(5.0),
+                    padding: EdgeInsets.fromLTRB(10.0, 5.0, 5.0, 5.0),
                     child: Row(
                       children: [
                         Icon(
@@ -1042,9 +1042,11 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                           ),
                         ),
                         Spacer(),
-                        GestureDetector(
+                        InkWell(
                           onTap: () => Navigator.pop(context, false),
-                          child: Icon(Icons.close),
+                          child: Container(
+                              padding: EdgeInsets.all(8.0),
+                              child: Icon(Icons.close)),
                         ),
                       ],
                     ),

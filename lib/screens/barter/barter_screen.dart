@@ -27,6 +27,7 @@ import 'package:tapkat/screens/product/bloc/product_bloc.dart';
 import 'package:tapkat/screens/product/product_add_screen.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/dialog_message.dart';
+import 'package:tapkat/utilities/formatters/decimal_input_formatter.dart';
 import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/utilities/style.dart';
 import 'package:tapkat/utilities/upload_media.dart';
@@ -34,6 +35,7 @@ import 'package:tapkat/widgets/barter_list_item.dart';
 import 'package:tapkat/widgets/custom_button.dart';
 import 'package:tapkat/widgets/custom_textformfield.dart';
 import 'package:tapkat/utilities/application.dart' as application;
+import 'package:currency_text_input_formatter/currency_text_input_formatter.dart';
 
 import '../product/product_details_screen.dart';
 import 'bloc/barter_bloc.dart';
@@ -598,73 +600,75 @@ class _BarterScreenState extends State<BarterScreen> {
         ),
       ],
       child: Container(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Container(
-              padding:
-                  EdgeInsets.fromLTRB(16.0, SizeConfig.paddingTop, 16.0, 0),
-              height: kToolbarHeight + SizeConfig.paddingTop,
-              color: kBackgroundColor,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  GestureDetector(
-                    onTap: () async {
-                      if (!_panelClosed) {
-                        _panelController.close();
-                        _chatFocusNode.unfocus();
-                        application.chatOpened = false;
-                        return;
-                      }
-                      final exit = await _onWillPop();
-                      if (exit) {
-                        Navigator.pop(context);
-                      }
-                    },
-                    child: FaIcon(
-                      FontAwesomeIcons.chevronLeft,
-                      color: Colors.white,
-                    ),
-                  ),
-                  Text(
-                    'Barter with $_recipientName',
-                    style: Style.subtitle1.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Visibility(
-                    visible: _barterRecord != null &&
-                        ['new', 'completed', 'rejected', 'withdrawn']
-                            .contains(_barterRecord!.dealStatus),
-                    child: GestureDetector(
-                      onTap: () {
-                        if (_barterId != null) {
-                          DialogMessage.show(
-                            context,
-                            title: 'Delete Barter',
-                            message:
-                                'Are you sure you want to delete this Barter?',
-                            buttonText: 'Yes',
-                            firstButtonClicked: () =>
-                                _barterBloc.add(DeleteBarter(_barterId!)),
-                            secondButtonText: 'No',
-                            hideClose: true,
-                          );
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Container(
+                padding:
+                    EdgeInsets.fromLTRB(16.0, SizeConfig.paddingTop, 16.0, 0),
+                height: kToolbarHeight + SizeConfig.paddingTop,
+                color: kBackgroundColor,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    GestureDetector(
+                      onTap: () async {
+                        if (!_panelClosed) {
+                          _panelController.close();
+                          _chatFocusNode.unfocus();
+                          application.chatOpened = false;
+                          return;
+                        }
+                        final exit = await _onWillPop();
+                        if (exit) {
+                          Navigator.pop(context);
                         }
                       },
                       child: FaIcon(
-                        Icons.delete_forever,
+                        FontAwesomeIcons.chevronLeft,
                         color: Colors.white,
                       ),
                     ),
-                  ),
-                ],
+                    Text(
+                      'Barter with $_recipientName',
+                      style: Style.subtitle1.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Visibility(
+                      visible: _barterRecord != null &&
+                          ['new', 'completed', 'rejected', 'withdrawn']
+                              .contains(_barterRecord!.dealStatus),
+                      child: GestureDetector(
+                        onTap: () {
+                          if (_barterId != null) {
+                            DialogMessage.show(
+                              context,
+                              title: 'Delete Barter',
+                              message:
+                                  'Are you sure you want to delete this Barter?',
+                              buttonText: 'Yes',
+                              firstButtonClicked: () =>
+                                  _barterBloc.add(DeleteBarter(_barterId!)),
+                              secondButtonText: 'No',
+                              hideClose: true,
+                            );
+                          }
+                        },
+                        child: FaIcon(
+                          Icons.delete_forever,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            _panelClosed ? _buildExpandedView() : _buildMinimizedView(),
-          ],
+              _panelClosed ? _buildExpandedView() : _buildMinimizedView(),
+            ],
+          ),
         ),
       ),
     );
@@ -2583,6 +2587,11 @@ class _BarterScreenState extends State<BarterScreen> {
 
                       return null;
                     },
+                    inputFormatters: [
+                      CurrencyTextInputFormatter(
+                          symbol:
+                              application.currentUserModel!.currency ?? 'PHP'),
+                    ],
                   ),
                 ),
                 SizedBox(height: 12.0),
