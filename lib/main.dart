@@ -173,13 +173,19 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
     switch (state) {
-      case AppLifecycleState.resumed:
+      case AppLifecycleState.paused:
+      case AppLifecycleState.detached:
         if (application.currentUser != null)
+          _authBloc.add(UpdateOnlineStatus(false));
+        break;
+      case AppLifecycleState.resumed:
+        if (application.currentUser != null &&
+                application.currentUserModel != null &&
+                application.currentUserModel!.is_online != null ||
+            !application.currentUserModel!.is_online!)
           _authBloc.add(UpdateOnlineStatus(true));
         break;
       default:
-        if (application.currentUser != null)
-          _authBloc.add(UpdateOnlineStatus(false));
     }
   }
 

@@ -12,6 +12,7 @@ import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/models/user.dart';
+import 'package:tapkat/repositories/store_repository.dart';
 import 'package:tapkat/repositories/user_repository.dart';
 import 'package:tapkat/schemas/product_markers_record.dart';
 import 'package:tapkat/screens/product/bloc/product_bloc.dart';
@@ -46,6 +47,8 @@ class _StoreScreenState extends State<StoreScreen> {
   final _storeBloc = StoreBloc();
   List<ProductModel> _list = [];
 
+  final _storeRepo = StoreRepository();
+
   int currentPage = 0;
 
   List<ProductModel> indicators = [];
@@ -66,9 +69,6 @@ class _StoreScreenState extends State<StoreScreen> {
 
   String _selectedView = 'grid';
 
-  Stream<QuerySnapshot<Map<String, dynamic>>>? _storeLikeStream;
-  StreamSubscription? _storeLikeStreamSub;
-
   bool _isFollowing = false;
 
   bool _isLoading = true;
@@ -87,7 +87,6 @@ class _StoreScreenState extends State<StoreScreen> {
 
   @override
   void dispose() {
-    if (_storeLikeStreamSub != null) _storeLikeStreamSub!.cancel();
     super.dispose();
   }
 
@@ -185,16 +184,6 @@ class _StoreScreenState extends State<StoreScreen> {
                 setState(() {
                   _storeOwner = state.user;
                   storeOwnerName = _storeOwner!.display_name!;
-                  _storeLikeStream = state.storeLikeStream;
-                });
-
-                _storeLikeStreamSub = _storeLikeStream!.listen((snapshot) {
-                  setState(() {
-                    if (snapshot.docs.isNotEmpty)
-                      _isFollowing = true;
-                    else
-                      _isFollowing = false;
-                  });
                 });
                 _productBloc.add(GetFirstProducts(
                   listType: 'user',
@@ -317,15 +306,23 @@ class _StoreScreenState extends State<StoreScreen> {
                                     SizedBox(height: 8.0),
                                     StreamBuilder<
                                         QuerySnapshot<Map<String, dynamic>>>(
-                                      stream: _storeLikeStream,
+                                      stream: _storeRepo.streamStoreLike(
+                                          _storeOwner!.userid!,
+                                          application.currentUser!.uid),
                                       builder: (context, snapshot) {
                                         bool liked = false;
 
                                         if (snapshot.data != null) {
                                           if (snapshot.data!.docs.isNotEmpty) {
+                                            print(
+                                                '0-----> snapshot data : ${snapshot.data!.docs.first.data()}');
                                             liked = true;
 
                                             _isFollowing = true;
+                                          } else {
+                                            liked = false;
+
+                                            _isFollowing = false;
                                           }
                                         } else {
                                           _isFollowing = false;
@@ -334,65 +331,65 @@ class _StoreScreenState extends State<StoreScreen> {
                                         print(
                                             '0-----> ${snapshot.connectionState}');
 
-                                        if (snapshot.connectionState !=
-                                            ConnectionState.active)
-                                          return SizedBox(
-                                            height: 15.0,
-                                            width: 15.0,
-                                            child: CircularProgressIndicator(),
-                                          );
-                                        else
-                                          return InkWell(
-                                            onTap: () => _storeBloc.add(
-                                              EditUserLike(
-                                                user: _storeOwner!,
-                                                likeCount: liked ? -1 : 1,
-                                              ),
+                                        return InkWell(
+                                          onTap: () => _storeBloc.add(
+                                            EditUserLike(
+                                              user: _storeOwner!,
+                                              likeCount: liked ? -1 : 1,
                                             ),
-                                            child: Padding(
+                                          ),
+                                          child: Padding(
+                                            padding: EdgeInsets.symmetric(
+                                                horizontal: 10.0),
+                                            child: Container(
+                                              decoration: BoxDecoration(
+                                                color: kBackgroundColor,
+                                                borderRadius:
+                                                    BorderRadius.circular(6.0),
+                                              ),
                                               padding: EdgeInsets.symmetric(
-                                                  horizontal: 10.0),
-                                              child: Container(
-                                                decoration: BoxDecoration(
-                                                  color: kBackgroundColor,
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          6.0),
-                                                ),
-                                                padding: EdgeInsets.symmetric(
-                                                    vertical: 5.0),
-                                                child: Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.center,
-                                                  children: [
-                                                    Icon(
-                                                      liked
-                                                          ? Icons.remove_circle
-                                                          : Icons.library_add,
-                                                      size: SizeConfig
-                                                              .textScaleFactor *
-                                                          13,
+                                                  vertical: 5.0),
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  Icon(
+                                                    liked
+                                                        ? Icons.remove_circle
+                                                        : Icons.library_add,
+                                                    size: SizeConfig
+                                                            .textScaleFactor *
+                                                        13,
+                                                    color: Colors.white,
+                                                  ),
+                                                  SizedBox(width: 5.0),
+                                                  Text(
+                                                    liked
+                                                        ? 'Unfollow'
+                                                        : 'Follow',
+                                                    style: TextStyle(
                                                       color: Colors.white,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: SizeConfig
+                                                              .textScaleFactor *
+                                                          15,
                                                     ),
-                                                    SizedBox(width: 5.0),
-                                                    Text(
-                                                      liked
-                                                          ? 'Unfollow'
-                                                          : 'Follow',
-                                                      style: TextStyle(
-                                                        color: Colors.white,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        fontSize: SizeConfig
-                                                                .textScaleFactor *
-                                                            15,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
+                                                  ),
+                                                ],
                                               ),
                                             ),
-                                          );
+                                          ),
+                                        );
+
+                                        // if (snapshot.connectionState !=
+                                        //     ConnectionState.active)
+                                        //   return SizedBox(
+                                        //     height: 15.0,
+                                        //     width: 15.0,
+                                        //     child: CircularProgressIndicator(),
+                                        //   );
+                                        // else
                                       },
                                     ),
                                   ],
@@ -713,7 +710,6 @@ class _StoreScreenState extends State<StoreScreen> {
         showNewPageProgressIndicatorAsGridChild: false,
         showNewPageErrorIndicatorAsGridChild: false,
         showNoMoreItemsIndicatorAsGridChild: false,
-        padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 16.0),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
         ),
@@ -784,8 +780,8 @@ class _StoreScreenState extends State<StoreScreen> {
           children: [
             Shimmer.fromColors(
               child: Container(
-                height: SizeConfig.screenWidth * .07,
-                width: SizeConfig.screenWidth * .07,
+                height: SizeConfig.screenWidth * .06,
+                width: SizeConfig.screenWidth * .06,
                 decoration: BoxDecoration(
                   color: Colors.grey,
                   shape: BoxShape.circle,

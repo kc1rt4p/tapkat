@@ -26,12 +26,9 @@ class StoreBloc extends Bloc<StoreEvent, StoreState> {
         final _user = await _authService.getCurrentUser();
         final _userModel = application.currentUserModel;
         if (event is InitializeStoreScreen) {
-          final likeStream = _storeRepo.streamStoreLike(
-              event.userId, application.currentUser!.uid);
           final store = await _userRepo.getUser(event.userId);
           emit(InitializedStoreScreen(
             user: store!,
-            storeLikeStream: likeStream,
           ));
         }
 

@@ -265,27 +265,34 @@ class _BarterScreenState extends State<BarterScreen> {
           indicatorColor: kBackgroundColor,
           backgroundColor: Colors.white,
           barrierEnabled: false,
-          child: Container(
-            child: SlidingUpPanel(
-              maxHeight: SizeConfig.screenHeight * 0.7,
-              minHeight: SizeConfig.screenHeight * 0.08,
-              controller: _panelController,
-              isDraggable: false,
-              onPanelClosed: () {
-                setState(() {
-                  _panelClosed = true;
-                });
-                application.chatOpened = false;
-              },
-              onPanelOpened: () {
-                setState(() {
-                  _panelClosed = false;
-                });
-                application.chatOpened = true;
-              },
-              collapsed: _buildCollapsed(),
-              panel: _buildPanel(),
-              body: _buildBody(context),
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                Container(
+                  height: SizeConfig.screenHeight,
+                  child: SlidingUpPanel(
+                    maxHeight: SizeConfig.screenHeight * 0.7,
+                    minHeight: SizeConfig.screenHeight * 0.08,
+                    controller: _panelController,
+                    isDraggable: false,
+                    onPanelClosed: () {
+                      setState(() {
+                        _panelClosed = true;
+                      });
+                      application.chatOpened = false;
+                    },
+                    onPanelOpened: () {
+                      setState(() {
+                        _panelClosed = false;
+                      });
+                      application.chatOpened = true;
+                    },
+                    collapsed: _buildCollapsed(),
+                    panel: _buildPanel(),
+                    body: _buildBody(context),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -605,8 +612,7 @@ class _BarterScreenState extends State<BarterScreen> {
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               Container(
-                padding:
-                    EdgeInsets.fromLTRB(16.0, SizeConfig.paddingTop, 16.0, 0),
+                padding: EdgeInsets.fromLTRB(0, 0, 16.0, 0),
                 height: kToolbarHeight + SizeConfig.paddingTop,
                 color: kBackgroundColor,
                 child: Row(
@@ -625,9 +631,12 @@ class _BarterScreenState extends State<BarterScreen> {
                           Navigator.pop(context);
                         }
                       },
-                      child: FaIcon(
-                        FontAwesomeIcons.chevronLeft,
-                        color: Colors.white,
+                      child: Container(
+                        padding: EdgeInsets.fromLTRB(16.0, 5.0, 16.0, 5.0),
+                        child: FaIcon(
+                          FontAwesomeIcons.chevronLeft,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                     Text(
