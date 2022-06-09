@@ -2615,8 +2615,13 @@ class _BarterScreenState extends State<BarterScreen> {
                           if (!_cFormKey.currentState!.validate())
                             return null;
                           else {
-                            final amount =
-                                num.parse(amounTextController.text.trim());
+                            final amt = amounTextController.text
+                                .trim()
+                                .replaceAll(
+                                    application.currentUserModel!.currency ??
+                                        'PHP',
+                                    '');
+                            final amount = num.parse(amt);
                             amounTextController.clear();
                             Navigator.pop(context, amount);
                           }

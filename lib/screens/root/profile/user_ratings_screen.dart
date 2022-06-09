@@ -310,7 +310,8 @@ class _UserRatingsScreenState extends State<UserRatingsScreen> {
                         decoration: BoxDecoration(
                           color: Colors.white,
                           image: DecorationImage(
-                            image: rating.image_url_t != null
+                            image: rating.image_url_t != null &&
+                                    rating.image_url_t!.isNotEmpty
                                 ? NetworkImage(rating.image_url_t!)
                                 : AssetImage(
                                         'assets/images/image_placeholder.jpg')
