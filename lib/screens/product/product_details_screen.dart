@@ -455,7 +455,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                       _product!.address!
                                                               .country !=
                                                           null
-                                                  ? '${_product!.address!.city}, ${_product!.address!.country}'
+                                                  ? '${_product!.address!.address} ${_product!.address!.city}, ${_product!.address!.country}'
                                                   : '',
                                               overflow: TextOverflow.ellipsis,
                                               style: TextStyle(
