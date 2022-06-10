@@ -162,8 +162,8 @@ class _ProductMeetUpLocationsScreenState
                                                           CrossAxisAlignment
                                                               .start,
                                                       children: [
-                                                        Text(address.address ??
-                                                            ''),
+                                                        Text(
+                                                            '${address.address ?? ''} ${address.city ?? ''}, ${address.country ?? ''}'),
                                                       ],
                                                     ),
                                                   ),

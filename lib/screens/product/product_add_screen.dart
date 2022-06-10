@@ -474,7 +474,7 @@ class _ProductAddScreenState extends State<ProductAddScreen> {
         ],
       );
       _locationTextController.text =
-          '${application.currentUserModel!.address ?? ''}, ${application.currentUserModel!.city ?? ''}, ${application.currentUserModel!.country ?? ''}';
+          '${application.currentUserModel!.address ?? ''} ${application.currentUserModel!.city ?? ''}, ${application.currentUserModel!.country ?? ''}';
     } else {
       try {
         List<geoCoding.Placemark> placemarks =
