@@ -28,7 +28,7 @@ class ApiService {
 
     header = {
       'deviceid': deviceid,
-      'time': DateTime.now().millisecondsSinceEpoch,
+      'time': time,
       'userid': userid,
       'authorization':
           TapKatEncryption.encryptMsg(userid + deviceid! + time.toString()),

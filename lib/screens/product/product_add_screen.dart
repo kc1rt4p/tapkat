@@ -53,6 +53,7 @@ class _ProductAddScreenState extends State<ProductAddScreen> {
   final _locationTextController = TextEditingController();
 
   bool showImageError = false;
+  bool showOfferTypeError = false;
   String? _selectedOfferType;
   PlaceDetails? _selectedLocation;
 
@@ -333,6 +334,17 @@ class _ProductAddScreenState extends State<ProductAddScreen> {
                                 ],
                               ),
                             ),
+                            Visibility(
+                              visible: showOfferTypeError,
+                              child: Text(
+                                'Required',
+                                style: TextStyle(
+                                  fontSize: 12.0,
+                                  color: Colors.red.shade400,
+                                  fontStyle: FontStyle.italic,
+                                ),
+                              ),
+                            ),
                             CustomTextFormField(
                               label: 'Location',
                               hintText: 'Tap to search location',
@@ -427,55 +439,90 @@ class _ProductAddScreenState extends State<ProductAddScreen> {
   }
 
   _loadUserLocation() async {
-    if (await Permission.location.isDenied) return;
-    if (!(await geoLocator.GeolocatorPlatform.instance
-        .isLocationServiceEnabled())) return;
-    try {
-      List<geoCoding.Placemark> placemarks =
-          await geoCoding.placemarkFromCoordinates(
-              application.currentUserLocation!.latitude!.toDouble(),
-              application.currentUserLocation!.longitude!.toDouble());
-      if (placemarks.isNotEmpty) {
-        placemarks.forEach((placemark) => print(placemark.toJson()));
-        setState(() {
-          _currentUserLoc = placemarks.first;
-          _selectedLocation = PlaceDetails(
-            placeId: '',
-            name: _currentUserLoc!.name ?? '',
-            geometry: Geometry(
-              location: Location(
-                lat: application.currentUserLocation!.latitude!.toDouble(),
-                lng: application.currentUserLocation!.longitude!.toDouble(),
+    // if (await Permission.location.isDenied) return;
+    // if (!(await geoLocator.GeolocatorPlatform.instance
+    //     .isLocationServiceEnabled())) return;
+
+    if (await Permission.location.isDenied ||
+        !(await geoLocator.GeolocatorPlatform.instance
+            .isLocationServiceEnabled())) {
+      _selectedLocation = PlaceDetails(
+        placeId: '',
+        name: '',
+        geometry: Geometry(
+          location: Location(
+            lat: application.currentUserModel!.location!.latitude!.toDouble(),
+            lng: application.currentUserModel!.location!.longitude!.toDouble(),
+          ),
+        ),
+        addressComponents: [
+          AddressComponent(
+            longName: application.currentUserModel!.address ?? '',
+            types: [],
+            shortName: '',
+          ),
+          AddressComponent(
+            longName: application.currentUserModel!.city ?? '',
+            types: [],
+            shortName: '',
+          ),
+          AddressComponent(
+            longName: application.currentUserModel!.country ?? '',
+            types: [],
+            shortName: '',
+          ),
+        ],
+      );
+      _locationTextController.text =
+          '${application.currentUserModel!.address ?? ''}, ${application.currentUserModel!.city ?? ''}, ${application.currentUserModel!.country ?? ''}';
+    } else {
+      try {
+        List<geoCoding.Placemark> placemarks =
+            await geoCoding.placemarkFromCoordinates(
+                application.currentUserLocation!.latitude!.toDouble(),
+                application.currentUserLocation!.longitude!.toDouble());
+        if (placemarks.isNotEmpty) {
+          placemarks.forEach((placemark) => print(placemark.toJson()));
+          setState(() {
+            _currentUserLoc = placemarks.first;
+            _selectedLocation = PlaceDetails(
+              placeId: '',
+              name: _currentUserLoc!.name ?? '',
+              geometry: Geometry(
+                location: Location(
+                  lat: application.currentUserLocation!.latitude!.toDouble(),
+                  lng: application.currentUserLocation!.longitude!.toDouble(),
+                ),
               ),
-            ),
-            addressComponents: [
-              AddressComponent(
-                longName: _currentUserLoc!.street ?? '',
-                types: [],
-                shortName: '',
-              ),
-              AddressComponent(
-                longName: _currentUserLoc!.locality ?? '',
-                types: [],
-                shortName: '',
-              ),
-              AddressComponent(
-                longName: _currentUserLoc!.subAdministrativeArea ?? '',
-                types: [],
-                shortName: '',
-              ),
-              AddressComponent(
-                longName: _currentUserLoc!.country ?? '',
-                types: [],
-                shortName: '',
-              ),
-            ],
-          );
-          _locationTextController.text =
-              '${_currentUserLoc!.street ?? ''}, ${_currentUserLoc!.locality ?? ''}, ${_currentUserLoc!.subAdministrativeArea ?? ''}, ${_currentUserLoc!.country ?? ''}';
-        });
-      }
-    } catch (e) {}
+              addressComponents: [
+                AddressComponent(
+                  longName: _currentUserLoc!.street ?? '',
+                  types: [],
+                  shortName: '',
+                ),
+                AddressComponent(
+                  longName: _currentUserLoc!.locality ?? '',
+                  types: [],
+                  shortName: '',
+                ),
+                AddressComponent(
+                  longName: _currentUserLoc!.subAdministrativeArea ?? '',
+                  types: [],
+                  shortName: '',
+                ),
+                AddressComponent(
+                  longName: _currentUserLoc!.country ?? '',
+                  types: [],
+                  shortName: '',
+                ),
+              ],
+            );
+            _locationTextController.text =
+                '${_currentUserLoc!.street ?? ''}, ${_currentUserLoc!.locality ?? ''}, ${_currentUserLoc!.subAdministrativeArea ?? ''}, ${_currentUserLoc!.country ?? ''}';
+          });
+        }
+      } catch (e) {}
+    }
   }
 
   _onSaveTapped() {
@@ -486,6 +533,16 @@ class _ProductAddScreenState extends State<ProductAddScreen> {
     }
     if (!_formKey.currentState!.validate()) return;
 
+    if (_selectedOfferType == null) {
+      setState(() {
+        showOfferTypeError = true;
+      });
+      return;
+    } else {
+      setState(() {
+        showOfferTypeError = false;
+      });
+    }
     if (_selectedLocation!.addressComponents.isNotEmpty) {
       var newProduct = ProductRequestModel(
         userid: _user!.uid,

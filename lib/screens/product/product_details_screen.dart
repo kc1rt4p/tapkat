@@ -824,8 +824,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                               SizedBox(
                                                                   width: 8.0),
                                                               Text(
-                                                                  loc.address ??
-                                                                      '',
+                                                                  '${loc.address}, ${loc.city}, ${loc.country}',
                                                                   style: TextStyle(
                                                                       fontSize:
                                                                           SizeConfig.textScaleFactor *
