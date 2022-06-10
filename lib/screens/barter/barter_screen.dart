@@ -2621,7 +2621,7 @@ class _BarterScreenState extends State<BarterScreen> {
                                     application.currentUserModel!.currency ??
                                         'PHP',
                                     '');
-                            final amount = num.parse(amt);
+                            final amount = num.parse(amt.replaceAll(',', ''));
                             amounTextController.clear();
                             Navigator.pop(context, amount);
                           }

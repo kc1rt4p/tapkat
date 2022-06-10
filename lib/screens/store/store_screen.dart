@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_progress_hud/flutter_progress_hud.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
@@ -223,44 +224,79 @@ class _StoreScreenState extends State<StoreScreen> {
                               children: [
                                 _buildPhoto(),
                                 SizedBox(height: 5.0),
-                                _storeOwner != null
-                                    ? InkWell(
-                                        onTap: () => Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                                builder: (context) =>
-                                                    UserReviewListScreen(
-                                                        userId:
-                                                            widget.userId))),
+                                StreamBuilder<
+                                    QuerySnapshot<Map<String, dynamic>>>(
+                                  stream: _storeRepo.streamStoreLike(
+                                      _storeOwner!.userid!,
+                                      application.currentUser!.uid),
+                                  builder: (context, snapshot) {
+                                    bool liked = false;
+
+                                    if (snapshot.data != null) {
+                                      if (snapshot.data!.docs.isNotEmpty) {
+                                        liked = true;
+
+                                        _isFollowing = true;
+                                      } else {
+                                        liked = false;
+
+                                        _isFollowing = false;
+                                      }
+                                    } else {
+                                      _isFollowing = false;
+                                    }
+
+                                    return InkWell(
+                                      onTap: () => _storeBloc.add(
+                                        EditUserLike(
+                                          user: _storeOwner!,
+                                          likeCount: liked ? -1 : 1,
+                                        ),
+                                      ),
+                                      child: Padding(
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 10.0),
                                         child: Container(
-                                          margin: EdgeInsets.only(bottom: 3.0),
+                                          decoration: BoxDecoration(
+                                            color: kBackgroundColor,
+                                            borderRadius:
+                                                BorderRadius.circular(6.0),
+                                          ),
                                           padding: EdgeInsets.symmetric(
-                                              horizontal: 10.0),
+                                            vertical: 3.0,
+                                            horizontal: 16.0,
+                                          ),
                                           child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
                                             children: [
                                               Icon(
-                                                Icons.star,
+                                                liked
+                                                    ? Icons.remove_circle
+                                                    : Icons.library_add,
                                                 size:
                                                     SizeConfig.textScaleFactor *
-                                                        12,
+                                                        11.5,
+                                                color: Colors.white,
                                               ),
                                               SizedBox(width: 5.0),
                                               Text(
-                                                _storeOwner!.rating != null
-                                                    ? _storeOwner!.rating!
-                                                        .toStringAsFixed(1)
-                                                    : '0',
-                                                textAlign: TextAlign.right,
-                                                style: Style.fieldText.copyWith(
-                                                    fontSize: SizeConfig
-                                                            .textScaleFactor *
-                                                        12),
+                                                liked ? 'Unfollow' : 'Follow',
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: SizeConfig
+                                                          .textScaleFactor *
+                                                      11.5,
+                                                ),
                                               ),
                                             ],
                                           ),
                                         ),
-                                      )
-                                    : Container(),
+                                      ),
+                                    );
+                                  },
+                                ),
                               ],
                             ),
                             SizedBox(width: 20.0),
@@ -283,6 +319,102 @@ class _StoreScreenState extends State<StoreScreen> {
                                               ? _storeOwner!.likes.toString()
                                               : '0'),
                                     ),
+                                    Container(
+                                      margin: EdgeInsets.only(bottom: 3.0),
+                                      child: Row(
+                                        children: [
+                                          Text(
+                                            'Rating',
+                                            style: Style.fieldTitle.copyWith(
+                                                color: kBackgroundColor,
+                                                fontSize:
+                                                    SizeConfig.textScaleFactor *
+                                                        11),
+                                          ),
+                                          Spacer(),
+                                          InkWell(
+                                            onTap: () => Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    UserReviewListScreen(
+                                                  userId: widget.userId,
+                                                ),
+                                              ),
+                                            ),
+                                            child: Container(
+                                              decoration: BoxDecoration(
+                                                border: Border(
+                                                  bottom: BorderSide(
+                                                      color: kBackgroundColor),
+                                                ),
+                                              ),
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.end,
+                                                children: [
+                                                  RatingBar.builder(
+                                                    ignoreGestures: true,
+                                                    initialRating: _storeOwner!
+                                                                .rating !=
+                                                            null
+                                                        ? _storeOwner!.rating!
+                                                            .roundToDouble()
+                                                        : 0,
+                                                    minRating: 0,
+                                                    direction: Axis.horizontal,
+                                                    allowHalfRating: true,
+                                                    itemCount: 5,
+                                                    itemSize: SizeConfig
+                                                            .textScaleFactor *
+                                                        13,
+                                                    tapOnlyMode: true,
+
+                                                    itemBuilder: (context, _) =>
+                                                        Icon(
+                                                      Icons.star,
+                                                      color: Colors.amber,
+                                                    ),
+                                                    onRatingUpdate: (rating) {},
+                                                    // onRatingUpdate:
+                                                    //     (rating) {
+                                                    //   if (_product!
+                                                    //               .userid !=
+                                                    //           _user!
+                                                    //               .uid &&
+                                                    //       _product!
+                                                    //               .acquired_by ==
+                                                    //           _user!
+                                                    //               .uid) {
+                                                    //     _productBloc.add(
+                                                    //         AddRating(
+                                                    //             _product!,
+                                                    //             rating));
+                                                    //   }
+                                                    // },
+                                                  ),
+                                                  SizedBox(width: 8.0),
+                                                  Text(
+                                                    _storeOwner != null &&
+                                                            _storeOwner!
+                                                                    .rating !=
+                                                                null
+                                                        ? _storeOwner!.rating!
+                                                            .toStringAsFixed(1)
+                                                        : '0',
+                                                    style: TextStyle(
+                                                        fontSize: SizeConfig
+                                                                .textScaleFactor *
+                                                            13),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
                                     _buildInfoItem(
                                       label: 'Location',
                                       controller: TextEditingController(
@@ -303,95 +435,6 @@ class _StoreScreenState extends State<StoreScreen> {
                                     ),
                                     SizedBox(height: 8.0),
                                     _buildSocialMediaBtns(),
-                                    SizedBox(height: 8.0),
-                                    StreamBuilder<
-                                        QuerySnapshot<Map<String, dynamic>>>(
-                                      stream: _storeRepo.streamStoreLike(
-                                          _storeOwner!.userid!,
-                                          application.currentUser!.uid),
-                                      builder: (context, snapshot) {
-                                        bool liked = false;
-
-                                        if (snapshot.data != null) {
-                                          if (snapshot.data!.docs.isNotEmpty) {
-                                            print(
-                                                '0-----> snapshot data : ${snapshot.data!.docs.first.data()}');
-                                            liked = true;
-
-                                            _isFollowing = true;
-                                          } else {
-                                            liked = false;
-
-                                            _isFollowing = false;
-                                          }
-                                        } else {
-                                          _isFollowing = false;
-                                        }
-
-                                        print(
-                                            '0-----> ${snapshot.connectionState}');
-
-                                        return InkWell(
-                                          onTap: () => _storeBloc.add(
-                                            EditUserLike(
-                                              user: _storeOwner!,
-                                              likeCount: liked ? -1 : 1,
-                                            ),
-                                          ),
-                                          child: Padding(
-                                            padding: EdgeInsets.symmetric(
-                                                horizontal: 10.0),
-                                            child: Container(
-                                              decoration: BoxDecoration(
-                                                color: kBackgroundColor,
-                                                borderRadius:
-                                                    BorderRadius.circular(6.0),
-                                              ),
-                                              padding: EdgeInsets.symmetric(
-                                                  vertical: 5.0),
-                                              child: Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: [
-                                                  Icon(
-                                                    liked
-                                                        ? Icons.remove_circle
-                                                        : Icons.library_add,
-                                                    size: SizeConfig
-                                                            .textScaleFactor *
-                                                        13,
-                                                    color: Colors.white,
-                                                  ),
-                                                  SizedBox(width: 5.0),
-                                                  Text(
-                                                    liked
-                                                        ? 'Unfollow'
-                                                        : 'Follow',
-                                                    style: TextStyle(
-                                                      color: Colors.white,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      fontSize: SizeConfig
-                                                              .textScaleFactor *
-                                                          15,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ),
-                                        );
-
-                                        // if (snapshot.connectionState !=
-                                        //     ConnectionState.active)
-                                        //   return SizedBox(
-                                        //     height: 15.0,
-                                        //     width: 15.0,
-                                        //     child: CircularProgressIndicator(),
-                                        //   );
-                                        // else
-                                      },
-                                    ),
                                   ],
                                 ),
                               ),
@@ -754,7 +797,7 @@ class _StoreScreenState extends State<StoreScreen> {
             label,
             style: Style.fieldTitle.copyWith(
                 color: kBackgroundColor,
-                fontSize: SizeConfig.textScaleFactor * 11),
+                fontSize: SizeConfig.textScaleFactor * 10),
           ),
           Expanded(
             child: Align(
@@ -762,8 +805,9 @@ class _StoreScreenState extends State<StoreScreen> {
               child: Text(
                 controller.text,
                 textAlign: TextAlign.right,
-                style: Style.fieldText
-                    .copyWith(fontSize: SizeConfig.textScaleFactor * 12),
+                style: Style.fieldText.copyWith(
+                    fontSize: SizeConfig.textScaleFactor * 11,
+                    overflow: TextOverflow.ellipsis),
               ),
             ),
           ),

@@ -193,7 +193,9 @@ class _BarterListItemState extends State<BarterListItem> {
                           )
                         : Text(''),
                     Visibility(
-                      visible: !widget.hideLikeBtn,
+                      visible: !widget.hideLikeBtn &&
+                          widget.product.userid !=
+                              application.currentUserModel!.userid,
                       child: Positioned(
                         top: 5,
                         right: 5,
