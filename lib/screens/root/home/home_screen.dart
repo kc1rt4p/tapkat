@@ -342,16 +342,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 builder: (context) => StoreListScreen(),
                               ),
                             ),
-                            onMapBtnTapped: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => ProductListScreen(
-                                  listType: 'demand',
-                                  showAdd: false,
-                                  initialView: 'map',
-                                ),
-                              ),
-                            ),
+                            removeMapBtn: true,
                           ),
                           BarterList(
                             loading: _loadingRecoList,

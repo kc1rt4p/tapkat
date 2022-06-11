@@ -155,6 +155,7 @@ class _ProductAddScreenState extends State<ProductAddScreen> {
               children: [
                 CustomAppBar(
                   label: 'Add to Your Store',
+                  onBackTapped: () => Navigator.pop(context, false),
                 ),
                 Expanded(
                   child: Container(
@@ -265,9 +266,11 @@ class _ProductAddScreenState extends State<ProductAddScreen> {
                             CustomTextFormField(
                               label: 'Description',
                               hintText: 'Enter a description',
+                              textInputAction: TextInputAction.done,
                               controller: _descTextController,
                               color: kBackgroundColor,
                               maxLines: 3,
+                              keyboardType: TextInputType.text,
                               validator: (val) => val != null && val.isEmpty
                                   ? 'Required'
                                   : null,

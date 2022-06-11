@@ -2837,7 +2837,10 @@ class _BarterScreenState extends State<BarterScreen> {
                                                         Map<String, dynamic>()),
                                                 builder: (context) =>
                                                     ProductAddScreen()));
-                                        _barterBloc.add(GetCurrentUserItems());
+                                        if (data != false) {
+                                          _barterBloc
+                                              .add(GetCurrentUserItems());
+                                        }
                                       },
                                   ),
                                   TextSpan(text: ' to add a product'),
@@ -2876,7 +2879,9 @@ class _BarterScreenState extends State<BarterScreen> {
                                                       Map<String, dynamic>()),
                                               builder: (context) =>
                                                   ProductAddScreen()));
-                                      _barterBloc.add(GetCurrentUserItems());
+                                      if (data != false) {
+                                        _barterBloc.add(GetCurrentUserItems());
+                                      }
                                     },
                                 ),
                                 TextSpan(text: ' to add a new offer'),

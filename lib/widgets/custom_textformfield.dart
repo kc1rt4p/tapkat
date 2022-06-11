@@ -19,6 +19,7 @@ class CustomTextFormField extends StatefulWidget {
   final List<TextInputFormatter>? inputFormatters;
   final bool removeMargin;
   final Widget? prefix;
+  final TextInputAction? textInputAction;
 
   const CustomTextFormField({
     Key? key,
@@ -38,6 +39,7 @@ class CustomTextFormField extends StatefulWidget {
     this.inputFormatters,
     this.removeMargin = false,
     this.prefix,
+    this.textInputAction,
   }) : super(key: key);
 
   @override
@@ -69,6 +71,7 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
               widget.prefix != null ? widget.prefix! : SizedBox(),
               Expanded(
                 child: TextFormField(
+                  textInputAction: widget.textInputAction,
                   inputFormatters: widget.inputFormatters,
                   maxLines: widget.maxLines,
                   readOnly: widget.isReadOnly ?? false,
