@@ -319,7 +319,7 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
               }
               return FittedBox(
                 child: Container(
-                  margin: EdgeInsets.only(right: SizeConfig.screenWidth * 0.05),
+                  margin: EdgeInsets.only(right: SizeConfig.screenWidth * 0.03),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -406,7 +406,7 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                             visible: application.unreadBarterMessages
                                 .any((msg) => msg.barterId == barter.barterId),
                             child: Positioned(
-                              top: 35,
+                              top: 30,
                               right: 5,
                               child: Container(
                                 padding: EdgeInsets.all(3.0),
@@ -426,7 +426,7 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                       ),
                       barter.dealDate != null
                           ? Container(
-                              width: SizeConfig.screenHeight * 0.19,
+                              width: SizeConfig.screenHeight * 0.17,
                               child: Text(
                                 timeago.format(barter.dealDate!),
                                 style: Style.subtitle2.copyWith(

@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:distance/distance.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:loading_indicator/loading_indicator.dart';
 import 'package:tapkat/backend.dart';
 import 'package:tapkat/models/location.dart';
 import 'package:tapkat/models/product.dart';
@@ -106,48 +107,63 @@ class _BarterListItemState extends State<BarterListItem> {
                   children: [
                     thumbnail.isNotEmpty
                         ? CachedNetworkImage(
+                            progressIndicatorBuilder: (context, url, progress) {
+                              return Container(
+                                height: widget.height ??
+                                    SizeConfig.screenHeight * 0.13,
+                                width: widget.width ??
+                                    SizeConfig.screenHeight * 0.17,
+                                child: LoadingIndicator(
+                                  indicatorType: Indicator.ballScale,
+                                  colors: const [Colors.white],
+                                  strokeWidth: 1,
+                                ),
+                              );
+                            },
                             imageUrl: thumbnail,
-                            imageBuilder: (context, imageProvider) => Container(
-                              height: widget.height ??
-                                  SizeConfig.screenHeight * 0.15,
-                              width: widget.width ??
-                                  SizeConfig.screenHeight * 0.19,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.only(
-                                  topLeft: Radius.circular(20.0),
-                                  topRight: Radius.circular(20.0),
+                            imageBuilder: (context, imageProvider) {
+                              return Container(
+                                height: widget.height ??
+                                    SizeConfig.screenHeight * 0.13,
+                                width: widget.width ??
+                                    SizeConfig.screenHeight * 0.17,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.only(
+                                    topLeft: Radius.circular(20.0),
+                                    topRight: Radius.circular(20.0),
+                                  ),
+                                  color: Colors.grey,
+                                  image: DecorationImage(
+                                    fit: BoxFit.cover,
+                                    alignment: FractionalOffset.center,
+                                    image: imageProvider,
+                                  ),
                                 ),
-                                color: Colors.grey,
-                                image: DecorationImage(
-                                  fit: BoxFit.cover,
-                                  alignment: FractionalOffset.center,
-                                  image: imageProvider,
-                                ),
-                              ),
-                            ),
-                            placeholder: (context, text) => Container(
-                              height: widget.height ??
-                                  SizeConfig.screenHeight * 0.15,
-                              width: widget.width ??
-                                  SizeConfig.screenHeight * 0.19,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.only(
-                                  topLeft: Radius.circular(20.0),
-                                  topRight: Radius.circular(20.0),
-                                ),
-                                color: Colors.grey,
-                                image: DecorationImage(
-                                  image: AssetImage(
-                                      'assets/images/image_placeholder.jpg'),
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                            ),
+                              );
+                            },
+                            // placeholder: (context, text) => Container(
+                            //   height: widget.height ??
+                            //       SizeConfig.screenHeight * 0.15,
+                            //   width: widget.width ??
+                            //       SizeConfig.screenHeight * 0.19,
+                            //   decoration: BoxDecoration(
+                            //     borderRadius: BorderRadius.only(
+                            //       topLeft: Radius.circular(20.0),
+                            //       topRight: Radius.circular(20.0),
+                            //     ),
+                            //     color: Colors.grey,
+                            //     image: DecorationImage(
+                            //       image: AssetImage(
+                            //           'assets/images/image_placeholder.jpg'),
+                            //       fit: BoxFit.cover,
+                            //     ),
+                            //   ),
+                            // ),
                             errorWidget: (context, url, error) => Container(
                               height: widget.height ??
-                                  SizeConfig.screenHeight * 0.15,
+                                  SizeConfig.screenHeight * 0.13,
                               width: widget.width ??
-                                  SizeConfig.screenHeight * 0.19,
+                                  SizeConfig.screenHeight * 0.17,
                               child: Icon(
                                 Icons.error,
                                 color: kBackgroundColor,
@@ -156,9 +172,9 @@ class _BarterListItemState extends State<BarterListItem> {
                           )
                         : Container(
                             height:
-                                widget.height ?? SizeConfig.screenHeight * 0.15,
+                                widget.height ?? SizeConfig.screenHeight * 0.13,
                             width:
-                                widget.width ?? SizeConfig.screenHeight * 0.19,
+                                widget.width ?? SizeConfig.screenHeight * 0.17,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.only(
                                 topLeft: Radius.circular(20.0),
@@ -179,7 +195,7 @@ class _BarterListItemState extends State<BarterListItem> {
                               padding: EdgeInsets.symmetric(vertical: 5.0),
                               color: kBackgroundColor,
                               width: widget.width ??
-                                  SizeConfig.screenHeight * 0.19,
+                                  SizeConfig.screenHeight * 0.17,
                               child: Text(
                                 (widget.status ?? '').toUpperCase(),
                                 textAlign: TextAlign.center,
@@ -227,7 +243,7 @@ class _BarterListItemState extends State<BarterListItem> {
                 ),
                 Container(
                   color: Colors.white,
-                  width: widget.width ?? SizeConfig.screenHeight * 0.19,
+                  width: widget.width ?? SizeConfig.screenHeight * 0.17,
                   padding: EdgeInsets.all(5.0),
                   child: Row(
                     children: [

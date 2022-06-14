@@ -92,8 +92,6 @@ class _RootScreenState extends State<RootScreen> {
   late AuthBloc _authBloc;
   late BarterBloc _barterBloc;
 
-  final _currentVerDate = DateTime(2022, 6, 11, 08);
-
   final _appConfig = new LocalStorage('app_config.json');
 
   StreamSubscription<ConnectivityResult>? _connectivityStream;
@@ -363,17 +361,6 @@ class _RootScreenState extends State<RootScreen> {
             color: kBackgroundColor,
             child: Column(
               children: [
-                Container(
-                  padding: EdgeInsets.symmetric(vertical: 3.0),
-                  width: double.infinity,
-                  color: Colors.white,
-                  child: Center(
-                    child: Text(
-                      'Version 1.0.${DateFormat('yyMMddHH').format(_currentVerDate)}_D',
-                      style: TextStyle(fontSize: 10.0),
-                    ),
-                  ),
-                ),
                 Expanded(
                   child: Container(
                     color: kBackgroundColor,

@@ -22,7 +22,7 @@ import 'package:tapkat/utilities/application.dart' as application;
 
 void decodeIsolate(DecodeParam param) {
   var image = decodeImage(param.file.readAsBytesSync())!;
-  var thumbnail = copyResizeCropSquare(image, 300);
+  var thumbnail = copyResizeCropSquare(image, 200);
   param.sendPort.send(thumbnail);
 }
 

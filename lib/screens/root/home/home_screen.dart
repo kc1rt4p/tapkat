@@ -1,4 +1,3 @@
-import 'package:animate_do/animate_do.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -553,8 +552,8 @@ class _HomeScreenState extends State<HomeScreen> {
               isDraggable: false,
               controller: _panelController,
               backdropEnabled: false,
-              minHeight: 50.0,
-              maxHeight: SizeConfig.screenHeight * 0.20,
+              minHeight: SizeConfig.screenHeight * 0.06,
+              maxHeight: SizeConfig.screenHeight * 0.22,
               onPanelClosed: () {
                 setState(() {
                   _showYourItems = false;
@@ -574,7 +573,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Container(
                   padding:
                       EdgeInsets.symmetric(horizontal: 15.0, vertical: 5.0),
-                  color: Color(0xFFEBFBFF),
+                  color: Colors.white,
                   child: Row(
                     children: [
                       Text(
@@ -596,7 +595,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               panel: Container(
-                color: Color(0xFFEBFBFF),
+                color: Colors.white,
                 padding: EdgeInsets.symmetric(
                   horizontal: 20.0,
                   vertical: 10.0,

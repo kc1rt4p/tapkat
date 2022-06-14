@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_progress_hud/flutter_progress_hud.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:intl/intl.dart';
 import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
 import 'package:tapkat/models/localization.dart';
 import 'package:tapkat/models/user.dart';
@@ -36,6 +37,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   List<LocalizationModel> _localizations = [];
   LocalizationModel? _selectedLocalization;
+
+  final _currentVerDate = DateTime(2022, 6, 14, 03);
 
   @override
   void initState() {
@@ -182,6 +185,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                       ],
                     ),
+                  ),
+                ),
+              ),
+              Container(
+                padding: EdgeInsets.symmetric(vertical: 3.0),
+                width: double.infinity,
+                color: Colors.white,
+                child: Center(
+                  child: Text(
+                    'Version 1.0.${DateFormat('yyMMddHH').format(_currentVerDate)}_D',
+                    style: TextStyle(fontSize: 10.0),
                   ),
                 ),
               ),

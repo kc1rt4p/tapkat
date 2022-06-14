@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:loading_indicator/loading_indicator.dart';
 import 'package:tapkat/models/store.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/size_config.dart';
@@ -37,6 +38,17 @@ class _StoreListItemState extends State<StoreListItem> {
                 Container(
                   child: widget.store.photo_url!.isNotEmpty
                       ? CachedNetworkImage(
+                          progressIndicatorBuilder: (context, url, progress) {
+                            return Container(
+                              height: SizeConfig.screenHeight * 0.1,
+                              width: SizeConfig.screenHeight * 0.12,
+                              child: LoadingIndicator(
+                                indicatorType: Indicator.ballScale,
+                                colors: const [Colors.white],
+                                strokeWidth: 1,
+                              ),
+                            );
+                          },
                           imageUrl: widget.store.photo_url!,
                           imageBuilder: (context, imageProvider) => Container(
                             height: SizeConfig.screenHeight * 0.1,
@@ -54,22 +66,22 @@ class _StoreListItemState extends State<StoreListItem> {
                               ),
                             ),
                           ),
-                          placeholder: (context, text) => Container(
-                            height: SizeConfig.screenHeight * 0.1,
-                            width: SizeConfig.screenHeight * 0.12,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(20.0),
-                                topRight: Radius.circular(20.0),
-                              ),
-                              color: Colors.grey,
-                              image: DecorationImage(
-                                image: AssetImage(
-                                    'assets/images/image_placeholder.jpg'),
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          ),
+                          // placeholder: (context, text) => Container(
+                          //   height: SizeConfig.screenHeight * 0.1,
+                          //   width: SizeConfig.screenHeight * 0.12,
+                          //   decoration: BoxDecoration(
+                          //     borderRadius: BorderRadius.only(
+                          //       topLeft: Radius.circular(20.0),
+                          //       topRight: Radius.circular(20.0),
+                          //     ),
+                          //     color: Colors.grey,
+                          //     image: DecorationImage(
+                          //       image: AssetImage(
+                          //           'assets/images/image_placeholder.jpg'),
+                          //       fit: BoxFit.cover,
+                          //     ),
+                          //   ),
+                          // ),
                           errorWidget: (context, url, error) => Container(
                             height: SizeConfig.screenHeight * 0.1,
                             width: SizeConfig.screenHeight * 0.12,

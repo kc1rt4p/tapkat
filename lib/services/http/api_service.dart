@@ -103,12 +103,18 @@ class ApiService {
   }
 
   Future<Response> _safeFetch(Future<Response> Function() tryFetch) async {
+    var stopWatch = Stopwatch();
+
+    stopWatch.start();
     var response;
     try {
       response = await tryFetch();
     } catch (e) {
       throw ErrorExceptions.handleError(e);
     }
+    stopWatch.stop();
+    print(
+        '====== RESPONSE TOOK: ${stopWatch.elapsed.inMilliseconds / 1000} seconds');
     return response;
   }
 

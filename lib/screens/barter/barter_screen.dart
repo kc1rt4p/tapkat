@@ -1229,7 +1229,7 @@ class _BarterScreenState extends State<BarterScreen> {
                             visible: _shouldShowAdd(),
                             child: Positioned(
                               top: 8.0,
-                              right: 14.0,
+                              right: 10.0,
                               child: InkWell(
                                 onTap: () {
                                   setState(() {
@@ -1315,7 +1315,7 @@ class _BarterScreenState extends State<BarterScreen> {
                           visible: _shouldShowAdd(),
                           child: Positioned(
                             top: 5.0,
-                            right: 10.0,
+                            right: 5.0,
                             child: InkWell(
                               onTap: () {
                                 setState(() {
@@ -1326,7 +1326,7 @@ class _BarterScreenState extends State<BarterScreen> {
                               child: Container(
                                 padding: EdgeInsets.all(5.0),
                                 decoration: BoxDecoration(
-                                  color: kBackgroundColor,
+                                  color: Colors.red,
                                   shape: BoxShape.circle,
                                 ),
                                 child: Center(
@@ -1372,7 +1372,7 @@ class _BarterScreenState extends State<BarterScreen> {
                             visible: _shouldShowAdd(),
                             child: Positioned(
                               top: 8.0,
-                              right: 14.0,
+                              right: 10.0,
                               child: InkWell(
                                 onTap: () {
                                   setState(() {
@@ -1431,7 +1431,7 @@ class _BarterScreenState extends State<BarterScreen> {
                           visible: _shouldShowAdd(),
                           child: Positioned(
                             top: 5.0,
-                            right: 10.0,
+                            right: 5.0,
                             child: InkWell(
                               onTap: () {
                                 setState(() {
@@ -1442,7 +1442,7 @@ class _BarterScreenState extends State<BarterScreen> {
                               child: Container(
                                 padding: EdgeInsets.all(5.0),
                                 decoration: BoxDecoration(
-                                  color: kBackgroundColor,
+                                  color: Colors.red,
                                   shape: BoxShape.circle,
                                 ),
                                 child: Center(
@@ -2430,7 +2430,7 @@ class _BarterScreenState extends State<BarterScreen> {
                                   product.productId == item.productid),
                               child: Container(
                                 margin: EdgeInsets.only(right: 8.0),
-                                width: SizeConfig.screenHeight * 0.19,
+                                width: SizeConfig.screenHeight * 0.17,
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.only(
                                     topLeft: Radius.circular(20.0),
@@ -2456,7 +2456,7 @@ class _BarterScreenState extends State<BarterScreen> {
                                   product.productid == item.productid),
                               child: Container(
                                 margin: EdgeInsets.only(right: 8.0),
-                                width: SizeConfig.screenHeight * 0.19,
+                                width: SizeConfig.screenHeight * 0.17,
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.only(
                                     topLeft: Radius.circular(20.0),
@@ -2725,7 +2725,7 @@ class _BarterScreenState extends State<BarterScreen> {
                                       product.productId == item.productid),
                                   child: Container(
                                     margin: EdgeInsets.only(right: 8.0),
-                                    width: SizeConfig.screenHeight * 0.19,
+                                    width: SizeConfig.screenHeight * 0.17,
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.only(
                                         topLeft: Radius.circular(20.0),
@@ -2751,7 +2751,7 @@ class _BarterScreenState extends State<BarterScreen> {
                                       product.productid == item.productid),
                                   child: Container(
                                     margin: EdgeInsets.only(right: 8.0),
-                                    width: SizeConfig.screenHeight * 0.19,
+                                    width: SizeConfig.screenHeight * 0.17,
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.only(
                                         topLeft: Radius.circular(20.0),
