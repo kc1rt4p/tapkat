@@ -12,12 +12,14 @@ class InitializeSearch extends SearchEvent {
   final List<String>? category;
   final int distance;
   final String sortBy;
+  final int? itemCount;
 
   InitializeSearch({
     required this.keyword,
     this.category,
     required this.distance,
     required this.sortBy,
+    this.itemCount,
   });
 }
 

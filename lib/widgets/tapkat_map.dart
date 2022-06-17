@@ -65,6 +65,7 @@ class TapkatGoogleMap extends StatefulWidget {
     required this.onMapCreated,
     this.onCameraMove,
     this.onTap,
+    this.circles,
     Key? key,
   }) : super(key: key);
 
@@ -83,6 +84,7 @@ class TapkatGoogleMap extends StatefulWidget {
   final bool showCompass;
   final bool showMapToolbar;
   final bool showTraffic;
+  final Set<Circle>? circles;
   final bool centerMapOnMarkerTap;
   final Function(GoogleMapController) onMapCreated;
   final Function(LatLng)? onTap;
@@ -122,6 +124,7 @@ class _TapkatGoogleMapState extends State<TapkatGoogleMap> {
             }
           },
           onTap: widget.onTap,
+          circles: widget.circles ?? {},
           initialCameraPosition: CameraPosition(
             target: initialPosition,
             zoom: initialZoom,

@@ -98,6 +98,8 @@ class _BarterListItemState extends State<BarterListItem> {
             thumbnail = product.mediaPrimary!.url_t!;
         }
 
+        print('THUMBNAIL URL: $thumbnail');
+
         return InkWell(
           onTap: widget.onTapped,
           child: Container(

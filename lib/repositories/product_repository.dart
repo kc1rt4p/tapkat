@@ -22,7 +22,9 @@ import 'package:tapkat/utilities/application.dart' as application;
 
 void decodeIsolate(DecodeParam param) {
   var image = decodeImage(param.file.readAsBytesSync())!;
+  print('0====> ORIGINAL IMAGE SIZE: ${image.length}');
   var thumbnail = copyResizeCropSquare(image, 200);
+  print('0====> THUMBNAIL IMAGE SIZE: ${thumbnail.length}');
   param.sendPort.send(thumbnail);
 }
 
@@ -448,13 +450,14 @@ class ProductRepository {
       List<String>? category,
       required String sortBy,
       required LocationModel location,
+      int itemCount = 10,
       int radius = 5000}) async {
     var _body = {
       'sortby':
           sortBy.toLowerCase() == 'name' ? 'productname' : sortBy.toLowerCase(),
       'sortdirection':
           sortBy.toLowerCase() == 'rating' ? 'descending' : 'ascending',
-      'productcount': productCount,
+      'productcount': itemCount,
       'userid': application.currentUser!.uid,
       'location': location.toJson(),
       'radius': radius,

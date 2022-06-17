@@ -29,6 +29,7 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
             location: application.currentUserLocation ??
                 application.currentUserModel!.location ??
                 LocationModel(latitude: 0, longitude: 0),
+            itemCount: event.itemCount ?? 10,
           );
           print('search result count: ${result.length}');
 

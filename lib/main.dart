@@ -263,6 +263,10 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
               ],
               supportedLocales: const [Locale('en', '')],
               theme: ThemeData(
+                sliderTheme: SliderThemeData(
+                  overlayShape: SliderComponentShape.noThumb,
+                  thumbShape: RoundSliderThumbShape(enabledThumbRadius: 8.0),
+                ),
                 primarySwatch: Colors.blue,
                 fontFamily: 'Poppins',
                 bottomSheetTheme: BottomSheetThemeData(
