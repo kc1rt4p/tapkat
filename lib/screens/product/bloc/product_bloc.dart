@@ -178,6 +178,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
             category: event.category,
             userId: event.userid ?? application.currentUser!.uid,
             interests: event.listType == 'reco' ? _userModel!.interests : null,
+            itemCount: event.itemCount,
           );
 
           emit(GetFirstProductsSuccess(result));
@@ -213,6 +214,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
             location: event.listType != 'user'
                 ? application.currentUserLocation
                 : null,
+            itemCount: event.itemCount,
           );
 
           emit(GetProductsSuccess(result));

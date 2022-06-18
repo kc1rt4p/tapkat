@@ -32,8 +32,9 @@ class GetFirstProducts extends ProductEvent {
   final String listType;
   final String? userid;
   final List<String>? category;
-  final int distance;
+  final double distance;
   final String sortBy;
+  final int? itemCount;
 
   GetFirstProducts({
     required this.listType,
@@ -41,6 +42,7 @@ class GetFirstProducts extends ProductEvent {
     this.category,
     required this.distance,
     required this.sortBy,
+    this.itemCount,
   });
 }
 
@@ -51,8 +53,9 @@ class GetNextProducts extends ProductEvent {
   final dynamic startAfterVal;
   final LocationModel? location;
   final List<String>? category;
-  final int distance;
+  final double distance;
   final String sortBy;
+  final int? itemCount;
 
   GetNextProducts({
     required this.listType,
@@ -63,6 +66,7 @@ class GetNextProducts extends ProductEvent {
     this.category,
     required this.distance,
     required this.sortBy,
+    this.itemCount,
   });
 }
 

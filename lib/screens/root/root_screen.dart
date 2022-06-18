@@ -70,7 +70,8 @@ void handleLinkData(BuildContext currentContext, PendingDynamicLinkData data) {
 }
 
 class RootScreen extends StatefulWidget {
-  const RootScreen({Key? key}) : super(key: key);
+  final String? barterId;
+  const RootScreen({Key? key, this.barterId}) : super(key: key);
 
   @override
   _RootScreenState createState() => _RootScreenState();
@@ -106,6 +107,18 @@ class _RootScreenState extends State<RootScreen> {
 
     super.initState();
     fetchLinkData();
+
+    if (widget.barterId != null) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => BarterScreen(
+            barterRecord: BarterRecordModel(barterId: widget.barterId),
+            showChatFirst: true,
+          ),
+        ),
+      );
+    }
     // testCreateLink();
   }
 

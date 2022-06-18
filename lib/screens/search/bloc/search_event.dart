@@ -10,7 +10,7 @@ abstract class SearchEvent extends Equatable {
 class InitializeSearch extends SearchEvent {
   final String keyword;
   final List<String>? category;
-  final int distance;
+  final double distance;
   final String sortBy;
   final int? itemCount;
 
@@ -28,7 +28,7 @@ class GetProductMarkers extends SearchEvent {}
 class SearchNextProducts extends SearchEvent {
   final String keyword;
   final String? category;
-  final int distance;
+  final double distance;
   final String sortBy;
   final String lastProductId;
   final dynamic startAfterVal;

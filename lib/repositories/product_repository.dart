@@ -239,11 +239,12 @@ class ProductRepository {
     List<String>? category,
     List<String>? interests,
     LocationModel? location,
+    int? itemCount,
     int radius = 5000,
   }) async {
     var body = {
       'userid': userId,
-      'productcount': productCount,
+      'productcount': itemCount ?? productCount,
     };
 
     if (location != null) {
@@ -343,12 +344,13 @@ class ProductRepository {
     List<String>? category,
     required String sortBy,
     LocationModel? location,
-    int radius = 5000,
+    int? itemCount,
+    double radius = 5000,
   }) async {
     if (listType == 'reco') {}
     var body = {
       'userid': userId,
-      'productcount': productCount,
+      'productcount': itemCount ?? productCount,
     };
 
     if (category != null) {
@@ -451,7 +453,7 @@ class ProductRepository {
       required String sortBy,
       required LocationModel location,
       int itemCount = 10,
-      int radius = 5000}) async {
+      double radius = 5000}) async {
     var _body = {
       'sortby':
           sortBy.toLowerCase() == 'name' ? 'productname' : sortBy.toLowerCase(),

@@ -5,15 +5,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_progress_hud/flutter_progress_hud.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:http/http.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
-import 'package:tapkat/backend.dart';
-import 'package:tapkat/models/media_primary_model.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/models/product_category.dart';
 import 'package:tapkat/schemas/product_markers_record.dart';
-import 'package:tapkat/schemas/user_likes_record.dart';
 import 'package:tapkat/screens/product/bloc/product_bloc.dart';
 import 'package:tapkat/screens/product/product_details_screen.dart';
 import 'package:tapkat/screens/search/bloc/search_bloc.dart';
@@ -23,6 +19,7 @@ import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/utilities/style.dart';
 import 'package:tapkat/widgets/barter_list_item.dart';
 import 'package:tapkat/widgets/custom_app_bar.dart';
+import 'package:tapkat/widgets/custom_button.dart';
 import 'package:tapkat/widgets/custom_search_bar.dart';
 import 'package:tapkat/widgets/tapkat_map.dart';
 import 'package:toggle_switch/toggle_switch.dart';
@@ -72,7 +69,6 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
   final _refreshController = RefreshController();
 
   List<ProductCategoryModel> _categoryList = [];
-  double mapZoomLevel = 11;
 
   bool _loading = false;
   Set<Marker> _markers = {};
@@ -84,8 +80,8 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
     'Price',
     'Rating',
   ];
-  int _selectedRadius = 5000;
-  List<int> radiusOptions = [1000, 5000, 10000, 20000, 50000];
+  double _selectedRadius = 500;
+  double mapZoomLevel = 11;
 
   @override
   void initState() {
@@ -420,23 +416,6 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                                         ),
                                       ),
                                     ),
-                          // searchResults.isNotEmpty
-                          //     ? _selectedView == 'grid'
-                          //         ? _buildGridView2()
-                          //         : _buildMapView()
-                          //     : !_loading
-                          //         ? Container(
-                          //             padding: EdgeInsets.symmetric(
-                          //                 horizontal: 30.0),
-                          //             child: Center(
-                          //               child: Text(
-                          //                 'No products found',
-                          //                 style: Style.subtitle2
-                          //                     .copyWith(color: Colors.grey),
-                          //               ),
-                          //             ),
-                          //           )
-                          //         : Container(),
                         ),
                       ],
                     ),
@@ -451,235 +430,205 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
   }
 
   Widget _buildDistanceWidget() {
-    if (_selectedView != 'map') {
-      return Expanded(
-        flex: 1,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Distance',
-              style: TextStyle(
-                fontSize: SizeConfig.textScaleFactor * 12,
-              ),
+    return Expanded(
+      flex: 1,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Distance',
+            style: TextStyle(
+              fontSize: SizeConfig.textScaleFactor * 12,
             ),
-            SizedBox(height: 5.0),
-            InkWell(
-              onTap: _onSelectDistance,
-              child: Container(
-                decoration: BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(
-                      color: kBackgroundColor,
-                      width: 0.6,
-                    ),
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      '${(_selectedRadius ~/ 1000).toInt()} km',
-                      style: Style.subtitle2.copyWith(
-                        color: kBackgroundColor,
-                        fontSize: SizeConfig.textScaleFactor * 12,
-                      ),
-                    ),
-                    Spacer(),
-                    Icon(
-                      FontAwesomeIcons.chevronDown,
-                      color: kBackgroundColor,
-                      size: SizeConfig.textScaleFactor * 12,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
-    } else {
-      if (_selectedRadius < 5000) {
-        setState(() {
-          _selectedRadius = 5000;
-        });
-      }
-      return Expanded(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Distance',
-              style: TextStyle(
-                fontSize: SizeConfig.textScaleFactor * 12,
-              ),
-            ),
-            SizedBox(height: 5.0),
-            Row(
-              children: [
-                GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        if (_selectedRadius > 6000) {
-                          _selectedRadius -= 1000;
-                        } else if (_selectedRadius < 6000) {
-                          _selectedRadius = 5000;
-                        }
-                      });
-
-                      if (_selectedRadius > 5000 && _selectedRadius < 50000)
-                        _searchBloc.add(InitializeSearch(
-                          keyword: _keyWordTextController.text.trim(),
-                          category: _selectedCategory != null
-                              ? [_selectedCategory!.code!]
-                              : null,
-                          sortBy: _selectedSortBy,
-                          distance: _selectedRadius,
-                          itemCount: _selectedView == 'map' ? 50 : 10,
-                        ));
-
-                      mapZoomLevel = getZoomLevel(_selectedRadius.toDouble());
-                      googleMapsController
-                          .animateCamera(CameraUpdate.newCameraPosition(
-                        CameraPosition(
-                            target: LatLng(
-                                application.currentUserLocation!.latitude!
-                                    .toDouble(),
-                                application.currentUserLocation!.longitude!
-                                    .toDouble()),
-                            zoom: mapZoomLevel),
-                      ));
-                    },
-                    child: Icon(Icons.remove, size: 10)),
-                Expanded(
-                  child: Slider(
-                    activeColor: kBackgroundColor,
-                    thumbColor: kBackgroundColor,
-                    value: _selectedRadius.toDouble(),
-                    onChanged: (val) {
-                      setState(() {
-                        _selectedRadius = val.toInt();
-                      });
-                      mapZoomLevel = getZoomLevel(_selectedRadius.toDouble());
-                      googleMapsController
-                          .animateCamera(CameraUpdate.newCameraPosition(
-                        CameraPosition(
-                            target: LatLng(
-                                application.currentUserLocation!.latitude!
-                                    .toDouble(),
-                                application.currentUserLocation!.longitude!
-                                    .toDouble()),
-                            zoom: mapZoomLevel),
-                      ));
-                    },
-                    onChangeEnd: (val) {
-                      _searchBloc.add(InitializeSearch(
-                        keyword: _keyWordTextController.text.trim(),
-                        category: _selectedCategory != null
-                            ? [_selectedCategory!.code!]
-                            : null,
-                        sortBy: _selectedSortBy,
-                        distance: _selectedRadius,
-                        itemCount: _selectedView == 'map' ? 50 : 10,
-                      ));
-                    },
-                    min: 5000,
-                    max: 50000,
-                  ),
-                ),
-                GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        if (_selectedRadius < 49000) {
-                          _selectedRadius += 1000;
-                        } else if (_selectedRadius > 49000) {
-                          _selectedRadius = 50000;
-                        }
-                      });
-
-                      if (_selectedRadius > 5000 && _selectedRadius < 50000)
-                        _searchBloc.add(InitializeSearch(
-                          keyword: _keyWordTextController.text.trim(),
-                          category: _selectedCategory != null
-                              ? [_selectedCategory!.code!]
-                              : null,
-                          sortBy: _selectedSortBy,
-                          distance: _selectedRadius,
-                          itemCount: _selectedView == 'map' ? 50 : 10,
-                        ));
-
-                      mapZoomLevel = getZoomLevel(_selectedRadius.toDouble());
-                      googleMapsController
-                          .animateCamera(CameraUpdate.newCameraPosition(
-                        CameraPosition(
-                            target: LatLng(
-                                application.currentUserLocation!.latitude!
-                                    .toDouble(),
-                                application.currentUserLocation!.longitude!
-                                    .toDouble()),
-                            zoom: mapZoomLevel),
-                      ));
-                    },
-                    child: Icon(Icons.add, size: 10)),
-              ],
-            ),
-          ],
-        ),
-      );
-    }
-  }
-
-  _onSelectDistance() async {
-    final distance = await showDialog<int?>(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) {
-          return Dialog(
+          ),
+          SizedBox(height: 5.0),
+          InkWell(
+            onTap: _onSelectDistance,
             child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 30.0, vertical: 16.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Search radius distance',
-                        style: Style.subtitle2.copyWith(
-                            color: kBackgroundColor,
-                            fontWeight: FontWeight.bold),
-                      ),
-                      GestureDetector(
-                        onTap: () => Navigator.pop(context, null),
-                        child: Icon(
-                          FontAwesomeIcons.times,
-                          color: kBackgroundColor,
-                          size: 20.0,
-                        ),
-                      ),
-                    ],
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(
+                    color: kBackgroundColor,
+                    width: 0.6,
                   ),
-                  ListView(
-                    shrinkWrap: true,
-                    // mainAxisSize: MainAxisSize.min,
-                    // crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(height: 8.0),
-                      ...radiusOptions.map(
-                        (item) => ListTile(
-                          title: Text((item ~/ 1000).toString() + ' km'),
-                          contentPadding: EdgeInsets.zero,
-                          onTap: () => Navigator.pop(context, item),
-                          selectedColor: Color(0xFFBB3F03),
-                          selected: _selectedRadius == item,
-                        ),
-                      ),
-                    ],
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    '${(_selectedRadius / 1000).toStringAsFixed(2)} km',
+                    style: Style.subtitle2.copyWith(
+                      color: kBackgroundColor,
+                      fontSize: SizeConfig.textScaleFactor * 12,
+                    ),
+                  ),
+                  Spacer(),
+                  Icon(
+                    FontAwesomeIcons.chevronDown,
+                    color: kBackgroundColor,
+                    size: SizeConfig.textScaleFactor * 12,
                   ),
                 ],
               ),
             ),
-          );
+          ),
+        ],
+      ),
+    );
+  }
+
+  _onSelectDistance() async {
+    final distance = await showDialog<double?>(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) {
+          double radiusSelected = _selectedRadius.toDouble();
+          final radiusTextController = TextEditingController();
+          radiusTextController.text =
+              (radiusSelected / 1000).toStringAsFixed(2);
+          return StatefulBuilder(builder: (context, StateSetter setState) {
+            return Dialog(
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 30.0, vertical: 16.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Search radius distance',
+                          style: Style.subtitle2.copyWith(
+                              color: kBackgroundColor,
+                              fontWeight: FontWeight.bold),
+                        ),
+                        GestureDetector(
+                          onTap: () => Navigator.pop(context, null),
+                          child: Icon(
+                            FontAwesomeIcons.times,
+                            color: kBackgroundColor,
+                            size: 20.0,
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 20.0),
+                    TextFormField(
+                      controller: radiusTextController,
+                      autovalidateMode: AutovalidateMode.always,
+                      decoration: InputDecoration(
+                        isDense: true,
+                        border: UnderlineInputBorder(),
+                        suffixIcon: Text('km'),
+                        suffixIconConstraints:
+                            BoxConstraints(maxHeight: 50.0, maxWidth: 50.0),
+                      ),
+                      keyboardType: TextInputType.number,
+                      validator: (val) {
+                        if (val != null) {
+                          if (val.isEmpty) return null;
+
+                          final radius = double.parse(val.trim()) * 1000;
+
+                          if (radius < 500 || radius > 30000) {
+                            return 'Distance should be between 0.5km and 30km';
+                          }
+                        }
+
+                        return null;
+                      },
+                      onChanged: (val) {
+                        if (val.isEmpty) return;
+                        final radius = double.parse(val) * 1000;
+                        if (radius < 500 || radius > 30000) {
+                          return;
+                        } else {
+                          setState(() {
+                            radiusSelected = radius;
+                          });
+                        }
+                      },
+                    ),
+                    SizedBox(height: 16.0),
+                    Row(
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              if (radiusSelected > 1000) {
+                                radiusSelected -= 500;
+                              } else {
+                                radiusSelected = 500;
+                              }
+                            });
+                            print(radiusSelected);
+                            radiusTextController.text =
+                                (radiusSelected / 1000).toStringAsFixed(2);
+                          },
+                          child: Icon(Icons.remove, size: 20),
+                        ),
+                        SizedBox(width: 5.0),
+                        Expanded(
+                          child: Slider(
+                            activeColor: kBackgroundColor,
+                            thumbColor: kBackgroundColor,
+                            value: radiusSelected,
+                            onChanged: (val) {
+                              setState(() {
+                                radiusSelected = val;
+                              });
+                              radiusTextController.text =
+                                  (radiusSelected / 1000).toStringAsFixed(2);
+                            },
+                            min: 500,
+                            max: 30000,
+                          ),
+                        ),
+                        SizedBox(width: 5.0),
+                        GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              if (radiusSelected < 29500) {
+                                radiusSelected += 500;
+                              } else {
+                                radiusSelected = 30000;
+                              }
+                            });
+                            radiusTextController.text =
+                                (radiusSelected / 1000).toStringAsFixed(2);
+                          },
+                          child: Icon(Icons.add, size: 20),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 20.0),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: CustomButton(
+                            removeMargin: true,
+                            label: 'Cancel',
+                            onTap: () => Navigator.pop(context, null),
+                            bgColor: kBackgroundColor,
+                          ),
+                        ),
+                        SizedBox(width: 10.0),
+                        Expanded(
+                          child: CustomButton(
+                            removeMargin: true,
+                            label: 'Apply',
+                            onTap: () => Navigator.pop(context, radiusSelected),
+                            bgColor: Style.secondaryColor,
+                          ),
+                        ),
+                      ],
+                    )
+                  ],
+                ),
+              ),
+            );
+          });
         });
 
     if (distance == null) {
@@ -691,6 +640,15 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
     setState(() {
       _selectedRadius = distance;
     });
+
+    double mapZoomLevel = getZoomLevel(_selectedRadius);
+
+    googleMapsController.animateCamera(CameraUpdate.newCameraPosition(
+      CameraPosition(
+          target: LatLng(application.currentUserLocation!.latitude!.toDouble(),
+              application.currentUserLocation!.longitude!.toDouble()),
+          zoom: mapZoomLevel),
+    ));
 
     _searchBloc.add(InitializeSearch(
       keyword: _keyWordTextController.text.trim(),
@@ -872,12 +830,18 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
     lastProduct = null;
   }
 
-  double getZoomLevel(double radius) {
+  double getZoomLevel(double diameter) {
+    double zoomLevel = 11;
+    double radius = diameter + diameter / 2;
+    double scale = radius / 500;
+    zoomLevel = (16 - log(scale) / log(2));
+
     final lat = application.currentUserLocation!.latitude!.toDouble();
-    final zoomLevel = log(38000 * cos(lat * pi / 180) / (radius / 1000)) + 3;
-    final km = (38000 / pow(2, zoomLevel - 3) * cos(lat * pi / 180)) / 10;
+    // final zoomLevel = log(38000 * cos(lat * pi / 180) / (radius / 1000)) + 3;
+    final km = (38000 / pow(2, zoomLevel + 3) * cos(lat * pi / 180));
+
     print(
-        'current radius: ${radius / 1000} || calculated zoom level: $zoomLevel || calculated km: $km');
+        'current radius: ${_selectedRadius / 1000}km || calculated zoom level: $zoomLevel || calculated km: $km');
     return zoomLevel;
   }
 
@@ -898,7 +862,8 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                     application.currentUserLocation!.longitude!.toDouble()),
                 radius: _selectedRadius.toDouble(),
                 strokeColor: kBackgroundColor,
-                strokeWidth: 5,
+                strokeWidth: 2,
+                fillColor: kBackgroundColor.withOpacity(0.2),
               ),
             },
             onCameraIdle: (latLng) => googleMapsCenter = latLng,
@@ -910,56 +875,156 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
               googleMapsController = controller;
             },
             showLocation: false,
-            onCameraMove: (CameraPosition pos) {
-              // final lat = application.currentUserLocation!.latitude!.toDouble();
-              // double km =
-              //     (38000 / pow(2, pos.zoom - 4.439) * cos(lat * pi / 180)) / 10;
-              // final _km = km.toInt();
-              // print('calculated km: $_km');
-              // setState(() {
-              //   if (_km <= 50) {
-              //     _selectedRadius = 50000;
-              //   } else if (_km <= 40) {
-              //     _selectedRadius = 40000;
-              //   } else if (_km <= 30) {
-              //     _selectedRadius = 30000;
-              //   } else if (_km <= 20) {
-              //     _selectedRadius = 20000;
-              //   } else if (_km <= 10) {
-              //     _selectedRadius = 10000;
-              //   }
-              // });
-            },
+            showZoomControls: false,
             markers: _markers.toSet(),
           ),
-          _selectedView == 'map'
-              ? Positioned(
-                  right: 5.0,
-                  top: 10.0,
-                  child: FloatingActionButton.small(
-                    backgroundColor: kBackgroundColor.withOpacity(0.7),
-                    onPressed: () {
-                      setState(() {
-                        _selectedRadius = 5000;
-                      });
+          Positioned(
+            right: 5.0,
+            top: 10.0,
+            child: FloatingActionButton.small(
+              backgroundColor: kBackgroundColor.withOpacity(0.7),
+              onPressed: () {
+                setState(() {
+                  _selectedRadius = 500;
+                });
+                mapZoomLevel = getZoomLevel(_selectedRadius.toDouble());
+                googleMapsController
+                    .animateCamera(CameraUpdate.newCameraPosition(
+                  CameraPosition(
+                      target: LatLng(
+                          application.currentUserLocation!.latitude!.toDouble(),
+                          application.currentUserLocation!.longitude!
+                              .toDouble()),
+                      zoom: mapZoomLevel + 2),
+                ));
+
+                _searchBloc.add(InitializeSearch(
+                  keyword: _keyWordTextController.text.trim(),
+                  category: _selectedCategory != null
+                      ? [_selectedCategory!.code!]
+                      : null,
+                  sortBy: _selectedSortBy,
+                  distance: _selectedRadius,
+                  itemCount: _selectedView == 'map' ? 50 : 10,
+                ));
+              },
+              child: Icon(
+                Icons.my_location,
+              ),
+            ),
+          ),
+          Positioned(
+            right: 15.0,
+            bottom: 30.0,
+            child: Column(
+              children: [
+                GestureDetector(
+                  onTap: () async {
+                    setState(() {
+                      if (_selectedRadius > 1000) {
+                        _selectedRadius -= 500;
+                      } else if (_selectedRadius < 1000) {
+                        _selectedRadius = 500;
+                      }
+                    });
+
+                    double mapZoomLevel = 0;
+                    if (_selectedRadius > 500 && _selectedRadius < 30000) {
                       mapZoomLevel = getZoomLevel(_selectedRadius.toDouble());
-                      googleMapsController
-                          .animateCamera(CameraUpdate.newCameraPosition(
-                        CameraPosition(
-                            target: LatLng(
-                                application.currentUserLocation!.latitude!
-                                    .toDouble(),
-                                application.currentUserLocation!.longitude!
-                                    .toDouble()),
-                            zoom: mapZoomLevel),
-                      ));
-                    },
+                    } else {
+                      mapZoomLevel =
+                          await googleMapsController.getZoomLevel() + 1;
+                    }
+
+                    googleMapsController
+                        .animateCamera(CameraUpdate.newCameraPosition(
+                      CameraPosition(
+                          target: LatLng(
+                              application.currentUserLocation!.latitude!
+                                  .toDouble(),
+                              application.currentUserLocation!.longitude!
+                                  .toDouble()),
+                          zoom: mapZoomLevel),
+                    ));
+
+                    _searchBloc.add(InitializeSearch(
+                      keyword: _keyWordTextController.text.trim(),
+                      category: _selectedCategory != null
+                          ? [_selectedCategory!.code!]
+                          : null,
+                      sortBy: _selectedSortBy,
+                      distance: _selectedRadius,
+                      itemCount: _selectedView == 'map' ? 50 : 10,
+                    ));
+                  },
+                  child: Container(
+                    padding: EdgeInsets.all(8.0),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.9),
+                    ),
                     child: Icon(
-                      Icons.my_location,
+                      FontAwesomeIcons.plus,
+                      size: 22,
+                      color: Colors.blueGrey.shade700,
                     ),
                   ),
-                )
-              : Container(),
+                ),
+                Divider(
+                  color: Colors.black,
+                  height: 1,
+                ),
+                GestureDetector(
+                  onTap: () async {
+                    setState(() {
+                      if (_selectedRadius < 30000) {
+                        _selectedRadius += 500;
+                      } else if (_selectedRadius > 30000) {
+                        _selectedRadius = 30000;
+                      }
+                    });
+                    double mapZoomLevel = 0;
+                    if (_selectedRadius > 500 && _selectedRadius < 30000) {
+                      mapZoomLevel = getZoomLevel(_selectedRadius.toDouble());
+                    } else {
+                      mapZoomLevel =
+                          await googleMapsController.getZoomLevel() - 1;
+                    }
+                    googleMapsController
+                        .animateCamera(CameraUpdate.newCameraPosition(
+                      CameraPosition(
+                          target: LatLng(
+                              application.currentUserLocation!.latitude!
+                                  .toDouble(),
+                              application.currentUserLocation!.longitude!
+                                  .toDouble()),
+                          zoom: mapZoomLevel),
+                    ));
+
+                    _searchBloc.add(InitializeSearch(
+                      keyword: _keyWordTextController.text.trim(),
+                      category: _selectedCategory != null
+                          ? [_selectedCategory!.code!]
+                          : null,
+                      sortBy: _selectedSortBy,
+                      distance: _selectedRadius,
+                      itemCount: _selectedView == 'map' ? 50 : 10,
+                    ));
+                  },
+                  child: Container(
+                    padding: EdgeInsets.all(8.0),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.9),
+                    ),
+                    child: Icon(
+                      FontAwesomeIcons.minus,
+                      size: 22,
+                      color: Colors.blueGrey.shade700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
