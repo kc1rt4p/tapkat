@@ -430,7 +430,9 @@ class _ProductListScreenState extends State<ProductListScreen> {
                                   ),
                                   SizedBox(height: 5.0),
                                   InkWell(
-                                    onTap: _onSortBy,
+                                    onTap: _selectedView != 'map'
+                                        ? _onSortBy
+                                        : null,
                                     child: Container(
                                       decoration: BoxDecoration(
                                         border: Border(
@@ -447,7 +449,9 @@ class _ProductListScreenState extends State<ProductListScreen> {
                                           Text(
                                             '${_selectedSortBy[0].toUpperCase()}${_selectedSortBy.substring(1).toLowerCase()}',
                                             style: Style.subtitle2.copyWith(
-                                              color: kBackgroundColor,
+                                              color: _selectedView != 'map'
+                                                  ? kBackgroundColor
+                                                  : null,
                                               fontSize:
                                                   SizeConfig.textScaleFactor *
                                                       12,
@@ -1183,7 +1187,10 @@ class _ProductListScreenState extends State<ProductListScreen> {
       _selectedView = _selectedView != 'map' ? 'map' : 'grid';
     });
 
-    if (_selectedView == 'map') _buildMarkers();
+    if (_selectedView == 'map') {
+      _buildMarkers();
+      _selectedSortBy = 'distance';
+    }
   }
 
   Expanded _buildSortOption() {

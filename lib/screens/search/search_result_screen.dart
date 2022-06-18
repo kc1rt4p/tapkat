@@ -325,7 +325,9 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                                     ),
                                     SizedBox(height: 5.0),
                                     InkWell(
-                                      onTap: _onSortBy,
+                                      onTap: _selectedView != 'map'
+                                          ? _onSortBy
+                                          : null,
                                       child: Container(
                                         decoration: BoxDecoration(
                                           border: Border(
@@ -342,7 +344,9 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                                             Text(
                                               '${_selectedSortBy[0].toUpperCase()}${_selectedSortBy.substring(1).toLowerCase()}',
                                               style: Style.subtitle2.copyWith(
-                                                color: kBackgroundColor,
+                                                color: _selectedView != 'map'
+                                                    ? kBackgroundColor
+                                                    : null,
                                                 fontSize:
                                                     SizeConfig.textScaleFactor *
                                                         12,
@@ -1127,6 +1131,9 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
     });
 
     if (_selectedView == 'map') {
+      setState(() {
+        _selectedSortBy = 'distance';
+      });
       _searchBloc.add(GetProductMarkers());
     } else {
       _searchBloc.add(InitializeSearch(
