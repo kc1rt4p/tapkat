@@ -2177,7 +2177,7 @@ class _BarterScreenState extends State<BarterScreen> {
     }
 
     List<BarterProductModel> _deletedProducts = [];
-    if (origCurrentUserOffers.length > currentUserOffers.length) {
+    if (origCurrentUserOffers != currentUserOffers) {
       origCurrentUserOffers.forEach((bProd) {
         if (!currentUserOffers
             .any((obProd) => obProd.productId == bProd.productId)) {
@@ -2186,9 +2186,9 @@ class _BarterScreenState extends State<BarterScreen> {
       });
     }
 
-    if (origRemoteUserOffers.length > remoteUserOffers.length) {
+    if (origRemoteUserOffers != remoteUserOffers) {
       origRemoteUserOffers.forEach((owProd) {
-        if (!currentUserOffers
+        if (!remoteUserOffers
             .any((oProd) => oProd.productId == owProd.productId)) {
           _deletedProducts.add(owProd);
         }

@@ -77,7 +77,7 @@ class _ProductMeetUpLocationsScreenState
 
           if (state is SaveProductSuccess) {
             await DialogMessage.show(context,
-                message: 'An offer has been added');
+                message: 'An item has been added');
 
             // Navigator.of(context).popUntil((route) => route.isFirst);
             var count = 0;

@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:device_preview/device_preview.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -26,6 +27,7 @@ import 'package:tapkat/services/auth_service.dart';
 import 'package:geolocator/geolocator.dart' as geoLocator;
 
 import 'package:geocoding/geocoding.dart' as geoCoding;
+import 'package:tapkat/services/dynamic_link.dart';
 import 'package:tapkat/services/http/api_service.dart';
 import 'package:tapkat/utilities/application.dart' as application;
 import 'package:tapkat/utilities/dialog_message.dart';
@@ -77,6 +79,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
+  final _dynamincLinkService = DynamincLinkService();
   late AuthBloc _authBloc;
   late BarterBloc _barterBloc;
   StreamSubscription<TapkatFirebaseUser?>? _userStream;
@@ -95,6 +98,32 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
     WidgetsBinding.instance!.addObserver(this);
     super.initState();
+  }
+
+  void fetchLinkData() async {
+    // FirebaseDynamicLinks.getInitialLInk does a call to firebase to get us the real link because we have shortened it.
+    var link = await FirebaseDynamicLinks.instance.getInitialLink();
+    print('_-= $link');
+    var message = await FirebaseDynamicLinks.instance
+        .getDynamicLink(Uri.parse(_dynamincLinkService.Link));
+    print('_-= $message');
+
+    // This link may exist if the app was opened fresh so we'll want to handle it the same way onLink will.
+    if (link != null) handleLinkData(context, link);
+
+    // This will handle incoming links if the application is already opened
+    try {
+      FirebaseDynamicLinks.instance.onLink.listen(
+        (data) {
+          print('--------- INCOMING!!');
+          handleLinkData(context, data);
+        },
+        onError: (error) => print('======-dynamic-link-error==== __ $error __'),
+        onDone: () => print('======-dynamic-link-DONE==== __  __'),
+      );
+    } catch (e) {
+      print('ERROR ON FIREBASE DYNAMIC LINKS::::: ${e.toString()}');
+    }
   }
 
   initLogs() async {
