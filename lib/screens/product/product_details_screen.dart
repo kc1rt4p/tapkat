@@ -444,28 +444,31 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                               Icons.location_pin,
                                               size: 13.0,
                                             ),
-                                            Text(
-                                              _product != null &&
-                                                      _product!
-                                                          .address!
-                                                          .address!
-                                                          .isNotEmpty &&
-                                                      _product!.address!.city !=
-                                                          null &&
-                                                      _product!.address!
-                                                              .country !=
-                                                          null
-                                                  ? '${_product!.address!.address} ${_product!.address!.city}, ${_product!.address!.country}'
-                                                  : '',
-                                              overflow: TextOverflow.ellipsis,
-                                              style: TextStyle(
-                                                fontSize:
-                                                    SizeConfig.textScaleFactor *
-                                                        12,
-                                                fontWeight: FontWeight.w600,
+                                            Expanded(
+                                              child: Text(
+                                                _product != null &&
+                                                        _product!
+                                                            .address!
+                                                            .address!
+                                                            .isNotEmpty &&
+                                                        _product!.address!
+                                                                .city !=
+                                                            null &&
+                                                        _product!.address!
+                                                                .country !=
+                                                            null
+                                                    ? '${_product!.address!.address} ${_product!.address!.city}, ${_product!.address!.country}'
+                                                    : '',
+                                                overflow: TextOverflow.ellipsis,
+                                                style: TextStyle(
+                                                  fontSize: SizeConfig
+                                                          .textScaleFactor *
+                                                      12,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
                                               ),
                                             ),
-                                            Spacer(),
+                                            SizedBox(width: 5.0),
                                             _product != null &&
                                                     _product!.address != null &&
                                                     _product!.address!

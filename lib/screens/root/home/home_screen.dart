@@ -238,6 +238,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           children: [
             Container(
+              margin: EdgeInsets.only(top: SizeConfig.paddingTop),
               padding: EdgeInsets.symmetric(
                 horizontal: 20.0,
                 vertical: 10.0,

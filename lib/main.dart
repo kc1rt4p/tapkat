@@ -5,6 +5,7 @@ import 'package:device_preview/device_preview.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -82,6 +83,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   final _dynamincLinkService = DynamincLinkService();
   late AuthBloc _authBloc;
   late BarterBloc _barterBloc;
+  String barterId = '';
   StreamSubscription<TapkatFirebaseUser?>? _userStream;
   TapkatFirebaseUser? _user;
   final GlobalKey<NavigatorState> navigatorKey =
@@ -94,9 +96,10 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     _authBloc = AuthBloc();
     _barterBloc = BarterBloc();
     _authBloc.add(InitializeAuth());
-    initLogs();
 
+    initLogs();
     WidgetsBinding.instance!.addObserver(this);
+
     super.initState();
   }
 
@@ -127,6 +130,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   }
 
   initLogs() async {
+    final message = await FirebaseMessaging.instance.getInitialMessage();
+    if (message != null) _firebaseMessageOpened(message);
     await FlutterLogs.initLogs(
       logLevelsEnabled: [
         LogLevel.INFO,
@@ -196,6 +201,12 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
       if (kReleaseMode) exit(1);
     };
+  }
+
+  Future<void> _firebaseMessageOpened(RemoteMessage message) async {
+    final _barterId = message.data['barterid'] as String;
+    barterId = _barterId;
+    print('0======> BARTER ID: $barterId');
   }
 
   @override
@@ -307,7 +318,9 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
                       if (snapshot.data != null && _userModel != null) {
-                        return RootScreen();
+                        return RootScreen(
+                          barterId: barterId,
+                        );
                       }
                     }
 

@@ -98,8 +98,13 @@ class _RootScreenState extends State<RootScreen> {
   StreamSubscription<ConnectivityResult>? _connectivityStream;
   final _dynamincLinkService = DynamincLinkService();
 
+  String _preLoadedBarter = '';
+
   @override
   void initState() {
+    if (widget.barterId != null) {
+      _preLoadedBarter = widget.barterId!;
+    }
     application.currentScreen = 'Root Screen';
     _barterBloc = BlocProvider.of<BarterBloc>(context);
     _authBloc = BlocProvider.of<AuthBloc>(context);
@@ -108,17 +113,6 @@ class _RootScreenState extends State<RootScreen> {
     super.initState();
     fetchLinkData();
 
-    if (widget.barterId != null) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => BarterScreen(
-            barterRecord: BarterRecordModel(barterId: widget.barterId),
-            showChatFirst: true,
-          ),
-        ),
-      );
-    }
     // testCreateLink();
   }
 
@@ -352,6 +346,20 @@ class _RootScreenState extends State<RootScreen> {
                 if (state is GetCurrentUsersuccess) {
                   if (application.currentUserLocation == null) {
                     application.currentUserLocation = state.userModel!.location;
+                  }
+
+                  if (_preLoadedBarter.isNotEmpty) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => BarterScreen(
+                          barterRecord:
+                              BarterRecordModel(barterId: widget.barterId),
+                          showChatFirst: true,
+                        ),
+                      ),
+                    );
+                    _preLoadedBarter = '';
                   }
 
                   initNotifications();

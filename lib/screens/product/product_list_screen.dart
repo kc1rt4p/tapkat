@@ -86,7 +86,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
   List<ProductCategoryModel> _categoryList = [];
 
-  double _selectedRadius = 500;
+  double _selectedRadius = 5000;
   double mapZoomLevel = 11;
 
   @override
@@ -698,8 +698,9 @@ class _ProductListScreenState extends State<ProductListScreen> {
                               radiusTextController.text =
                                   (radiusSelected / 1000).toStringAsFixed(2);
                             },
-                            min: 500,
+                            min: 0,
                             max: 30000,
+                            divisions: 60,
                           ),
                         ),
                         SizedBox(width: 5.0),
@@ -756,14 +757,17 @@ class _ProductListScreenState extends State<ProductListScreen> {
       _selectedRadius = distance;
     });
 
-    double mapZoomLevel = getZoomLevel(_selectedRadius);
+    if (_selectedView == 'map') {
+      double mapZoomLevel = getZoomLevel(_selectedRadius);
 
-    googleMapsController.animateCamera(CameraUpdate.newCameraPosition(
-      CameraPosition(
-          target: LatLng(application.currentUserLocation!.latitude!.toDouble(),
-              application.currentUserLocation!.longitude!.toDouble()),
-          zoom: mapZoomLevel),
-    ));
+      googleMapsController.animateCamera(CameraUpdate.newCameraPosition(
+        CameraPosition(
+            target: LatLng(
+                application.currentUserLocation!.latitude!.toDouble(),
+                application.currentUserLocation!.longitude!.toDouble()),
+            zoom: mapZoomLevel),
+      ));
+    }
 
     _productBloc.add(GetFirstProducts(
       userid: application.currentUser!.uid,

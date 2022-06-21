@@ -185,6 +185,7 @@ class _SelectProductCategoryScreenState
                     vertical: 10.0,
                   ),
                   child: CustomButton(
+                    removeMargin: true,
                     label: 'Next',
                     onTap: _onSaveTapped,
                   ),

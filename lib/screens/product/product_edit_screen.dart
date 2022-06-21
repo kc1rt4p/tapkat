@@ -413,11 +413,8 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
                             ),
                           ),
                           Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 20.0,
-                              vertical: 10.0,
-                            ),
                             child: CustomButton(
+                              removeMargin: true,
                               label: 'Next',
                               onTap: _onUpdateTapped,
                             ),

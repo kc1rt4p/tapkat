@@ -80,7 +80,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
     'Price',
     'Rating',
   ];
-  double _selectedRadius = 500;
+  double _selectedRadius = 5000;
   double mapZoomLevel = 11;
 
   @override
@@ -645,14 +645,17 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
       _selectedRadius = distance;
     });
 
-    double mapZoomLevel = getZoomLevel(_selectedRadius);
+    if (_selectedView == 'map') {
+      double mapZoomLevel = getZoomLevel(_selectedRadius);
 
-    googleMapsController.animateCamera(CameraUpdate.newCameraPosition(
-      CameraPosition(
-          target: LatLng(application.currentUserLocation!.latitude!.toDouble(),
-              application.currentUserLocation!.longitude!.toDouble()),
-          zoom: mapZoomLevel),
-    ));
+      googleMapsController.animateCamera(CameraUpdate.newCameraPosition(
+        CameraPosition(
+            target: LatLng(
+                application.currentUserLocation!.latitude!.toDouble(),
+                application.currentUserLocation!.longitude!.toDouble()),
+            zoom: mapZoomLevel),
+      ));
+    }
 
     _searchBloc.add(InitializeSearch(
       keyword: _keyWordTextController.text.trim(),

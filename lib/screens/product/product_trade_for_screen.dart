@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:tapkat/models/request/add_product_request.dart';
 import 'package:tapkat/screens/product/product_meetup_locations.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
@@ -30,6 +31,7 @@ class _ProductTradeForScreenState extends State<ProductTradeForScreen> {
   final inputTextController = TextEditingController();
   final focusNode = FocusNode();
   late ProductRequestModel _productRequest;
+  bool _textIsEmpty = true;
 
   @override
   void initState() {
@@ -67,7 +69,17 @@ class _ProductTradeForScreenState extends State<ProductTradeForScreen> {
                       focusedBorder: UnderlineInputBorder(
                         borderSide: BorderSide(color: kBackgroundColor),
                       ),
+                      suffixIcon: Icon(
+                        FontAwesomeIcons.plus,
+                        color: _textIsEmpty ? Colors.grey : kBackgroundColor,
+                        size: 15.0,
+                      ),
                     ),
+                    onChanged: (val) {
+                      setState(() {
+                        _textIsEmpty = val.isEmpty;
+                      });
+                    },
                     onFieldSubmitted: (val) {
                       if (val.isNotEmpty) {
                         setState(() {
