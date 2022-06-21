@@ -607,13 +607,14 @@ class _BarterScreenState extends State<BarterScreen> {
         ),
       ],
       child: Container(
+        margin: EdgeInsets.only(top: SizeConfig.paddingTop),
         child: SingleChildScrollView(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               Container(
                 padding: EdgeInsets.fromLTRB(0, 0, 16.0, 0),
-                height: kToolbarHeight + SizeConfig.paddingTop,
+                height: kToolbarHeight,
                 color: kBackgroundColor,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
