@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:isolate';
 
 import 'package:dio/dio.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:image/image.dart';
 import 'package:mime_type/mime_type.dart';
@@ -135,23 +136,34 @@ class ProductRepository {
     List<SelectedMedia> _imgsToUpload = [];
 
     for (var img in images) {
-      var receivePort = ReceivePort();
-      await Isolate.spawn(
-          decodeIsolate, DecodeParam(File(img.rawPath!), receivePort.sendPort));
+      // var receivePort = ReceivePort();
+      // await Isolate.spawn(
+      //     decodeIsolate, DecodeParam(File(img.rawPath!), receivePort.sendPort));
 
       // Get the processed image from the isolate.
-      var image = await receivePort.first as Image;
+      // var image = await receivePort.first as Image;
 
       final fileName = img.fileName.split('.')[0] + '_t.jpg';
 
       Directory appDocDirectory = await getApplicationDocumentsDirectory();
 
-      final thumbnail = await File(appDocDirectory.path + '/' + fileName)
-          .writeAsBytes(encodeJpg(image));
+      final _imageFile = await File(img.rawPath!).writeAsBytes(img.bytes);
+
+      final thumbnail = await FlutterImageCompress.compressAndGetFile(
+        _imageFile.path,
+        appDocDirectory.path + '/' + fileName,
+        quality: 10,
+      );
+
+      print('0---> ORIGINAL FILE SIZE: ${await thumbnail!.length()}');
+      print('0---> THUMBNAIL FILE SIZE ${await _imageFile.length()}');
 
       _imgsToUpload.addAll([
         img,
-        SelectedMedia(fileName, thumbnail.path, thumbnail.readAsBytesSync(),
+        SelectedMedia(
+            fileName,
+            appDocDirectory.path + '/' + fileName,
+            thumbnail!.readAsBytesSync(),
             appDocDirectory.path + '/' + fileName),
       ]);
     }
