@@ -69,10 +69,21 @@ class _ProductTradeForScreenState extends State<ProductTradeForScreen> {
                       focusedBorder: UnderlineInputBorder(
                         borderSide: BorderSide(color: kBackgroundColor),
                       ),
-                      suffixIcon: Icon(
-                        FontAwesomeIcons.plus,
-                        color: _textIsEmpty ? Colors.grey : kBackgroundColor,
-                        size: 15.0,
+                      suffixIcon: GestureDetector(
+                        onTap: !_textIsEmpty
+                            ? () {
+                                setState(() {
+                                  _list.add(inputTextController.text.trim());
+                                });
+                                inputTextController.clear();
+                                focusNode.requestFocus();
+                              }
+                            : null,
+                        child: Icon(
+                          FontAwesomeIcons.plus,
+                          color: _textIsEmpty ? Colors.grey : kBackgroundColor,
+                          size: 15.0,
+                        ),
                       ),
                     ),
                     onChanged: (val) {

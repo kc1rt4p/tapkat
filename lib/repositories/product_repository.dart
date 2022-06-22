@@ -4,10 +4,8 @@ import 'dart:isolate';
 import 'package:dio/dio.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:http_parser/http_parser.dart';
-import 'package:image/image.dart';
 import 'package:mime_type/mime_type.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:tapkat/models/decode_param.dart';
 import 'package:tapkat/models/location.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/models/product_category.dart';
@@ -21,13 +19,13 @@ import 'package:tapkat/utilities/constants.dart';
 import 'package:tapkat/utilities/upload_media.dart';
 import 'package:tapkat/utilities/application.dart' as application;
 
-void decodeIsolate(DecodeParam param) {
-  var image = decodeImage(param.file.readAsBytesSync())!;
-  print('0====> ORIGINAL IMAGE SIZE: ${image.length}');
-  var thumbnail = copyResizeCropSquare(image, 200);
-  print('0====> THUMBNAIL IMAGE SIZE: ${thumbnail.length}');
-  param.sendPort.send(thumbnail);
-}
+// void decodeIsolate(DecodeParam param) {
+//   var image = decodeImage(param.file.readAsBytesSync())!;
+//   print('0====> ORIGINAL IMAGE SIZE: ${image.length}');
+//   var thumbnail = copyResizeCropSquare(image, 200);
+//   print('0====> THUMBNAIL IMAGE SIZE: ${thumbnail.length}');
+//   param.sendPort.send(thumbnail);
+// }
 
 class ProductRepository {
   final _apiService = ApiService();
@@ -152,7 +150,7 @@ class ProductRepository {
       final thumbnail = await FlutterImageCompress.compressAndGetFile(
         _imageFile.path,
         appDocDirectory.path + '/' + fileName,
-        quality: 10,
+        quality: 15,
       );
 
       print('0---> ORIGINAL FILE SIZE: ${await thumbnail!.length()}');
@@ -160,11 +158,8 @@ class ProductRepository {
 
       _imgsToUpload.addAll([
         img,
-        SelectedMedia(
-            fileName,
-            appDocDirectory.path + '/' + fileName,
-            thumbnail!.readAsBytesSync(),
-            appDocDirectory.path + '/' + fileName),
+        SelectedMedia(fileName, appDocDirectory.path + '/' + fileName,
+            thumbnail.readAsBytesSync(), appDocDirectory.path + '/' + fileName),
       ]);
     }
 
