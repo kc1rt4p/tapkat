@@ -585,8 +585,9 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                               radiusTextController.text =
                                   (radiusSelected / 1000).toStringAsFixed(2);
                             },
-                            min: 500,
+                            min: 0,
                             max: 30000,
+                            divisions: 60,
                           ),
                         ),
                         SizedBox(width: 5.0),
