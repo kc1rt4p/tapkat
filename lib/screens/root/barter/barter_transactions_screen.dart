@@ -143,6 +143,13 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                         } else {
                           byYouList.clear();
                         }
+
+                        byYouList
+                            .sort((a, b) => b.dealDate!.compareTo(a.dealDate!));
+                        openInitiatedList
+                            .sort((a, b) => b.dealDate!.compareTo(a.dealDate!));
+                        completedInitiatedList
+                            .sort((a, b) => b.dealDate!.compareTo(a.dealDate!));
                       });
                       // List<BarterRecordModel> _byYou = [];
                       // List<BarterRecordModel> _fromOthers = [];
@@ -186,6 +193,13 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                         } else {
                           fromOthersList.clear();
                         }
+
+                        fromOthersList
+                            .sort((a, b) => b.dealDate!.compareTo(a.dealDate!));
+                        openOffersList
+                            .sort((a, b) => b.dealDate!.compareTo(a.dealDate!));
+                        completedOffersList
+                            .sort((a, b) => b.dealDate!.compareTo(a.dealDate!));
                       });
                       // List<BarterRecordModel> _byYou = [];
                       // List<BarterRecordModel> _fromOthers = [];

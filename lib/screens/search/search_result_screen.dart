@@ -321,6 +321,9 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                                       style: TextStyle(
                                         fontSize:
                                             SizeConfig.textScaleFactor * 12,
+                                        color: _selectedView == 'map'
+                                            ? Colors.grey
+                                            : Colors.black,
                                       ),
                                     ),
                                     SizedBox(height: 5.0),
@@ -332,7 +335,9 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                                         decoration: BoxDecoration(
                                           border: Border(
                                             bottom: BorderSide(
-                                              color: kBackgroundColor,
+                                              color: _selectedView == 'map'
+                                                  ? Colors.grey
+                                                  : kBackgroundColor,
                                               width: 0.6,
                                             ),
                                           ),
@@ -346,7 +351,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                                               style: Style.subtitle2.copyWith(
                                                 color: _selectedView != 'map'
                                                     ? kBackgroundColor
-                                                    : null,
+                                                    : Colors.grey,
                                                 fontSize:
                                                     SizeConfig.textScaleFactor *
                                                         12,
@@ -355,7 +360,9 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                                             Spacer(),
                                             Icon(
                                               FontAwesomeIcons.chevronDown,
-                                              color: kBackgroundColor,
+                                              color: _selectedView == 'map'
+                                                  ? Colors.grey
+                                                  : kBackgroundColor,
                                               size: SizeConfig.textScaleFactor *
                                                   12,
                                             ),
@@ -1045,6 +1052,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
           _markers
               .addLabelMarker(
                 LabelMarker(
+                  flat: true,
                   onTap: () => onMarkerTapped(context, product),
                   label: product.productname ?? '',
                   markerId: MarkerId(product.productid! +

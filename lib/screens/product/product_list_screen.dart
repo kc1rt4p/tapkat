@@ -426,6 +426,9 @@ class _ProductListScreenState extends State<ProductListScreen> {
                                     'Sort by',
                                     style: TextStyle(
                                       fontSize: SizeConfig.textScaleFactor * 12,
+                                      color: _selectedView == 'map'
+                                          ? Colors.grey
+                                          : Colors.black,
                                     ),
                                   ),
                                   SizedBox(height: 5.0),
@@ -437,7 +440,9 @@ class _ProductListScreenState extends State<ProductListScreen> {
                                       decoration: BoxDecoration(
                                         border: Border(
                                           bottom: BorderSide(
-                                            color: kBackgroundColor,
+                                            color: _selectedView == 'map'
+                                                ? Colors.grey
+                                                : kBackgroundColor,
                                             width: 0.6,
                                           ),
                                         ),
@@ -451,7 +456,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                                             style: Style.subtitle2.copyWith(
                                               color: _selectedView != 'map'
                                                   ? kBackgroundColor
-                                                  : null,
+                                                  : Colors.grey,
                                               fontSize:
                                                   SizeConfig.textScaleFactor *
                                                       12,
@@ -460,7 +465,9 @@ class _ProductListScreenState extends State<ProductListScreen> {
                                           Spacer(),
                                           Icon(
                                             FontAwesomeIcons.chevronDown,
-                                            color: kBackgroundColor,
+                                            color: _selectedView == 'map'
+                                                ? Colors.grey
+                                                : kBackgroundColor,
                                             size:
                                                 SizeConfig.textScaleFactor * 12,
                                           ),
@@ -982,7 +989,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                     application.currentUserLocation!.longitude!.toDouble()),
                 radius: _selectedRadius.toDouble(),
                 strokeColor: kBackgroundColor,
-                strokeWidth: 2,
+                strokeWidth: 1,
                 fillColor: kBackgroundColor.withOpacity(0.2),
               ),
             },

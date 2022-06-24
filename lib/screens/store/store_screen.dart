@@ -23,6 +23,7 @@ import 'package:tapkat/screens/store/bloc/store_bloc.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/constants.dart';
 import 'package:tapkat/utilities/dialog_message.dart';
+import 'package:tapkat/utilities/helper.dart';
 import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/utilities/style.dart';
 import 'package:tapkat/widgets/barter_list_item.dart';
@@ -1012,7 +1013,7 @@ class _StoreScreenState extends State<StoreScreen> {
       DialogMessage.show(context, message: 'Invalid URL');
       return;
     }
-    if (!await launch(website)) throw 'Could not launch $website';
+    if (!await launchURL(website)) throw 'Could not launch $website';
   }
 
   Widget _buildPhoto() {
@@ -1020,7 +1021,6 @@ class _StoreScreenState extends State<StoreScreen> {
       stream: _userRepo.streamUserOnlineStatus(_storeOwner!.userid!),
       builder: (context, snapshot) {
         bool online = false;
-        print('snapshot~~~~~${snapshot.data}');
         if (snapshot.hasData) {
           online = snapshot.data ?? false;
         }

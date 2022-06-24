@@ -22,12 +22,6 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
       try {
         if (event is LoadRecommendedList) {
-          emit(LoadingRecommendedList());
-          emit(LoadingUserList());
-          emit(LoadingTrendingList());
-          emit(LoadingTopStoreList());
-          emit(LoadingFreeList());
-
           LocationModel _location = application.currentUserLocation ??
               application.currentUserModel!.location ??
               LocationModel(latitude: 0, longitude: 0);
@@ -55,13 +49,20 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
             sortBy: 'name',
           );
           emit(LoadedUserList(userItems));
-          add(LoadTopStores());
+          add(LoadProductsInCategories());
         }
 
         if (event is LoadTopStores) {
+          emit(LoadingRecommendedList());
+          emit(LoadingUserList());
+          emit(LoadingTrendingList());
+          emit(LoadingTopStoreList());
+          emit(LoadingFreeList());
+
           final topStoreItems = await _userRepo.getFirstTopStores();
           emit(LoadTopStoresSuccess(topStoreItems));
-          add(LoadProductsInCategories());
+          // add(LoadProductsInCategories());
+          add(LoadRecommendedList());
         }
 
         if (event is LoadProductsInCategories) {
@@ -110,7 +111,8 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         }
 
         if (event is InitializeHomeScreen) {
-          add(LoadRecommendedList());
+          // add(LoadRecommendedList());
+          add(LoadTopStores());
         }
       } catch (e) {
         print('ERROR ON HOME BLOC: ${e.toString()}');

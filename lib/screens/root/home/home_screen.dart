@@ -278,7 +278,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                     .streamUserOnlineStatus(store.userid!),
                                 builder: (context, snapshot) {
                                   bool online = false;
-                                  print('snapshot~~~~~${snapshot.data}');
                                   if (snapshot.hasData) {
                                     online = snapshot.data ?? false;
                                   }
@@ -550,7 +549,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             SlidingUpPanel(
-              isDraggable: false,
+              isDraggable: true,
               controller: _panelController,
               backdropEnabled: false,
               minHeight: SizeConfig.screenHeight * 0.06,

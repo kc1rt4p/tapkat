@@ -144,7 +144,7 @@ class _BarterScreenState extends State<BarterScreen> {
       _closing = true;
     });
     bool shouldExit = true;
-    if (_offersChanged()) {
+    if (_offersChanged() && currentUserOffers.isNotEmpty) {
       final result = await showDialog(
         context: context,
         builder: (dContext) {
@@ -1465,7 +1465,7 @@ class _BarterScreenState extends State<BarterScreen> {
               addBtnTapped: _showCurrentUserItems,
               showAddBtn: _shouldShowAdd(),
             ),
-            _barterRecord != null && _barterRecord!.dealStatus != 'sold'
+            _shouldShowAdd()
                 ? Container(
                     margin: EdgeInsets.only(top: 20.0),
                     width: double.infinity,

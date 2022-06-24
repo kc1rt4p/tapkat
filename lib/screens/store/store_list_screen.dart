@@ -148,7 +148,6 @@ class _StoreListScreenState extends State<StoreListScreen> {
                       stream: _userRepo.streamUserOnlineStatus(store.userid!),
                       builder: (context, snapshot) {
                         bool online = false;
-                        print('snapshot~~~~~${snapshot.data}');
                         if (snapshot.hasData) {
                           online = snapshot.data ?? false;
                         }
