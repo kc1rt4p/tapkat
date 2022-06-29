@@ -816,7 +816,8 @@ class _BarterScreenState extends State<BarterScreen> {
                                   .toList(),
                             ),
                           ),
-                          Padding(
+                          Container(
+                            constraints: BoxConstraints(maxWidth: 500.0),
                             padding: const EdgeInsets.all(8.0),
                             child: Row(
                               crossAxisAlignment: CrossAxisAlignment.center,

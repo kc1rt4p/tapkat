@@ -34,6 +34,7 @@ class _CustomButtonState extends State<CustomButton> {
     return InkWell(
       onTap: widget.enabled ? widget.onTap : null,
       child: Container(
+        constraints: BoxConstraints(maxWidth: 500),
         margin: !widget.removeMargin ? EdgeInsets.only(bottom: 12.0) : null,
         width: widget.width ?? double.infinity,
         padding: EdgeInsets.symmetric(

@@ -135,7 +135,7 @@ class _SelectProductCategoryScreenState
                                                 });
                                               },
                                               child: Container(
-                                                padding: EdgeInsets.all(5.0),
+                                                padding: EdgeInsets.all(3.0),
                                                 decoration: BoxDecoration(
                                                   borderRadius:
                                                       BorderRadius.circular(
@@ -161,9 +161,10 @@ class _SelectProductCategoryScreenState
                                                           : kBackgroundColor,
                                                       fontSize: SizeConfig
                                                               .textScaleFactor *
-                                                          13,
+                                                          10.5,
+                                                      height: 1.2,
                                                       fontWeight:
-                                                          FontWeight.w800,
+                                                          FontWeight.w600,
                                                     ),
                                                     textAlign: TextAlign.center,
                                                   ),

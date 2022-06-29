@@ -185,6 +185,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                         _productBloc.add(GetProductDetails(widget.productId)),
                     child: _product != null
                         ? Container(
+                            constraints: BoxConstraints(maxWidth: 500.0),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [

@@ -215,6 +215,7 @@ class _StoreScreenState extends State<StoreScreen> {
                 ),
                 _storeOwner != null && !_isLoading
                     ? Container(
+                        constraints: BoxConstraints(maxWidth: 500.0),
                         padding: EdgeInsets.symmetric(
                           vertical: 8.0,
                           horizontal: 20.0,
@@ -306,7 +307,10 @@ class _StoreScreenState extends State<StoreScreen> {
                                 width: double.infinity,
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  crossAxisAlignment:
+                                      SizeConfig.screenWidth > 500
+                                          ? CrossAxisAlignment.start
+                                          : CrossAxisAlignment.center,
                                   children: [
                                     _buildInfoItem(
                                       label: 'Store Owner',
@@ -321,6 +325,9 @@ class _StoreScreenState extends State<StoreScreen> {
                                               : '0'),
                                     ),
                                     Container(
+                                      constraints: BoxConstraints(
+                                        maxWidth: 300.0,
+                                      ),
                                       margin: EdgeInsets.only(bottom: 3.0),
                                       child: Row(
                                         children: [
@@ -755,7 +762,7 @@ class _StoreScreenState extends State<StoreScreen> {
         showNewPageErrorIndicatorAsGridChild: false,
         showNoMoreItemsIndicatorAsGridChild: false,
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
+          crossAxisCount: SizeConfig.screenWidth > 500 ? 4 : 2,
         ),
         builderDelegate: PagedChildBuilderDelegate<ProductModel>(
           itemBuilder: (context, product, index) {
@@ -791,6 +798,9 @@ class _StoreScreenState extends State<StoreScreen> {
     Widget? suffix,
   }) {
     return Container(
+      constraints: BoxConstraints(
+        maxWidth: 300.0,
+      ),
       margin: EdgeInsets.only(bottom: 3.0),
       child: Row(
         children: [
@@ -820,6 +830,7 @@ class _StoreScreenState extends State<StoreScreen> {
   Widget _buildSocialMediaBtns() {
     if (_storeOwner == null) {
       return Container(
+        constraints: BoxConstraints(maxWidth: 500.0),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -893,6 +904,7 @@ class _StoreScreenState extends State<StoreScreen> {
     }
 
     return Container(
+      constraints: BoxConstraints(maxWidth: 500.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -902,6 +914,7 @@ class _StoreScreenState extends State<StoreScreen> {
             child: InkWell(
               onTap: () => _launchURL(_storeOwner!.fb_profile!),
               child: Container(
+                constraints: BoxConstraints(maxWidth: 30.0),
                 height: SizeConfig.screenWidth * .07,
                 width: SizeConfig.screenWidth * .07,
                 decoration: BoxDecoration(
@@ -923,6 +936,7 @@ class _StoreScreenState extends State<StoreScreen> {
             child: InkWell(
               onTap: () => _launchURL(_storeOwner!.ig_profile!),
               child: Container(
+                constraints: BoxConstraints(maxWidth: 30.0),
                 margin: EdgeInsets.only(right: 10.0),
                 height: SizeConfig.screenWidth * .07,
                 width: SizeConfig.screenWidth * .07,
@@ -944,6 +958,7 @@ class _StoreScreenState extends State<StoreScreen> {
             child: InkWell(
               onTap: () => _launchURL(_storeOwner!.yt_profile!),
               child: Container(
+                constraints: BoxConstraints(maxWidth: 30.0),
                 margin: EdgeInsets.only(right: 10.0),
                 height: SizeConfig.screenWidth * .07,
                 width: SizeConfig.screenWidth * .07,
@@ -965,6 +980,7 @@ class _StoreScreenState extends State<StoreScreen> {
             child: InkWell(
               onTap: () => _launchURL(_storeOwner!.tt_profile!),
               child: Container(
+                constraints: BoxConstraints(maxWidth: 30.0),
                 margin: EdgeInsets.only(right: 10.0),
                 height: SizeConfig.screenWidth * .07,
                 width: SizeConfig.screenWidth * .07,
@@ -986,6 +1002,7 @@ class _StoreScreenState extends State<StoreScreen> {
             child: InkWell(
               onTap: () => _launchURL(_storeOwner!.tw_profile!),
               child: Container(
+                constraints: BoxConstraints(maxWidth: 30.0),
                 height: SizeConfig.screenWidth * .07,
                 width: SizeConfig.screenWidth * .07,
                 decoration: BoxDecoration(
@@ -1027,6 +1044,10 @@ class _StoreScreenState extends State<StoreScreen> {
         return Stack(
           children: [
             Container(
+              constraints: BoxConstraints(
+                maxHeight: 150.0,
+                maxWidth: 150.0,
+              ),
               padding: EdgeInsets.all(5.0),
               decoration: BoxDecoration(
                 color: Colors.white,

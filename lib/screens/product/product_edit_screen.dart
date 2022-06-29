@@ -172,6 +172,7 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
                 ),
                 Expanded(
                   child: Container(
+                    constraints: BoxConstraints(maxWidth: 500.0),
                     padding: EdgeInsets.symmetric(
                       horizontal: 20.0,
                       vertical: 10.0,
@@ -229,6 +230,10 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
                                                 : 'PHP',
                                             style: TextStyle(
                                               color: Colors.white,
+                                              fontSize:
+                                                  SizeConfig.textScaleFactor *
+                                                      12,
+                                              fontWeight: FontWeight.w500,
                                             )),
                                       ),
                                     ),
@@ -294,8 +299,9 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
                           Container(
                             width: double.infinity,
                             margin: EdgeInsets.only(bottom: 16.0),
-                            padding: EdgeInsets.symmetric(
-                                vertical: 10.0, horizontal: 10.0),
+                            padding: EdgeInsets.fromLTRB(10.0, 2.0, 10.0, 10.0),
+                            // EdgeInsets.symmetric(
+                            //     vertical: 10.0, horizontal: 10.0),
                             decoration: BoxDecoration(
                               color: kBackgroundColor,
                               borderRadius: BorderRadius.circular(12.0),
@@ -310,9 +316,10 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
                                   'Offer Type',
                                   style: TextStyle(
                                     color: Colors.white,
+                                    fontSize: 11.0,
                                   ),
                                 ),
-                                SizedBox(height: 12.0),
+                                SizedBox(height: 8.0),
                                 _types.isNotEmpty
                                     ? FittedBox(
                                         child: ToggleSwitch(
@@ -552,6 +559,7 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
                         'Offer Type',
                         style: Style.subtitle2.copyWith(
                           color: kBackgroundColor,
+                          fontSize: 12.0,
                         ),
                       ),
                       GestureDetector(

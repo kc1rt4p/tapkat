@@ -73,6 +73,8 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
   bool _loading = false;
   Set<Marker> _markers = {};
 
+  bool zoomingByDrag = false;
+
   String _selectedSortBy = 'distance';
   List<String> sortByOptions = [
     'Distance',
@@ -734,19 +736,17 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
 
     _reset();
 
-    if (sortBy != null) {
-      setState(() {
-        _selectedSortBy = sortBy;
-      });
+    setState(() {
+      _selectedSortBy = sortBy;
+    });
 
-      _searchBloc.add(InitializeSearch(
-        keyword: _keyWordTextController.text.trim(),
-        category: _selectedCategory != null ? [_selectedCategory!.code!] : null,
-        sortBy: _selectedSortBy,
-        distance: _selectedRadius,
-        itemCount: _selectedView == 'map' ? 50 : 10,
-      ));
-    }
+    _searchBloc.add(InitializeSearch(
+      keyword: _keyWordTextController.text.trim(),
+      category: _selectedCategory != null ? [_selectedCategory!.code!] : null,
+      sortBy: _selectedSortBy,
+      distance: _selectedRadius,
+      itemCount: _selectedView == 'map' ? 50 : 10,
+    ));
   }
 
   _onFilterByCategory() async {
@@ -853,7 +853,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
 
     final lat = application.currentUserLocation!.latitude!.toDouble();
     // final zoomLevel = log(38000 * cos(lat * pi / 180) / (radius / 1000)) + 3;
-    final km = (38000 / pow(2, zoomLevel + 3) * cos(lat * pi / 180));
+    final km = (34500 / pow(2, zoomLevel + 3) * cos(lat * pi / 180));
 
     print(
         'current radius: ${_selectedRadius / 1000}km || calculated zoom level: $zoomLevel || calculated km: $km');
@@ -868,30 +868,66 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
       padding: EdgeInsets.fromLTRB(20.0, 5.0, 20.0, 10.0),
       child: Stack(
         children: [
-          TapkatGoogleMap(
-            circles: {
-              Circle(
-                circleId: CircleId('radius'),
-                center: LatLng(
-                    application.currentUserLocation!.latitude!.toDouble(),
-                    application.currentUserLocation!.longitude!.toDouble()),
-                radius: _selectedRadius.toDouble(),
-                strokeColor: kBackgroundColor,
-                strokeWidth: 2,
-                fillColor: kBackgroundColor.withOpacity(0.2),
-              ),
+          Listener(
+            onPointerDown: (e) {
+              zoomingByDrag = true;
             },
-            onCameraIdle: (latLng) => googleMapsCenter = latLng,
-            initialZoom: mapZoomLevel,
-            initialLocation: LatLng(
-                application.currentUserLocation!.latitude!.toDouble(),
-                application.currentUserLocation!.longitude!.toDouble()),
-            onMapCreated: (controller) {
-              googleMapsController = controller;
+            onPointerUp: (e) async {
+              if (!e.down) {
+                zoomingByDrag = false;
+                print('user stopped dragging');
+                final km = getRadiusFromZoomLevel(
+                        await googleMapsController.getZoomLevel()) /
+                    10;
+
+                final _km = km * 1000;
+
+                setState(() {
+                  _selectedRadius = _km;
+                });
+
+                if (_km >= 500 && _km <= 30000) {
+                  _searchBloc.add(InitializeSearch(
+                    keyword: _keyWordTextController.text.trim(),
+                    category: _selectedCategory != null
+                        ? [_selectedCategory!.code!]
+                        : null,
+                    sortBy: _selectedSortBy,
+                    distance: _selectedRadius,
+                    itemCount: _selectedView == 'map' ? 50 : 10,
+                  ));
+                }
+              }
             },
-            showLocation: false,
-            showZoomControls: false,
-            markers: _markers.toSet(),
+            child: TapkatGoogleMap(
+              circles: {
+                Circle(
+                  circleId: CircleId('radius'),
+                  center: LatLng(
+                      application.currentUserLocation!.latitude!.toDouble(),
+                      application.currentUserLocation!.longitude!.toDouble()),
+                  radius: _selectedRadius.toDouble(),
+                  strokeColor: kBackgroundColor,
+                  strokeWidth: 1,
+                  fillColor: kBackgroundColor.withOpacity(0.2),
+                ),
+              },
+              onCameraIdle: (latLng) => googleMapsCenter = latLng,
+              initialZoom: mapZoomLevel,
+              initialLocation: LatLng(
+                  application.currentUserLocation!.latitude!.toDouble(),
+                  application.currentUserLocation!.longitude!.toDouble()),
+              onMapCreated: (controller) {
+                googleMapsController = controller;
+              },
+              showLocation: false,
+              showZoomControls: false,
+              markers: _markers.toSet(),
+              onCameraMove: (camPos) {
+                final km = getRadiusFromZoomLevel(camPos.zoom) / 10;
+                print('====> $km');
+              },
+            ),
           ),
           Positioned(
             right: 5.0,
@@ -1160,6 +1196,14 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
         _productMarkerStream = null;
       }
     }
+  }
+
+  double getRadiusFromZoomLevel(double zoomLevel) {
+    final km = 34500 /
+        pow(2, zoomLevel - 3) *
+        cos(application.currentUserLocation!.latitude! * pi / 180);
+    // print('km based on zoom level: $km');
+    return km;
   }
 
   _onSearchSubmitted(String? val) {

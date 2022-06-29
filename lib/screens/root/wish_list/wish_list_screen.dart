@@ -291,6 +291,7 @@ class _WishListScreenState extends State<WishListScreen> {
 
   Widget _buildWantedItems() {
     return Container(
+      constraints: BoxConstraints(maxWidth: 500.0),
       padding: EdgeInsets.symmetric(horizontal: 16.0),
       child: Column(
         children: [
@@ -409,7 +410,7 @@ class _WishListScreenState extends State<WishListScreen> {
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisSpacing: 10.0,
         mainAxisSpacing: 16.0,
-        crossAxisCount: 3,
+        crossAxisCount: SizeConfig.screenWidth > 500 ? 4 : 3,
       ),
       builderDelegate: PagedChildBuilderDelegate<LikedStoreModel>(
         itemBuilder: (context, store, index) {
@@ -445,7 +446,7 @@ class _WishListScreenState extends State<WishListScreen> {
       showNoMoreItemsIndicatorAsGridChild: false,
       padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 16.0),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
+        crossAxisCount: SizeConfig.screenWidth > 500 ? 3 : 2,
         mainAxisSpacing: 16.0,
         crossAxisSpacing: 10.0,
       ),

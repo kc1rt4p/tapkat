@@ -159,6 +159,7 @@ class _ProductAddScreenState extends State<ProductAddScreen> {
                 ),
                 Expanded(
                   child: Container(
+                    constraints: BoxConstraints(maxWidth: 500.0),
                     width: double.infinity,
                     padding: EdgeInsets.symmetric(
                       horizontal: 30.0,
@@ -169,6 +170,7 @@ class _ProductAddScreenState extends State<ProductAddScreen> {
                         key: _formKey,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
                               'Add a product, event or service you want to offer',

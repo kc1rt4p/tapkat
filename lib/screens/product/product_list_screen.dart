@@ -980,30 +980,59 @@ class _ProductListScreenState extends State<ProductListScreen> {
       padding: EdgeInsets.fromLTRB(20.0, 5.0, 20.0, 10.0),
       child: Stack(
         children: [
-          TapkatGoogleMap(
-            circles: {
-              Circle(
-                circleId: CircleId('radius'),
-                center: LatLng(
-                    application.currentUserLocation!.latitude!.toDouble(),
-                    application.currentUserLocation!.longitude!.toDouble()),
-                radius: _selectedRadius.toDouble(),
-                strokeColor: kBackgroundColor,
-                strokeWidth: 1,
-                fillColor: kBackgroundColor.withOpacity(0.2),
-              ),
+          Listener(
+            onPointerUp: (e) async {
+              if (!e.down) {
+                print('user stopped dragging');
+                final km = getRadiusFromZoomLevel(
+                        await googleMapsController.getZoomLevel()) /
+                    10;
+
+                final _km = km * 1000;
+
+                setState(() {
+                  _selectedRadius = _km;
+                });
+
+                if (_km >= 500 && _km <= 30000) {
+                  _productBloc.add(GetFirstProducts(
+                    userid: application.currentUser!.uid,
+                    listType: widget.listType,
+                    sortBy: _selectedSortBy,
+                    distance: _selectedRadius,
+                    category: _selectedCategory != null
+                        ? [_selectedCategory!.code!]
+                        : null,
+                    itemCount: _selectedView == 'map' ? 50 : null,
+                  ));
+                }
+              }
             },
-            onCameraIdle: (latLng) => googleMapsCenter = latLng,
-            initialZoom: mapZoomLevel,
-            initialLocation: LatLng(
-                application.currentUserLocation!.latitude!.toDouble(),
-                application.currentUserLocation!.longitude!.toDouble()),
-            onMapCreated: (controller) {
-              googleMapsController = controller;
-            },
-            showLocation: false,
-            showZoomControls: false,
-            markers: _markers.toSet(),
+            child: TapkatGoogleMap(
+              circles: {
+                Circle(
+                  circleId: CircleId('radius'),
+                  center: LatLng(
+                      application.currentUserLocation!.latitude!.toDouble(),
+                      application.currentUserLocation!.longitude!.toDouble()),
+                  radius: _selectedRadius.toDouble(),
+                  strokeColor: kBackgroundColor,
+                  strokeWidth: 1,
+                  fillColor: kBackgroundColor.withOpacity(0.2),
+                ),
+              },
+              onCameraIdle: (latLng) => googleMapsCenter = latLng,
+              initialZoom: mapZoomLevel,
+              initialLocation: LatLng(
+                  application.currentUserLocation!.latitude!.toDouble(),
+                  application.currentUserLocation!.longitude!.toDouble()),
+              onMapCreated: (controller) {
+                googleMapsController = controller;
+              },
+              showLocation: false,
+              showZoomControls: false,
+              markers: _markers.toSet(),
+            ),
           ),
           Positioned(
             right: 5.0,
@@ -1162,28 +1191,48 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
   _buildMarkers() async {
     if (_list.isNotEmpty) {
-      setState(() {
-        _list.forEach((product) {
-          _markers
-              .addLabelMarker(
-                LabelMarker(
-                  onTap: () => onMarkerTapped(context, product),
-                  label: product.productname ?? '',
-                  markerId: MarkerId(product.productid!),
-                  position: LatLng(
-                    product.address != null && product.address!.location != null
-                        ? product.address!.location!.latitude!.toDouble()
-                        : 0.00,
-                    product.address != null && product.address!.location != null
-                        ? product.address!.location!.longitude!.toDouble()
-                        : 0.00,
-                  ),
-                  backgroundColor: kBackgroundColor,
-                ),
-              )
-              .then((value) => setState(() {}));
-        });
-      });
+      setState(
+        () {
+          _list.forEach(
+            (product) {
+              _markers
+                  .addLabelMarker(
+                    LabelMarker(
+                      onTap: () => onMarkerTapped(context, product),
+                      label: product.productname != null
+                          ? '${product.productname!.trim()}'
+                          : '',
+                      markerId: MarkerId(product.productid!),
+                      position: LatLng(
+                        product.address != null &&
+                                product.address!.location != null
+                            ? product.address!.location!.latitude!.toDouble()
+                            : 0.00,
+                        product.address != null &&
+                                product.address!.location != null
+                            ? product.address!.location!.longitude!.toDouble()
+                            : 0.00,
+                      ),
+                      backgroundColor: kBackgroundColor,
+                      textStyle: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 27.0,
+                        letterSpacing: 1.0,
+                        fontFamily: 'Poppins',
+                        leadingDistribution: TextLeadingDistribution.even,
+                        inherit: false,
+                        decorationStyle: TextDecorationStyle.solid,
+                      ),
+                    ),
+                  )
+                  .then(
+                    (value) => setState(() {}),
+                  );
+            },
+          );
+        },
+      );
     }
 
     // if (markers.isNotEmpty) {
@@ -1193,33 +1242,41 @@ class _ProductListScreenState extends State<ProductListScreen> {
     // }
   }
 
-  _onSelectView() {
-    setState(() {
-      _selectedView = _selectedView != 'map' ? 'map' : 'grid';
-    });
-
-    if (_selectedView == 'map') {
-      _buildMarkers();
-      _selectedSortBy = 'distance';
-    }
+  double getRadiusFromZoomLevel(double zoomLevel) {
+    final km = 34500 /
+        pow(2, zoomLevel - 3) *
+        cos(application.currentUserLocation!.latitude! * pi / 180);
+    // print('km based on zoom level: $km');
+    return km;
   }
 
-  Expanded _buildSortOption() {
-    return Expanded(
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(9.0),
-          color: Colors.white,
-        ),
-        child: Center(
-            child: Text(
-          'Relevance',
-          style: TextStyle(
-            fontSize: 12.0,
-          ),
-        )),
-      ),
-    );
-  }
+  // _onSelectView() {
+  //   setState(() {
+  //     _selectedView = _selectedView != 'map' ? 'map' : 'grid';
+  //   });
+
+  //   if (_selectedView == 'map') {
+  //     _buildMarkers();
+  //     _selectedSortBy = 'distance';
+  //   }
+  // }
+
+  // Expanded _buildSortOption() {
+  //   return Expanded(
+  //     child: Container(
+  //       padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
+  //       decoration: BoxDecoration(
+  //         borderRadius: BorderRadius.circular(9.0),
+  //         color: Colors.white,
+  //       ),
+  //       child: Center(
+  //           child: Text(
+  //         'Relevance',
+  //         style: TextStyle(
+  //           fontSize: 12.0,
+  //         ),
+  //       )),
+  //     ),
+  //   );
+  // }
 }

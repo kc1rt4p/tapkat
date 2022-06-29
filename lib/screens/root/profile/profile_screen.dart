@@ -622,7 +622,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       showNoMoreItemsIndicatorAsGridChild: false,
       padding: EdgeInsets.symmetric(vertical: 10.0),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
+        crossAxisCount: SizeConfig.screenWidth > 500 ? 3 : 2,
         mainAxisSpacing: 10.0,
         crossAxisSpacing: 10.0,
       ),

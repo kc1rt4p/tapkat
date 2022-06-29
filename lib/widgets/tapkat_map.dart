@@ -63,6 +63,7 @@ class TapkatGoogleMap extends StatefulWidget {
     this.showTraffic = false,
     this.centerMapOnMarkerTap = false,
     required this.onMapCreated,
+    this.onCameraMoveStarted,
     this.onCameraMove,
     this.onTap,
     this.circles,
@@ -89,6 +90,7 @@ class TapkatGoogleMap extends StatefulWidget {
   final Function(GoogleMapController) onMapCreated;
   final Function(LatLng)? onTap;
   final Function(CameraPosition)? onCameraMove;
+  final Function()? onCameraMoveStarted;
 
   @override
   State<StatefulWidget> createState() => _TapkatGoogleMapState();
@@ -117,6 +119,7 @@ class _TapkatGoogleMapState extends State<TapkatGoogleMap> {
         child: GoogleMap(
           onMapCreated: (controller) => widget.onMapCreated(controller),
           onCameraIdle: onCameraIdle,
+          onCameraMoveStarted: widget.onCameraMoveStarted,
           onCameraMove: (position) {
             currentMapCenter = position.target;
             if (widget.onCameraMove != null) {

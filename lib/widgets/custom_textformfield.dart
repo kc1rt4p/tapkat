@@ -79,6 +79,7 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
                   controller: widget.controller,
                   style: TextStyle(
                     color: widget.textColor ?? Colors.white,
+                    fontSize: 13.0,
                   ),
                   obscureText: widget.obscureText,
                   keyboardType: widget.isPhone
@@ -92,6 +93,7 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
                       widget.label,
                       style: TextStyle(
                         color: widget.textColor ?? Colors.white,
+                        fontSize: 13.0,
                       ),
                     ),
                     border: InputBorder.none,

@@ -2,16 +2,15 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:distance/distance.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 import 'package:loading_indicator/loading_indicator.dart';
 import 'package:tapkat/backend.dart';
 import 'package:tapkat/models/location.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/schemas/user_likes_record.dart';
-import 'package:tapkat/screens/product/bloc/product_bloc.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/utilities/application.dart' as application;
-import 'dart:math';
 
 typedef OnLikeCallBack = void Function(int);
 
@@ -51,6 +50,8 @@ class BarterListItem extends StatefulWidget {
 
 class _BarterListItemState extends State<BarterListItem> {
   late ProductModel _product;
+
+  final oCcy = new NumberFormat("#,##0.00", "en_US");
 
   @override
   void initState() {
@@ -268,7 +269,7 @@ class _BarterListItemState extends State<BarterListItem> {
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
-                            SizedBox(height: 5.0),
+                            SizedBox(height: 3.0),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
@@ -295,7 +296,7 @@ class _BarterListItemState extends State<BarterListItem> {
                                           style: TextStyle(
                                             fontSize: widget.fontSize ??
                                                 SizeConfig.textScaleFactor * 8,
-                                            fontWeight: FontWeight.bold,
+                                            fontWeight: FontWeight.w600,
                                           ),
                                         ),
                                       ),
@@ -303,12 +304,12 @@ class _BarterListItemState extends State<BarterListItem> {
                                   product.free != null && product.free!
                                       ? 'FREE'
                                       : product.price != null
-                                          ? product.price!.toStringAsFixed(2)
+                                          ? oCcy.format(product.price!)
                                           : '0.00',
                                   style: TextStyle(
                                     fontSize: widget.fontSize ??
-                                        SizeConfig.textScaleFactor * 10,
-                                    fontWeight: FontWeight.bold,
+                                        SizeConfig.textScaleFactor * 9.5,
+                                    fontWeight: FontWeight.w700,
                                   ),
                                 ),
                               ],

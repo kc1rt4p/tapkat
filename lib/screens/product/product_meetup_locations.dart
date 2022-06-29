@@ -104,6 +104,7 @@ class _ProductMeetUpLocationsScreenState
               ),
               Expanded(
                 child: Container(
+                  constraints: BoxConstraints(maxWidth: 500.0),
                   width: double.infinity,
                   padding:
                       EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),

@@ -102,7 +102,7 @@ class _BarterListState extends State<BarterList> {
                                       style: TextStyle(
                                         color: Colors.white,
                                         fontSize:
-                                            SizeConfig.textScaleFactor * 13,
+                                            SizeConfig.textScaleFactor * 12,
                                       )),
                                   SizedBox(width: 5.0),
                                   Icon(
