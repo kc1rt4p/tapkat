@@ -107,11 +107,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 ),
                 Expanded(
                   child: Container(
+                    constraints: BoxConstraints(maxWidth: 500.0),
                     padding:
                         EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
                     child: SingleChildScrollView(
                       child: Column(
                         children: [
+                          SizeConfig.screenWidth > 500
+                              ? SizedBox(height: SizeConfig.screenHeight * 0.1)
+                              : SizedBox(),
                           _buildPhoto(),
                           SizedBox(height: 26.0),
                           CustomTextFormField(
@@ -132,38 +136,41 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             controller: _emailTextController,
                             color: kBackgroundColor,
                           ),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Expanded(
-                                child: CustomTextFormField(
-                                  label: 'Location',
-                                  isReadOnly: true,
-                                  hintText: '',
-                                  controller: _locationTextController,
-                                  onTap: _onSelectLocation,
-                                  color: kBackgroundColor,
-                                  removeMargin: true,
-                                ),
-                              ),
-                              SizedBox(width: 6.0),
-                              InkWell(
-                                onTap: _onUseMyLocation,
-                                child: Container(
-                                  width: 45.0,
-                                  height: 45.0,
-                                  decoration: BoxDecoration(
+                          Container(
+                            constraints: BoxConstraints(maxWidth: 500.0),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Expanded(
+                                  child: CustomTextFormField(
+                                    label: 'Location',
+                                    isReadOnly: true,
+                                    hintText: '',
+                                    controller: _locationTextController,
+                                    onTap: _onSelectLocation,
                                     color: kBackgroundColor,
-                                    borderRadius: BorderRadius.circular(10.0),
-                                  ),
-                                  child: Icon(
-                                    Icons.my_location,
-                                    color: Colors.white,
+                                    removeMargin: true,
                                   ),
                                 ),
-                              ),
-                            ],
+                                SizedBox(width: 6.0),
+                                InkWell(
+                                  onTap: _onUseMyLocation,
+                                  child: Container(
+                                    width: 45.0,
+                                    height: 45.0,
+                                    decoration: BoxDecoration(
+                                      color: kBackgroundColor,
+                                      borderRadius: BorderRadius.circular(10.0),
+                                    ),
+                                    child: Icon(
+                                      Icons.my_location,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       ),
@@ -171,6 +178,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   ),
                 ),
                 Container(
+                  constraints: BoxConstraints(maxWidth: 500.0),
                   padding: EdgeInsets.symmetric(
                     horizontal: 20.0,
                     vertical: 2.0,

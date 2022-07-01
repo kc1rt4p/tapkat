@@ -188,13 +188,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 leading: GestureDetector(
                   onTap: () {
                     if (_userModel != null) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              SettingsScreen(user: _userModel!),
-                        ),
-                      );
+                      Scaffold.of(context).openDrawer();
+                      // Navigator.push(
+                      //   context,
+                      //   MaterialPageRoute(
+                      //     builder: (context) =>
+                      //         SettingsScreen(user: _userModel!),
+                      //   ),
+                      // );
                     }
                   },
                   child: Icon(
@@ -848,18 +849,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
         child: Stack(
           children: [
             Container(
+              constraints: BoxConstraints(maxWidth: 500.0),
               padding: EdgeInsets.all(10.0),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Center(
-                    child: SizedBox(
-                      height: SizeConfig.screenWidth * .23,
-                      width: SizeConfig.screenWidth * .23,
-                      child: _buildPhoto(),
-                    ),
-                  ),
+                  _buildPhoto(),
                   SizedBox(height: 15),
                   _buildInfoItem(
                     center: true,

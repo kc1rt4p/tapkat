@@ -100,6 +100,7 @@ class _InterestSelectionScreenState extends State<InterestSelectionScreen> {
                 ),
                 Expanded(
                   child: Container(
+                    constraints: BoxConstraints(maxWidth: 500.0),
                     width: double.infinity,
                     padding: EdgeInsets.symmetric(
                       horizontal: 20.0,
@@ -107,6 +108,9 @@ class _InterestSelectionScreenState extends State<InterestSelectionScreen> {
                     ),
                     child: Column(
                       children: [
+                        SizeConfig.screenWidth > 500
+                            ? SizedBox(height: SizeConfig.screenHeight * 0.1)
+                            : SizedBox(),
                         Text(
                           'Select your interests, this will help us show you offers from other users that you might be interested',
                           textAlign: TextAlign.center,
@@ -117,7 +121,8 @@ class _InterestSelectionScreenState extends State<InterestSelectionScreen> {
                                   padding: EdgeInsets.only(top: 20.0),
                                   shrinkWrap: true,
                                   childAspectRatio: 3 / 2,
-                                  mainAxisSpacing: 5.0,
+                                  mainAxisSpacing: 10.0,
+                                  crossAxisSpacing: 10.0,
                                   crossAxisCount: 3,
                                   children: _categories
                                       .where((cat) => cat.type == 'PT1')
@@ -141,7 +146,7 @@ class _InterestSelectionScreenState extends State<InterestSelectionScreen> {
                                                         .08,
                                                 width: SizeConfig.screenWidth *
                                                     .25,
-                                                padding: EdgeInsets.all(10.0),
+                                                padding: EdgeInsets.all(3.0),
                                                 decoration: BoxDecoration(
                                                   borderRadius:
                                                       BorderRadius.circular(
@@ -166,8 +171,14 @@ class _InterestSelectionScreenState extends State<InterestSelectionScreen> {
                                                           ? Colors.white
                                                           : kBackgroundColor,
                                                       fontSize: SizeConfig
-                                                              .textScaleFactor *
-                                                          13,
+                                                                  .screenWidth >
+                                                              500
+                                                          ? SizeConfig
+                                                                  .textScaleFactor *
+                                                              16
+                                                          : SizeConfig
+                                                                  .textScaleFactor *
+                                                              11,
                                                       fontWeight:
                                                           FontWeight.w800,
                                                     ),
@@ -186,6 +197,7 @@ class _InterestSelectionScreenState extends State<InterestSelectionScreen> {
                   ),
                 ),
                 Container(
+                  constraints: BoxConstraints(maxWidth: 500.0),
                   padding: EdgeInsets.symmetric(
                     horizontal: 20.0,
                     vertical: 10.0,

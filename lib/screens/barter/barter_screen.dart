@@ -105,6 +105,8 @@ class _BarterScreenState extends State<BarterScreen> {
 
   BarterProductModel? _productToReview;
 
+  UserReviewModel? _userReview;
+
   List<SelectedMedia> _selectedMedia = [];
 
   @override
@@ -313,7 +315,9 @@ class _BarterScreenState extends State<BarterScreen> {
             }
 
             if (state is GetUserReviewSuccess) {
-              _onRateUser(state.review);
+              setState(() {
+                _userReview = state.review;
+              });
             }
 
             if (state is GetProductReviewSuccess) {
@@ -324,6 +328,13 @@ class _BarterScreenState extends State<BarterScreen> {
             if (state is AddUserReviewSuccess) {
               DialogMessage.show(context,
                   message: 'Your User Review has been submitted');
+              if (_barterRecord!.dealStatus == 'completed') {
+                _barterBloc.add(GetUserReview(
+                    _currentUserModel!.userid == _senderUserId
+                        ? _recipientUserId!
+                        : _senderUserId!,
+                    _currentUserModel!.userid!));
+              }
             }
 
             if (state is RateProductSuccess) {
@@ -419,6 +430,14 @@ class _BarterScreenState extends State<BarterScreen> {
                     } else {
                       _currentUserRole = _barterRecord!.userid2Role;
                       _recipientName = _barterRecord!.userid1Name!;
+                    }
+
+                    if (_barterRecord!.dealStatus == 'completed') {
+                      _barterBloc.add(GetUserReview(
+                          _currentUserModel!.userid == _senderUserId
+                              ? _recipientUserId!
+                              : _senderUserId!,
+                          _currentUserModel!.userid!));
                     }
 
                     _recipientName = _recipientName.length > 12
@@ -1136,12 +1155,8 @@ class _BarterScreenState extends State<BarterScreen> {
               child: CustomButton(
                 removeMargin: true,
                 enabled: true,
-                label: 'Leave Review',
-                onTap: () => _barterBloc.add(GetUserReview(
-                    _currentUserModel!.userid == _senderUserId
-                        ? _recipientUserId!
-                        : _senderUserId!,
-                    _currentUserModel!.userid!)),
+                label: _userReview != null ? 'View Review' : 'Leave Review',
+                onTap: () => _onRateUser(_userReview),
               ),
             ),
           ),

@@ -10,6 +10,7 @@ import 'package:tapkat/screens/product/bloc/product_bloc.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/constants.dart';
 import 'package:tapkat/utilities/dialog_message.dart';
+import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/utilities/style.dart';
 import 'package:tapkat/utilities/upload_media.dart';
 import 'package:tapkat/widgets/custom_app_bar.dart';
@@ -111,6 +112,9 @@ class _ProductMeetUpLocationsScreenState
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      SizeConfig.screenWidth > 500
+                          ? SizedBox(height: SizeConfig.screenHeight * 0.1)
+                          : SizedBox(),
                       Text('You may add up to 3 meet up locations',
                           style: Style.subtitle2),
                       SizedBox(height: 10.0),
@@ -193,6 +197,7 @@ class _ProductMeetUpLocationsScreenState
                 ),
               ),
               Container(
+                constraints: BoxConstraints(maxWidth: 500.0),
                 padding: EdgeInsets.symmetric(
                   horizontal: 20.0,
                   vertical: 5.0,

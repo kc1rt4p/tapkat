@@ -55,6 +55,7 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
+          constraints: BoxConstraints(maxWidth: 500.0),
           width: double.infinity,
           padding: EdgeInsets.symmetric(
             horizontal: 10.0,

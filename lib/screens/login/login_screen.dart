@@ -161,11 +161,12 @@ class _LoginScreenState extends State<LoginScreen> {
                 Container(
                   height: SizeConfig.screenHeight,
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       SizedBox(height: SizeConfig.screenHeight * .34),
                       Expanded(
                         child: Container(
-                          width: SizeConfig.screenWidth,
+                          width: double.infinity,
                           child: SingleChildScrollView(
                             child: Form(
                               key: _formKey,
@@ -210,96 +211,110 @@ class _LoginScreenState extends State<LoginScreen> {
                                                   ),
                                                 ],
                                               )
-                                            : Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Container(
-                                                    width: double.infinity,
-                                                    padding:
-                                                        EdgeInsets.symmetric(
-                                                      horizontal: 10.0,
-                                                    ),
-                                                    decoration: BoxDecoration(
-                                                      color: Color(0xFFE2E2E2)
-                                                          .withOpacity(0.15),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              12.0),
-                                                      border: Border.all(
-                                                        color: kBackgroundColor,
+                                            : Container(
+                                                constraints: BoxConstraints(
+                                                    maxWidth: 500.0),
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Container(
+                                                      width: double.infinity,
+                                                      padding:
+                                                          EdgeInsets.symmetric(
+                                                        horizontal: 10.0,
                                                       ),
-                                                    ),
-                                                    child:
-                                                        InternationalPhoneNumberInput(
-                                                      initialValue:
-                                                          _selectedPhoneCountry,
-                                                      spaceBetweenSelectorAndTextField:
-                                                          0,
-                                                      textFieldController:
-                                                          _phoneTextController,
-                                                      selectorConfig:
-                                                          SelectorConfig(
-                                                        trailingSpace: false,
-                                                        selectorType:
-                                                            PhoneInputSelectorType
-                                                                .DIALOG,
-                                                        setSelectorButtonAsPrefixIcon:
-                                                            true,
-                                                        leadingPadding: 0,
+                                                      decoration: BoxDecoration(
+                                                        color: Color(0xFFE2E2E2)
+                                                            .withOpacity(0.15),
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(12.0),
+                                                        border: Border.all(
+                                                          color:
+                                                              kBackgroundColor,
+                                                        ),
                                                       ),
-                                                      inputDecoration:
-                                                          InputDecoration(
-                                                        hintStyle: TextStyle(
-                                                          color: Colors.white
-                                                              .withOpacity(0.3),
+                                                      child:
+                                                          InternationalPhoneNumberInput(
+                                                        initialValue:
+                                                            _selectedPhoneCountry,
+                                                        spaceBetweenSelectorAndTextField:
+                                                            0,
+                                                        textFieldController:
+                                                            _phoneTextController,
+                                                        selectorConfig:
+                                                            SelectorConfig(
+                                                          trailingSpace: false,
+                                                          selectorType:
+                                                              PhoneInputSelectorType
+                                                                  .DIALOG,
+                                                          setSelectorButtonAsPrefixIcon:
+                                                              true,
+                                                          leadingPadding: 0,
+                                                        ),
+                                                        inputDecoration:
+                                                            InputDecoration(
+                                                          hintStyle: TextStyle(
+                                                            color: Colors.white
+                                                                .withOpacity(
+                                                                    0.3),
+                                                            fontSize: SizeConfig
+                                                                    .textScaleFactor *
+                                                                15,
+                                                          ),
+                                                          border:
+                                                              InputBorder.none,
+                                                          contentPadding:
+                                                              EdgeInsets.zero,
+                                                          hintText:
+                                                              'Enter your phone number',
+                                                          isDense: true,
+                                                        ),
+                                                        onInputChanged:
+                                                            (phoneNumber) {
+                                                          setState(() {
+                                                            _phoneNumber =
+                                                                phoneNumber
+                                                                    .phoneNumber;
+                                                            _selectedPhoneCountry =
+                                                                phoneNumber;
+                                                          });
+                                                        },
+                                                        textStyle: TextStyle(
+                                                          color: Colors.white,
+                                                          fontFamily: 'Poppins',
                                                           fontSize: SizeConfig
                                                                   .textScaleFactor *
                                                               15,
                                                         ),
-                                                        border:
-                                                            InputBorder.none,
-                                                        contentPadding:
-                                                            EdgeInsets.zero,
-                                                        hintText:
-                                                            'Enter your phone number',
-                                                        isDense: true,
-                                                      ),
-                                                      onInputChanged:
-                                                          (phoneNumber) {
-                                                        setState(() {
-                                                          _phoneNumber =
-                                                              phoneNumber
-                                                                  .phoneNumber;
-                                                          _selectedPhoneCountry =
-                                                              phoneNumber;
-                                                        });
-                                                      },
-                                                      textStyle: TextStyle(
-                                                        color: Colors.white,
-                                                        fontFamily: 'Poppins',
-                                                        fontSize: SizeConfig
-                                                                .textScaleFactor *
-                                                            15,
-                                                      ),
-                                                      selectorTextStyle:
-                                                          TextStyle(
-                                                        color: Colors.white,
-                                                        fontFamily: 'Poppins',
-                                                        fontSize: SizeConfig
-                                                                .textScaleFactor *
-                                                            15,
-                                                      ),
-                                                      validator: (val) {
-                                                        if (val != null) {
-                                                          if (val.isEmpty) {
-                                                            setState(() {
-                                                              _showPhoneError =
-                                                                  true;
-                                                              _phoneErrorMsg =
-                                                                  'Required';
-                                                            });
-                                                            return null;
+                                                        selectorTextStyle:
+                                                            TextStyle(
+                                                          color: Colors.white,
+                                                          fontFamily: 'Poppins',
+                                                          fontSize: SizeConfig
+                                                                  .textScaleFactor *
+                                                              15,
+                                                        ),
+                                                        validator: (val) {
+                                                          if (val != null) {
+                                                            if (val.isEmpty) {
+                                                              setState(() {
+                                                                _showPhoneError =
+                                                                    true;
+                                                                _phoneErrorMsg =
+                                                                    'Required';
+                                                              });
+                                                              return null;
+                                                            } else {
+                                                              setState(() {
+                                                                _phoneErrorMsg =
+                                                                    '';
+                                                                _showPhoneError =
+                                                                    false;
+                                                              });
+                                                              return null;
+                                                            }
                                                           } else {
                                                             setState(() {
                                                               _phoneErrorMsg =
@@ -309,33 +324,26 @@ class _LoginScreenState extends State<LoginScreen> {
                                                             });
                                                             return null;
                                                           }
-                                                        } else {
-                                                          setState(() {
-                                                            _phoneErrorMsg = '';
-                                                            _showPhoneError =
-                                                                false;
-                                                          });
-                                                          return null;
-                                                        }
-                                                      },
-                                                      countries: ['PH', 'SG'],
-                                                    ),
-                                                  ),
-                                                  Visibility(
-                                                    visible: _showPhoneError,
-                                                    child: Text(
-                                                      _phoneErrorMsg,
-                                                      style: TextStyle(
-                                                        fontSize: 12.0,
-                                                        color:
-                                                            Colors.red.shade400,
-                                                        fontStyle:
-                                                            FontStyle.italic,
+                                                        },
+                                                        countries: ['PH', 'SG'],
                                                       ),
                                                     ),
-                                                  ),
-                                                  SizedBox(height: 16.0),
-                                                ],
+                                                    Visibility(
+                                                      visible: _showPhoneError,
+                                                      child: Text(
+                                                        _phoneErrorMsg,
+                                                        style: TextStyle(
+                                                          fontSize: 12.0,
+                                                          color: Colors
+                                                              .red.shade400,
+                                                          fontStyle:
+                                                              FontStyle.italic,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    SizedBox(height: 16.0),
+                                                  ],
+                                                ),
                                               )
                                         : Column(
                                             children: [
@@ -378,39 +386,44 @@ class _LoginScreenState extends State<LoginScreen> {
                                               ),
                                             ],
                                           ),
-                                    Row(
-                                      children: [
-                                        _verifyingPhone
-                                            ? Expanded(
-                                                child: Row(
-                                                  children: [
-                                                    Expanded(
-                                                      child: CustomButton(
-                                                        enabled: timerExpired,
-                                                        onTap: _onResendTapped,
-                                                        label: timerExpired
-                                                            ? 'Resend'
-                                                            : 'Resend ($timerText)',
-                                                        bgColor: Style
-                                                            .secondaryColor,
+                                    Container(
+                                      constraints:
+                                          BoxConstraints(maxWidth: 500.0),
+                                      child: Row(
+                                        children: [
+                                          _verifyingPhone
+                                              ? Expanded(
+                                                  child: Row(
+                                                    children: [
+                                                      Expanded(
+                                                        child: CustomButton(
+                                                          enabled: timerExpired,
+                                                          onTap:
+                                                              _onResendTapped,
+                                                          label: timerExpired
+                                                              ? 'Resend'
+                                                              : 'Resend ($timerText)',
+                                                          bgColor: Style
+                                                              .secondaryColor,
+                                                        ),
                                                       ),
-                                                    ),
-                                                    SizedBox(width: 10.0),
-                                                  ],
-                                                ),
-                                              )
-                                            : Text(''),
-                                        Expanded(
-                                          child: CustomButton(
-                                            bgColor: Colors.white,
-                                            textColor: kBackgroundColor,
-                                            onTap: _onLogInTapped,
-                                            label: _verifyingPhone
-                                                ? 'Submit'
-                                                : 'Log In',
+                                                      SizedBox(width: 10.0),
+                                                    ],
+                                                  ),
+                                                )
+                                              : Text(''),
+                                          Expanded(
+                                            child: CustomButton(
+                                              bgColor: Colors.white,
+                                              textColor: kBackgroundColor,
+                                              onTap: _onLogInTapped,
+                                              label: _verifyingPhone
+                                                  ? 'Submit'
+                                                  : 'Log In',
+                                            ),
                                           ),
-                                        ),
-                                      ],
+                                        ],
+                                      ),
                                     ),
                                     SizedBox(height: 20.0),
                                     CustomButton(

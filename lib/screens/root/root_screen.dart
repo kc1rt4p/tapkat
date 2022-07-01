@@ -21,6 +21,7 @@ import 'package:tapkat/screens/root/home/home_screen.dart';
 import 'package:tapkat/screens/root/home/home_screen_new.dart';
 import 'package:tapkat/screens/root/profile/profile_screen.dart';
 import 'package:tapkat/screens/root/wish_list/wish_list_screen.dart';
+import 'package:tapkat/screens/settings/settings_screen.dart';
 import 'package:tapkat/services/dynamic_link.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/dialog_message.dart';
@@ -422,6 +423,8 @@ class _RootScreenState extends State<RootScreen> {
       floatingActionButtonLocation:
           FloatingActionButtonLocation.miniCenterDocked,
       bottomNavigationBar: _buildBottomNavBar(),
+      drawer: SettingsScreen(),
+      drawerEnableOpenDragGesture: false,
     );
   }
 

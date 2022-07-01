@@ -180,6 +180,9 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
                     child: SingleChildScrollView(
                       child: Column(
                         children: [
+                          SizeConfig.screenWidth > 500
+                              ? SizedBox(height: SizeConfig.screenHeight * 0.1)
+                              : SizedBox(),
                           _buildPhoto(),
                           // Visibility(
                           //       visible: showImageError,

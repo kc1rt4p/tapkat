@@ -87,6 +87,7 @@ class _ItemsWantedScreenState extends State<ItemsWantedScreen> {
                   }
                 },
                 child: Container(
+                  constraints: BoxConstraints(maxWidth: 500.0),
                   width: SizeConfig.screenWidth,
                   height: SizeConfig.screenHeight,
                   padding:
@@ -187,6 +188,7 @@ class _ItemsWantedScreenState extends State<ItemsWantedScreen> {
               ),
             ),
             Container(
+              constraints: BoxConstraints(maxWidth: 500.0),
               padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 3.0),
               child: Row(
                 children: [

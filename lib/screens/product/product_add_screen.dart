@@ -172,6 +172,10 @@ class _ProductAddScreenState extends State<ProductAddScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
+                            SizeConfig.screenWidth > 500
+                                ? SizedBox(
+                                    height: SizeConfig.screenHeight * 0.1)
+                                : SizedBox(),
                             Text(
                               'Add a product, event or service you want to offer',
                               style: Style.bodyText2,

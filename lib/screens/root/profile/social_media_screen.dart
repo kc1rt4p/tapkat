@@ -78,12 +78,17 @@ class _UserSocialMediaAccountsScreenState
                         label: 'Edit Profile',
                       ),
                       Expanded(
-                        child: Padding(
+                        child: Container(
+                          constraints: BoxConstraints(maxWidth: 500.0),
                           padding: const EdgeInsets.symmetric(
                               horizontal: 20.0, vertical: 16.0),
                           child: SingleChildScrollView(
                             child: Column(
                               children: [
+                                SizeConfig.screenWidth > 500
+                                    ? SizedBox(
+                                        height: SizeConfig.screenHeight * 0.1)
+                                    : SizedBox(),
                                 _buildUnderlineInput(
                                   label: 'Facebook',
                                   controller: fbTextEditingController,
@@ -109,7 +114,8 @@ class _UserSocialMediaAccountsScreenState
                           ),
                         ),
                       ),
-                      Padding(
+                      Container(
+                        constraints: BoxConstraints(maxWidth: 500.0),
                         padding: const EdgeInsets.all(8.0),
                         child: Column(
                           children: [

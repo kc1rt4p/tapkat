@@ -99,6 +99,7 @@ class _SelectProductCategoryScreenState
                 ),
                 Expanded(
                   child: Container(
+                    constraints: BoxConstraints(maxWidth: 500.0),
                     width: double.infinity,
                     padding: EdgeInsets.symmetric(
                       horizontal: 20.0,
@@ -106,6 +107,9 @@ class _SelectProductCategoryScreenState
                     ),
                     child: Column(
                       children: [
+                        SizeConfig.screenWidth > 500
+                            ? SizedBox(height: SizeConfig.screenHeight * 0.1)
+                            : SizedBox(),
                         Text('Select category of your product'),
                         _categories.isNotEmpty
                             ? Expanded(
@@ -113,9 +117,9 @@ class _SelectProductCategoryScreenState
                                   padding: EdgeInsets.only(top: 20.0),
                                   shrinkWrap: true,
                                   childAspectRatio: 3 / 2,
-                                  crossAxisCount: 3,
-                                  crossAxisSpacing: 10.0,
                                   mainAxisSpacing: 10.0,
+                                  crossAxisSpacing: 10.0,
+                                  crossAxisCount: 3,
                                   children: _categories
                                       .where((cat) =>
                                           cat.type ==
@@ -135,6 +139,11 @@ class _SelectProductCategoryScreenState
                                                 });
                                               },
                                               child: Container(
+                                                height:
+                                                    SizeConfig.screenHeight *
+                                                        .08,
+                                                width: SizeConfig.screenWidth *
+                                                    .25,
                                                 padding: EdgeInsets.all(3.0),
                                                 decoration: BoxDecoration(
                                                   borderRadius:
@@ -160,8 +169,14 @@ class _SelectProductCategoryScreenState
                                                           ? Colors.white
                                                           : kBackgroundColor,
                                                       fontSize: SizeConfig
-                                                              .textScaleFactor *
-                                                          10.5,
+                                                                  .screenWidth >
+                                                              500
+                                                          ? SizeConfig
+                                                                  .textScaleFactor *
+                                                              16
+                                                          : SizeConfig
+                                                                  .textScaleFactor *
+                                                              11,
                                                       height: 1.2,
                                                       fontWeight:
                                                           FontWeight.w600,

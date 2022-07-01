@@ -19,10 +19,8 @@ import 'package:notification_permissions/notification_permissions.dart'
     as notif;
 
 class SettingsScreen extends StatefulWidget {
-  final UserModel user;
   const SettingsScreen({
     Key? key,
-    required this.user,
   }) : super(key: key);
 
   @override
@@ -38,12 +36,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
   List<LocalizationModel> _localizations = [];
   LocalizationModel? _selectedLocalization;
 
-  final _currentVerDate = DateTime(2022, 6, 29, 06);
+  final _currentVerDate = DateTime(2022, 7, 1, 12);
 
   @override
   void initState() {
     application.currentScreen = 'Settings Screen';
-    _user = widget.user;
+    _user = application.currentUserModel!;
     _authBloc = BlocProvider.of<AuthBloc>(context);
     _settingsBloc.add(GetLocalizations());
     super.initState();
@@ -67,140 +65,139 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     SizeConfig().init(context);
     return ProgressHUD(
-      child: Scaffold(
-        body: Container(
-          child: Column(
-            children: [
-              CustomAppBar(
-                label: 'Settings',
-              ),
-              BlocListener(
-                bloc: _settingsBloc,
-                listener: (context, state) {
-                  if (state is SettingsLoading) {
-                    ProgressHUD.of(context)!.show();
-                  } else {
-                    ProgressHUD.of(context)!.dismiss();
-                  }
+      child: Container(
+        constraints: BoxConstraints(maxWidth: 500.0),
+        color: Colors.white,
+        child: Column(
+          children: [
+            CustomAppBar(
+              label: 'Settings',
+            ),
+            BlocListener(
+              bloc: _settingsBloc,
+              listener: (context, state) {
+                if (state is SettingsLoading) {
+                  ProgressHUD.of(context)!.show();
+                } else {
+                  ProgressHUD.of(context)!.dismiss();
+                }
 
-                  if (state is GetLocalizationsSuccess) {
-                    setState(() {
-                      _localizations = state.list;
-                    });
-                  }
+                if (state is GetLocalizationsSuccess) {
+                  setState(() {
+                    _localizations = state.list;
+                  });
+                }
 
-                  if (state is SetDefaultCountrySuccess) {
-                    setState(() {
-                      _user = state.user;
-                    });
-                  }
-                },
-                child: Expanded(
-                  child: Container(
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-                    child: ListView(
-                      padding: EdgeInsets.zero,
-                      children: [
-                        _buildListHeader(label: 'Account Settings'),
-                        Container(
-                          width: double.infinity,
-                          child: Column(
-                            children: [
-                              _buildListGroupItem(
-                                label: 'Change Password',
-                                onTap: () => Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        ChangePasswordScreen(),
-                                  ),
+                if (state is SetDefaultCountrySuccess) {
+                  setState(() {
+                    _user = state.user;
+                  });
+                }
+              },
+              child: Expanded(
+                child: Container(
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+                  child: ListView(
+                    padding: EdgeInsets.zero,
+                    children: [
+                      _buildListHeader(label: 'Account Settings'),
+                      Container(
+                        width: double.infinity,
+                        child: Column(
+                          children: [
+                            _buildListGroupItem(
+                              label: 'Change Password',
+                              onTap: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => ChangePasswordScreen(),
                                 ),
                               ),
-                              InkWell(
-                                  onTap: _onCountrySelect,
-                                  child: _buildListGroupItem(
-                                    label: 'Default Country',
-                                    value: _user.country_code ?? '',
-                                  )),
-                              _buildListGroupItem(
-                                label: 'Default Currency',
-                                value: _user.currency ?? '',
-                              ),
-                              _buildListGroupItem(label: 'Delete Account'),
-                            ],
-                          ),
+                            ),
+                            InkWell(
+                                onTap: _onCountrySelect,
+                                child: _buildListGroupItem(
+                                  label: 'Default Country',
+                                  value: _user.country_code ?? '',
+                                )),
+                            _buildListGroupItem(
+                              label: 'Default Currency',
+                              value: _user.currency ?? '',
+                            ),
+                            _buildListGroupItem(label: 'Delete Account'),
+                          ],
                         ),
-                        _buildListHeader(label: 'Notification Settings'),
-                        Container(
-                          width: double.infinity,
-                          padding: EdgeInsets.fromLTRB(20, 8.0, 10, 8.0),
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade100,
-                          ),
-                          child: Row(
-                            children: [
-                              Text(
-                                'Push Notifications',
-                                style: Style.subtitle2.copyWith(
-                                    color: kBackgroundColor,
-                                    fontSize: SizeConfig.textScaleFactor * 13),
-                              ),
-                              Spacer(),
-                              SizedBox(
-                                height: 30.0,
-                                width: 40.0,
-                                child: FittedBox(
-                                  child: Switch(
-                                    value: pushNotif == 1,
-                                    onChanged: _onPushNotif,
-                                    activeColor: kBackgroundColor,
-                                  ),
+                      ),
+                      _buildListHeader(label: 'Notification Settings'),
+                      Container(
+                        width: double.infinity,
+                        padding: EdgeInsets.fromLTRB(20, 8.0, 10, 8.0),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade100,
+                        ),
+                        child: Row(
+                          children: [
+                            Text(
+                              'Push Notifications',
+                              style: Style.subtitle2.copyWith(
+                                  color: kBackgroundColor,
+                                  fontSize: SizeConfig.textScaleFactor * 13),
+                            ),
+                            Spacer(),
+                            SizedBox(
+                              height: 30.0,
+                              width: 40.0,
+                              child: FittedBox(
+                                child: Switch(
+                                  value: pushNotif == 1,
+                                  onChanged: _onPushNotif,
+                                  activeColor: kBackgroundColor,
                                 ),
                               ),
-                              // ToggleSwitch(
-                              //   initialLabelIndex: pushNotif,
-                              //   minWidth: 50,
-                              //   minHeight: 20.0,
-                              //   totalSwitches: 2,
-                              //   activeBgColor: [kBackgroundColor],
-                              //   inactiveFgColor: kBackgroundColor,
-                              //   cornerRadius: 5.0,
-                              //   labels: [
-                              //     'Off',
-                              //     'On',
-                              //   ],
-                              //   changeOnTap: false,
-                              //   onToggle: _onPushNotif,
-                              // ),
-                            ],
-                          ),
+                            ),
+                            // ToggleSwitch(
+                            //   initialLabelIndex: pushNotif,
+                            //   minWidth: 50,
+                            //   minHeight: 20.0,
+                            //   totalSwitches: 2,
+                            //   activeBgColor: [kBackgroundColor],
+                            //   inactiveFgColor: kBackgroundColor,
+                            //   cornerRadius: 5.0,
+                            //   labels: [
+                            //     'Off',
+                            //     'On',
+                            //   ],
+                            //   changeOnTap: false,
+                            //   onToggle: _onPushNotif,
+                            // ),
+                          ],
                         ),
-                        _buildListHeader(label: 'Privacy & Security'),
-                        _buildListHeader(label: 'Help & FAQ'),
-                        _buildListHeader(label: 'Contact Us'),
-                        _buildListHeader(
-                          label: 'Log Out',
-                          onTap: _onSignOut,
-                        ),
-                      ],
-                    ),
+                      ),
+                      _buildListHeader(label: 'Privacy & Security'),
+                      _buildListHeader(label: 'Help & FAQ'),
+                      _buildListHeader(label: 'Contact Us'),
+                      _buildListHeader(
+                        label: 'Log Out',
+                        onTap: _onSignOut,
+                      ),
+                    ],
                   ),
                 ),
               ),
-              Container(
-                padding: EdgeInsets.symmetric(vertical: 3.0),
-                width: double.infinity,
-                color: Colors.white,
-                child: Center(
-                  child: Text(
-                    'Version 1.0.${DateFormat('yyMMddHH').format(_currentVerDate)}_D',
-                    style: TextStyle(fontSize: 10.0),
-                  ),
+            ),
+            Container(
+              padding: EdgeInsets.symmetric(vertical: 3.0),
+              width: double.infinity,
+              color: Colors.white,
+              child: Center(
+                child: Text(
+                  'Version 1.0.${DateFormat('yyMMddHH').format(_currentVerDate)}_D',
+                  style: TextStyle(fontSize: 10.0),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

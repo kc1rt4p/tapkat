@@ -762,7 +762,7 @@ class _StoreScreenState extends State<StoreScreen> {
         showNewPageErrorIndicatorAsGridChild: false,
         showNoMoreItemsIndicatorAsGridChild: false,
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: SizeConfig.screenWidth > 500 ? 4 : 2,
+          crossAxisCount: SizeConfig.screenWidth > 500 ? 3 : 2,
         ),
         builderDelegate: PagedChildBuilderDelegate<ProductModel>(
           itemBuilder: (context, product, index) {

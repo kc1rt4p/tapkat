@@ -53,11 +53,15 @@ class _ProductTradeForScreenState extends State<ProductTradeForScreen> {
           ),
           Expanded(
             child: Container(
+              constraints: BoxConstraints(maxWidth: 500.0),
               width: SizeConfig.screenWidth,
               height: SizeConfig.screenHeight,
               padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
               child: Column(
                 children: [
+                  SizeConfig.screenWidth > 500
+                      ? SizedBox(height: SizeConfig.screenHeight * 0.1)
+                      : SizedBox(),
                   Text('What do you want to get in return for this item?',
                       style: Style.subtitle2),
                   SizedBox(height: 25.0),
@@ -188,6 +192,7 @@ class _ProductTradeForScreenState extends State<ProductTradeForScreen> {
             ),
           ),
           Container(
+            constraints: BoxConstraints(maxWidth: 500.0),
             padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 5.0),
             child: Row(
               children: [
