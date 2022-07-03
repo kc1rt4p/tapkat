@@ -58,6 +58,8 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
   List<ProductModel> indicators = [];
 
+  late String initialView;
+
   final _keywordTextController = TextEditingController();
 
   final _refreshController = RefreshController();
@@ -75,6 +77,8 @@ class _ProductListScreenState extends State<ProductListScreen> {
   bool _loading = false;
   Set<Marker> _markers = {};
 
+  Circle? _currentCircle;
+
   String _selectedSortBy = 'distance';
   List<String> sortByOptions = [
     'Distance',
@@ -89,6 +93,8 @@ class _ProductListScreenState extends State<ProductListScreen> {
   double _selectedRadius = 5000;
   double mapZoomLevel = 11;
 
+  late LatLng _currentCenter;
+
   @override
   void initState() {
     application.currentScreen = 'Product List Screen';
@@ -100,6 +106,25 @@ class _ProductListScreenState extends State<ProductListScreen> {
     _productBloc.add(InitializeAddUpdateProduct());
 
     super.initState();
+    initialView = widget.initialView;
+    setOriginalCenter();
+  }
+
+  void setOriginalCenter() {
+    setState(() {
+      _currentCenter = LatLng(
+          application.currentUserLocation!.latitude!.toDouble(),
+          application.currentUserLocation!.longitude!.toDouble());
+
+      _currentCircle = Circle(
+        circleId: CircleId('radius'),
+        center: _currentCenter,
+        radius: _selectedRadius.toDouble(),
+        strokeColor: kBackgroundColor,
+        strokeWidth: 1,
+        fillColor: kBackgroundColor.withOpacity(0.2),
+      );
+    });
   }
 
   @override
@@ -191,8 +216,11 @@ class _ProductListScreenState extends State<ProductListScreen> {
                 _pagingController.appendLastPage([]);
               }
 
-              // if (widget.initialView != 'grid') {
-              //   _onSelectView();
+              // if (initialView != 'grid') {
+              //   setState(() {
+              //     _selectedView = 'map';
+              //     _buildMarkers();
+              //   });
               // }
 
               _pagingController.addPageRequestListener((pageKey) {
@@ -226,6 +254,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                           ? [_selectedCategory!.code!]
                           : null,
                       itemCount: _selectedView == 'map' ? 50 : null,
+                      loc: _currentCenter,
                     ),
                   );
                 } else {
@@ -516,6 +545,21 @@ class _ProductListScreenState extends State<ProductListScreen> {
                     setState(() {
                       _selectedView = index == 0 ? 'grid' : 'map';
                     });
+
+                    if (index == 1)
+                      _buildMarkers();
+                    else {
+                      _productBloc.add(GetFirstProducts(
+                        userid: application.currentUser!.uid,
+                        listType: widget.listType,
+                        sortBy: _selectedSortBy,
+                        distance: _selectedRadius,
+                        category: _selectedCategory != null
+                            ? [_selectedCategory!.code!]
+                            : null,
+                        itemCount: _selectedView == 'map' ? 50 : null,
+                      ));
+                    }
                   },
                 ),
                 Expanded(
@@ -762,17 +806,21 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
     setState(() {
       _selectedRadius = distance;
+      _currentCircle = Circle(
+        circleId: CircleId('radius'),
+        center: _currentCenter,
+        radius: _selectedRadius.toDouble(),
+        strokeColor: kBackgroundColor,
+        strokeWidth: 1,
+        fillColor: kBackgroundColor.withOpacity(0.2),
+      );
     });
 
     if (_selectedView == 'map') {
       double mapZoomLevel = getZoomLevel(_selectedRadius);
 
       googleMapsController.animateCamera(CameraUpdate.newCameraPosition(
-        CameraPosition(
-            target: LatLng(
-                application.currentUserLocation!.latitude!.toDouble(),
-                application.currentUserLocation!.longitude!.toDouble()),
-            zoom: mapZoomLevel),
+        CameraPosition(target: _currentCenter, zoom: mapZoomLevel),
       ));
     }
 
@@ -983,10 +1031,8 @@ class _ProductListScreenState extends State<ProductListScreen> {
           Listener(
             onPointerUp: (e) async {
               if (!e.down) {
-                print('user stopped dragging');
-                final km = getRadiusFromZoomLevel(
-                        await googleMapsController.getZoomLevel()) /
-                    10;
+                final zoomLevel = await googleMapsController.getZoomLevel();
+                final km = getRadiusFromZoomLevel(zoomLevel) / 10;
 
                 final _km = km * 1000;
 
@@ -994,7 +1040,8 @@ class _ProductListScreenState extends State<ProductListScreen> {
                   _selectedRadius = _km;
                 });
 
-                if (_km >= 500 && _km <= 30000) {
+                if (zoomLevel.toInt() != mapZoomLevel.toInt() &&
+                    (_km >= 500 && _km <= 30000)) {
                   _productBloc.add(GetFirstProducts(
                     userid: application.currentUser!.uid,
                     listType: widget.listType,
@@ -1010,22 +1057,33 @@ class _ProductListScreenState extends State<ProductListScreen> {
             },
             child: TapkatGoogleMap(
               circles: {
-                Circle(
-                  circleId: CircleId('radius'),
-                  center: LatLng(
-                      application.currentUserLocation!.latitude!.toDouble(),
-                      application.currentUserLocation!.longitude!.toDouble()),
-                  radius: _selectedRadius.toDouble(),
-                  strokeColor: kBackgroundColor,
-                  strokeWidth: 1,
-                  fillColor: kBackgroundColor.withOpacity(0.2),
-                ),
+                _currentCircle!,
+              },
+              onTap: (latLng) {
+                setState(() {
+                  _currentCenter = latLng;
+                  _currentCircle = Circle(
+                    circleId: CircleId('radius'),
+                    center: _currentCenter,
+                    radius: _selectedRadius.toDouble(),
+                    strokeColor: kBackgroundColor,
+                    strokeWidth: 1,
+                    fillColor: kBackgroundColor.withOpacity(0.2),
+                  );
+                });
+
+                if (_selectedView == 'map') {
+                  double mapZoomLevel = getZoomLevel(_selectedRadius);
+
+                  googleMapsController
+                      .animateCamera(CameraUpdate.newCameraPosition(
+                    CameraPosition(target: _currentCenter, zoom: mapZoomLevel),
+                  ));
+                }
               },
               onCameraIdle: (latLng) => googleMapsCenter = latLng,
               initialZoom: mapZoomLevel,
-              initialLocation: LatLng(
-                  application.currentUserLocation!.latitude!.toDouble(),
-                  application.currentUserLocation!.longitude!.toDouble()),
+              initialLocation: _currentCenter,
               onMapCreated: (controller) {
                 googleMapsController = controller;
               },
@@ -1040,6 +1098,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
             child: FloatingActionButton.small(
               backgroundColor: kBackgroundColor.withOpacity(0.7),
               onPressed: () {
+                setOriginalCenter();
                 setState(() {
                   _selectedRadius = 500;
                 });
@@ -1047,11 +1106,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                 googleMapsController
                     .animateCamera(CameraUpdate.newCameraPosition(
                   CameraPosition(
-                      target: LatLng(
-                          application.currentUserLocation!.latitude!.toDouble(),
-                          application.currentUserLocation!.longitude!
-                              .toDouble()),
-                      zoom: mapZoomLevel + 2),
+                      target: _currentCenter, zoom: mapZoomLevel + 2),
                 ));
 
                 _productBloc.add(GetFirstProducts(
@@ -1063,6 +1118,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                       ? [_selectedCategory!.code!]
                       : null,
                   itemCount: _selectedView == 'map' ? 50 : null,
+                  loc: _currentCenter,
                 ));
               },
               child: Icon(
@@ -1078,10 +1134,21 @@ class _ProductListScreenState extends State<ProductListScreen> {
                 GestureDetector(
                   onTap: () async {
                     setState(() {
-                      if (_selectedRadius > 1000) {
+                      if (_selectedRadius > 500) {
                         _selectedRadius -= 500;
                       } else if (_selectedRadius < 1000) {
                         _selectedRadius = 500;
+                      }
+
+                      if (_selectedView == 'map') {
+                        _currentCircle = Circle(
+                          circleId: CircleId('radius'),
+                          center: _currentCenter,
+                          radius: _selectedRadius.toDouble(),
+                          strokeColor: kBackgroundColor,
+                          strokeWidth: 1,
+                          fillColor: kBackgroundColor.withOpacity(0.2),
+                        );
                       }
                     });
 
@@ -1096,12 +1163,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                     googleMapsController
                         .animateCamera(CameraUpdate.newCameraPosition(
                       CameraPosition(
-                          target: LatLng(
-                              application.currentUserLocation!.latitude!
-                                  .toDouble(),
-                              application.currentUserLocation!.longitude!
-                                  .toDouble()),
-                          zoom: mapZoomLevel),
+                          target: _currentCenter, zoom: mapZoomLevel),
                     ));
 
                     _productBloc.add(GetFirstProducts(
@@ -1113,6 +1175,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                           ? [_selectedCategory!.code!]
                           : null,
                       itemCount: _selectedView == 'map' ? 50 : null,
+                      loc: _currentCenter,
                     ));
                   },
                   child: Container(
@@ -1139,6 +1202,17 @@ class _ProductListScreenState extends State<ProductListScreen> {
                       } else if (_selectedRadius > 30000) {
                         _selectedRadius = 30000;
                       }
+
+                      if (_selectedView == 'map') {
+                        _currentCircle = Circle(
+                          circleId: CircleId('radius'),
+                          center: _currentCenter,
+                          radius: _selectedRadius.toDouble(),
+                          strokeColor: kBackgroundColor,
+                          strokeWidth: 1,
+                          fillColor: kBackgroundColor.withOpacity(0.2),
+                        );
+                      }
                     });
                     double mapZoomLevel = 0;
                     if (_selectedRadius > 500 && _selectedRadius < 30000) {
@@ -1150,12 +1224,9 @@ class _ProductListScreenState extends State<ProductListScreen> {
                     googleMapsController
                         .animateCamera(CameraUpdate.newCameraPosition(
                       CameraPosition(
-                          target: LatLng(
-                              application.currentUserLocation!.latitude!
-                                  .toDouble(),
-                              application.currentUserLocation!.longitude!
-                                  .toDouble()),
-                          zoom: mapZoomLevel),
+                        target: _currentCenter,
+                        zoom: mapZoomLevel,
+                      ),
                     ));
 
                     _productBloc.add(GetFirstProducts(
@@ -1167,6 +1238,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                           ? [_selectedCategory!.code!]
                           : null,
                       itemCount: _selectedView == 'map' ? 50 : null,
+                      loc: _currentCenter,
                     ));
                   },
                   child: Container(

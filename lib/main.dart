@@ -15,13 +15,12 @@ import 'package:flutter_email_sender/flutter_email_sender.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_logs/flutter_logs.dart';
 import 'package:flutter_phoenix/flutter_phoenix.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
+import 'package:tapkat/firebase_options.dart';
 import 'package:tapkat/models/location.dart';
 import 'package:tapkat/models/user.dart';
 import 'package:tapkat/screens/barter/bloc/barter_bloc.dart';
-import 'package:tapkat/screens/login/email_verification_screen.dart';
 import 'package:tapkat/screens/login/login_screen.dart';
 import 'package:tapkat/screens/root/root_screen.dart';
 import 'package:tapkat/services/auth_service.dart';
@@ -58,7 +57,9 @@ _loadUserLocation() async {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,

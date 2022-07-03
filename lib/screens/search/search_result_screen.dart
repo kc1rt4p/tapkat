@@ -85,11 +85,23 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
   double _selectedRadius = 5000;
   double mapZoomLevel = 11;
 
+  Circle? _currentCircle;
+
+  late LatLng _currentCenter;
+
+  bool mapFirst = false;
+
   @override
   void initState() {
+    mapFirst = widget.mapFirst;
     application.currentScreen = 'Search Result Screen';
     _keyWordTextController.text = widget.keyword;
     _productBloc.add(InitializeAddUpdateProduct());
+    mapZoomLevel = getZoomLevel(_selectedRadius);
+
+    super.initState();
+
+    setOriginalCenter();
 
     _searchBloc.add(InitializeSearch(
       keyword: _keyWordTextController.text.trim(),
@@ -97,8 +109,25 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
       sortBy: _selectedSortBy,
       distance: _selectedRadius,
       itemCount: _selectedView == 'map' ? 50 : 10,
+      loc: _currentCenter,
     ));
-    super.initState();
+  }
+
+  void setOriginalCenter() {
+    setState(() {
+      _currentCenter = LatLng(
+          application.currentUserLocation!.latitude!.toDouble(),
+          application.currentUserLocation!.longitude!.toDouble());
+
+      _currentCircle = Circle(
+        circleId: CircleId('radius'),
+        center: _currentCenter,
+        radius: _selectedRadius.toDouble(),
+        strokeColor: kBackgroundColor,
+        strokeWidth: 1,
+        fillColor: kBackgroundColor.withOpacity(0.2),
+      );
+    });
   }
 
   @override
@@ -163,24 +192,29 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
 
                   setState(() {
                     _markers.clear();
+                    searchResults.clear();
                   });
 
+                  if (mapFirst) {
+                    if (_selectedView != 'map') {
+                      _onSelectView();
+                    }
+                    mapFirst = false;
+                  }
+
                   if (state.searchResults.isNotEmpty) {
-                    searchResults = state.searchResults;
+                    setState(() {
+                      searchResults = state.searchResults;
+                    });
                     _buildMarkers();
 
                     lastProduct = state.searchResults.last;
-                    if (state.searchResults.length == productCount) {
+                    if (state.searchResults.length ==
+                        (_selectedView == 'map' ? 50 : 10)) {
                       _pagingController.appendPage(
                           state.searchResults, currentPage + 1);
                     } else {
                       _pagingController.appendLastPage(state.searchResults);
-                    }
-
-                    if (widget.mapFirst) {
-                      if (_selectedView != 'map') {
-                        _onSelectView();
-                      }
                     }
 
                     _pagingController.addPageRequestListener((pageKey) {
@@ -410,7 +444,24 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                             setState(() {
                               _selectedView = index == 0 ? 'grid' : 'map';
                             });
-                            if (index == 1) _buildMarkers();
+                            if (index == 1)
+                              _buildMarkers();
+                            else {
+                              _searchBloc.add(InitializeSearch(
+                                keyword: _keyWordTextController.text.trim(),
+                                category: _selectedCategory != null
+                                    ? [_selectedCategory!.code!]
+                                    : null,
+                                sortBy: _selectedSortBy,
+                                distance: _selectedRadius,
+                                itemCount: _selectedView == 'map' ? 50 : 10,
+                                loc: _currentCenter,
+                              ));
+                              if (_productMarkerStream != null) {
+                                _productMarkerStream!.cancel();
+                                _productMarkerStream = null;
+                              }
+                            }
                           },
                         ),
                         Expanded(
@@ -653,17 +704,21 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
 
     setState(() {
       _selectedRadius = distance;
+      _currentCircle = Circle(
+        circleId: CircleId('radius'),
+        center: _currentCenter,
+        radius: _selectedRadius.toDouble(),
+        strokeColor: kBackgroundColor,
+        strokeWidth: 1,
+        fillColor: kBackgroundColor.withOpacity(0.2),
+      );
     });
 
     if (_selectedView == 'map') {
       double mapZoomLevel = getZoomLevel(_selectedRadius);
 
       googleMapsController.animateCamera(CameraUpdate.newCameraPosition(
-        CameraPosition(
-            target: LatLng(
-                application.currentUserLocation!.latitude!.toDouble(),
-                application.currentUserLocation!.longitude!.toDouble()),
-            zoom: mapZoomLevel),
+        CameraPosition(target: _currentCenter, zoom: mapZoomLevel),
       ));
     }
 
@@ -673,6 +728,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
       sortBy: _selectedSortBy,
       distance: _selectedRadius,
       itemCount: _selectedView == 'map' ? 50 : 10,
+      loc: _currentCenter,
     ));
   }
 
@@ -746,6 +802,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
       sortBy: _selectedSortBy,
       distance: _selectedRadius,
       itemCount: _selectedView == 'map' ? 50 : 10,
+      loc: _currentCenter,
     ));
   }
 
@@ -837,6 +894,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
         sortBy: _selectedSortBy,
         distance: _selectedRadius,
         itemCount: _selectedView == 'map' ? 50 : 10,
+        loc: _currentCenter,
       ),
     );
   }
@@ -874,19 +932,20 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
             },
             onPointerUp: (e) async {
               if (!e.down) {
+                final zoomLevel = await googleMapsController.getZoomLevel();
                 zoomingByDrag = false;
                 print('user stopped dragging');
-                final km = getRadiusFromZoomLevel(
-                        await googleMapsController.getZoomLevel()) /
-                    10;
+                final km = getRadiusFromZoomLevel(zoomLevel) / 10;
 
                 final _km = km * 1000;
 
                 setState(() {
                   _selectedRadius = _km;
                 });
-
-                if (_km >= 500 && _km <= 30000) {
+                print('0---> $zoomLevel & $mapZoomLevel');
+                if (zoomLevel.toInt() != mapZoomLevel.toInt() &&
+                    (_km >= 500 && _km <= 30000)) {
+                  _reset();
                   _searchBloc.add(InitializeSearch(
                     keyword: _keyWordTextController.text.trim(),
                     category: _selectedCategory != null
@@ -895,22 +954,36 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                     sortBy: _selectedSortBy,
                     distance: _selectedRadius,
                     itemCount: _selectedView == 'map' ? 50 : 10,
+                    loc: _currentCenter,
                   ));
                 }
               }
             },
             child: TapkatGoogleMap(
               circles: {
-                Circle(
-                  circleId: CircleId('radius'),
-                  center: LatLng(
-                      application.currentUserLocation!.latitude!.toDouble(),
-                      application.currentUserLocation!.longitude!.toDouble()),
-                  radius: _selectedRadius.toDouble(),
-                  strokeColor: kBackgroundColor,
-                  strokeWidth: 1,
-                  fillColor: kBackgroundColor.withOpacity(0.2),
-                ),
+                _currentCircle!,
+              },
+              onTap: (latLng) {
+                setState(() {
+                  _currentCenter = latLng;
+                  _currentCircle = Circle(
+                    circleId: CircleId('radius'),
+                    center: _currentCenter,
+                    radius: _selectedRadius.toDouble(),
+                    strokeColor: kBackgroundColor,
+                    strokeWidth: 1,
+                    fillColor: kBackgroundColor.withOpacity(0.2),
+                  );
+                });
+
+                if (_selectedView == 'map') {
+                  double mapZoomLevel = getZoomLevel(_selectedRadius);
+
+                  googleMapsController
+                      .animateCamera(CameraUpdate.newCameraPosition(
+                    CameraPosition(target: _currentCenter, zoom: mapZoomLevel),
+                  ));
+                }
               },
               onCameraIdle: (latLng) => googleMapsCenter = latLng,
               initialZoom: mapZoomLevel,
@@ -935,6 +1008,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
             child: FloatingActionButton.small(
               backgroundColor: kBackgroundColor.withOpacity(0.7),
               onPressed: () {
+                setOriginalCenter();
                 setState(() {
                   _selectedRadius = 500;
                 });
@@ -942,11 +1016,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                 googleMapsController
                     .animateCamera(CameraUpdate.newCameraPosition(
                   CameraPosition(
-                      target: LatLng(
-                          application.currentUserLocation!.latitude!.toDouble(),
-                          application.currentUserLocation!.longitude!
-                              .toDouble()),
-                      zoom: mapZoomLevel + 2),
+                      target: _currentCenter, zoom: mapZoomLevel + 2),
                 ));
 
                 _searchBloc.add(InitializeSearch(
@@ -957,6 +1027,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                   sortBy: _selectedSortBy,
                   distance: _selectedRadius,
                   itemCount: _selectedView == 'map' ? 50 : 10,
+                  loc: _currentCenter,
                 ));
               },
               child: Icon(
@@ -972,10 +1043,21 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                 GestureDetector(
                   onTap: () async {
                     setState(() {
-                      if (_selectedRadius > 1000) {
+                      if (_selectedRadius > 500) {
                         _selectedRadius -= 500;
                       } else if (_selectedRadius < 1000) {
                         _selectedRadius = 500;
+                      }
+
+                      if (_selectedView == 'map') {
+                        _currentCircle = Circle(
+                          circleId: CircleId('radius'),
+                          center: _currentCenter,
+                          radius: _selectedRadius.toDouble(),
+                          strokeColor: kBackgroundColor,
+                          strokeWidth: 1,
+                          fillColor: kBackgroundColor.withOpacity(0.2),
+                        );
                       }
                     });
 
@@ -990,12 +1072,9 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                     googleMapsController
                         .animateCamera(CameraUpdate.newCameraPosition(
                       CameraPosition(
-                          target: LatLng(
-                              application.currentUserLocation!.latitude!
-                                  .toDouble(),
-                              application.currentUserLocation!.longitude!
-                                  .toDouble()),
-                          zoom: mapZoomLevel),
+                        target: _currentCenter,
+                        zoom: mapZoomLevel,
+                      ),
                     ));
 
                     _searchBloc.add(InitializeSearch(
@@ -1006,6 +1085,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                       sortBy: _selectedSortBy,
                       distance: _selectedRadius,
                       itemCount: _selectedView == 'map' ? 50 : 10,
+                      loc: _currentCenter,
                     ));
                   },
                   child: Container(
@@ -1032,6 +1112,17 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                       } else if (_selectedRadius > 30000) {
                         _selectedRadius = 30000;
                       }
+
+                      if (_selectedView == 'map') {
+                        _currentCircle = Circle(
+                          circleId: CircleId('radius'),
+                          center: _currentCenter,
+                          radius: _selectedRadius.toDouble(),
+                          strokeColor: kBackgroundColor,
+                          strokeWidth: 1,
+                          fillColor: kBackgroundColor.withOpacity(0.2),
+                        );
+                      }
                     });
                     double mapZoomLevel = 0;
                     if (_selectedRadius > 500 && _selectedRadius < 30000) {
@@ -1043,12 +1134,9 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                     googleMapsController
                         .animateCamera(CameraUpdate.newCameraPosition(
                       CameraPosition(
-                          target: LatLng(
-                              application.currentUserLocation!.latitude!
-                                  .toDouble(),
-                              application.currentUserLocation!.longitude!
-                                  .toDouble()),
-                          zoom: mapZoomLevel),
+                        target: _currentCenter,
+                        zoom: mapZoomLevel,
+                      ),
                     ));
 
                     _searchBloc.add(InitializeSearch(
@@ -1059,6 +1147,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                       sortBy: _selectedSortBy,
                       distance: _selectedRadius,
                       itemCount: _selectedView == 'map' ? 50 : 10,
+                      loc: _currentCenter,
                     ));
                   },
                   child: Container(
@@ -1128,6 +1217,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
         sortBy: _selectedSortBy,
         distance: _selectedRadius,
         itemCount: _selectedView == 'map' ? 50 : 10,
+        loc: _currentCenter,
       )),
       controller: _refreshController,
       child: PagedGridView<int, ProductModel>(
@@ -1184,12 +1274,14 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
       });
       _searchBloc.add(GetProductMarkers());
     } else {
+      print('hey');
       _searchBloc.add(InitializeSearch(
         keyword: _keyWordTextController.text.trim(),
         category: _selectedCategory != null ? [_selectedCategory!.code!] : null,
         sortBy: _selectedSortBy,
         distance: _selectedRadius,
         itemCount: _selectedView == 'map' ? 50 : 10,
+        loc: _currentCenter,
       ));
       if (_productMarkerStream != null) {
         _productMarkerStream!.cancel();
@@ -1215,6 +1307,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
       sortBy: _selectedSortBy,
       distance: _selectedRadius,
       itemCount: _selectedView == 'map' ? 50 : 10,
+      loc: _currentCenter,
     ));
   }
 }

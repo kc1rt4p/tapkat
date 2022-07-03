@@ -35,6 +35,7 @@ class GetFirstProducts extends ProductEvent {
   final double distance;
   final String sortBy;
   final int? itemCount;
+  final LatLng? loc;
 
   GetFirstProducts({
     required this.listType,
@@ -43,6 +44,7 @@ class GetFirstProducts extends ProductEvent {
     required this.distance,
     required this.sortBy,
     this.itemCount,
+    this.loc,
   });
 }
 
@@ -56,6 +58,7 @@ class GetNextProducts extends ProductEvent {
   final double distance;
   final String sortBy;
   final int? itemCount;
+  final LatLng? loc;
 
   GetNextProducts({
     required this.listType,
@@ -67,6 +70,7 @@ class GetNextProducts extends ProductEvent {
     required this.distance,
     required this.sortBy,
     this.itemCount,
+    this.loc,
   });
 }
 
