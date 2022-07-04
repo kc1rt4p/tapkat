@@ -47,6 +47,7 @@ class _InitialSignUpScreenState extends State<InitialSignUpScreen> {
 
   @override
   void initState() {
+    print('current user: ${application.currentUser}');
     application.currentScreen = 'Sign Up - Initial Screen';
     _authBloc = BlocProvider.of<AuthBloc>(context);
     _authBloc.add(InitiateSignUpScreen());
@@ -294,14 +295,15 @@ class _InitialSignUpScreenState extends State<InitialSignUpScreen> {
 
   _onCreateAccount() {
     if (!_formKey.currentState!.validate()) return;
-    LocalizationModel? _loc;
-    final countryCode = _currentUserLoc!.isoCountryCode;
-
     LocalizationModel? localization;
+    if (application.currentUserLocation != null) {
+      LocalizationModel? _loc;
+      final countryCode = _currentUserLoc!.isoCountryCode;
 
-    _locList.forEach((loc) {
-      if (loc.country_code == countryCode) localization = loc;
-    });
+      _locList.forEach((loc) {
+        if (loc.country_code == countryCode) localization = loc;
+      });
+    }
 
     _authBloc.add(
       SignUp(

@@ -258,7 +258,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
       if (event is PhoneOtpSent) {
         emit(PhoneOtpSentSuccess(
-            event.verificationId, event.forceResendingToken!));
+            event.verificationId, event.forceResendingToken));
       }
 
       if (event is SignInWithEmail) {

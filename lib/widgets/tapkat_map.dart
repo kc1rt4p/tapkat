@@ -136,6 +136,7 @@ class _TapkatGoogleMapState extends State<TapkatGoogleMap> {
           zoomGesturesEnabled: widget.allowZoom,
           zoomControlsEnabled: widget.showZoomControls,
           myLocationEnabled: widget.showLocation,
+          myLocationButtonEnabled: widget.showLocation,
           compassEnabled: widget.showCompass,
           mapToolbarEnabled: widget.showMapToolbar,
           trafficEnabled: widget.showTraffic,

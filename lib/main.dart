@@ -106,10 +106,10 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   void fetchLinkData() async {
     // FirebaseDynamicLinks.getInitialLInk does a call to firebase to get us the real link because we have shortened it.
     var link = await FirebaseDynamicLinks.instance.getInitialLink();
-    print('_-= $link');
+    // print('_-= $link');
     var message = await FirebaseDynamicLinks.instance
         .getDynamicLink(Uri.parse(_dynamincLinkService.Link));
-    print('_-= $message');
+    // print('_-= $message');
 
     // This link may exist if the app was opened fresh so we'll want to handle it the same way onLink will.
     if (link != null) handleLinkData(context, link);
@@ -220,9 +220,9 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         break;
       case AppLifecycleState.resumed:
         if (application.currentUser != null &&
-                application.currentUserModel != null &&
-                application.currentUserModel!.is_online != null ||
-            !application.currentUserModel!.is_online!)
+            application.currentUserModel != null &&
+            (application.currentUserModel!.is_online != null ||
+                !application.currentUserModel!.is_online!))
           _authBloc.add(UpdateOnlineStatus(true));
         break;
       default:

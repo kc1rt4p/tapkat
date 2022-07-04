@@ -31,7 +31,7 @@ class PhoneVerifiedButNoRecord extends AuthState {}
 
 class PhoneOtpSentSuccess extends AuthState {
   final String verificationId;
-  final int forceResendingToken;
+  final int? forceResendingToken;
 
   PhoneOtpSentSuccess(this.verificationId, this.forceResendingToken);
 }

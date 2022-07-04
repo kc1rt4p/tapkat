@@ -89,7 +89,7 @@ class _LoginScreenState extends State<LoginScreen> {
         barrierEnabled: false,
         child: BlocListener(
           bloc: _authBloc,
-          listener: (context, state) {
+          listener: (context, state) async {
             print('-====---- CURRENT LOGIN AUTH STATE:::: $state');
             if (state is AuthLoading) {
               ProgressHUD.of(context)!.show();
@@ -108,10 +108,13 @@ class _LoginScreenState extends State<LoginScreen> {
             }
 
             if (state is PhoneVerifiedButNoRecord) {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => InitialSignUpScreen()));
+              await Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => InitialSignUpScreen()),
+              );
+
+              if (application.currentUser != null)
+                application.currentUser = null;
             }
 
             if (state is AuthError) {
