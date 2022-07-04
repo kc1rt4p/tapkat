@@ -5,9 +5,6 @@ import 'package:tapkat/utilities/size_config.dart';
 Widget buildCashItem(num amount) {
   return InkWell(
     child: Container(
-      height: SizeConfig.screenHeight * 0.2,
-      width: SizeConfig.screenHeight * 0.2,
-      margin: EdgeInsets.only(right: 8.0),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20.0),
@@ -21,50 +18,45 @@ Widget buildCashItem(num amount) {
       ),
       child: Column(
         children: [
-          Expanded(
-            flex: 2,
-            child: Container(
-              width: double.infinity,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(20.0),
-                  topRight: Radius.circular(20.0),
-                ),
-                color: Colors.white,
-                image: DecorationImage(
-                  image: AssetImage('assets/images/cash_icon.png'),
-                  fit: BoxFit.cover,
-                  colorFilter:
-                      ColorFilter.mode(kBackgroundColor, BlendMode.color),
-                ),
+          Container(
+            height: SizeConfig.screenHeight * 0.13,
+            width: SizeConfig.screenHeight * 0.17,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(20.0),
+                topRight: Radius.circular(20.0),
+              ),
+              color: Colors.white,
+              image: DecorationImage(
+                image: AssetImage('assets/images/cash_icon.png'),
+                fit: BoxFit.cover,
+                colorFilter:
+                    ColorFilter.mode(kBackgroundColor, BlendMode.color),
               ),
             ),
           ),
-          Expanded(
-            child: Container(
-              padding: EdgeInsets.symmetric(vertical: 5.0, horizontal: 10.0),
-              width: double.infinity,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Cash',
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: SizeConfig.textScaleFactor * 12.5,
-                      fontWeight: FontWeight.w500,
-                    ),
+          Container(
+            padding: EdgeInsets.all(5.0),
+            width: SizeConfig.screenHeight * 0.17,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Cash',
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: SizeConfig.textScaleFactor * 12,
+                    fontWeight: FontWeight.w600,
                   ),
-                  Spacer(),
-                  Text(
-                    amount.toStringAsFixed(2),
-                    style: TextStyle(
-                      fontSize: SizeConfig.textScaleFactor * 12.5,
-                      fontWeight: FontWeight.w500,
-                    ),
+                ),
+                Text(
+                  amount.toStringAsFixed(2),
+                  style: TextStyle(
+                    fontSize: SizeConfig.textScaleFactor * 9.5,
+                    fontWeight: FontWeight.w700,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ],

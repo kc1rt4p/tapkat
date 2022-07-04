@@ -1,11 +1,14 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:photo_view/photo_view.dart';
 import 'package:tapkat/models/chat_message.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
+import 'package:tapkat/utilities/size_config.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
-Container buildChatItem(ChatMessageModel msg, User? currentUser) {
+Container buildChatItem(
+    BuildContext context, ChatMessageModel msg, User? currentUser) {
   return Container(
     margin: EdgeInsets.only(top: 8.0),
     child: Column(
@@ -53,17 +56,20 @@ Container buildChatItem(ChatMessageModel msg, User? currentUser) {
                       child: Wrap(
                         children: msg.images!
                             .map(
-                              (img) => Container(
-                                height: 100.0,
-                                width: 150.0,
-                                margin: EdgeInsets.only(right: 5.0),
-                                padding: EdgeInsets.all(5.0),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  image: DecorationImage(
-                                    image: CachedNetworkImageProvider(img),
-                                    scale: 1.0,
-                                    fit: BoxFit.cover,
+                              (img) => InkWell(
+                                onTap: () => _onChatImageTapped(context, img),
+                                child: Container(
+                                  height: 100.0,
+                                  width: 150.0,
+                                  margin: EdgeInsets.only(right: 5.0),
+                                  padding: EdgeInsets.all(5.0),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    image: DecorationImage(
+                                      image: CachedNetworkImageProvider(img),
+                                      scale: 1.0,
+                                      fit: BoxFit.cover,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -93,5 +99,40 @@ Container buildChatItem(ChatMessageModel msg, User? currentUser) {
         ),
       ],
     ),
+  );
+}
+
+_onChatImageTapped(BuildContext context, String imgUrl) {
+  SizeConfig().init(context);
+  showGeneralDialog(
+    context: context,
+    pageBuilder: (ctx, _, __) {
+      return Container(
+        height: SizeConfig.screenHeight,
+        width: SizeConfig.screenWidth,
+        child: Stack(
+          children: [
+            PhotoView(
+              imageProvider: CachedNetworkImageProvider(imgUrl),
+            ),
+            Positioned(
+              top: 15.0 + SizeConfig.paddingTop,
+              right: 15.0,
+              child: GestureDetector(
+                onTap: () => Navigator.pop(ctx),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                  ),
+                  padding: EdgeInsets.all(5.0),
+                  child: Icon(Icons.close, color: kBackgroundColor),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    },
   );
 }

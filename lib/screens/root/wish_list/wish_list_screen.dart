@@ -291,7 +291,6 @@ class _WishListScreenState extends State<WishListScreen> {
 
   Widget _buildWantedItems() {
     return Container(
-      constraints: BoxConstraints(maxWidth: 500.0),
       padding: EdgeInsets.symmetric(horizontal: 16.0),
       child: Column(
         children: [
@@ -299,29 +298,33 @@ class _WishListScreenState extends State<WishListScreen> {
           Text('What products or services are you looking for?',
               style: Style.subtitle2),
           SizedBox(height: 15.0),
-          TextFormField(
-            focusNode: focusNode,
-            controller: inputTextController,
-            decoration: InputDecoration(
-              isDense: true,
-              border: UnderlineInputBorder(),
-              focusedBorder: UnderlineInputBorder(
-                borderSide: BorderSide(color: kBackgroundColor),
+          Container(
+            constraints: BoxConstraints(maxWidth: 500.0),
+            child: TextFormField(
+              focusNode: focusNode,
+              controller: inputTextController,
+              decoration: InputDecoration(
+                isDense: true,
+                border: UnderlineInputBorder(),
+                focusedBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: kBackgroundColor),
+                ),
               ),
+              onFieldSubmitted: (val) {
+                if (val.isNotEmpty) {
+                  setState(() {
+                    _wants.add(val);
+                  });
+                  inputTextController.clear();
+                  focusNode.requestFocus();
+                }
+              },
             ),
-            onFieldSubmitted: (val) {
-              if (val.isNotEmpty) {
-                setState(() {
-                  _wants.add(val);
-                });
-                inputTextController.clear();
-                focusNode.requestFocus();
-              }
-            },
           ),
           SizedBox(height: 16.0),
           Expanded(
             child: Container(
+              constraints: BoxConstraints(maxWidth: 500.0),
               width: double.infinity,
               child: SingleChildScrollView(
                 child: Column(
@@ -363,30 +366,15 @@ class _WishListScreenState extends State<WishListScreen> {
             ),
           ),
           SizedBox(height: 10.0),
-          Row(
-            children: [
-              // Expanded(
-              //   child: CustomButton(
-              //     enabled: _wants.isNotEmpty,
-              //     bgColor: Colors.red.shade400,
-              //     label: 'Clear',
-              //     onTap: () {
-              //       setState(() {
-              //         _list.clear();
-              //       });
-              //     },
-              //   ),
-              // ),
-              // SizedBox(width: 10.0),
-              Expanded(
-                child: CustomButton(
-                  enabled: _origWants.length != _wants.length,
-                  bgColor: kBackgroundColor,
-                  label: 'Save',
-                  onTap: () => _onSaveTapped(),
-                ),
-              ),
-            ],
+          Container(
+            constraints: BoxConstraints(maxWidth: 500.0),
+            width: double.infinity,
+            child: CustomButton(
+              enabled: _origWants.length != _wants.length,
+              bgColor: kBackgroundColor,
+              label: 'Save',
+              onTap: () => _onSaveTapped(),
+            ),
           ),
         ],
       ),
