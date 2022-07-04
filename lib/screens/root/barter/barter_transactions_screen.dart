@@ -247,7 +247,6 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                           fontSize: SizeConfig.textScaleFactor * 17,
                         ),
                       ),
-                      SizedBox(height: 6.0),
                       Expanded(
                         child: (_view == 'open'
                                     ? openInitiatedList
@@ -288,7 +287,6 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                               fontSize: SizeConfig.textScaleFactor * 17,
                             ),
                           ),
-                          SizedBox(height: 6.0),
                           Expanded(
                             child: (_view == 'open'
                                         ? openOffersList

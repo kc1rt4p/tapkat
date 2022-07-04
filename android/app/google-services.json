@@ -63,10 +63,11 @@
               "client_type": 3
             },
             {
-              "client_id": "317757606033-8hc6bhtbjr0g04s6qua7smq9fev7vou8.apps.googleusercontent.com",
+              "client_id": "317757606033-4f63utln10gcr8nhn9crig9ot6mhaltl.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.flutterflow.tapkat"
+                "bundle_id": "com.flutterflow.tapkat",
+                "app_store_id": "1620869425"
               }
             }
           ]
@@ -131,10 +132,11 @@
               "client_type": 3
             },
             {
-              "client_id": "317757606033-8hc6bhtbjr0g04s6qua7smq9fev7vou8.apps.googleusercontent.com",
+              "client_id": "317757606033-4f63utln10gcr8nhn9crig9ot6mhaltl.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.flutterflow.tapkat"
+                "bundle_id": "com.flutterflow.tapkat",
+                "app_store_id": "1620869425"
               }
             }
           ]

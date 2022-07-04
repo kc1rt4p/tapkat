@@ -11,7 +11,6 @@ import 'package:tapkat/models/request/update_user.dart';
 import 'package:tapkat/models/user.dart';
 import 'package:tapkat/repositories/reference_repository.dart';
 import 'package:tapkat/repositories/user_repository.dart';
-import 'package:tapkat/schemas/index.dart';
 import 'package:tapkat/schemas/users_record.dart';
 import 'package:tapkat/services/auth_service.dart';
 import 'package:tapkat/services/firebase.dart';

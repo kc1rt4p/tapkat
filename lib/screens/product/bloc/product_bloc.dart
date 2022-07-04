@@ -2,6 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_logs/flutter_logs.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:tapkat/models/localization.dart';
 import 'package:tapkat/models/location.dart';
@@ -92,7 +93,6 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
           emit(ProductLoading());
           final result = await _productRepo.deleteImages(
               event.imgUrls, _user!.uid, event.productId);
-          final product = await _productRepo.getProduct(event.productId);
 
           // if (product.mediaPrimary != null &&
           //     (product.mediaPrimary!.url != null &&
@@ -168,6 +168,11 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
               application.currentUserModel!.location ??
               LocationModel(latitude: 0, longitude: 0);
 
+          if (event.loc != null) {
+            _location = LocationModel(
+                longitude: event.loc!.longitude, latitude: event.loc!.latitude);
+          }
+
           final result = await _productRepo.getFirstProducts(
             event.listType,
             location: _location,
@@ -199,6 +204,10 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
           LocationModel _location = application.currentUserLocation ??
               application.currentUserModel!.location ??
               LocationModel(latitude: 0, longitude: 0);
+          if (event.loc != null) {
+            _location = LocationModel(
+                longitude: event.loc!.longitude, latitude: event.loc!.latitude);
+          }
           final result = await _productRepo.getNextProducts(
             listType: event.listType,
             lastProductId: event.lastProductId,

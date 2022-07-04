@@ -470,21 +470,21 @@ class _LoginScreenState extends State<LoginScreen> {
                                       bgColor: Colors.white,
                                       textColor: Colors.black,
                                     ),
-                                    Visibility(
-                                      visible: Platform.isIOS,
-                                      child: CustomButton(
-                                        onTap: () =>
-                                            _authBloc.add(SignInApple()),
-                                        label: 'Sign in with Apple',
-                                        icon: SvgPicture.asset(
-                                          'assets/icons/apple_icon.svg',
-                                          height: 20.0,
-                                        ),
-                                        bgColor: Colors.white,
-                                        textColor: Colors.black,
-                                        enabled: Platform.isIOS,
-                                      ),
-                                    ),
+                                    // Visibility(
+                                    //   visible: Platform.isIOS,
+                                    //   child: CustomButton(
+                                    //     onTap: () =>
+                                    //         _authBloc.add(SignInApple()),
+                                    //     label: 'Sign in with Apple',
+                                    //     icon: SvgPicture.asset(
+                                    //       'assets/icons/apple_icon.svg',
+                                    //       height: 20.0,
+                                    //     ),
+                                    //     bgColor: Colors.white,
+                                    //     textColor: Colors.black,
+                                    //     enabled: Platform.isIOS,
+                                    //   ),
+                                    // ),
                                     Container(
                                       margin: EdgeInsets.only(bottom: 10.0),
                                       width: SizeConfig.screenWidth,

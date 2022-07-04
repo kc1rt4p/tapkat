@@ -1,6 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_logs/flutter_logs.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:tapkat/backend.dart';
 import 'package:tapkat/models/location.dart';
 import 'package:tapkat/models/product.dart';
@@ -20,7 +21,7 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
       try {
         if (event is InitializeSearch) {
           final result = await _productRepo.searchProducts(
-            event.keyword.isNotEmpty ? event.keyword.trim().split(" ") : [],
+            event.keyword,
             sortBy: event.sortBy.toLowerCase() == 'name'
                 ? 'productname'
                 : event.sortBy,
@@ -38,7 +39,7 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
 
         if (event is SearchNextProducts) {
           final list = await _productRepo.searchProducts(
-            event.keyword.split(" "),
+            event.keyword,
             sortBy: event.sortBy == 'name' ? 'productname' : event.sortBy,
             radius: event.distance,
             lastProductId: event.lastProductId,

@@ -78,6 +78,7 @@ class _BarterListItemState extends State<BarterListItem> {
         if (snapshot.hasData) {
           if (snapshot.data != null && snapshot.data!.isNotEmpty) {
             final _product = snapshot.data!.first;
+
             if (_product != null) {
               liked = true;
             }
@@ -216,144 +217,173 @@ class _BarterListItemState extends State<BarterListItem> {
                       child: Positioned(
                         top: 5,
                         right: 5,
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            Icon(
-                              Icons.favorite,
-                              color: Colors.white,
-                              size: SizeConfig.textScaleFactor * 20,
-                            ),
-                            GestureDetector(
-                              onTap: widget.onLikeTapped != null
-                                  ? () {
-                                      widget.onLikeTapped!(liked ? 1 : -1);
-                                    }
-                                  : null,
-                              child: Icon(
-                                liked ? Icons.favorite : Icons.favorite_outline,
-                                color: liked ? Colors.red : Colors.black,
-                                size: SizeConfig.textScaleFactor * 17,
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 6.0,
+                            vertical: 2.0,
+                          ),
+                          decoration: BoxDecoration(
+                              color: kBackgroundColor,
+                              borderRadius: BorderRadius.circular(30.0)),
+                          child: Row(
+                            children: [
+                              Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.favorite,
+                                    color: Colors.white,
+                                    size: SizeConfig.textScaleFactor * 20,
+                                  ),
+                                  GestureDetector(
+                                    onTap: widget.onLikeTapped != null
+                                        ? () {
+                                            widget
+                                                .onLikeTapped!(liked ? 1 : -1);
+                                            if (widget.product.likes != null) {
+                                              widget.product.likes =
+                                                  widget.product.likes! +
+                                                      (liked ? -1 : 1);
+                                            }
+                                          }
+                                        : null,
+                                    child: Icon(
+                                      liked
+                                          ? Icons.favorite
+                                          : Icons.favorite_outline,
+                                      color: liked ? Colors.red : Colors.black,
+                                      size: SizeConfig.textScaleFactor * 17,
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ),
-                          ],
+                              SizedBox(width: 3.0),
+                              Text(
+                                widget.product.likes != null
+                                    ? widget.product.likes.toString()
+                                    : '0',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: SizeConfig.textScaleFactor * 15,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
                   ],
                 ),
                 Container(
-                  color: Colors.white,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(20.0),
+                      bottomRight: Radius.circular(20.0),
+                    ),
+                  ),
                   width: widget.width ?? SizeConfig.screenHeight * 0.17,
                   padding: EdgeInsets.all(5.0),
-                  child: Row(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: product.rating != null &&
-                                  product.rating! > 0 &&
-                                  widget.showRating
-                              ? CrossAxisAlignment.start
-                              : CrossAxisAlignment.center,
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            Text(
-                              product.productname != null
-                                  ? product.productname!.trim()
-                                  : '',
-                              textAlign: TextAlign.center,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: widget.fontSize ??
-                                    SizeConfig.textScaleFactor * 12,
-                                fontWeight: FontWeight.w600,
-                              ),
+                      Text(
+                        product.productname != null
+                            ? product.productname!.trim()
+                            : '',
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: widget.fontSize ??
+                              SizeConfig.textScaleFactor * 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      SizedBox(height: 3.0),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          product.free != null && product.free!
+                              ? Container()
+                              : Padding(
+                                  padding: const EdgeInsets.only(right: 2.0),
+                                  child: Text(
+                                    product.currency != null &&
+                                            product.currency!.isNotEmpty
+                                        ? product.currency!
+                                        : application.currentUserModel!
+                                                        .currency !=
+                                                    null &&
+                                                application.currentUserModel!
+                                                    .currency!.isNotEmpty
+                                            ? application
+                                                .currentUserModel!.currency!
+                                            : '',
+                                    style: TextStyle(
+                                      fontSize: widget.fontSize ??
+                                          SizeConfig.textScaleFactor * 8,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                          Text(
+                            product.free != null && product.free!
+                                ? 'FREE'
+                                : product.price != null
+                                    ? oCcy.format(product.price!)
+                                    : '0.00',
+                            style: TextStyle(
+                              fontSize: widget.fontSize ??
+                                  SizeConfig.textScaleFactor * 9.5,
+                              fontWeight: FontWeight.w700,
                             ),
-                            SizedBox(height: 3.0),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
+                          ),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          (product.address != null &&
+                                      product.address!.location != null &&
+                                      !widget.hideDistance) ||
+                                  widget.distance != null
+                              ? Padding(
+                                  padding: const EdgeInsets.only(top: 5.0),
+                                  child: Text(_getProductDistance(product),
+                                      style: TextStyle(
+                                          fontSize:
+                                              SizeConfig.textScaleFactor * 10)),
+                                )
+                              : Container(),
+                          Spacer(),
+                          Visibility(
+                            visible: product.rating != null &&
+                                product.rating! > 0 &&
+                                widget.showRating,
+                            child: Row(
                               children: [
-                                product.free != null && product.free!
-                                    ? SizedBox()
-                                    : Padding(
-                                        padding:
-                                            const EdgeInsets.only(right: 2.0),
-                                        child: Text(
-                                          product.currency != null &&
-                                                  product.currency!.isNotEmpty
-                                              ? product.currency!
-                                              : application.currentUserModel!
-                                                              .currency !=
-                                                          null &&
-                                                      application
-                                                          .currentUserModel!
-                                                          .currency!
-                                                          .isNotEmpty
-                                                  ? application
-                                                      .currentUserModel!
-                                                      .currency!
-                                                  : '',
-                                          style: TextStyle(
-                                            fontSize: widget.fontSize ??
-                                                SizeConfig.textScaleFactor * 8,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                      ),
+                                SizedBox(width: 5.0),
+                                Icon(
+                                  Icons.star,
+                                  color: Colors.yellow,
+                                  size: 15,
+                                ),
                                 Text(
-                                  product.free != null && product.free!
-                                      ? 'FREE'
-                                      : product.price != null
-                                          ? oCcy.format(product.price!)
-                                          : '0.00',
+                                  product.rating != null
+                                      ? product.rating!.toStringAsFixed(1)
+                                      : '0.0',
                                   style: TextStyle(
-                                    fontSize: widget.fontSize ??
-                                        SizeConfig.textScaleFactor * 9.5,
-                                    fontWeight: FontWeight.w700,
+                                    fontSize: 12.0,
                                   ),
                                 ),
                               ],
                             ),
-                          ],
-                        ),
-                      ),
-                      Visibility(
-                        visible: product.rating != null &&
-                            product.rating! > 0 &&
-                            widget.showRating,
-                        child: Row(
-                          children: [
-                            SizedBox(width: 5.0),
-                            Icon(
-                              Icons.star,
-                              color: Colors.yellow,
-                              size: 15,
-                            ),
-                            Text(
-                              product.rating != null
-                                  ? product.rating!.toStringAsFixed(1)
-                                  : '0.0',
-                              style: TextStyle(
-                                fontSize: 12.0,
-                              ),
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
                 ),
-                (product.address != null &&
-                            product.address!.location != null &&
-                            !widget.hideDistance) ||
-                        widget.distance != null
-                    ? Padding(
-                        padding: const EdgeInsets.only(top: 5.0),
-                        child: Text(_getProductDistance(product),
-                            style: TextStyle(
-                                fontSize: SizeConfig.textScaleFactor * 10)),
-                      )
-                    : Container(),
               ],
             ),
           ),
@@ -373,13 +403,4 @@ class _BarterListItemState extends State<BarterListItem> {
     if (meters < 300) return 'within 300m';
     return 'within 900m';
   }
-
-  // double calculateDistance(lat1, lon1, lat2, lon2) {
-  //   var p = 0.017453292519943295;
-  //   var c = cos;
-  //   var a = 0.5 -
-  //       c((lat2 - lat1) * p) / 2 +
-  //       c(lat1 * p) * c(lat2 * p) * (1 - c((lon2 - lon1) * p)) / 2;
-  //   return 12742 * asin(sqrt(a));
-  // }
 }

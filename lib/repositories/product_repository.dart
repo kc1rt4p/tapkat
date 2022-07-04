@@ -453,7 +453,7 @@ class ProductRepository {
     return true;
   }
 
-  Future<List<ProductModel>> searchProducts(List<String> keyword,
+  Future<List<ProductModel>> searchProducts(String keyword,
       {String? lastProductId,
       dynamic startAfterVal,
       List<String>? category,
@@ -469,7 +469,8 @@ class ProductRepository {
       'productcount': itemCount,
       'userid': application.currentUser!.uid,
       'location': location.toJson(),
-      'radius': radius,
+      // 'geolocation': location.toJson(),
+      'radius': double.parse(radius.toStringAsFixed(2)),
       'type': 'PT1',
     };
     if (keyword.length > 0) _body.addAll({'keywords': keyword});

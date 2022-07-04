@@ -13,6 +13,7 @@ class InitializeSearch extends SearchEvent {
   final double distance;
   final String sortBy;
   final int? itemCount;
+  final LatLng? loc;
 
   InitializeSearch({
     required this.keyword,
@@ -20,6 +21,7 @@ class InitializeSearch extends SearchEvent {
     required this.distance,
     required this.sortBy,
     this.itemCount,
+    this.loc,
   });
 }
 
@@ -32,6 +34,7 @@ class SearchNextProducts extends SearchEvent {
   final String sortBy;
   final String lastProductId;
   final dynamic startAfterVal;
+  final LatLng? loc;
 
   SearchNextProducts({
     required this.keyword,
@@ -40,5 +43,6 @@ class SearchNextProducts extends SearchEvent {
     required this.sortBy,
     required this.lastProductId,
     required this.startAfterVal,
+    this.loc,
   });
 }
