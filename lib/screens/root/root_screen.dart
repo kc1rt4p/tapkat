@@ -366,6 +366,10 @@ class _RootScreenState extends State<RootScreen> {
                   initNotifications();
                   _barterBloc.add(GetUnreadBarterMessages());
                 }
+
+                if (state is AuthError) {
+                  print('AUTH ERROR ------> ${state.message}');
+                }
               },
             ),
             BlocListener(
@@ -429,7 +433,7 @@ class _RootScreenState extends State<RootScreen> {
   }
 
   _onAddTapped() async {
-    if (!application.currentUser!.emailVerified ||
+    if (!application.currentUser!.emailVerified &&
         (application.currentUserModel!.signin_method != null &&
             application.currentUserModel!.signin_method == 'EMAIL')) {
       DialogMessage.show(
@@ -526,7 +530,7 @@ class _RootScreenState extends State<RootScreen> {
       child: InkWell(
         onTap: () {
           if (index == 2 &&
-              (!application.currentUser!.emailVerified ||
+              (!application.currentUser!.emailVerified &&
                   (application.currentUserModel!.signin_method != null &&
                       application.currentUserModel!.signin_method ==
                           'EMAIL'))) {

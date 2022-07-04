@@ -218,7 +218,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               Visibility(
                 visible: !application.currentUser!.emailVerified &&
-                    !application.currentUserModel!.verifiedByPhone!,
+                    application.currentUserModel!.signin_method == 'EMAIL',
                 child: Container(
                   width: double.infinity,
                   color: Style.secondaryColor,
@@ -424,7 +424,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               ),
                               Visibility(
                                 visible:
-                                    !application.currentUser!.emailVerified ||
+                                    !application.currentUser!.emailVerified &&
                                         (application.currentUserModel!
                                                     .signin_method !=
                                                 null &&

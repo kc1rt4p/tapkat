@@ -225,22 +225,14 @@ class _UserSocialMediaAccountsScreenState
                               CustomButton(
                                 label: 'Skip',
                                 onTap: () => Navigator.push(
-                                  context,
-                                  widget.op != 'edit'
-                                      ? MaterialPageRoute(
-                                          builder: (context) =>
-                                              InterestSelectionScreen(
-                                            user: widget.user,
-                                            signingUp: true,
-                                          ),
-                                        )
-                                      : MaterialPageRoute(
-                                          builder: (context) =>
-                                              InterestSelectionScreen(
-                                            user: widget.user,
-                                          ),
-                                        ),
-                                ),
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          InterestSelectionScreen(
+                                        user: widget.user,
+                                        signingUp: widget.op != 'edit',
+                                      ),
+                                    )),
                                 bgColor: Color(0xFFBB3F03),
                               ),
                             ],
@@ -279,18 +271,12 @@ class _UserSocialMediaAccountsScreenState
 
     Navigator.push(
       context,
-      widget.op != 'edit'
-          ? MaterialPageRoute(
-              builder: (context) => InterestSelectionScreen(
-                user: user,
-                signingUp: true,
-              ),
-            )
-          : MaterialPageRoute(
-              builder: (context) => InterestSelectionScreen(
-                user: user,
-              ),
-            ),
+      MaterialPageRoute(
+        builder: (context) => InterestSelectionScreen(
+          user: user,
+          signingUp: widget.op != 'edit',
+        ),
+      ),
     );
   }
 

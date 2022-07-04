@@ -72,12 +72,6 @@ class _SignUpPhotoSelectionScreenState
                     op: 'register',
                   ),
                 ),
-                // MaterialPageRoute(
-                //   builder: (context) => InterestSelectionScreen(
-                //     user: _user!,
-                //     signingUp: true,
-                //   ),
-                // ),
               );
             }
 

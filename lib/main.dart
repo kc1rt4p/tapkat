@@ -319,6 +319,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
                       if (snapshot.data != null && _userModel != null) {
+                        print('bxxxxx> ${snapshot.data!.emailVerified}');
                         return RootScreen(
                           barterId: barterId,
                         );

@@ -950,7 +950,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                       onTap: () {
                                                         if (!application
                                                                 .currentUser!
-                                                                .emailVerified ||
+                                                                .emailVerified &&
                                                             (application.currentUserModel!
                                                                         .signin_method !=
                                                                     null &&
@@ -993,7 +993,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                       onTap: () {
                                                         if (!application
                                                                 .currentUser!
-                                                                .emailVerified ||
+                                                                .emailVerified &&
                                                             (application.currentUserModel!
                                                                         .signin_method !=
                                                                     null &&

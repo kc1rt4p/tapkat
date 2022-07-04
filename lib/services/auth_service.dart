@@ -40,8 +40,13 @@ class AuthService {
       {bool registering = false}) async {
     final userCredential = await signInFunc();
     if (userCredential != null) {
-      if (registering) {
-        FirebaseAuth.instance.currentUser!.sendEmailVerification();
+      if (!userCredential.user!.emailVerified) {
+        print('0----> SENDING EMAIL VERIFICATION!!');
+        try {
+          FirebaseAuth.instance.currentUser!.sendEmailVerification();
+        } catch (e) {
+          print('0-> ${e.toString()}');
+        }
       }
       await maybeCreateUser(userCredential.user!);
       return userCredential.user!;
@@ -167,7 +172,7 @@ class AuthService {
     final createAccountFunc = () => FirebaseAuth.instance
         .createUserWithEmailAndPassword(
             email: email.trim(), password: password);
-    return signInOrCreateAccount(createAccountFunc);
+    return signInOrCreateAccount(createAccountFunc, registering: true);
   }
 
   Future<User?> signInWithFacebook() async {
