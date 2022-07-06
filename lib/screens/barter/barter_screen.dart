@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:ui';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -18,12 +17,10 @@ import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
 import 'package:tapkat/models/barter_product.dart';
 import 'package:tapkat/models/barter_record_model.dart';
 import 'package:tapkat/models/chat_message.dart';
-import 'package:tapkat/models/media_primary_model.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/models/request/product_review_resuest.dart';
 import 'package:tapkat/models/request/user_review_request.dart';
 import 'package:tapkat/models/user.dart';
-import 'package:tapkat/schemas/barter_record.dart';
 import 'package:tapkat/screens/barter/widgets/add_item_btn.dart';
 import 'package:tapkat/screens/barter/widgets/cash_item.dart';
 import 'package:tapkat/screens/barter/widgets/chat_item.dart';
@@ -64,7 +61,7 @@ class BarterScreen extends StatefulWidget {
 
 class _BarterScreenState extends State<BarterScreen> {
   final oCcy = new INTL.NumberFormat("#,##0.00", "en_US");
-  final unsaveProductsStorage = new LocalStorage('unsaved_products.json');
+  late LocalStorage unsaveProductsStorage;
   ProductModel? _product;
 
   final _authBloc = AuthBloc();
@@ -132,6 +129,13 @@ class _BarterScreenState extends State<BarterScreen> {
     if (widget.product != null) {
       _product = widget.product!;
     }
+    if (widget.barterRecord != null) {
+      unsaveProductsStorage =
+          new LocalStorage('${widget.barterRecord!.barterId}.json');
+    } else {
+      unsaveProductsStorage = new LocalStorage(
+          '${application.currentUser!.uid + _product!.userid! + _product!.productid!}.json');
+    }
 
     _initialOffer = widget.initialOffer;
 
@@ -152,6 +156,7 @@ class _BarterScreenState extends State<BarterScreen> {
 
   Future<bool> _onWillPop() async {
     if (_barterRecord!.dealStatus == 'new' && currentUserOffers.isEmpty) {
+      unsaveProductsStorage.clear();
       _barterBloc.add(DeleteBarter(_barterId!));
       return false;
     }
@@ -231,38 +236,54 @@ class _BarterScreenState extends State<BarterScreen> {
 
       if (result != null) {
         shouldExit = result;
-      } else {
+      } else if (result == null) {
         List<dynamic> _unsavedOfferedProducts = [];
         List<dynamic> _unsavedWantedProducts = [];
 
-        origCurrentUserOffers.forEach((oOffer) {
-          final stillExists = currentUserOffers
-              .any((offer) => offer.productId == oOffer.productId);
-          if (!stillExists ||
-              currentUserOffers.length != origCurrentUserOffers.length)
-            _unsavedOfferedProducts.addAll(currentUserOffers);
+        currentUserOffers.forEach((offer) {
+          if (!origCurrentUserOffers
+              .any((oOffer) => oOffer.productId == offer.productId)) {
+            _unsavedOfferedProducts.add(offer.toJson());
+          }
         });
 
-        origRemoteUserOffers.forEach((oWant) {
-          final stillExists =
-              remoteUserOffers.any((want) => want.productId == oWant.productId);
-          if (!stillExists ||
-              remoteUserOffers.length != origRemoteUserOffers.length)
-            _unsavedWantedProducts.addAll(remoteUserOffers);
+        remoteUserOffers.forEach((offer) {
+          if (!origRemoteUserOffers
+              .any((oOffer) => oOffer.productId == offer.productId)) {
+            _unsavedWantedProducts.add(offer.toJson());
+          }
         });
+
+        // origCurrentUserOffers.forEach((oOffer) {
+        //   final stillExists = currentUserOffers
+        //       .any((offer) => offer.productId == oOffer.productId);
+        //   if (!stillExists ||
+        //       currentUserOffers.length != origCurrentUserOffers.length ||
+        //       (origCurrentUserOffers.isEmpty && currentUserOffers.isNotEmpty))
+        //     _unsavedOfferedProducts.addAll(currentUserOffers);
+        // });
+
+        // origRemoteUserOffers.forEach((oWant) {
+        //   final stillExists =
+        //       remoteUserOffers.any((want) => want.productId == oWant.productId);
+        //   if (!stillExists ||
+        //       remoteUserOffers.length != origRemoteUserOffers.length ||
+        //       (origRemoteUserOffers.isEmpty && remoteUserOffers.isNotEmpty))
+        //     _unsavedWantedProducts.addAll(remoteUserOffers);
+        // });
 
         if (_unsavedOfferedProducts.isNotEmpty) {
           // save to local storage
           await unsaveProductsStorage.setItem(
               'offered', _unsavedOfferedProducts);
           await unsaveProductsStorage.setItem(
-              'offeredDateUpdated', DateTime.now());
+              'offeredDateUpdated', DateTime.now().toString());
         }
 
         if (_unsavedWantedProducts.isNotEmpty) {
           unsaveProductsStorage.setItem('wanted', _unsavedWantedProducts);
           await unsaveProductsStorage.setItem(
-              'wantedDateUpdated', DateTime.now());
+              'wantedDateUpdated', DateTime.now().toString());
         }
       }
     }
@@ -418,11 +439,6 @@ class _BarterScreenState extends State<BarterScreen> {
               remoteUserItems
                   .forEach((element) => print('X==> ${element.toJson()}'));
 
-              final unsavedOfferedProducts = await unsaveProductsStorage
-                  .getItem('offered') as List<dynamic>?;
-              final unsavedWantedProducts = await unsaveProductsStorage
-                  .getItem('wanted') as List<dynamic>?;
-
               _barterStreamSub = state.barterStream.listen((barterRecord) {
                 if (barterRecord == null) {
                   Navigator.pop(context);
@@ -468,7 +484,8 @@ class _BarterScreenState extends State<BarterScreen> {
                 }
               });
 
-              _barterProductsStream = state.barterProductsStream.listen((list) {
+              _barterProductsStream =
+                  state.barterProductsStream.listen((list) async {
                 if (list.isNotEmpty) {
                   setState(() {
                     remoteUserOffers.clear();
@@ -544,30 +561,19 @@ class _BarterScreenState extends State<BarterScreen> {
                     _initialOffer = null;
                   }
 
-                  if (unsavedOfferedProducts != null &&
-                      unsavedOfferedProducts.isNotEmpty) {
-                    final list = unsavedOfferedProducts
-                        .map((data) => data as BarterProductModel)
-                        .toList();
-                    list.forEach((prod) {
-                      if (!currentUserOffers
-                          .any((item) => item.productId == prod.productId)) {
-                        currentUserOffers.add(prod);
-                      }
-                    });
+                  final unsavedOfferedProducts = await unsaveProductsStorage
+                      .getItem('offered') as List<dynamic>?;
+                  final unsavedWantedProducts = await unsaveProductsStorage
+                      .getItem('wanted') as List<dynamic>?;
+
+                  if (unsavedOfferedProducts != null) {
+                    print(
+                        'unsavedOfferedProducts:: ${unsavedOfferedProducts.length}');
                   }
 
-                  if (unsavedWantedProducts != null &&
-                      unsavedWantedProducts.isNotEmpty) {
-                    final list = unsavedWantedProducts
-                        .map((data) => data as BarterProductModel)
-                        .toList();
-                    list.forEach((prod) {
-                      if (!remoteUserOffers
-                          .any((item) => item.productId == prod.productId)) {
-                        remoteUserOffers.add(prod);
-                      }
-                    });
+                  if (unsavedWantedProducts != null) {
+                    print(
+                        'unsavedOfferedProducts:: ${unsavedWantedProducts.length}');
                   }
 
                   setState(() {
@@ -583,6 +589,37 @@ class _BarterScreenState extends State<BarterScreen> {
                           prod.productid == widget.initialOffer!.productid)) {
                         currentUserItems.insert(0, widget.initialOffer!);
                       }
+                    }
+
+                    // add saved products
+                    if (unsavedOfferedProducts != null &&
+                        unsavedOfferedProducts.isNotEmpty) {
+                      unsavedOfferedProducts
+                          .forEach((offer) => print('x---> {offer'));
+                      print('X===> ${unsavedOfferedProducts.length}');
+                      final list = unsavedOfferedProducts
+                          .map((data) => BarterProductModel.fromJson(data))
+                          .toList();
+                      list.forEach((prod) {
+                        if (!currentUserOffers
+                            .any((item) => item.productId == prod.productId)) {
+                          currentUserOffers.add(prod);
+                        }
+                      });
+                    }
+
+                    if (unsavedWantedProducts != null &&
+                        unsavedWantedProducts.isNotEmpty) {
+                      print('X===> ${unsavedWantedProducts.length}');
+                      final list = unsavedWantedProducts
+                          .map((data) => BarterProductModel.fromJson(data))
+                          .toList();
+                      list.forEach((prod) {
+                        if (!remoteUserOffers
+                            .any((item) => item.productId == prod.productId)) {
+                          remoteUserOffers.add(prod);
+                        }
+                      });
                     }
 
                     // sort added products
@@ -718,8 +755,10 @@ class _BarterScreenState extends State<BarterScreen> {
                             message:
                                 'Are you sure you want to delete this Barter?',
                             buttonText: 'Yes',
-                            firstButtonClicked: () =>
-                                _barterBloc.add(DeleteBarter(_barterId!)),
+                            firstButtonClicked: () {
+                              unsaveProductsStorage.clear();
+                              _barterBloc.add(DeleteBarter(_barterId!));
+                            },
                             secondButtonText: 'No',
                             hideClose: true,
                           );

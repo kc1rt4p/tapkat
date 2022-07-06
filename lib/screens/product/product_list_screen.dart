@@ -1036,12 +1036,21 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
                 final _km = km * 1000;
 
-                setState(() {
-                  _selectedRadius = _km;
-                });
-
                 if (zoomLevel.toInt() != mapZoomLevel.toInt() &&
                     (_km >= 500 && _km <= 30000)) {
+                  setState(() {
+                    _selectedRadius = _km;
+
+                    _currentCircle = Circle(
+                      circleId: CircleId('radius'),
+                      center: _currentCenter,
+                      radius: _selectedRadius.toDouble(),
+                      strokeColor: kBackgroundColor,
+                      strokeWidth: 1,
+                      fillColor: kBackgroundColor.withOpacity(0.2),
+                    );
+                  });
+
                   _productBloc.add(GetFirstProducts(
                     userid: application.currentUser!.uid,
                     listType: widget.listType,

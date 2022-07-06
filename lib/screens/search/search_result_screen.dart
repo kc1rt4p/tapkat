@@ -941,6 +941,15 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
 
                 setState(() {
                   _selectedRadius = _km;
+
+                  _currentCircle = Circle(
+                    circleId: CircleId('radius'),
+                    center: _currentCenter,
+                    radius: _selectedRadius.toDouble(),
+                    strokeColor: kBackgroundColor,
+                    strokeWidth: 1,
+                    fillColor: kBackgroundColor.withOpacity(0.2),
+                  );
                 });
                 print('0---> $zoomLevel & $mapZoomLevel');
                 if (zoomLevel.toInt() != mapZoomLevel.toInt() &&
