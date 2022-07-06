@@ -586,21 +586,8 @@ class _BarterScreenState extends State<BarterScreen> {
                     }
 
                     // sort added products
-                    currentUserItems.asMap().forEach((index, prod) {
-                      if (currentUserOffers
-                          .any((bprod) => bprod.productId == prod.productid)) {
-                        final _prod = currentUserItems.removeAt(index);
-                        currentUserItems.insert(0, _prod);
-                      }
-                    });
 
-                    remoteUserItems.asMap().forEach((index, prod) {
-                      if (remoteUserOffers
-                          .any((bprod) => bprod.productId == prod.productid)) {
-                        final _prod = remoteUserItems.removeAt(index);
-                        remoteUserItems.insert(0, _prod);
-                      }
-                    });
+                    _sortProducts();
                   });
                 }
               });
@@ -752,6 +739,22 @@ class _BarterScreenState extends State<BarterScreen> {
         ),
       ),
     );
+  }
+
+  _sortProducts() {
+    currentUserItems.asMap().forEach((index, prod) {
+      if (currentUserOffers.any((bprod) => bprod.productId == prod.productid)) {
+        final _prod = currentUserItems.removeAt(index);
+        currentUserItems.insert(0, _prod);
+      }
+    });
+
+    remoteUserItems.asMap().forEach((index, prod) {
+      if (remoteUserOffers.any((bprod) => bprod.productId == prod.productid)) {
+        final _prod = remoteUserItems.removeAt(index);
+        remoteUserItems.insert(0, _prod);
+      }
+    });
   }
 
   Container _buildPanel() {
@@ -1446,6 +1449,8 @@ class _BarterScreenState extends State<BarterScreen> {
             }
           });
         }
+
+        _sortProducts();
       });
     }
   }
