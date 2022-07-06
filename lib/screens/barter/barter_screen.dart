@@ -395,6 +395,7 @@ class _BarterScreenState extends State<BarterScreen> {
             if (state is UpdateBarterProductsSuccess ||
                 state is DeleteBarterProductsSuccess ||
                 state is AddCashOfferSuccess) {
+              unsaveProductsStorage.clear();
               setState(() {
                 origCurrentUserOffers = List.from(currentUserOffers);
                 origRemoteUserOffers = List.from(remoteUserOffers);
