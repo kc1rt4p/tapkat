@@ -48,7 +48,8 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
             userId: application.currentUser!.uid,
             sortBy: 'name',
           );
-          emit(LoadedUserList(userItems));
+          emit(LoadedUserList(
+              userItems.where((item) => item.status != 'completed').toList()));
           add(LoadProductsInCategories());
         }
 

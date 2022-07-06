@@ -23,7 +23,11 @@ import 'package:tapkat/widgets/custom_textformfield.dart';
 import 'package:tapkat/utilities/application.dart' as application;
 
 class InitialSignUpScreen extends StatefulWidget {
-  const InitialSignUpScreen({Key? key}) : super(key: key);
+  final String method;
+  const InitialSignUpScreen({
+    Key? key,
+    required this.method,
+  }) : super(key: key);
 
   @override
   _InitialSignUpScreenState createState() => _InitialSignUpScreenState();
@@ -307,6 +311,7 @@ class _InitialSignUpScreenState extends State<InitialSignUpScreen> {
 
     _authBloc.add(
       SignUp(
+        method: widget.method,
         email: _emailTextController.text.trim(),
         password: _confirmPasswordTextController.text.trim(),
         username: _usernameTextController.text.trim(),

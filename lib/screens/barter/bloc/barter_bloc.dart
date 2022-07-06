@@ -42,7 +42,6 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
             print('=== barter id: ${event.barterData.barterId}');
             var _barterRecord = await _barterRepository
                 .getBarterRecord(event.barterData.barterId!);
-            print('=== _barterRecord: $_barterRecord');
 
             if (_barterRecord == null) {
               event.barterData.dealStatus = 'new';
@@ -361,6 +360,7 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
               'user',
               sortBy: 'name',
               userId: application.currentUser!.uid,
+              itemCount: 20,
             );
 
             final remoteUserProducts =
@@ -370,6 +370,7 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
               userId: senderUserId == application.currentUser!.uid
                   ? recipientUserId!
                   : senderUserId!,
+              itemCount: 20,
             );
 
             emit(BarterInitialized(

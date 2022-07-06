@@ -108,7 +108,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
               updateUser.currency = event.loc!.currency;
             }
 
-            if (application.currentUser != null) {
+            if (event.method == 'PHONE') {
               updateUser.signin_method = 'PHONE';
               await maybeCreateUser(user);
             } else {
@@ -177,13 +177,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           final downloadUrl = await uploadData(
               event.selectedMedia.storagePath, event.selectedMedia.bytes);
 
-          ScaffoldMessenger.of(event.context).hideCurrentSnackBar();
-
           if (downloadUrl != null) {
             final userRef =
                 UsersRecord.collection.doc(authService.currentUser!.user!.uid);
 
             await userRef.update({"photo_url": downloadUrl});
+
+            application.currentUserModel =
+                await userRepo.getUser(application.currentUser!.uid);
 
             emit(SaveUserPhotoSuccess());
 

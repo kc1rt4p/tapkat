@@ -44,7 +44,8 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
         if (state is ResendEmailSuccess) {
           DialogMessage.show(
             context,
-            message: 'The email verification link has been resent',
+            message:
+                'The email verification link has been resent to ${application.currentUserModel!.email}',
             title: 'Resend Email',
           );
         }
@@ -80,7 +81,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                     ),
                     SizedBox(height: 12.0),
                     Text(
-                      'We have sent a verification link to your email address',
+                      'We have sent a verification link to ${application.currentUserModel!.email}',
                       textAlign: TextAlign.center,
                       style: Style.fieldText,
                     ),

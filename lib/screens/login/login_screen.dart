@@ -110,7 +110,10 @@ class _LoginScreenState extends State<LoginScreen> {
             if (state is PhoneVerifiedButNoRecord) {
               await Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => InitialSignUpScreen()),
+                MaterialPageRoute(
+                    builder: (context) => InitialSignUpScreen(
+                          method: 'PHONE',
+                        )),
               );
 
               if (application.currentUser != null)
@@ -512,7 +515,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                                             context,
                                                             MaterialPageRoute(
                                                               builder: (context) =>
-                                                                  InitialSignUpScreen(),
+                                                                  InitialSignUpScreen(
+                                                                method: 'EMAIL',
+                                                              ),
                                                             ),
                                                           ),
                                               ),

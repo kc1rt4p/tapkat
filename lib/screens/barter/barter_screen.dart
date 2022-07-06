@@ -23,9 +23,11 @@ import 'package:tapkat/models/product.dart';
 import 'package:tapkat/models/request/product_review_resuest.dart';
 import 'package:tapkat/models/request/user_review_request.dart';
 import 'package:tapkat/models/user.dart';
+import 'package:tapkat/schemas/barter_record.dart';
 import 'package:tapkat/screens/barter/widgets/add_item_btn.dart';
 import 'package:tapkat/screens/barter/widgets/cash_item.dart';
 import 'package:tapkat/screens/barter/widgets/chat_item.dart';
+import 'package:tapkat/screens/barter/widgets/user_items.dart';
 import 'package:tapkat/screens/product/bloc/product_bloc.dart';
 import 'package:tapkat/screens/product/product_add_screen.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
@@ -149,6 +151,11 @@ class _BarterScreenState extends State<BarterScreen> {
   }
 
   Future<bool> _onWillPop() async {
+    if (_barterRecord!.dealStatus == 'new' && currentUserOffers.isEmpty) {
+      _barterBloc.add(DeleteBarter(_barterId!));
+      return false;
+    }
+
     setState(() {
       _closing = true;
     });
@@ -400,9 +407,16 @@ class _BarterScreenState extends State<BarterScreen> {
 
             if (state is BarterInitialized) {
               setState(() {
-                remoteUserItems = state.remoteUserProducts;
-                currentUserItems = state.currentUserProducts;
+                remoteUserItems = state.remoteUserProducts
+                    .where((prod) => prod.status != 'COMPLETED')
+                    .toList();
+                currentUserItems = state.currentUserProducts
+                    .where((prod) => prod.status != 'COMPLETED')
+                    .toList();
               });
+
+              remoteUserItems
+                  .forEach((element) => print('X==> ${element.toJson()}'));
 
               final unsavedOfferedProducts = await unsaveProductsStorage
                   .getItem('offered') as List<dynamic>?;
@@ -557,6 +571,21 @@ class _BarterScreenState extends State<BarterScreen> {
                   }
 
                   setState(() {
+                    if (widget.product != null) {
+                      if (!remoteUserItems.any((prod) =>
+                          prod.productid == widget.product!.productid)) {
+                        remoteUserItems.insert(0, widget.product!);
+                      }
+                    }
+
+                    if (widget.initialOffer != null) {
+                      if (!currentUserItems.any((prod) =>
+                          prod.productid == widget.initialOffer!.productid)) {
+                        currentUserItems.insert(0, widget.initialOffer!);
+                      }
+                    }
+
+                    // sort added products
                     currentUserItems.asMap().forEach((index, prod) {
                       if (currentUserOffers
                           .any((bprod) => bprod.productId == prod.productid)) {
@@ -564,9 +593,6 @@ class _BarterScreenState extends State<BarterScreen> {
                         currentUserItems.insert(0, _prod);
                       }
                     });
-
-                    currentUserOffers.forEach(
-                        (element) => print('______=> ${element.toJson()}'));
 
                     remoteUserItems.asMap().forEach((index, prod) {
                       if (remoteUserOffers
@@ -1327,10 +1353,22 @@ class _BarterScreenState extends State<BarterScreen> {
                       ),
                     ),
                   ),
+                  Visibility(
+                    visible: _shouldShowAdd(),
+                    child: Container(
+                      constraints: BoxConstraints(
+                        maxWidth: 500.0,
+                      ),
+                      child: CustomButton(
+                        onTap: () =>
+                            _showUserItems(_recipientUserId!, 'Recipient'),
+                        label: 'View more',
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
-
             Container(
               width: double.infinity,
               height: SizeConfig.screenHeight * 0.3,
@@ -1409,266 +1447,21 @@ class _BarterScreenState extends State<BarterScreen> {
                       ),
                     ),
                   ),
+                  Visibility(
+                    visible: _shouldShowAdd(),
+                    child: Container(
+                      constraints: BoxConstraints(
+                        maxWidth: 500.0,
+                      ),
+                      child: CustomButton(
+                        onTap: () => _showUserItems(_senderUserId!, 'Sender'),
+                        label: 'View more',
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
-            // _buildBarterList(
-            //   label: _barterRecord != null &&
-            //           _barterRecord!.dealStatus != 'completed'
-            //       ? 'You will receive:'
-            //       : 'You have received:',
-            //   items: [
-            //     _remoteUserOfferedCash != null
-            //         ? Stack(
-            //             children: [
-            //               InkWell(
-            //                   onTap: () {
-            //                     if (_barterRecord!.dealStatus != 'sold') {
-            //                       _showAddCashDialog('participant');
-            //                     }
-            //                   },
-            //                   child: buildCashItem(_remoteUserOfferedCash!)),
-            //               Visibility(
-            //                 visible: _shouldShowAdd(),
-            //                 child: Positioned(
-            //                   top: 8.0,
-            //                   right: 10.0,
-            //                   child: InkWell(
-            //                     onTap: () {
-            //                       setState(() {
-            //                         _remoteUserOfferedCash = null;
-            //                       });
-            //                     },
-            //                     child: Container(
-            //                       padding: EdgeInsets.all(5.0),
-            //                       decoration: BoxDecoration(
-            //                         color: kDangerColor,
-            //                         shape: BoxShape.circle,
-            //                       ),
-            //                       child: Center(
-            //                         child: Icon(
-            //                           FontAwesomeIcons.times,
-            //                           size: 16.0,
-            //                           color: Colors.white,
-            //                         ),
-            //                       ),
-            //                     ),
-            //                   ),
-            //                 ),
-            //               ),
-            //             ],
-            //           )
-            //         : Container(),
-            //     ...remoteUserItems.map((product) {
-            //       return _userItem(product);
-            //     }),
-            //     // ...remoteUserOffers.map((item) {
-            //     //   return Container(
-            //     //     margin: EdgeInsets.only(right: 8.0, bottom: 5.0),
-            //     //     child: Stack(
-            //     //       children: [
-            //     //         BarterListItem(
-            //     //           showRating: false,
-            //     //           hideDistance: true,
-            //     //           product: ProductModel(
-            //     //             productid: item.productId!,
-            //     //             productname: item.productName,
-            //     //             mediaPrimary: MediaPrimaryModel(
-            //     //               type: 'image',
-            //     //               url_t: item.imgUrl,
-            //     //             ),
-            //     //             price: item.price != null ? item.price! : 0.00,
-            //     //           ),
-            //     //           hideLikeBtn: true,
-            //     //           onTapped: () {
-            //     //             Navigator.push(
-            //     //               context,
-            //     //               MaterialPageRoute(
-            //     //                 builder: (context) => ProductDetailsScreen(
-            //     //                   productId: item.productId ?? '',
-            //     //                 ),
-            //     //               ),
-            //     //             );
-            //     //           },
-            //     //         ),
-            //     //         Visibility(
-            //     //           visible: _barterRecord!.dealStatus == 'completed',
-            //     //           child: Positioned(
-            //     //             top: 5.0,
-            //     //             right: 10.0,
-            //     //             child: InkWell(
-            //     //               onTap: () {
-            //     //                 _productToReview = item;
-            //     //                 _barterBloc.add(GetProductReview(
-            //     //                     item.productId!, _currentUser!.uid));
-            //     //               },
-            //     //               child: Container(
-            //     //                 padding: EdgeInsets.all(3.0),
-            //     //                 decoration: BoxDecoration(
-            //     //                   shape: BoxShape.circle,
-            //     //                   color: kBackgroundColor,
-            //     //                 ),
-            //     //                 child: Icon(
-            //     //                   Icons.star,
-            //     //                   color: Colors.white,
-            //     //                   size: SizeConfig.textScaleFactor * 14,
-            //     //                 ),
-            //     //               ),
-            //     //             ),
-            //     //           ),
-            //     //         ),
-            //     //         Visibility(
-            //     //           visible: _shouldShowAdd(),
-            //     //           child: Positioned(
-            //     //             top: 5.0,
-            //     //             right: 5.0,
-            //     //             child: InkWell(
-            //     //               onTap: () {
-            //     //                 setState(() {
-            //     //                   remoteUserOffers.removeWhere((product) =>
-            //     //                       product.productId == item.productId);
-            //     //                 });
-            //     //               },
-            //     //               child: Container(
-            //     //                 padding: EdgeInsets.all(5.0),
-            //     //                 decoration: BoxDecoration(
-            //     //                   color: Colors.red,
-            //     //                   shape: BoxShape.circle,
-            //     //                 ),
-            //     //                 child: Center(
-            //     //                   child: Icon(
-            //     //                     FontAwesomeIcons.times,
-            //     //                     size: 16.0,
-            //     //                     color: Colors.white,
-            //     //                   ),
-            //     //                 ),
-            //     //               ),
-            //     //             ),
-            //     //           ),
-            //     //         ),
-            //     //       ],
-            //     //     ),
-            //     //   );
-            //     // }).toList()
-            //   ],
-            //   // addBtnTapped: _showRemoteUserItems,
-            //   showAddBtn: false,
-            // ),
-            // _buildBarterList(
-            //   label: _barterRecord != null &&
-            //           _barterRecord!.dealStatus != 'completed'
-            //       ? 'You will send:'
-            //       : 'You have sent:',
-            //   labelAction: Text(
-            //     '${currentUserOffers.length} Item(s)',
-            //   ),
-            //   items: [
-            //     _currentUserOfferedCash != null
-            //         ? Stack(
-            //             children: [
-            //               InkWell(
-            //                   onTap: () {
-            //                     if (_barterRecord!.dealStatus != 'sold') {
-            //                       _showAddCashDialog('user');
-            //                     }
-            //                   },
-            //                   child: buildCashItem(_currentUserOfferedCash!)),
-            //               Visibility(
-            //                 visible: _shouldShowAdd(),
-            //                 child: Positioned(
-            //                   top: 8.0,
-            //                   right: 10.0,
-            //                   child: InkWell(
-            //                     onTap: () {
-            //                       setState(() {
-            //                         _currentUserOfferedCash = null;
-            //                       });
-            //                     },
-            //                     child: Container(
-            //                       padding: EdgeInsets.all(5.0),
-            //                       decoration: BoxDecoration(
-            //                         color: kDangerColor,
-            //                         shape: BoxShape.circle,
-            //                       ),
-            //                       child: Center(
-            //                         child: Icon(
-            //                           FontAwesomeIcons.times,
-            //                           size: 16.0,
-            //                           color: Colors.white,
-            //                         ),
-            //                       ),
-            //                     ),
-            //                   ),
-            //                 ),
-            //               ),
-            //             ],
-            //           )
-            //         : Container(),
-            //     ...currentUserOffers.map((item) {
-            //       return Container(
-            //         margin: EdgeInsets.only(right: 8.0, bottom: 5.0),
-            //         child: Stack(
-            //           children: [
-            //             BarterListItem(
-            //               product: ProductModel(
-            //                 productid: item.productId!,
-            //                 productname: item.productName,
-            //                 mediaPrimary: MediaPrimaryModel(
-            //                   type: 'image',
-            //                   url_t: item.imgUrl,
-            //                 ),
-            //                 price: item.price != null ? item.price! : 0.00,
-            //               ),
-            //               hideLikeBtn: true,
-            //               onTapped: () {
-            //                 Navigator.push(
-            //                   context,
-            //                   MaterialPageRoute(
-            //                     builder: (context) => ProductDetailsScreen(
-            //                       productId: item.productId ?? '',
-            //                       ownItem: true,
-            //                     ),
-            //                   ),
-            //                 );
-            //               },
-            //             ),
-            //             Visibility(
-            //               visible: _shouldShowAdd(),
-            //               child: Positioned(
-            //                 top: 5.0,
-            //                 right: 5.0,
-            //                 child: InkWell(
-            //                   onTap: () {
-            //                     setState(() {
-            //                       currentUserOffers.removeWhere((product) =>
-            //                           product.productId == item.productId);
-            //                     });
-            //                   },
-            //                   child: Container(
-            //                     padding: EdgeInsets.all(5.0),
-            //                     decoration: BoxDecoration(
-            //                       color: Colors.red,
-            //                       shape: BoxShape.circle,
-            //                     ),
-            //                     child: Center(
-            //                       child: Icon(
-            //                         FontAwesomeIcons.times,
-            //                         size: 16.0,
-            //                         color: Colors.white,
-            //                       ),
-            //                     ),
-            //                   ),
-            //                 ),
-            //               ),
-            //             ),
-            //           ],
-            //         ),
-            //       );
-            //     }).toList()
-            //   ],
-            //   addBtnTapped: _showCurrentUserItems,
-            //   showAddBtn: _shouldShowAdd(),
-            // ),
             _shouldShowAdd()
                 ? Container(
                     width: double.infinity,
@@ -1685,6 +1478,62 @@ class _BarterScreenState extends State<BarterScreen> {
         ),
       ),
     );
+  }
+
+  _showUserItems(String userId, String userType) async {
+    final selectedProducts = userType == 'Sender'
+        ? currentUserOffers.map((offer) => offer.productId!).toList()
+        : remoteUserOffers.map((offer) => offer.productId!).toList();
+    final result = await showDialog<List<ProductModel>?>(
+      context: context,
+      builder: (dContext) {
+        return StatefulBuilder(
+          builder: (sbContext, sState) {
+            return Dialog(
+              child: UserItemsDialog(
+                userId: userId,
+                userType: userType,
+                selectedProducts: selectedProducts,
+              ),
+            );
+          },
+        );
+      },
+    );
+
+    if (result == null) return;
+
+    if (result.isNotEmpty) {
+      setState(() {
+        if (userType == 'Sender') {
+          result.forEach((prod) {
+            if (!currentUserItems
+                .any((item) => item.productid == prod.productid)) {
+              currentUserItems.insert(0, prod);
+            }
+
+            if (!currentUserOffers
+                .any((offer) => offer.productId == prod.productid)) {
+              currentUserOffers.insert(
+                  0, BarterProductModel.fromProductModel(prod));
+            }
+          });
+        } else {
+          result.forEach((prod) {
+            if (!remoteUserItems
+                .any((item) => item.productid == prod.productid)) {
+              remoteUserItems.insert(0, prod);
+            }
+
+            if (!remoteUserOffers
+                .any((offer) => offer.productId == prod.productid)) {
+              remoteUserOffers.insert(
+                  0, BarterProductModel.fromProductModel(prod));
+            }
+          });
+        }
+      });
+    }
   }
 
   Widget _userItem(String owner, ProductModel product) {
@@ -2987,93 +2836,98 @@ class _BarterScreenState extends State<BarterScreen> {
   }
 
   _showAddCashDialog(String from) async {
-    if (from == 'recipient') {
-      amounTextController.text = _remoteUserOfferedCash != null
-          ? _remoteUserOfferedCash.toString()
-          : '';
-    } else {
-      amounTextController.text = _currentUserOfferedCash != null
-          ? _currentUserOfferedCash.toString()
-          : '';
-    }
+    print('0--recipient cash--> $_remoteUserOfferedCash');
+    print('0--user cash--> $_currentUserOfferedCash');
 
     final _cFormKey = GlobalKey<FormState>();
     var amount = await showDialog(
       context: context,
       builder: (dContext) {
-        return Dialog(
-          child: Container(
-            padding: EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 0),
-            width: SizeConfig.screenWidth * 0.7,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  from == 'recipient' ? 'Request Cash' : 'Offer Cash',
-                  style: Style.subtitle1.copyWith(color: kBackgroundColor),
-                ),
-                SizedBox(height: 10.0),
-                Form(
-                  key: _cFormKey,
-                  child: CustomTextFormField(
-                    color: kBackgroundColor,
-                    label: 'Enter Amount',
-                    hintText: '0.00',
-                    controller: amounTextController,
-                    keyboardType:
-                        TextInputType.numberWithOptions(decimal: true),
-                    validator: (val) {
-                      if (val == null || val.length < 1) return 'Required';
+        if (from == 'recipient') {
+          amounTextController.text = _remoteUserOfferedCash != null
+              ? _remoteUserOfferedCash!.toStringAsFixed(2)
+              : '';
+        } else {
+          amounTextController.text = _currentUserOfferedCash != null
+              ? _currentUserOfferedCash!.toStringAsFixed(2)
+              : '';
+        }
 
-                      return null;
-                    },
-                    inputFormatters: [
-                      CurrencyTextInputFormatter(
-                          symbol:
-                              application.currentUserModel!.currency ?? 'PHP'),
+        return StatefulBuilder(builder: (ctx, sState) {
+          return Dialog(
+            child: Container(
+              padding: EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 0),
+              width: SizeConfig.screenWidth * 0.7,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    from == 'recipient' ? 'Request Cash' : 'Offer Cash',
+                    style: Style.subtitle1.copyWith(color: kBackgroundColor),
+                  ),
+                  SizedBox(height: 10.0),
+                  Form(
+                    key: _cFormKey,
+                    child: CustomTextFormField(
+                      color: kBackgroundColor,
+                      label: 'Enter Amount',
+                      hintText: '0.00',
+                      controller: amounTextController,
+                      keyboardType:
+                          TextInputType.numberWithOptions(decimal: true),
+                      validator: (val) {
+                        if (val == null || val.length < 1) return 'Required';
+
+                        return null;
+                      },
+                      inputFormatters: [
+                        CurrencyTextInputFormatter(
+                            symbol: application.currentUserModel!.currency ??
+                                'PHP'),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 12.0),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: CustomButton(
+                          bgColor: kBackgroundColor,
+                          textColor: Colors.white,
+                          label: 'Add Cash',
+                          onTap: () {
+                            if (!_cFormKey.currentState!.validate())
+                              return null;
+                            else {
+                              final amt = amounTextController.text
+                                  .trim()
+                                  .replaceAll(
+                                      application.currentUserModel!.currency ??
+                                          'PHP',
+                                      '');
+                              final amount = num.parse(amt.replaceAll(',', ''));
+                              amounTextController.clear();
+                              Navigator.pop(context, amount);
+                            }
+                          },
+                        ),
+                      ),
+                      SizedBox(width: 8.0),
+                      Expanded(
+                        child: CustomButton(
+                          bgColor: Colors.red.shade400,
+                          label: 'Cancel',
+                          onTap: () => Navigator.pop(dContext),
+                        ),
+                      ),
                     ],
                   ),
-                ),
-                SizedBox(height: 12.0),
-                Row(
-                  children: [
-                    Expanded(
-                      child: CustomButton(
-                        bgColor: kBackgroundColor,
-                        textColor: Colors.white,
-                        label: 'Add Cash',
-                        onTap: () {
-                          if (!_cFormKey.currentState!.validate())
-                            return null;
-                          else {
-                            final amt = amounTextController.text
-                                .trim()
-                                .replaceAll(
-                                    application.currentUserModel!.currency ??
-                                        'PHP',
-                                    '');
-                            final amount = num.parse(amt.replaceAll(',', ''));
-                            amounTextController.clear();
-                            Navigator.pop(context, amount);
-                          }
-                        },
-                      ),
-                    ),
-                    SizedBox(width: 8.0),
-                    Expanded(
-                      child: CustomButton(
-                        bgColor: Colors.red.shade400,
-                        label: 'Cancel',
-                        onTap: () => Navigator.pop(dContext),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        );
+          );
+        });
       },
     );
 
@@ -3336,16 +3190,6 @@ class _BarterScreenState extends State<BarterScreen> {
                                 .map((item) =>
                                     BarterProductModel.fromProductModel(item))
                                 .toList());
-                            // if (_currentUserRole == 'recipient')
-                            //   _add_currentUserOfferedCashItems(selectedItems
-                            //       .map((item) =>
-                            //           BarterProductModel.fromProductModel(item))
-                            //       .toList());
-                            // else
-                            //   _addWantedItems(selectedItems
-                            //       .map((item) =>
-                            //           BarterProductModel.fromProductModel(item))
-                            //       .toList());
                             Navigator.pop(context);
                           },
                           removeMargin: true,

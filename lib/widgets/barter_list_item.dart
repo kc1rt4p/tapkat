@@ -190,6 +190,27 @@ class _BarterListItemState extends State<BarterListItem> {
                               ),
                             ),
                           ),
+                    Visibility(
+                      visible: widget.status == null &&
+                          product.status == 'COMPLETED',
+                      child: Positioned(
+                        bottom: 0,
+                        child: Container(
+                          padding: EdgeInsets.symmetric(vertical: 5.0),
+                          color: kBackgroundColor,
+                          width: widget.width ?? SizeConfig.screenHeight * 0.17,
+                          child: Text(
+                            'COMPLETED',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: SizeConfig.textScaleFactor * 12,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                     widget.status != null
                         ? Positioned(
                             bottom: 0,

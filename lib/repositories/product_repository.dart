@@ -347,17 +347,17 @@ class ProductRepository {
   Future<List<ProductModel>> getFirstProducts(
     String listType, {
     required String userId,
+    required String sortBy,
     List<String>? interests,
     List<String>? category,
-    required String sortBy,
     LocationModel? location,
     int? itemCount,
     double radius = 5000,
   }) async {
-    if (listType == 'reco') {}
-    var body = {
+    // if (listType == 'reco') {}
+    print('0----- ITEM COUNT ---> $itemCount');
+    Map<String, dynamic> body = {
       'userid': userId,
-      'productcount': itemCount ?? productCount,
     };
 
     if (category != null) {
@@ -376,6 +376,7 @@ class ProductRepository {
     body.addAll({
       'sortby': sortBy == 'name' ? 'productname' : sortBy.toLowerCase(),
       'sortdirection': sortBy == 'rating' ? 'descending' : 'ascending',
+      'productcount': itemCount ?? 10,
     });
 
     if (listType == 'reco' && interests != null) {

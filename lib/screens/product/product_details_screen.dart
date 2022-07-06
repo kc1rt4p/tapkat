@@ -128,6 +128,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   setState(() {
                     _product = state.product;
                   });
+                  print('X==> ${_product!.toJson()}');
 
                   if (_product!.mediaPrimary != null &&
                       _product!.mediaPrimary!.url != null &&
@@ -148,7 +149,6 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                       }
                     }
                   }
-                  print('===== product status: ${_product!.toJson()}');
                 }
 
                 if (state is AddLikeSuccess ||
@@ -988,6 +988,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                   SizedBox(width: 10.0),
                                                   Expanded(
                                                     child: CustomButton(
+                                                      enabled:
+                                                          _product!.status !=
+                                                              'COMPLETED',
                                                       bgColor: kBackgroundColor,
                                                       label: 'BARTER',
                                                       onTap: () {
