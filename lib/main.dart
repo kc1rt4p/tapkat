@@ -16,6 +16,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_logs/flutter_logs.dart';
 import 'package:flutter_phoenix/flutter_phoenix.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:restart_app/restart_app.dart';
 import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
 import 'package:tapkat/firebase_options.dart';
 import 'package:tapkat/models/location.dart';
@@ -286,6 +287,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                     _user = null;
                     _userModel = null;
                   });
+                  // Restart.restartApp();
+                  Phoenix.rebirth(context);
                 }
               },
             ),

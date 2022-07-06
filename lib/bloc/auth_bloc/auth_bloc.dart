@@ -17,6 +17,7 @@ import 'package:tapkat/services/firebase.dart';
 import 'package:tapkat/utilities/application.dart' as application;
 import 'package:tapkat/utilities/auth_util.dart';
 import 'package:tapkat/utilities/upload_media.dart';
+import 'package:restart_app/restart_app.dart';
 
 part 'auth_event.dart';
 part 'auth_state.dart';
@@ -291,7 +292,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           application.unreadBarterMessages = [];
           signOut();
           emit(AuthSignedOut());
-          Phoenix.rebirth(event.context);
         } catch (e) {
           emit(AuthError(e.toString()));
         }
