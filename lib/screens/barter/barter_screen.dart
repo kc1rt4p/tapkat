@@ -255,14 +255,14 @@ class _BarterScreenState extends State<BarterScreen> {
           // save to local storage
           await unsaveProductsStorage.setItem(
               'offered', _unsavedOfferedProducts);
-          // await unsaveProductsStorage.setItem(
-          //     'offeredDateUpdated', DateTime.now());
+          await unsaveProductsStorage.setItem(
+              'offeredDateUpdated', DateTime.now());
         }
 
         if (_unsavedWantedProducts.isNotEmpty) {
           unsaveProductsStorage.setItem('wanted', _unsavedWantedProducts);
-          // await unsaveProductsStorage.setItem(
-          //     'wantedDateUpdated', DateTime.now());
+          await unsaveProductsStorage.setItem(
+              'wantedDateUpdated', DateTime.now());
         }
       }
     }
@@ -1105,7 +1105,9 @@ class _BarterScreenState extends State<BarterScreen> {
             child: Container(
               margin: EdgeInsets.only(right: 8.0),
               child: CustomButton(
-                enabled: _offersChanged(),
+                enabled: _offersChanged() ||
+                    (currentUserOffers.isNotEmpty &&
+                        remoteUserOffers.isNotEmpty),
                 removeMargin: true,
                 label: 'Make Offer',
                 onTap: _onSubmitTapped,
@@ -1306,50 +1308,7 @@ class _BarterScreenState extends State<BarterScreen> {
                       child: Wrap(
                         spacing: 12.0,
                         runSpacing: 12.0,
-                        children: [
-                          Stack(
-                            children: [
-                              InkWell(
-                                  onTap: () {
-                                    if (!_shouldShowAdd()) return;
-                                    if (_barterRecord!.dealStatus != 'sold') {
-                                      _showAddCashDialog('recipient');
-                                    }
-                                  },
-                                  child: buildCashItem(
-                                      _remoteUserOfferedCash ?? 0)),
-                              Visibility(
-                                visible: _remoteUserOfferedCash == null,
-                                child: Positioned.fill(
-                                  child: InkWell(
-                                    onTap: () {
-                                      if (!_shouldShowAdd()) return;
-                                      if (_barterRecord!.dealStatus != 'sold') {
-                                        _showAddCashDialog('recipient');
-                                      }
-                                    },
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        color: Colors.black.withOpacity(0.5),
-                                        borderRadius:
-                                            BorderRadius.circular(20.0),
-                                      ),
-                                      child: _shouldShowAdd()
-                                          ? Icon(
-                                              FontAwesomeIcons.plus,
-                                              color: Colors.white,
-                                            )
-                                          : Text(''),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          ...remoteUserItems.map((product) {
-                            return _userItem('remote', product);
-                          }),
-                        ],
+                        children: _buildYouWillReceiveWidgets('recipient'),
                       ),
                     ),
                   ),
@@ -1398,52 +1357,7 @@ class _BarterScreenState extends State<BarterScreen> {
                       child: Wrap(
                         spacing: 12.0,
                         runSpacing: 12.0,
-                        children: [
-                          Stack(
-                            children: [
-                              InkWell(
-                                  onTap: () {
-                                    if (!_shouldShowAdd()) return;
-                                    if (_barterRecord!.dealStatus != 'sold') {
-                                      _showAddCashDialog('recipient');
-                                    }
-                                  },
-                                  child: buildCashItem(
-                                      _currentUserOfferedCash ?? 0)),
-                              Visibility(
-                                visible: _currentUserOfferedCash == null,
-                                child: Positioned.fill(
-                                  child: InkWell(
-                                    onTap: _shouldShowAdd()
-                                        ? () {
-                                            if (_barterRecord!.dealStatus !=
-                                                'sold') {
-                                              _showAddCashDialog('currentUser');
-                                            }
-                                          }
-                                        : null,
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        color: Colors.black.withOpacity(0.5),
-                                        borderRadius:
-                                            BorderRadius.circular(20.0),
-                                      ),
-                                      child: _shouldShowAdd()
-                                          ? Icon(
-                                              FontAwesomeIcons.plus,
-                                              color: Colors.white,
-                                            )
-                                          : Text(''),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          ...currentUserItems.map((product) {
-                            return _userItem('currentUser', product);
-                          }),
-                        ],
+                        children: _buildYouWillReceiveWidgets('sender'),
                       ),
                     ),
                   ),
@@ -1534,6 +1448,80 @@ class _BarterScreenState extends State<BarterScreen> {
         }
       });
     }
+  }
+
+  List<Widget> _buildYouWillReceiveWidgets(String userType) {
+    List<Widget> widgets = [];
+
+    widgets.addAll(
+      (userType == 'recipient' ? remoteUserItems : currentUserItems)
+          .map((product) {
+        return _userItem(
+            userType == 'recipient' ? 'remote' : 'sender', product);
+      }),
+    );
+
+    final lastIndex =
+        (userType == 'recipient' ? remoteUserItems : currentUserItems)
+            .lastIndexWhere((item) =>
+                (userType == 'recipient' ? remoteUserOffers : currentUserOffers)
+                    .any((offer) => offer.productId == item.productid));
+
+    print(']====> last index: $lastIndex');
+
+    widgets.insert(
+      lastIndex > -1
+          ? lastIndex < widgets.length
+              ? lastIndex + 1
+              : lastIndex
+          : 0,
+      Stack(
+        children: [
+          InkWell(
+            onTap: () {
+              if (!_shouldShowAdd()) return;
+              if (_barterRecord!.dealStatus != 'sold') {
+                _showAddCashDialog(userType);
+              }
+            },
+            child: buildCashItem((userType == 'recipient'
+                    ? _remoteUserOfferedCash
+                    : _currentUserOfferedCash) ??
+                0),
+          ),
+          Visibility(
+            visible: (userType == 'recipient'
+                    ? _remoteUserOfferedCash
+                    : _currentUserOfferedCash) ==
+                null,
+            child: Positioned.fill(
+              child: InkWell(
+                onTap: () {
+                  if (!_shouldShowAdd()) return;
+                  if (_barterRecord!.dealStatus != 'sold') {
+                    _showAddCashDialog(userType);
+                  }
+                },
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.5),
+                    borderRadius: BorderRadius.circular(20.0),
+                  ),
+                  child: _shouldShowAdd()
+                      ? Icon(
+                          FontAwesomeIcons.plus,
+                          color: Colors.white,
+                        )
+                      : Text(''),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    return widgets;
   }
 
   Widget _userItem(String owner, ProductModel product) {

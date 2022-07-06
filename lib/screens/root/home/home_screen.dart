@@ -353,7 +353,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                           _buildProductItem(product: product),
                                   onAccept: (ProductModel product2) {
                                     if (product.userid !=
-                                        application.currentUser!.uid) {
+                                            application.currentUser!.uid &&
+                                        product.status != 'completed' &&
+                                        product2.status != 'completed') {
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
@@ -694,126 +696,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-            // _myProductList.isNotEmpty && _showYourItems
-            //     ? SlideInUp(
-            //         from: 50,
-            //         child: Container(
-            //           color: Color(0xFFEBFBFF),
-            //           padding: EdgeInsets.symmetric(
-            //             horizontal: 20.0,
-            //             vertical: 10.0,
-            //           ),
-            //           child: BarterList(
-            //             onLabelTapped: () =>
-            //                 setState(() => _showYourItems = !_showYourItems),
-            //             labelSuffix: Icon(
-            //               _showYourItems
-            //                   ? Icons.arrow_drop_down
-            //                   : Icons.arrow_drop_up,
-            //               color: kBackgroundColor,
-            //             ),
-            //             loading: _loadingUserProducts,
-            //             context: context,
-            //             ownList: true,
-            //             items: _myProductList.map(
-            //               (product) {
-            //                 var thumbnail = '';
-
-            //                 if (product.mediaPrimary != null &&
-            //                     product.mediaPrimary!.url_t != null) {
-            //                   thumbnail = product.mediaPrimary!.url_t!;
-            //                 }
-
-            //                 if (thumbnail.isEmpty &&
-            //                     product.media != null &&
-            //                     product.media!.isNotEmpty) {
-            //                   thumbnail = product.media!.first.url_t ?? '';
-            //                 }
-            //                 return LongPressDraggable(
-            //                   data: product,
-            //                   childWhenDragging: Container(
-            //                     height: SizeConfig.screenHeight * 0.12,
-            //                     width: SizeConfig.screenHeight * 0.12,
-            //                     decoration: BoxDecoration(
-            //                       color: kBackgroundColor,
-            //                       borderRadius: BorderRadius.only(
-            //                         topLeft: Radius.circular(20.0),
-            //                         topRight: Radius.circular(20.0),
-            //                       ),
-            //                     ),
-            //                   ),
-            //                   feedback: Container(
-            //                     height: 100.0,
-            //                     width: 100.0,
-            //                     decoration: BoxDecoration(
-            //                       shape: BoxShape.circle,
-            //                       image: DecorationImage(
-            //                         image:
-            //                             CachedNetworkImageProvider(thumbnail),
-            //                       ),
-            //                     ),
-            //                   ),
-            //                   child: BarterListItem(
-            //                     height: SizeConfig.screenHeight * 0.07,
-            //                     width: SizeConfig.screenHeight * 0.12,
-            //                     hideLikeBtn: true,
-            //                     hideDistance: true,
-            //                     showRating: false,
-            //                     product: product,
-            //                     onTapped: () {
-            //                       Navigator.push(
-            //                         context,
-            //                         MaterialPageRoute(
-            //                           builder: (context) =>
-            //                               ProductDetailsScreen(
-            //                             productId: product.productid ?? '',
-            //                             ownItem: false,
-            //                           ),
-            //                         ),
-            //                       );
-            //                     },
-            //                   ),
-            //                 );
-            //               },
-            //             ).toList(),
-            //             label: 'Your Items',
-            //             smallItems: true,
-            //             removeMargin: true,
-            //             onViewAllTapped: () => _rootBloc.add(MoveTab(3)),
-            //             removeMapBtn: true,
-            //           ),
-            //         ),
-            //       )
-            //     : SlideInDown(
-            //         from: 0,
-            //         child: InkWell(
-            //           onTap: () =>
-            //               setState(() => _showYourItems = !_showYourItems),
-            //           child: Container(
-            //             padding: EdgeInsets.symmetric(
-            //                 horizontal: 15.0, vertical: 5.0),
-            //             color: Color(0xFFEBFBFF),
-            //             child: Row(
-            //               children: [
-            //                 Text(
-            //                   'Your Items',
-            //                   style: Style.subtitle2.copyWith(
-            //                     color: kBackgroundColor,
-            //                     fontWeight: FontWeight.bold,
-            //                     decoration: TextDecoration.underline,
-            //                   ),
-            //                 ),
-            //                 Icon(
-            //                   _showYourItems
-            //                       ? Icons.arrow_drop_down
-            //                       : Icons.arrow_drop_up,
-            //                   color: kBackgroundColor,
-            //                 ),
-            //               ],
-            //             ),
-            //           ),
-            //         ),
-            //       ),
           ],
         ),
       ),
