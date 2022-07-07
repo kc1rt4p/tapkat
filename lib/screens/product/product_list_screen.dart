@@ -423,7 +423,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                                             MainAxisAlignment.center,
                                         children: [
                                           Text(
-                                            '${(_selectedRadius / 1000).toStringAsFixed(2)} km',
+                                            _displayRadius(),
                                             style: Style.subtitle2.copyWith(
                                               color: kBackgroundColor,
                                               fontSize:
@@ -574,6 +574,13 @@ class _ProductListScreenState extends State<ProductListScreen> {
         ),
       ),
     );
+  }
+
+  String _displayRadius() {
+    final radius = _selectedRadius;
+    final ave = ((radius / 1000) * 2).round() / 2;
+    print('X---> $ave');
+    return '${ave.toStringAsFixed(2)} km';
   }
 
   _onSearchSubmitted(String? val) {
@@ -1036,8 +1043,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
                 final _km = km * 1000;
 
-                if (zoomLevel.toInt() != mapZoomLevel.toInt() &&
-                    (_km >= 500 && _km <= 30000)) {
+                if ((_km >= 500 && _km <= 30000)) {
                   setState(() {
                     _selectedRadius = _km;
 
