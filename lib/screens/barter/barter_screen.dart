@@ -156,7 +156,7 @@ class _BarterScreenState extends State<BarterScreen> {
 
   Future<bool> _onWillPop() async {
     if (_barterRecord!.dealStatus == 'new' && currentUserOffers.isEmpty) {
-      unsaveProductsStorage.clear();
+      // unsaveProductsStorage.clear();
       _barterBloc.add(DeleteBarter(_barterId!));
       return false;
     }
@@ -165,7 +165,7 @@ class _BarterScreenState extends State<BarterScreen> {
       _closing = true;
     });
     bool shouldExit = true;
-    if (_offersChanged() && currentUserOffers.isNotEmpty) {
+    if (_offersChanged()) {
       final result = await showDialog(
         context: context,
         builder: (dContext) {
@@ -211,7 +211,7 @@ class _BarterScreenState extends State<BarterScreen> {
                         child: CustomButton(
                           bgColor: kDangerColor,
                           label: 'No',
-                          onTap: () => Navigator.pop(dContext),
+                          onTap: () => Navigator.pop(dContext, null),
                         ),
                       ),
                       SizedBox(width: 10.0),
@@ -240,19 +240,23 @@ class _BarterScreenState extends State<BarterScreen> {
         List<dynamic> _unsavedOfferedProducts = [];
         List<dynamic> _unsavedWantedProducts = [];
 
-        currentUserOffers.forEach((offer) {
-          if (!origCurrentUserOffers
-              .any((oOffer) => oOffer.productId == offer.productId)) {
-            _unsavedOfferedProducts.add(offer.toJson());
-          }
-        });
+        if (currentUserOffers.isNotEmpty) {
+          currentUserOffers.forEach((offer) {
+            if (!origCurrentUserOffers
+                .any((oOffer) => oOffer.productId == offer.productId)) {
+              _unsavedOfferedProducts.add(offer.toJson());
+            }
+          });
+        }
 
-        remoteUserOffers.forEach((offer) {
-          if (!origRemoteUserOffers
-              .any((oOffer) => oOffer.productId == offer.productId)) {
-            _unsavedWantedProducts.add(offer.toJson());
-          }
-        });
+        if (remoteUserOffers.isNotEmpty) {
+          remoteUserOffers.forEach((offer) {
+            if (!origRemoteUserOffers
+                .any((oOffer) => oOffer.productId == offer.productId)) {
+              _unsavedWantedProducts.add(offer.toJson());
+            }
+          });
+        }
 
         // origCurrentUserOffers.forEach((oOffer) {
         //   final stillExists = currentUserOffers
@@ -272,19 +276,15 @@ class _BarterScreenState extends State<BarterScreen> {
         //     _unsavedWantedProducts.addAll(remoteUserOffers);
         // });
 
-        if (_unsavedOfferedProducts.isNotEmpty) {
-          // save to local storage
-          await unsaveProductsStorage.setItem(
-              'offered', _unsavedOfferedProducts);
-          await unsaveProductsStorage.setItem(
-              'offeredDateUpdated', DateTime.now().toString());
-        }
+        // save to local storage
+        await unsaveProductsStorage.clear();
+        await unsaveProductsStorage.setItem('offered', _unsavedOfferedProducts);
+        await unsaveProductsStorage.setItem(
+            'offeredDateUpdated', DateTime.now().toString());
 
-        if (_unsavedWantedProducts.isNotEmpty) {
-          unsaveProductsStorage.setItem('wanted', _unsavedWantedProducts);
-          await unsaveProductsStorage.setItem(
-              'wantedDateUpdated', DateTime.now().toString());
-        }
+        await unsaveProductsStorage.setItem('wanted', _unsavedWantedProducts);
+        await unsaveProductsStorage.setItem(
+            'wantedDateUpdated', DateTime.now().toString());
       }
     }
 
@@ -424,7 +424,8 @@ class _BarterScreenState extends State<BarterScreen> {
                   hideClose: true,
                 );
               }
-              await unsaveProductsStorage.clear();
+              // unsaveProductsStorage.ready
+              // // await unsaveProductsStorage.clear();
             }
 
             if (state is BarterInitialized) {
@@ -924,8 +925,8 @@ class _BarterScreenState extends State<BarterScreen> {
                                   horizontal: 20.0, vertical: 10.0),
                               reverse: true,
                               children: _messages.reversed
-                                  .map((msg) =>
-                                      buildChatItem(context, msg, _currentUser))
+                                  .map((msg) => buildChatItem(context, msg,
+                                      _currentUser, _recipientName))
                                   .toList(),
                             ),
                           ),

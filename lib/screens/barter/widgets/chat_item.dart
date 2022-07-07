@@ -7,8 +7,8 @@ import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/size_config.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
-Container buildChatItem(
-    BuildContext context, ChatMessageModel msg, User? currentUser) {
+Container buildChatItem(BuildContext context, ChatMessageModel msg,
+    User? currentUser, String recipientName) {
   return Container(
     margin: EdgeInsets.only(top: 8.0),
     child: Column(
@@ -41,9 +41,7 @@ Container buildChatItem(
               Text(
                 msg.userId == currentUser.uid && currentUser.uid.isNotEmpty
                     ? 'You'
-                    : msg.userName != null && msg.userName!.isNotEmpty
-                        ? msg.userName!
-                        : 'Anonymous',
+                    : recipientName,
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   color: Colors.white,

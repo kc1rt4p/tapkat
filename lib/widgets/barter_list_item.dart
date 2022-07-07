@@ -27,6 +27,7 @@ class BarterListItem extends StatefulWidget {
   final String? status;
   final double? distance;
   final bool showRating;
+  final bool hideLikeCount;
 
   const BarterListItem({
     Key? key,
@@ -34,6 +35,7 @@ class BarterListItem extends StatefulWidget {
     this.width,
     this.height,
     this.hideLikeBtn = false,
+    this.hideLikeCount = false,
     this.fontSize,
     this.likeLeftMargin,
     required this.product,
@@ -192,7 +194,7 @@ class _BarterListItemState extends State<BarterListItem> {
                           ),
                     Visibility(
                       visible: widget.status == null &&
-                          product.status == 'COMPLETED',
+                          product.status == 'completed',
                       child: Positioned(
                         bottom: 0,
                         child: Container(
@@ -239,10 +241,12 @@ class _BarterListItemState extends State<BarterListItem> {
                         top: 5,
                         right: 5,
                         child: Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 6.0,
-                            vertical: 2.0,
-                          ),
+                          padding: !widget.hideLikeCount
+                              ? EdgeInsets.symmetric(
+                                  horizontal: 6.0,
+                                  vertical: 2.0,
+                                )
+                              : EdgeInsets.all(2.0),
                           decoration: BoxDecoration(
                               color: kBackgroundColor,
                               borderRadius: BorderRadius.circular(30.0)),
@@ -278,15 +282,23 @@ class _BarterListItemState extends State<BarterListItem> {
                                   ),
                                 ],
                               ),
-                              SizedBox(width: 3.0),
-                              Text(
-                                widget.product.likes != null
-                                    ? widget.product.likes.toString()
-                                    : '0',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: SizeConfig.textScaleFactor * 15,
-                                  fontWeight: FontWeight.w500,
+                              Visibility(
+                                visible: !widget.hideLikeCount,
+                                child: Row(
+                                  children: [
+                                    SizedBox(width: 3.0),
+                                    Text(
+                                      widget.product.likes != null
+                                          ? widget.product.likes.toString()
+                                          : '0',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize:
+                                            SizeConfig.textScaleFactor * 15,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ],

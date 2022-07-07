@@ -990,7 +990,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                     child: CustomButton(
                                                       enabled:
                                                           _product!.status !=
-                                                              'COMPLETED',
+                                                              'completed',
                                                       bgColor: kBackgroundColor,
                                                       label: 'BARTER',
                                                       onTap: () {
