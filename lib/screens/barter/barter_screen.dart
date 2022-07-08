@@ -1700,7 +1700,8 @@ class _BarterScreenState extends State<BarterScreen> {
           visible: offers.any((BarterProductModel prod) {
                 return prod.productId == product.productid;
               }) &&
-              _barterRecord!.dealStatus == 'completed',
+              _barterRecord!.dealStatus == 'completed' &&
+              owner == 'recipient',
           child: Positioned(
             top: 5.0,
             right: 10.0,
@@ -1777,6 +1778,8 @@ class _BarterScreenState extends State<BarterScreen> {
                       } else {
                         _add_currentUserOfferedItems([item]);
                       }
+
+                      _sortProducts();
                     }
                   : null,
               child: Container(

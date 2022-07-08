@@ -521,7 +521,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    '${(_selectedRadius / 1000).toStringAsFixed(2)} km',
+                    _displayRadius(),
                     style: Style.subtitle2.copyWith(
                       color: kBackgroundColor,
                       fontSize: SizeConfig.textScaleFactor * 12,
@@ -901,6 +901,13 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
 
   _reset() {
     lastProduct = null;
+  }
+
+  String _displayRadius() {
+    final radius = _selectedRadius;
+    final ave = ((radius / 1000) * 2).round() / 2;
+    print('X---> $ave');
+    return '${ave.toStringAsFixed(2)} km';
   }
 
   double getZoomLevel(double diameter) {
