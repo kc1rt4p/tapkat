@@ -292,6 +292,8 @@ class _BarterScreenState extends State<BarterScreen> {
                 _origCurrentUserOfferedCash != _currentUserOfferedCash)) {
           await unsaveProductsStorage.setItem(
               'offeredCash', _currentUserOfferedCash);
+        } else {
+          await unsaveProductsStorage.deleteItem('offeredCash');
         }
 
         if (_remoteUserOfferedCash != null && _remoteUserOfferedCash! > 0 ||
@@ -299,6 +301,8 @@ class _BarterScreenState extends State<BarterScreen> {
                 _origRemoteUserOfferedCash != _remoteUserOfferedCash)) {
           await unsaveProductsStorage.setItem(
               'wantedCash', _remoteUserOfferedCash);
+        } else {
+          await unsaveProductsStorage.deleteItem('wantedCash');
         }
       }
     }

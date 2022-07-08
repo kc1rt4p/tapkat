@@ -360,7 +360,7 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
               'user',
               sortBy: 'name',
               userId: application.currentUser!.uid,
-              itemCount: 20,
+              itemCount: 10,
             );
 
             final remoteUserProducts =
@@ -370,7 +370,7 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
               userId: senderUserId == application.currentUser!.uid
                   ? recipientUserId!
                   : senderUserId!,
-              itemCount: 20,
+              itemCount: 10,
             );
 
             emit(BarterInitialized(
