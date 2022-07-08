@@ -39,10 +39,10 @@ class GetFirstProducts extends ProductEvent {
 
   GetFirstProducts({
     required this.listType,
-    this.userid,
-    this.category,
     required this.distance,
     required this.sortBy,
+    this.userid,
+    this.category,
     this.itemCount,
     this.loc,
   });

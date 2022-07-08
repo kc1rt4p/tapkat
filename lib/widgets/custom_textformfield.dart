@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 
 class CustomTextFormField extends StatefulWidget {
-  final String label;
+  final String? label;
   final String hintText;
   final TextEditingController controller;
   final Widget? suffixIcon;
@@ -23,7 +23,7 @@ class CustomTextFormField extends StatefulWidget {
 
   const CustomTextFormField({
     Key? key,
-    required this.label,
+    this.label,
     required this.hintText,
     required this.controller,
     this.suffixIcon,
@@ -80,7 +80,7 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
                   controller: widget.controller,
                   style: TextStyle(
                     color: widget.textColor ?? Colors.white,
-                    fontSize: 13.0,
+                    fontSize: 15.0,
                   ),
                   obscureText: widget.obscureText,
                   keyboardType: widget.isPhone
@@ -89,14 +89,17 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
                           ? TextInputType.multiline
                           : widget.keyboardType,
                   decoration: InputDecoration(
+                    floatingLabelAlignment: FloatingLabelAlignment.start,
                     alignLabelWithHint: widget.maxLines > 1,
-                    label: Text(
-                      widget.label,
-                      style: TextStyle(
-                        color: widget.textColor ?? Colors.white,
-                        fontSize: 13.0,
-                      ),
-                    ),
+                    label: widget.label != null && widget.label!.isNotEmpty
+                        ? Text(
+                            widget.label!,
+                            style: TextStyle(
+                              color: widget.textColor ?? Colors.white,
+                              fontSize: 13.0,
+                            ),
+                          )
+                        : null,
                     border: InputBorder.none,
                     contentPadding: EdgeInsets.symmetric(vertical: 6.0),
                     isDense: true,

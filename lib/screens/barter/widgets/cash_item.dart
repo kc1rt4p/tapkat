@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/size_config.dart';
+import 'package:tapkat/utilities/application.dart' as application;
+
+final oCcy = new NumberFormat("#,##0.00", "en_US");
 
 Widget buildCashItem(num amount) {
   return InkWell(
@@ -50,7 +54,7 @@ Widget buildCashItem(num amount) {
                   ),
                 ),
                 Text(
-                  amount.toStringAsFixed(2),
+                  '${application.currentUserModel!.currency ?? 'PHP'} ${oCcy.format(amount)}',
                   style: TextStyle(
                     fontSize: SizeConfig.textScaleFactor * 9.5,
                     fontWeight: FontWeight.w700,

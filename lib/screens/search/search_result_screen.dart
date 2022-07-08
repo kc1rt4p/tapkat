@@ -206,7 +206,6 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                     setState(() {
                       searchResults = state.searchResults;
                     });
-                    _buildMarkers();
 
                     lastProduct = state.searchResults.last;
                     if (state.searchResults.length ==
@@ -247,6 +246,8 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                       }
                     });
                   }
+
+                  _buildMarkers();
                 }
               },
             ),
@@ -447,6 +448,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                             if (index == 1)
                               _buildMarkers();
                             else {
+                              setOriginalCenter();
                               _searchBloc.add(InitializeSearch(
                                 keyword: _keyWordTextController.text.trim(),
                                 category: _selectedCategory != null
@@ -946,21 +948,20 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
 
                 final _km = km * 1000;
 
-                setState(() {
-                  _selectedRadius = _km;
-
-                  _currentCircle = Circle(
-                    circleId: CircleId('radius'),
-                    center: _currentCenter,
-                    radius: _selectedRadius.toDouble(),
-                    strokeColor: kBackgroundColor,
-                    strokeWidth: 1,
-                    fillColor: kBackgroundColor.withOpacity(0.2),
-                  );
-                });
                 print('0---> $zoomLevel & $mapZoomLevel');
-                if (zoomLevel.toInt() != mapZoomLevel.toInt() &&
-                    (_km >= 500 && _km <= 30000)) {
+                if ((_km >= 500 && _km <= 30000)) {
+                  setState(() {
+                    _selectedRadius = _km;
+
+                    _currentCircle = Circle(
+                      circleId: CircleId('radius'),
+                      center: _currentCenter,
+                      radius: _selectedRadius.toDouble(),
+                      strokeColor: kBackgroundColor,
+                      strokeWidth: 1,
+                      fillColor: kBackgroundColor.withOpacity(0.2),
+                    );
+                  });
                   _reset();
                   _searchBloc.add(InitializeSearch(
                     keyword: _keyWordTextController.text.trim(),
@@ -1188,35 +1189,60 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
 
   _buildMarkers() async {
     if (searchResults.isNotEmpty) {
-      setState(() {
-        searchResults.forEach((product) {
-          _markers
-              .addLabelMarker(
-                LabelMarker(
-                  flat: true,
-                  onTap: () => onMarkerTapped(context, product),
-                  label: product.productname ?? '',
-                  markerId: MarkerId(product.productid! +
-                      DateTime.now().millisecondsSinceEpoch.toString()),
-                  position: LatLng(
-                    product.address != null && product.address!.location != null
-                        ? product.address!.location!.latitude!.toDouble()
-                        : 0.00,
-                    product.address != null && product.address!.location != null
-                        ? product.address!.location!.longitude!.toDouble()
-                        : 0.00,
-                  ),
-                  backgroundColor: kBackgroundColor,
-                ),
-              )
-              .then((value) => setState(() {}));
-        });
-      });
+      setState(
+        () {
+          searchResults.forEach(
+            (product) {
+              _markers
+                  .addLabelMarker(
+                    LabelMarker(
+                      onTap: () => onMarkerTapped(context, product),
+                      label: product.productname != null
+                          ? '${product.productname!.trim()}'
+                          : '',
+                      markerId: MarkerId(product.productid!),
+                      position: LatLng(
+                        product.address != null &&
+                                product.address!.location != null
+                            ? product.address!.location!.latitude!.toDouble()
+                            : 0.00,
+                        product.address != null &&
+                                product.address!.location != null
+                            ? product.address!.location!.longitude!.toDouble()
+                            : 0.00,
+                      ),
+                      backgroundColor: kBackgroundColor,
+                      textStyle: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 27.0,
+                        letterSpacing: 1.0,
+                        fontFamily: 'Poppins',
+                        leadingDistribution: TextLeadingDistribution.even,
+                        inherit: false,
+                        decorationStyle: TextDecorationStyle.solid,
+                      ),
+                    ),
+                  )
+                  .then(
+                    (value) => setState(() {}),
+                  );
+            },
+          );
+        },
+      );
     } else {
       setState(() {
         _markers.clear();
       });
     }
+
+    setState(() {
+      _markers.add(Marker(
+        markerId: MarkerId(application.currentUser!.uid),
+        position: _currentCenter,
+      ));
+    });
 
     // if (markers.isNotEmpty) {
     //   setState(() {

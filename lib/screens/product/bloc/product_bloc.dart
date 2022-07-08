@@ -162,15 +162,18 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
         }
 
         if (event is GetFirstProducts) {
+          print('LOCATION=========== ${event.loc}');
           emit(ProductLoading());
 
-          LocationModel _location = application.currentUserLocation ??
-              application.currentUserModel!.location ??
-              LocationModel(latitude: 0, longitude: 0);
+          LocationModel _location;
 
           if (event.loc != null) {
             _location = LocationModel(
                 longitude: event.loc!.longitude, latitude: event.loc!.latitude);
+          } else {
+            _location = application.currentUserLocation ??
+                application.currentUserModel!.location ??
+                LocationModel(latitude: 0, longitude: 0);
           }
 
           final result = await _productRepo.getFirstProducts(
@@ -201,12 +204,14 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
 
         if (event is GetNextProducts) {
           emit(ProductLoading());
-          LocationModel _location = application.currentUserLocation ??
-              application.currentUserModel!.location ??
-              LocationModel(latitude: 0, longitude: 0);
+          LocationModel _location;
           if (event.loc != null) {
             _location = LocationModel(
                 longitude: event.loc!.longitude, latitude: event.loc!.latitude);
+          } else {
+            _location = application.currentUserLocation ??
+                application.currentUserModel!.location ??
+                LocationModel(latitude: 0, longitude: 0);
           }
           final result = await _productRepo.getNextProducts(
             listType: event.listType,
@@ -220,9 +225,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
             interests: event.listType == 'reco'
                 ? application.currentUserModel!.interests
                 : null,
-            location: event.listType != 'user'
-                ? application.currentUserLocation
-                : null,
+            location: event.listType != 'user' ? _location : null,
             itemCount: event.itemCount,
           );
 

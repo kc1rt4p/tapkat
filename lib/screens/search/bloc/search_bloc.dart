@@ -20,6 +20,17 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
 
       try {
         if (event is InitializeSearch) {
+          LocationModel _location;
+
+          if (event.loc != null) {
+            _location = LocationModel(
+                longitude: event.loc!.longitude, latitude: event.loc!.latitude);
+          } else {
+            _location = application.currentUserLocation ??
+                application.currentUserModel!.location ??
+                LocationModel(latitude: 0, longitude: 0);
+          }
+
           final result = await _productRepo.searchProducts(
             event.keyword,
             sortBy: event.sortBy.toLowerCase() == 'name'
@@ -27,9 +38,7 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
                 : event.sortBy,
             radius: event.distance,
             category: event.category,
-            location: application.currentUserLocation ??
-                application.currentUserModel!.location ??
-                LocationModel(latitude: 0, longitude: 0),
+            location: _location,
             itemCount: event.itemCount ?? 10,
           );
           print('search result count: ${result.length}');
@@ -38,15 +47,24 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
         }
 
         if (event is SearchNextProducts) {
+          LocationModel _location;
+
+          if (event.loc != null) {
+            _location = LocationModel(
+                longitude: event.loc!.longitude, latitude: event.loc!.latitude);
+          } else {
+            _location = application.currentUserLocation ??
+                application.currentUserModel!.location ??
+                LocationModel(latitude: 0, longitude: 0);
+          }
+
           final list = await _productRepo.searchProducts(
             event.keyword,
             sortBy: event.sortBy == 'name' ? 'productname' : event.sortBy,
             radius: event.distance,
             lastProductId: event.lastProductId,
             startAfterVal: event.startAfterVal,
-            location: application.currentUserLocation ??
-                application.currentUserModel!.location ??
-                LocationModel(latitude: 0, longitude: 0),
+            location: _location,
           );
 
           emit(SearchNextProductsSuccess(list));

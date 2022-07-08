@@ -188,6 +188,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
               _productBloc.add(GetFirstProducts(
                 userid: application.currentUser!.uid,
+                loc: _currentCenter,
                 listType: widget.listType,
                 sortBy: _selectedSortBy,
                 distance: _selectedRadius,
@@ -199,8 +200,10 @@ class _ProductListScreenState extends State<ProductListScreen> {
             }
 
             if (state is GetFirstProductsSuccess) {
+              print('PUTANG INA ------- ${state.list.length}');
               _refreshController.refreshCompleted();
               _pagingController.refresh();
+
               if (state.list.isNotEmpty) {
                 _list = state.list;
                 _buildMarkers();
@@ -214,6 +217,8 @@ class _ProductListScreenState extends State<ProductListScreen> {
                 }
               } else {
                 _pagingController.appendLastPage([]);
+                _list.clear();
+                _buildMarkers();
               }
 
               // if (initialView != 'grid') {
@@ -549,8 +554,10 @@ class _ProductListScreenState extends State<ProductListScreen> {
                     if (index == 1)
                       _buildMarkers();
                     else {
+                      setOriginalCenter();
                       _productBloc.add(GetFirstProducts(
                         userid: application.currentUser!.uid,
+                        loc: _currentCenter,
                         listType: widget.listType,
                         sortBy: _selectedSortBy,
                         distance: _selectedRadius,
@@ -833,6 +840,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
     _productBloc.add(GetFirstProducts(
       userid: application.currentUser!.uid,
+      loc: _currentCenter,
       listType: widget.listType,
       sortBy: _selectedSortBy,
       distance: _selectedRadius,
@@ -1004,6 +1012,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
     _productBloc.add(GetFirstProducts(
       userid: application.currentUser!.uid,
+      loc: _currentCenter,
       listType: widget.listType,
       sortBy: _selectedSortBy,
       distance: _selectedRadius,
@@ -1059,6 +1068,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
                   _productBloc.add(GetFirstProducts(
                     userid: application.currentUser!.uid,
+                    loc: _currentCenter,
                     listType: widget.listType,
                     sortBy: _selectedSortBy,
                     distance: _selectedRadius,
@@ -1126,6 +1136,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
                 _productBloc.add(GetFirstProducts(
                   userid: application.currentUser!.uid,
+                  loc: _currentCenter,
                   listType: widget.listType,
                   sortBy: _selectedSortBy,
                   distance: _selectedRadius,
@@ -1133,7 +1144,6 @@ class _ProductListScreenState extends State<ProductListScreen> {
                       ? [_selectedCategory!.code!]
                       : null,
                   itemCount: _selectedView == 'map' ? 50 : null,
-                  loc: _currentCenter,
                 ));
               },
               child: Icon(
@@ -1320,7 +1330,18 @@ class _ProductListScreenState extends State<ProductListScreen> {
           );
         },
       );
+    } else {
+      setState(() {
+        _markers.clear();
+      });
     }
+
+    setState(() {
+      _markers.add(Marker(
+        markerId: MarkerId(application.currentUser!.uid),
+        position: _currentCenter,
+      ));
+    });
 
     // if (markers.isNotEmpty) {
     //   setState(() {

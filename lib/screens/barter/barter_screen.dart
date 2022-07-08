@@ -365,9 +365,12 @@ class _BarterScreenState extends State<BarterScreen> {
             }
 
             if (state is GetUserReviewSuccess) {
-              setState(() {
-                _userReview = state.review;
-              });
+              if (state.review != null) {
+                print(state.review!.toJson());
+                setState(() {
+                  _userReview = state.review;
+                });
+              }
             }
 
             if (state is GetProductReviewSuccess) {
@@ -395,6 +398,14 @@ class _BarterScreenState extends State<BarterScreen> {
             if (state is UpdateUserReviewSuccess) {
               DialogMessage.show(context,
                   message: 'Your User Review has been updated');
+
+              if (_barterRecord!.dealStatus == 'completed') {
+                _barterBloc.add(GetUserReview(
+                    _currentUserModel!.userid == _senderUserId
+                        ? _recipientUserId!
+                        : _senderUserId!,
+                    _currentUserModel!.userid!));
+              }
             }
 
             if (state is AddRatingSuccess) {
@@ -446,10 +457,10 @@ class _BarterScreenState extends State<BarterScreen> {
             if (state is BarterInitialized) {
               setState(() {
                 remoteUserItems = state.remoteUserProducts
-                    .where((prod) => prod.status != 'COMPLETED')
+                    .where((prod) => prod.status != 'completed')
                     .toList();
                 currentUserItems = state.currentUserProducts
-                    .where((prod) => prod.status != 'COMPLETED')
+                    .where((prod) => prod.status != 'completed')
                     .toList();
               });
 
@@ -1384,7 +1395,7 @@ class _BarterScreenState extends State<BarterScreen> {
                     ),
                   ),
                   Visibility(
-                    visible: _shouldShowAdd(),
+                    visible: _shouldShowAdd() && remoteUserItems.length == 10,
                     child: Container(
                       constraints: BoxConstraints(
                         maxWidth: 500.0,
@@ -1392,7 +1403,7 @@ class _BarterScreenState extends State<BarterScreen> {
                       child: CustomButton(
                         onTap: () =>
                             _showUserItems(_recipientUserId!, 'Recipient'),
-                        label: 'View more',
+                        label: 'View more products of $_recipientName',
                       ),
                     ),
                   ),
@@ -1433,15 +1444,20 @@ class _BarterScreenState extends State<BarterScreen> {
                     ),
                   ),
                   Visibility(
-                    visible: _shouldShowAdd(),
-                    child: Container(
-                      constraints: BoxConstraints(
-                        maxWidth: 500.0,
-                      ),
-                      child: CustomButton(
-                        onTap: () => _showUserItems(_senderUserId!, 'Sender'),
-                        label: 'View more',
-                      ),
+                    visible: _shouldShowAdd() && currentUserItems.length == 10,
+                    child: Column(
+                      children: [
+                        Container(
+                          constraints: BoxConstraints(
+                            maxWidth: 500.0,
+                          ),
+                          child: CustomButton(
+                            onTap: () =>
+                                _showUserItems(_senderUserId!, 'Sender'),
+                            label: 'View more of your products',
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -1590,6 +1606,42 @@ class _BarterScreenState extends State<BarterScreen> {
               ),
             ),
           ),
+          Visibility(
+            visible: (userType == 'recipient'
+                        ? _remoteUserOfferedCash
+                        : _currentUserOfferedCash) !=
+                    null &&
+                _shouldShowAdd(),
+            child: Positioned(
+              top: 10.0,
+              right: 10.0,
+              child: InkWell(
+                onTap: () {
+                  setState(() {
+                    if (userType == 'recipient') {
+                      _remoteUserOfferedCash = null;
+                    } else {
+                      _currentUserOfferedCash = null;
+                    }
+                  });
+                },
+                child: Container(
+                  padding: EdgeInsets.all(5.0),
+                  decoration: BoxDecoration(
+                    color: Colors.red.shade400,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: Icon(
+                      FontAwesomeIcons.minus,
+                      color: Colors.white,
+                      size: SizeConfig.textScaleFactor * 14,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -1724,13 +1776,10 @@ class _BarterScreenState extends State<BarterScreen> {
           ),
         ),
         Visibility(
-          visible: offers.any((BarterProductModel prod) {
-                return prod.productId == product.productid;
-              }) &&
-              _barterRecord!.dealStatus == 'completed' &&
-              owner == 'recipient',
+          visible:
+              _barterRecord!.dealStatus == 'completed' && owner == 'remote',
           child: Positioned(
-            top: 5.0,
+            top: 10.0,
             right: 10.0,
             child: InkWell(
               onTap: () {
@@ -1771,6 +1820,7 @@ class _BarterScreenState extends State<BarterScreen> {
                     currentUserOffers.removeWhere(
                         (prod) => prod.productId == product.productid);
                   }
+                  _sortProducts();
                 });
               },
               child: Container(
@@ -2023,11 +2073,7 @@ class _BarterScreenState extends State<BarterScreen> {
           Visibility(
             visible: _barterRecord!.dealStatus == 'completed',
             child: GestureDetector(
-              onTap: () => _barterBloc.add(GetUserReview(
-                  _currentUserModel!.userid == _senderUserId
-                      ? _recipientUserId!
-                      : _senderUserId!,
-                  _currentUserModel!.userid!)),
+              onTap: () => _onRateUser(_userReview),
               child: Text(
                 'Rate User',
                 style: TextStyle(
@@ -2050,7 +2096,6 @@ class _BarterScreenState extends State<BarterScreen> {
       _reviewTextController.text = review.review ?? '';
       _rating = review.rating ?? 0;
     }
-    print(_currentUserModel!.userid);
 
     final rating = await showDialog(
       barrierDismissible: false,
@@ -2401,7 +2446,10 @@ class _BarterScreenState extends State<BarterScreen> {
                       SizedBox(height: 8.0),
                       Center(
                         child: Text(
-                          'Tap here to edit your offer',
+                          _barterRecord != null &&
+                                  _barterRecord!.dealStatus != 'completed'
+                              ? 'Tap here to edit your offer'
+                              : 'Tap here to view barter',
                           style: TextStyle(
                             fontSize: SizeConfig.textScaleFactor * 13,
                             fontWeight: FontWeight.w600,
@@ -2935,7 +2983,7 @@ class _BarterScreenState extends State<BarterScreen> {
                     key: _cFormKey,
                     child: CustomTextFormField(
                       color: kBackgroundColor,
-                      label: 'Enter Amount',
+                      // label: 'Enter Amount',
                       hintText: '0.00',
                       controller: amounTextController,
                       keyboardType:
@@ -2946,10 +2994,17 @@ class _BarterScreenState extends State<BarterScreen> {
                         return null;
                       },
                       inputFormatters: [
-                        CurrencyTextInputFormatter(
-                            symbol: application.currentUserModel!.currency ??
-                                'PHP'),
+                        CurrencyTextInputFormatter(symbol: ''),
                       ],
+                      prefix: Container(
+                        margin: EdgeInsets.only(right: 5.0),
+                        child: Text(
+                          application.currentUserModel!.currency ?? 'PHP',
+                          style: TextStyle(
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                   SizedBox(height: 12.0),
