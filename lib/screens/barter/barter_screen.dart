@@ -460,12 +460,8 @@ class _BarterScreenState extends State<BarterScreen> {
 
             if (state is BarterInitialized) {
               setState(() {
-                remoteUserItems = state.remoteUserProducts
-                    .where((prod) => prod.status != 'completed')
-                    .toList();
-                currentUserItems = state.currentUserProducts
-                    .where((prod) => prod.status != 'completed')
-                    .toList();
+                remoteUserItems = state.remoteUserProducts;
+                currentUserItems = state.currentUserProducts;
               });
 
               remoteUserItems
@@ -1496,7 +1492,8 @@ class _BarterScreenState extends State<BarterScreen> {
           builder: (sbContext, sState) {
             return Dialog(
               child: UserItemsDialog(
-                userId: userId,
+                userId:
+                    userType == 'Sender' ? _senderUserId! : _recipientUserId!,
                 userType: userType,
                 selectedProducts: selectedProducts,
               ),
@@ -1548,6 +1545,8 @@ class _BarterScreenState extends State<BarterScreen> {
 
     widgets.addAll(
       (userType == 'recipient' ? remoteUserItems : currentUserItems)
+          .where((prod) => prod.status != 'completed')
+          .toList()
           .map((product) {
         return _userItem(
             userType == 'recipient' ? 'remote' : 'sender', product);
