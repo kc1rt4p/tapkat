@@ -155,7 +155,8 @@ class _BarterScreenState extends State<BarterScreen> {
   }
 
   Future<bool> _onWillPop() async {
-    if (_barterRecord!.dealStatus == 'new' && currentUserOffers.isEmpty) {
+    if (_barterRecord!.dealStatus == 'new' &&
+        (currentUserOffers.isEmpty && _currentUserOfferedCash == null)) {
       // unsaveProductsStorage.clear();
       _barterBloc.add(DeleteBarter(_barterId!));
       return false;
@@ -285,6 +286,20 @@ class _BarterScreenState extends State<BarterScreen> {
         await unsaveProductsStorage.setItem('wanted', _unsavedWantedProducts);
         await unsaveProductsStorage.setItem(
             'wantedDateUpdated', DateTime.now().toString());
+
+        if (_currentUserOfferedCash != null && _currentUserOfferedCash! > 0 ||
+            (_origCurrentUserOfferedCash != null &&
+                _origCurrentUserOfferedCash != _currentUserOfferedCash)) {
+          await unsaveProductsStorage.setItem(
+              'offeredCash', _currentUserOfferedCash);
+        }
+
+        if (_remoteUserOfferedCash != null && _remoteUserOfferedCash! > 0 ||
+            (_origRemoteUserOfferedCash != null &&
+                _origRemoteUserOfferedCash != _remoteUserOfferedCash)) {
+          await unsaveProductsStorage.setItem(
+              'wantedCash', _remoteUserOfferedCash);
+        }
       }
     }
 
@@ -568,6 +583,12 @@ class _BarterScreenState extends State<BarterScreen> {
                   final unsavedWantedProducts = await unsaveProductsStorage
                       .getItem('wanted') as List<dynamic>?;
 
+                  final unsavedOfferedCash = await unsaveProductsStorage
+                      .getItem('offeredCash') as num?;
+
+                  final unsavedWantedCash =
+                      await unsaveProductsStorage.getItem('wantedCash') as num?;
+
                   if (unsavedOfferedProducts != null) {
                     print(
                         'unsavedOfferedProducts:: ${unsavedOfferedProducts.length}');
@@ -624,7 +645,13 @@ class _BarterScreenState extends State<BarterScreen> {
                       });
                     }
 
-                    // sort added products
+                    if (unsavedOfferedCash != null) {
+                      _currentUserOfferedCash = unsavedOfferedCash;
+                    }
+
+                    if (unsavedWantedCash != null) {
+                      _remoteUserOfferedCash = unsavedWantedCash;
+                    }
 
                     _sortProducts();
                   });
