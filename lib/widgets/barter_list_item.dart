@@ -193,8 +193,7 @@ class _BarterListItemState extends State<BarterListItem> {
                             ),
                           ),
                     Visibility(
-                      visible: widget.status == null &&
-                          product.status == 'completed',
+                      visible: product.status == 'completed',
                       child: Positioned(
                         bottom: 0,
                         child: Container(

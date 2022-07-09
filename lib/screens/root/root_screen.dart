@@ -548,6 +548,8 @@ class _RootScreenState extends State<RootScreen> {
           });
         },
         child: Container(
+          // color: Colors.red,
+          padding: EdgeInsets.symmetric(vertical: 10.0),
           child: Stack(
             alignment: Alignment.center,
             children: [
