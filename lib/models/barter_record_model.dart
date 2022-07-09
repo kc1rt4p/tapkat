@@ -22,6 +22,7 @@ class BarterRecordModel {
   String? userid2Role;
   String? userid1Name;
   String? userid2Name;
+  List<String>? deletedFor;
 
   BarterRecordModel({
     this.id,
@@ -47,6 +48,7 @@ class BarterRecordModel {
     this.userid2Role,
     this.userid1Name,
     this.userid2Name,
+    this.deletedFor,
   });
 
   factory BarterRecordModel.fromJson(Map<String, dynamic> json) {
@@ -74,6 +76,11 @@ class BarterRecordModel {
       userid2Role: json['userid2Role'],
       userid1Name: json['userid1Name'],
       userid2Name: json['userid2Name'],
+      deletedFor: json['deletedFor'] != null
+          ? (json['deletedFor'] as List<dynamic>)
+              .map((id) => id.toString())
+              .toList()
+          : [],
     );
   }
 
@@ -101,6 +108,7 @@ class BarterRecordModel {
       'userid2Role': this.userid2Role,
       'userid1Name': this.userid1Name,
       'userid2Name': this.userid2Name,
+      'deletedFor': this.deletedFor,
     };
   }
 }

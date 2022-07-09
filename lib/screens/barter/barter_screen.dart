@@ -468,7 +468,10 @@ class _BarterScreenState extends State<BarterScreen> {
                   .forEach((element) => print('X==> ${element.toJson()}'));
 
               _barterStreamSub = state.barterStream.listen((barterRecord) {
-                if (barterRecord == null) {
+                if (barterRecord == null ||
+                    (barterRecord.deletedFor != null &&
+                        barterRecord.deletedFor!
+                            .contains(application.currentUser!.uid))) {
                   Navigator.pop(context);
                   return;
                 } else {

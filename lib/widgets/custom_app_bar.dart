@@ -46,7 +46,7 @@ class _CustomAppBarState extends State<CustomAppBar> {
             children: [
               widget.hideBack
                   ? widget.leading ?? Container()
-                  : GestureDetector(
+                  : InkWell(
                       onTap:
                           widget.onBackTapped ?? () => Navigator.pop(context),
                       child: Container(

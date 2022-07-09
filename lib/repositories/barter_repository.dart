@@ -291,21 +291,26 @@ class BarterRepository {
 
   Future<bool> deleteBarter(String id) async {
     try {
-      final messages = await barterRef.doc(id).collection('messages').get();
-      if (messages.docs.isNotEmpty) {
-        messages.docs.forEach((msg) async {
-          await barterRef.doc(id).collection('messages').doc(msg.id).delete();
-        });
-      }
+      // final messages = await barterRef.doc(id).collection('messages').get();
+      // if (messages.docs.isNotEmpty) {
+      //   messages.docs.forEach((msg) async {
+      //     await barterRef.doc(id).collection('messages').doc(msg.id).delete();
+      //   });
+      // }
 
-      final products = await barterRef.doc(id).collection('products').get();
-      if (products.docs.isNotEmpty) {
-        products.docs.forEach((prod) async {
-          await barterRef.doc(id).collection('products').doc(prod.id).delete();
-        });
-      }
+      // final products = await barterRef.doc(id).collection('products').get();
+      // if (products.docs.isNotEmpty) {
+      //   products.docs.forEach((prod) async {
+      //     await barterRef.doc(id).collection('products').doc(prod.id).delete();
+      //   });
+      // }
 
-      await barterRef.doc(id).delete();
+      // final _barterRecord = await barterRef.doc(id).get();
+
+      await barterRef.doc(id).update({
+        'deletedFor': [application.currentUser!.uid],
+      });
+
       return true;
     } catch (e) {
       return false;

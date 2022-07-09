@@ -185,7 +185,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               CustomAppBar(
                 label: 'Your Store',
                 hideBack: true,
-                leading: GestureDetector(
+                leading: InkWell(
                   onTap: () {
                     if (_userModel != null) {
                       Scaffold.of(context).openDrawer();
@@ -198,9 +198,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       // );
                     }
                   },
-                  child: Icon(
-                    FontAwesomeIcons.cog,
-                    color: Colors.white,
+                  child: Container(
+                    padding: EdgeInsets.all(16.0),
+                    child: Icon(
+                      FontAwesomeIcons.cog,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
                 action: GestureDetector(
