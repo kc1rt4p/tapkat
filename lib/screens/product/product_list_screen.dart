@@ -15,6 +15,7 @@ import 'package:tapkat/screens/product/product_details_screen.dart';
 import 'package:tapkat/screens/search/search_result_screen.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/constants.dart';
+import 'package:tapkat/utilities/dialog_message.dart';
 import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/utilities/style.dart';
 import 'package:tapkat/widgets/barter_list_item.dart';
@@ -200,7 +201,6 @@ class _ProductListScreenState extends State<ProductListScreen> {
             }
 
             if (state is GetFirstProductsSuccess) {
-              print('PUTANG INA ------- ${state.list.length}');
               _refreshController.refreshCompleted();
               _pagingController.refresh();
 
@@ -219,6 +219,30 @@ class _ProductListScreenState extends State<ProductListScreen> {
                 _pagingController.appendLastPage([]);
                 _list.clear();
                 _buildMarkers();
+
+                if (_selectedRadius < 20000) {
+                  _selectedRadius += 5000;
+
+                  _productBloc.add(
+                    GetFirstProducts(
+                      userid: application.currentUser!.uid,
+                      loc: _currentCenter,
+                      listType: widget.listType,
+                      sortBy: _selectedSortBy,
+                      distance: _selectedRadius,
+                      category: _selectedCategory != null
+                          ? [_selectedCategory!.code!]
+                          : null,
+                      itemCount: _selectedView == 'map' ? 50 : null,
+                    ),
+                  );
+                } else {
+                  DialogMessage.show(
+                    context,
+                    message:
+                        'No results found.\nTry to change your search criteria.',
+                  );
+                }
               }
 
               // if (initialView != 'grid') {
@@ -1081,20 +1105,20 @@ class _ProductListScreenState extends State<ProductListScreen> {
               }
             },
             child: TapkatGoogleMap(
-              circles: {
-                _currentCircle!,
-              },
+              // circles: {
+              //   _currentCircle!,
+              // },
               onTap: (latLng) {
                 setState(() {
                   _currentCenter = latLng;
-                  _currentCircle = Circle(
-                    circleId: CircleId('radius'),
-                    center: _currentCenter,
-                    radius: _selectedRadius.toDouble(),
-                    strokeColor: kBackgroundColor,
-                    strokeWidth: 1,
-                    fillColor: kBackgroundColor.withOpacity(0.2),
-                  );
+                  // _currentCircle = Circle(
+                  //   circleId: CircleId('radius'),
+                  //   center: _currentCenter,
+                  //   radius: _selectedRadius.toDouble(),
+                  //   strokeColor: kBackgroundColor,
+                  //   strokeWidth: 1,
+                  //   fillColor: kBackgroundColor.withOpacity(0.2),
+                  // );
                 });
 
                 if (_selectedView == 'map') {

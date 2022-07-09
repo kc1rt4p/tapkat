@@ -15,6 +15,7 @@ import 'package:tapkat/screens/product/product_details_screen.dart';
 import 'package:tapkat/screens/search/bloc/search_bloc.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/constants.dart';
+import 'package:tapkat/utilities/dialog_message.dart';
 import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/utilities/style.dart';
 import 'package:tapkat/widgets/barter_list_item.dart';
@@ -245,6 +246,25 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                         );
                       }
                     });
+                  } else {
+                    if (_selectedRadius < 20000) {
+                      _selectedRadius += 5000;
+                      _searchBloc.add(InitializeSearch(
+                        keyword: _keyWordTextController.text.trim(),
+                        category:
+                            widget.category != null ? [widget.category!] : null,
+                        sortBy: _selectedSortBy,
+                        distance: _selectedRadius,
+                        itemCount: _selectedView == 'map' ? 50 : 10,
+                        loc: _currentCenter,
+                      ));
+                    } else {
+                      DialogMessage.show(
+                        context,
+                        message:
+                            'No results found.\nTry to change your search criteria.',
+                      );
+                    }
                   }
 
                   _buildMarkers();
