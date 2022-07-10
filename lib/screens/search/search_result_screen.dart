@@ -997,9 +997,9 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
               }
             },
             child: TapkatGoogleMap(
-              circles: {
-                _currentCircle!,
-              },
+              // circles: {
+              //   _currentCircle!,
+              // },
               onTap: (latLng) {
                 setState(() {
                   _currentCenter = latLng;
