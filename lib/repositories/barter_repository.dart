@@ -197,11 +197,18 @@ class BarterRepository {
   }
 
   Future<bool> updateBarterStatus(String barterId, String status) async {
-    try {
-      await barterRef.doc(barterId).update({
-        'dealStatus': status,
-        'dealDate': DateTime.now(),
+    Map<String, dynamic> data = {
+      'dealStatus': status,
+      'dealDate': DateTime.now(),
+    };
+
+    if (['accepted', 'rejected', 'completed'].contains(status)) {
+      data.addAll({
+        'deletedFor': [],
       });
+    }
+    try {
+      await barterRef.doc(barterId).update(data);
       return true;
     } catch (e) {
       return false;

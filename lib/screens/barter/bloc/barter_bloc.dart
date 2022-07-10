@@ -196,6 +196,7 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
                 _newBarterRecord.u2P1Image = event.product!.imgUrl;
               }
               _newBarterRecord.dealStatus = 'submitted';
+              _newBarterRecord.deletedFor = [];
 
               final updated =
                   await _barterRepository.counterOffer(_newBarterRecord);
@@ -231,17 +232,22 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
             final barterRecord =
                 await _barterRepository.getBarterRecord(event.barterId);
             if (barterRecord != null) {
-              final senderUserId = barterRecord.userid1Role == 'sender'
-                  ? barterRecord.userid1
-                  : barterRecord.userid2;
-              final recipientUserId = barterRecord.userid1Role == 'recipient'
-                  ? barterRecord.userid1
-                  : barterRecord.userid2;
+              // if (['accepted', 'rejected', 'completed']
+              //     .contains(event.status)) {
+              //   barterRecord.deletedFor = [];
 
-              String userId =
-                  ['accepted', 'rejected', 'completed'].contains(event.status)
-                      ? recipientUserId!
-                      : senderUserId!;
+              // }
+              // final senderUserId = barterRecord.userid1Role == 'sender'
+              //     ? barterRecord.userid1
+              //     : barterRecord.userid2;
+              // final recipientUserId = barterRecord.userid1Role == 'recipient'
+              //     ? barterRecord.userid1
+              //     : barterRecord.userid2;
+
+              // String userId =
+              //     ['accepted', 'rejected', 'completed'].contains(event.status)
+              //         ? recipientUserId!
+              //         : senderUserId!;
 
               _barterRepository.addMessage(ChatMessageModel(
                 barterId: event.barterId,
