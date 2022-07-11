@@ -166,6 +166,32 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
             }
           }
 
+          if (event is GetHiddenProducuts) {
+            List<ProductModel> hiddenSenderProducts = [];
+            List<ProductModel> hiddenRecipientProducts = [];
+
+            if (event.hiddenSenderProducts.isNotEmpty) {
+              await Future.forEach(event.hiddenSenderProducts,
+                  (String prodId) async {
+                hiddenRecipientProducts
+                    .add(await _productRepository.getProduct(prodId));
+              });
+            }
+
+            if (event.hiddenRecipientProducts.isNotEmpty) {
+              await Future.forEach(event.hiddenRecipientProducts,
+                  (String prodId) async {
+                hiddenRecipientProducts
+                    .add(await _productRepository.getProduct(prodId));
+              });
+            }
+
+            emit(GetHiddenProducutsDone(
+              hiddenSenderProducts: hiddenSenderProducts,
+              hiddenRecipientProducts: hiddenRecipientProducts,
+            ));
+          }
+
           if (event is UpdateUserReview) {
             final updated = await _userRepo.updateUserReview(event.review);
 

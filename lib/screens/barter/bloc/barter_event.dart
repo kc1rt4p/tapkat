@@ -96,6 +96,16 @@ class UpdateBarterProducts extends BarterEvent {
   });
 }
 
+class GetHiddenProducuts extends BarterEvent {
+  final List<String> hiddenSenderProducts;
+  final List<String> hiddenRecipientProducts;
+
+  GetHiddenProducuts({
+    required this.hiddenSenderProducts,
+    required this.hiddenRecipientProducts,
+  });
+}
+
 class AddCashOffer extends BarterEvent {
   final String barterId;
   final String userId;

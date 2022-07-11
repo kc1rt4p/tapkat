@@ -32,6 +32,16 @@ class BarterTransactionsInitialized extends BarterState {
   });
 }
 
+class GetHiddenProducutsDone extends BarterState {
+  final List<ProductModel> hiddenSenderProducts;
+  final List<ProductModel> hiddenRecipientProducts;
+
+  GetHiddenProducutsDone({
+    required this.hiddenSenderProducts,
+    required this.hiddenRecipientProducts,
+  });
+}
+
 class StreambarterSuccess extends BarterState {
   final Stream<List<BarterRecord?>> barterStream;
   final List<ProductModel> userProducts;

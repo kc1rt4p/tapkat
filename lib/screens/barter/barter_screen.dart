@@ -492,7 +492,8 @@ class _BarterScreenState extends State<BarterScreen> {
                       _recipientUserId = _barterRecord!.userid1;
                     }
 
-                    if (_currentUserModel!.userid == _barterRecord!.userid1) {
+                    if (application.currentUser!.uid ==
+                        _barterRecord!.userid1) {
                       _currentUserRole = _barterRecord!.userid1Role;
                       _recipientName = _barterRecord!.userid2Name!;
                     } else {
@@ -613,6 +614,32 @@ class _BarterScreenState extends State<BarterScreen> {
                         'unsavedOfferedProducts:: ${unsavedWantedProducts.length}');
                   }
 
+                  // check products that are not displayed - START
+                  List<String> hiddenUserProducts = [];
+                  List<String> hiddenRecipientProducts = [];
+
+                  currentUserOffers.forEach((offer) {
+                    if (!currentUserItems
+                        .any((prod) => prod.productid == offer.productId))
+                      hiddenUserProducts.add(offer.productId!);
+                  });
+
+                  remoteUserOffers.forEach((offer) {
+                    if (!remoteUserItems
+                        .any((prod) => prod.productid == offer.productId))
+                      hiddenRecipientProducts.add(offer.productId!);
+                  });
+
+                  if (hiddenRecipientProducts.isNotEmpty ||
+                      hiddenUserProducts.isNotEmpty) {
+                    _barterBloc.add(GetHiddenProducuts(
+                      hiddenSenderProducts: hiddenUserProducts,
+                      hiddenRecipientProducts: hiddenRecipientProducts,
+                    ));
+                  }
+
+                  // check products that are not displayed - END
+
                   setState(() {
                     if (widget.product != null) {
                       if (!remoteUserItems.any((prod) =>
@@ -671,6 +698,15 @@ class _BarterScreenState extends State<BarterScreen> {
                   });
                 }
               });
+            }
+
+            if (state is GetHiddenProducutsDone) {
+              setState(() {
+                remoteUserItems.addAll(state.hiddenRecipientProducts);
+                currentUserItems.addAll(state.hiddenSenderProducts);
+              });
+
+              _sortProducts();
             }
 
             if (state is BarterError) {
@@ -1455,8 +1491,8 @@ class _BarterScreenState extends State<BarterScreen> {
                             maxWidth: 500.0,
                           ),
                           child: CustomButton(
-                            onTap: () =>
-                                _showUserItems(_senderUserId!, 'Sender'),
+                            onTap: () => _showUserItems(
+                                application.currentUser!.uid, 'Sender'),
                             label: 'View more of your products',
                           ),
                         ),
@@ -1495,8 +1531,7 @@ class _BarterScreenState extends State<BarterScreen> {
           builder: (sbContext, sState) {
             return Dialog(
               child: UserItemsDialog(
-                userId:
-                    userType == 'Sender' ? _senderUserId! : _recipientUserId!,
+                userId: userId,
                 userType: userType,
                 selectedProducts: selectedProducts,
               ),
