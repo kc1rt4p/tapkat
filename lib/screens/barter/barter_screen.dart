@@ -1440,8 +1440,11 @@ class _BarterScreenState extends State<BarterScreen> {
                         maxWidth: 500.0,
                       ),
                       child: CustomButton(
-                        onTap: () =>
-                            _showUserItems(_recipientUserId!, 'Recipient'),
+                        onTap: () => _showUserItems(
+                            application.currentUser!.uid != _recipientUserId!
+                                ? _recipientUserId!
+                                : _senderUserId!,
+                            'Recipient'),
                         label: 'View more products of $_recipientName',
                       ),
                     ),
