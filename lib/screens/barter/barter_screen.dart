@@ -704,7 +704,7 @@ class _BarterScreenState extends State<BarterScreen> {
               setState(() {
                 if (state.hiddenRecipientProducts.isNotEmpty) {
                   state.hiddenRecipientProducts.forEach((prod) => setState(() {
-                        if (remoteUserItems
+                        if (!remoteUserItems
                             .any((item) => item.productid == prod.productid)) {
                           remoteUserItems.add(prod);
                         }
@@ -713,7 +713,7 @@ class _BarterScreenState extends State<BarterScreen> {
 
                 if (state.hiddenSenderProducts.isNotEmpty) {
                   state.hiddenSenderProducts.forEach((prod) => setState(() {
-                        if (currentUserItems
+                        if (!currentUserItems
                             .any((item) => item.productid == prod.productid)) {
                           currentUserItems.add(prod);
                         }
