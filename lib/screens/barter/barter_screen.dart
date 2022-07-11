@@ -630,6 +630,9 @@ class _BarterScreenState extends State<BarterScreen> {
                       hiddenRecipientProducts.add(offer.productId!);
                   });
 
+                  print('X====> ${hiddenUserProducts.length}');
+                  print('X====> ${hiddenRecipientProducts.length}');
+
                   if (hiddenRecipientProducts.isNotEmpty ||
                       hiddenUserProducts.isNotEmpty) {
                     _barterBloc.add(GetHiddenProducuts(
@@ -704,6 +707,7 @@ class _BarterScreenState extends State<BarterScreen> {
               setState(() {
                 if (state.hiddenRecipientProducts.isNotEmpty) {
                   state.hiddenRecipientProducts.forEach((prod) => setState(() {
+                        print('X====> x ${prod.toJson()}');
                         if (!remoteUserItems
                             .any((item) => item.productid == prod.productid)) {
                           remoteUserItems.add(prod);
@@ -713,8 +717,10 @@ class _BarterScreenState extends State<BarterScreen> {
 
                 if (state.hiddenSenderProducts.isNotEmpty) {
                   state.hiddenSenderProducts.forEach((prod) => setState(() {
+                        print('X====> y ${prod.toJson()}');
                         if (!currentUserItems
                             .any((item) => item.productid == prod.productid)) {
+                          print('X====> adding product');
                           currentUserItems.add(prod);
                         }
                       }));

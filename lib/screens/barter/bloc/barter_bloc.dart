@@ -173,7 +173,7 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
             if (event.hiddenSenderProducts.isNotEmpty) {
               await Future.forEach(event.hiddenSenderProducts,
                   (String prodId) async {
-                hiddenRecipientProducts
+                hiddenSenderProducts
                     .add(await _productRepository.getProduct(prodId));
               });
             }
