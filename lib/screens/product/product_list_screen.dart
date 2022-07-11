@@ -1080,14 +1080,14 @@ class _ProductListScreenState extends State<ProductListScreen> {
                   setState(() {
                     _selectedRadius = _km;
 
-                    _currentCircle = Circle(
-                      circleId: CircleId('radius'),
-                      center: _currentCenter,
-                      radius: _selectedRadius.toDouble(),
-                      strokeColor: kBackgroundColor,
-                      strokeWidth: 1,
-                      fillColor: kBackgroundColor.withOpacity(0.2),
-                    );
+                    // _currentCircle = Circle(
+                    //   circleId: CircleId('radius'),
+                    //   center: _currentCenter,
+                    //   radius: _selectedRadius.toDouble(),
+                    //   strokeColor: kBackgroundColor,
+                    //   strokeWidth: 1,
+                    //   fillColor: kBackgroundColor.withOpacity(0.2),
+                    // );
                   });
 
                   _productBloc.add(GetFirstProducts(
