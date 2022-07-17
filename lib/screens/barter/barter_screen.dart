@@ -21,6 +21,7 @@ import 'package:tapkat/models/product.dart';
 import 'package:tapkat/models/request/product_review_resuest.dart';
 import 'package:tapkat/models/request/user_review_request.dart';
 import 'package:tapkat/models/user.dart';
+import 'package:tapkat/repositories/barter_repository.dart';
 import 'package:tapkat/screens/barter/widgets/add_item_btn.dart';
 import 'package:tapkat/screens/barter/widgets/cash_item.dart';
 import 'package:tapkat/screens/barter/widgets/chat_item.dart';
@@ -68,6 +69,8 @@ class _BarterScreenState extends State<BarterScreen> {
   late LocalStorage unsaveProductsStorage;
   ProductModel? _product;
   num? initialCashOffer;
+
+  final _barterRepo = BarterRepository();
 
   final _authBloc = AuthBloc();
   late BarterBloc _barterBloc;
@@ -1596,6 +1599,8 @@ class _BarterScreenState extends State<BarterScreen> {
           builder: (sbContext, sState) {
             return Dialog(
               child: UserItemsDialog(
+                recipientName: _recipientName,
+                recipientUserId: _recipientUserId!,
                 userId: userId,
                 userType: userType,
                 selectedProducts: selectedProducts,
@@ -1688,6 +1693,7 @@ class _BarterScreenState extends State<BarterScreen> {
           InkWell(
             onTap: () {
               if (!_shouldShowAdd()) return;
+
               if (_barterRecord!.dealStatus != 'sold') {
                 _showAddCashDialog(userType);
               }
@@ -1967,7 +1973,20 @@ class _BarterScreenState extends State<BarterScreen> {
               onTap: !offers.any((BarterProductModel prod) =>
                           prod.productId == product.productid) &&
                       _shouldShowAdd()
-                  ? () {
+                  ? () async {
+                      final barterable = await _barterRepo.checkIfBarterable(
+                          _recipientUserId!, product.productid!);
+
+                      if (!barterable) {
+                        await DialogMessage.show(
+                          context,
+                          message:
+                              'You can\'t add this product to the barter as you already have a another pending barter with ${_recipientName.toUpperCase()} for this ${product.productname}',
+                        );
+
+                        return;
+                      }
+
                       final item = BarterProductModel.fromProductModel(product);
                       if (owner == 'remote') {
                         _addWantedItems([item]);
@@ -2177,15 +2196,25 @@ class _BarterScreenState extends State<BarterScreen> {
               color: kDangerColor,
               borderRadius: BorderRadius.circular(5.0),
             ),
-            child: Center(
-              child: Text(
-                message,
-                textAlign: TextAlign.center,
-                style: Style.bodyText1.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+            child: Column(
+              children: [
+                Text(
+                  message,
+                  textAlign: TextAlign.center,
+                  style: Style.bodyText1.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
                 ),
-              ),
+                Text(
+                  INTL.DateFormat.yMMMd().format(_barterRecord!.dealDate!),
+                  textAlign: TextAlign.center,
+                  style: Style.bodyText1.copyWith(
+                    color: Colors.white,
+                    fontSize: 10.0,
+                  ),
+                ),
+              ],
             ),
           ),
           SizedBox(height: 10.0),

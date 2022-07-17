@@ -3,21 +3,27 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:tapkat/models/product.dart';
+import 'package:tapkat/repositories/barter_repository.dart';
 import 'package:tapkat/screens/product/bloc/product_bloc.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/constants.dart';
+import 'package:tapkat/utilities/dialog_message.dart';
 import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/utilities/style.dart';
 import 'package:tapkat/widgets/barter_list_item.dart';
 import 'package:tapkat/widgets/custom_button.dart';
 
 class UserItemsDialog extends StatefulWidget {
+  final String recipientUserId;
+  final String recipientName;
   final String userId;
   final String userType;
   final List<String> selectedProducts;
   const UserItemsDialog({
     Key? key,
     required this.userId,
+    required this.recipientUserId,
+    required this.recipientName,
     required this.userType,
     required this.selectedProducts,
   }) : super(key: key);
@@ -33,6 +39,7 @@ class _UserItemsDialogState extends State<UserItemsDialog> {
   ProductModel? lastProduct;
   int currentPage = 0;
   List<ProductModel> _selectedProducts = [];
+  final _barterRepo = BarterRepository();
 
   @override
   void initState() {
@@ -153,56 +160,74 @@ class _UserItemsDialogState extends State<UserItemsDialog> {
                     final bool _selected = _selectedProducts
                         .any((prod) => prod.productid == product.productid);
 
-                    return FittedBox(
-                      child: Stack(
-                        children: [
-                          BarterListItem(
-                            product: product,
-                            onTapped: () {
-                              if (_added || _selected) return;
-                              setState(() {
-                                _selectedProducts.add(product);
-                              });
-                            },
-                            hideLikeBtn: true,
-                            showRating: false,
-                            hideDistance: true,
-                          ),
-                          Visibility(
-                            visible: _added || _selected,
-                            child: Positioned.fill(
-                              child: InkWell(
-                                onTap: () {
-                                  if (_added) return;
+                    return FutureBuilder(
+                      future: _barterRepo.checkIfBarterable(
+                          widget.recipientUserId, product.productid!),
+                      builder: (context, snapshot) {
+                        final barterable = snapshot.data as bool? ?? false;
+                        print('X===> ${snapshot.data}');
+                        return FittedBox(
+                          child: Stack(
+                            children: [
+                              BarterListItem(
+                                product: product,
+                                onTapped: () async {
+                                  if (!barterable) {
+                                    await DialogMessage.show(
+                                      context,
+                                      message:
+                                          'You can\'t add this product to the barter as you already have a another pending barter with ${widget.recipientName.toUpperCase()} for this ${product.productname}',
+                                    );
+
+                                    return;
+                                  }
+                                  if (_added || _selected) return;
                                   setState(() {
-                                    _selectedProducts.remove(product);
+                                    _selectedProducts.add(product);
                                   });
                                 },
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: Colors.black.withOpacity(0.6),
-                                    borderRadius: BorderRadius.circular(20.0),
+                                hideLikeBtn: true,
+                                showRating: false,
+                                hideDistance: true,
+                              ),
+                              Visibility(
+                                visible: _added || _selected,
+                                child: Positioned.fill(
+                                  child: InkWell(
+                                    onTap: () async {
+                                      if (_added) return;
+                                      setState(() {
+                                        _selectedProducts.remove(product);
+                                      });
+                                    },
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.black.withOpacity(0.6),
+                                        borderRadius:
+                                            BorderRadius.circular(20.0),
+                                      ),
+                                      child: Center(
+                                          child: _added
+                                              ? Text(
+                                                  'ADDED',
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                )
+                                              : Icon(
+                                                  FontAwesomeIcons.check,
+                                                  color: Colors.white,
+                                                  size: 35.0,
+                                                )),
+                                    ),
                                   ),
-                                  child: Center(
-                                      child: _added
-                                          ? Text(
-                                              'ADDED',
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            )
-                                          : Icon(
-                                              FontAwesomeIcons.check,
-                                              color: Colors.white,
-                                              size: 35.0,
-                                            )),
                                 ),
                               ),
-                            ),
+                            ],
                           ),
-                        ],
-                      ),
+                        );
+                      },
                     );
                   },
                 ),

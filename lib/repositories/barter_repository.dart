@@ -105,6 +105,49 @@ class BarterRepository {
     }
   }
 
+  Future<bool> checkIfBarterable(String userId, String productId) async {
+    final querySnapshot = await barterRef.get();
+    bool exists = false;
+
+    if (querySnapshot.docs.isEmpty) return true;
+
+    final barters = querySnapshot.docs
+        .map((doc) => BarterRecordModel.fromJson(doc.data()))
+        .toList();
+
+    final openBarters = barters
+        .where((barter) =>
+            barter.dealStatus != 'completed' &&
+            barter.dealStatus != 'rejected' &&
+            barter.dealStatus != 'withdrawn')
+        .toList();
+
+    final usersInvolved = [userId, application.currentUser!.uid];
+
+    final openBartersForUsersInvolved = openBarters
+        .where((barter) =>
+            usersInvolved.contains(barter.userid1) &&
+            usersInvolved.contains(barter.userid2))
+        .toList();
+
+    if (openBartersForUsersInvolved.isEmpty) return true;
+
+    await Future.forEach(openBartersForUsersInvolved,
+        (BarterRecordModel barter) async {
+      final docSnapshot = await barterRef
+          .doc(barter.barterId)
+          .collection('products')
+          .doc(productId)
+          .get();
+
+      if (docSnapshot.exists) {
+        exists = true;
+      }
+    });
+
+    return exists ? false : true;
+  }
+
   Future<bool> deleteCashOffer(
       String barterId, BarterProductModel barterProduct) async {
     final snapshot = await barterRef
