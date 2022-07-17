@@ -92,6 +92,12 @@ class Unlike extends ProductEvent {
   Unlike(this.product);
 }
 
+class CheckIfBarterExists extends ProductEvent {
+  final String barterId;
+
+  CheckIfBarterExists(this.barterId);
+}
+
 class InitializeAddUpdateProduct extends ProductEvent {}
 
 class AddRating extends ProductEvent {

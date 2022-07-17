@@ -184,9 +184,7 @@ class AuthService {
       'user_friends',
     ]);
 
-    print('fb login result: ${loginResult.message}');
-
-    if (loginResult.status == LoginStatus.failed) return null;
+    if (loginResult.status != LoginStatus.success) return null;
 
     // Create a credential from the access token
     final OAuthCredential facebookAuthCredential =

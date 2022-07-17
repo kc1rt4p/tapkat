@@ -524,45 +524,45 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                     color: Colors.white),
                                               ),
                                               Spacer(),
-                                              GestureDetector(
-                                                onTap: () async {
-                                                  if (!application.currentUser!
-                                                          .emailVerified ||
-                                                      (application.currentUserModel!
-                                                                  .signin_method !=
-                                                              null &&
-                                                          application
-                                                                  .currentUserModel!
-                                                                  .signin_method ==
-                                                              'EMAIL')) {
-                                                    DialogMessage.show(
-                                                      context,
-                                                      message:
-                                                          'Click on the verification link sent to your email address: ${application.currentUser!.email}',
-                                                      buttonText: 'Resend',
-                                                      firstButtonClicked: () =>
-                                                          _authBloc.add(
-                                                              ResendEmail()),
-                                                    );
-                                                    return;
-                                                  }
-                                                  await Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                      builder: (context) =>
-                                                          ProductAddScreen(),
-                                                    ),
-                                                  );
+                                              // GestureDetector(
+                                              //   onTap: () async {
+                                              //     if (!application.currentUser!
+                                              //             .emailVerified ||
+                                              //         (application.currentUserModel!
+                                              //                     .signin_method !=
+                                              //                 null &&
+                                              //             application
+                                              //                     .currentUserModel!
+                                              //                     .signin_method ==
+                                              //                 'EMAIL')) {
+                                              //       DialogMessage.show(
+                                              //         context,
+                                              //         message:
+                                              //             'Click on the verification link sent to your email address: ${application.currentUser!.email}',
+                                              //         buttonText: 'Resend',
+                                              //         firstButtonClicked: () =>
+                                              //             _authBloc.add(
+                                              //                 ResendEmail()),
+                                              //       );
+                                              //       return;
+                                              //     }
+                                              //     await Navigator.push(
+                                              //       context,
+                                              //       MaterialPageRoute(
+                                              //         builder: (context) =>
+                                              //             ProductAddScreen(),
+                                              //       ),
+                                              //     );
 
-                                                  _profileBloc.add(
-                                                      InitializeProfileScreen());
-                                                },
-                                                child: Icon(
-                                                  FontAwesomeIcons.plus,
-                                                  color: Colors.white,
-                                                  size: 18.0,
-                                                ),
-                                              ),
+                                              //     _profileBloc.add(
+                                              //         InitializeProfileScreen());
+                                              //   },
+                                              //   child: Icon(
+                                              //     FontAwesomeIcons.plus,
+                                              //     color: Colors.white,
+                                              //     size: 18.0,
+                                              //   ),
+                                              // ),
                                             ],
                                           ),
                                         ),

@@ -37,10 +37,20 @@ class BarterRepository {
     try {
       final docSnapshot = await barterRef.doc(barterId).get();
 
-      return BarterRecordModel.fromJson(docSnapshot.data()!);
+      if (docSnapshot.exists) if (docSnapshot.data() != null &&
+          docSnapshot.data()!['barterId'] != null)
+        return BarterRecordModel.fromJson(docSnapshot.data()!);
+
+      return null;
     } catch (e) {
       return null;
     }
+  }
+
+  Future<bool> doesBarterExist(String barterId) async {
+    final barterDoc = await barterRef.doc(barterId).get();
+
+    return barterDoc.exists;
   }
 
   Future<bool> counterOffer(BarterRecordModel barterRecord) async {
@@ -84,6 +94,15 @@ class BarterRepository {
     final newOffer = await docRef.get();
 
     return newOffer.exists;
+  }
+
+  Future<bool> updateBarter(String barterId, Map<String, dynamic> data) async {
+    try {
+      await barterRef.doc(barterId).update(data);
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 
   Future<bool> deleteCashOffer(

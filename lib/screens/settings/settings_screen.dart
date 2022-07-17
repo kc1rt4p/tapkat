@@ -36,7 +36,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   List<LocalizationModel> _localizations = [];
   LocalizationModel? _selectedLocalization;
 
-  final _currentVerDate = DateTime(2022, 7, 11, 4, 30);
+  final _currentVerDate = DateTime(2022, 7, 17, 3, 38);
 
   @override
   void initState() {
@@ -181,19 +181,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         label: 'Log Out',
                         onTap: _onSignOut,
                       ),
+                      Container(
+                        padding: EdgeInsets.symmetric(vertical: 3.0),
+                        width: double.infinity,
+                        color: Colors.white,
+                        child: Center(
+                          child: Text(
+                            'Version 1.0.${DateFormat('yyMMddHH').format(_currentVerDate)}_D',
+                            style: TextStyle(fontSize: 10.0),
+                          ),
+                        ),
+                      ),
                     ],
                   ),
-                ),
-              ),
-            ),
-            Container(
-              padding: EdgeInsets.symmetric(vertical: 3.0),
-              width: double.infinity,
-              color: Colors.white,
-              child: Center(
-                child: Text(
-                  'Version 1.0.${DateFormat('yyMMddHH').format(_currentVerDate)}_D',
-                  style: TextStyle(fontSize: 10.0),
                 ),
               ),
             ),

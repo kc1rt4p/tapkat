@@ -70,3 +70,22 @@ class TestHeaderSuccess extends HomeState {
 
   TestHeaderSuccess(this.msg);
 }
+
+class BarterExists extends HomeState {
+  final ProductModel product1;
+  final ProductModel product2;
+  BarterExists({
+    required this.product1,
+    required this.product2,
+  });
+}
+
+class BarterDoesNotExist extends HomeState {
+  final ProductModel product1;
+  final ProductModel product2;
+
+  BarterDoesNotExist({
+    required this.product1,
+    required this.product2,
+  });
+}

@@ -3,9 +3,11 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_logs/flutter_logs.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:tapkat/models/barter_record_model.dart';
 import 'package:tapkat/models/location.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/models/store.dart';
+import 'package:tapkat/repositories/barter_repository.dart';
 import 'package:tapkat/repositories/product_repository.dart';
 import 'package:tapkat/repositories/user_repository.dart';
 import 'package:tapkat/utilities/application.dart' as application;
@@ -17,6 +19,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   HomeBloc() : super(HomeInitial()) {
     final _productRepo = ProductRepository();
     final _userRepo = UserRepository();
+    final _barterRepo = BarterRepository();
     on<HomeEvent>((event, emit) async {
       emit(HomeLoading());
 
@@ -69,6 +72,24 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         if (event is LoadProductsInCategories) {
           final list = await _productRepo.getAllCategoryProducts();
           emit(LoadProductsInCategoriesSuccess(list));
+        }
+
+        if (event is CheckBarter) {
+          final barterId = application.currentUser!.uid +
+              event.product1.userid! +
+              event.product1.productid!;
+          final barterRecord = await _barterRepo.getBarterRecord(barterId);
+          if (barterRecord != null) {
+            emit(BarterExists(
+              product1: event.product1,
+              product2: event.product2,
+            ));
+          } else {
+            emit(BarterDoesNotExist(
+              product1: event.product1,
+              product2: event.product2,
+            ));
+          }
         }
 
         // if (event is TestHeader) {

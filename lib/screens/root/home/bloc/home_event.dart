@@ -24,3 +24,10 @@ class LoadTopStores extends HomeEvent {}
 class TestHeader extends HomeEvent {}
 
 class LoadFreeList extends HomeEvent {}
+
+class CheckBarter extends HomeEvent {
+  final ProductModel product1;
+  final ProductModel product2;
+
+  CheckBarter({required this.product1, required this.product2});
+}

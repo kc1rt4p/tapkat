@@ -12,6 +12,7 @@ import 'package:tapkat/models/product_type.dart';
 import 'package:tapkat/models/request/add_product_request.dart';
 import 'package:tapkat/models/request/product_review_resuest.dart';
 import 'package:tapkat/models/upload_product_image_response.dart';
+import 'package:tapkat/repositories/barter_repository.dart';
 import 'package:tapkat/repositories/product_repository.dart';
 import 'package:tapkat/repositories/reference_repository.dart';
 import 'package:tapkat/utilities/upload_media.dart';
@@ -25,6 +26,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
   ProductBloc() : super(ProductInitial()) {
     final _productRepo = ProductRepository();
     final _referenceRepo = ReferenceRepository();
+    final _barterRepo = BarterRepository();
 
     on<ProductEvent>((event, emit) async {
       try {
@@ -200,6 +202,18 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
           );
 
           emit(GetNextRatingsSuccess(result));
+        }
+
+        if (event is CheckIfBarterExists) {
+          try {
+            final record = await _barterRepo.getBarterRecord(event.barterId);
+            if (record != null)
+              emit(ProductBarterExist());
+            else
+              emit(ProductBarterDoesNotExist());
+          } catch (e) {
+            print('X===> ${e.toString()}');
+          }
         }
 
         if (event is GetNextProducts) {

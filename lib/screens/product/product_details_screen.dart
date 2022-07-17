@@ -151,6 +151,31 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   }
                 }
 
+                if (state is ProductBarterDoesNotExist) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => BarterScreen(
+                        product: _product!,
+                        buying: true,
+                      ),
+                    ),
+                  );
+                }
+
+                if (state is ProductBarterExist) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => BarterScreen(
+                        product: _product!,
+                        existing: true,
+                        buying: true,
+                      ),
+                    ),
+                  );
+                }
+
                 if (state is AddLikeSuccess ||
                     state is AddRatingSuccess ||
                     state is UnlikeSuccess) {
@@ -326,33 +351,31 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                                           .only(
                                                                       right:
                                                                           2.0),
-                                                              child: Text(
-                                                                _product != null &&
-                                                                        _product!.currency !=
-                                                                            null &&
-                                                                        _product!
-                                                                            .currency!
-                                                                            .isNotEmpty
-                                                                    ? _product!
-                                                                        .currency!
-                                                                    : application.currentUserModel!.currency !=
+                                                              child: Row(
+                                                                children: [
+                                                                  Text(
+                                                                    _product != null &&
+                                                                            _product!.currency !=
                                                                                 null &&
-                                                                            application
-                                                                                .currentUserModel!.currency!.isNotEmpty
-                                                                        ? application
-                                                                            .currentUserModel!
+                                                                            _product!
+                                                                                .currency!.isNotEmpty
+                                                                        ? _product!
                                                                             .currency!
-                                                                        : '',
-                                                                style:
-                                                                    TextStyle(
-                                                                  fontSize:
-                                                                      SizeConfig
-                                                                              .textScaleFactor *
-                                                                          10,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold,
-                                                                ),
+                                                                        : application.currentUserModel!.currency != null &&
+                                                                                application.currentUserModel!.currency!.isNotEmpty
+                                                                            ? application.currentUserModel!.currency!
+                                                                            : '',
+                                                                    style:
+                                                                        TextStyle(
+                                                                      fontSize:
+                                                                          SizeConfig.textScaleFactor *
+                                                                              10,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .bold,
+                                                                    ),
+                                                                  ),
+                                                                ],
                                                               ),
                                                             ),
                                                       Text(
@@ -380,8 +403,56 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                               FontWeight.bold,
                                                         ),
                                                       ),
+                                                      SizedBox(width: 8.0),
+                                                      InkWell(
+                                                        onTap: () {
+                                                          if (_product!
+                                                                  .status ==
+                                                              'completed')
+                                                            return;
+                                                          final _barterId =
+                                                              application
+                                                                      .currentUser!
+                                                                      .uid +
+                                                                  _product!
+                                                                      .userid! +
+                                                                  _product!
+                                                                      .productid!;
+                                                          _productBloc.add(
+                                                              CheckIfBarterExists(
+                                                                  _barterId));
+                                                        },
+                                                        child: Container(
+                                                          padding: EdgeInsets
+                                                              .symmetric(
+                                                            vertical: 3.0,
+                                                            horizontal: 8.0,
+                                                          ),
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            borderRadius:
+                                                                BorderRadius.all(
+                                                                    Radius.circular(
+                                                                        15.0)),
+                                                            color: _product!.status !=
+                                                                    'completed'
+                                                                ? Colors.red
+                                                                    .shade400
+                                                                : Colors.grey,
+                                                          ),
+                                                          child: Text('BUY',
+                                                              style: TextStyle(
+                                                                color: Colors
+                                                                    .white,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                              )),
+                                                        ),
+                                                      ),
                                                     ],
                                                   ),
+
                                                   // Text(
                                                   //   // _product != null &&
                                                   //   //         _product!.price != null &&

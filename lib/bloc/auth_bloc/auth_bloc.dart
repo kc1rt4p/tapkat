@@ -17,7 +17,6 @@ import 'package:tapkat/services/firebase.dart';
 import 'package:tapkat/utilities/application.dart' as application;
 import 'package:tapkat/utilities/auth_util.dart';
 import 'package:tapkat/utilities/upload_media.dart';
-import 'package:restart_app/restart_app.dart';
 
 part 'auth_event.dart';
 part 'auth_state.dart';
@@ -142,6 +141,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         if (event is SignInFacebook) {
           final user = await authService.signInWithFacebook();
           if (user != null) {
+            print('sdfsdf');
             application.currentUserModel = await userRepo.getUser(user.uid);
 
             if (application.currentUserModel != null) {
@@ -151,7 +151,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
               emit(ShowSignUpPhoto());
             }
           } else
-            emit(AuthError('Unable to login with facebook'));
+            emit(AuthInitial());
         }
 
         if (event is SignInGoogle) {

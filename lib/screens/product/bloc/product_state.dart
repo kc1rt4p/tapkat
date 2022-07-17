@@ -17,6 +17,10 @@ class SaveProductSuccess extends ProductState {
   SaveProductSuccess(this.productId);
 }
 
+class ProductBarterExist extends ProductState {}
+
+class ProductBarterDoesNotExist extends ProductState {}
+
 class GetLocalizationsSuccess extends ProductState {
   final List<LocalizationModel> locList;
 

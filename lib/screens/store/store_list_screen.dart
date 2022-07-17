@@ -40,7 +40,6 @@ class _StoreListScreenState extends State<StoreListScreen> {
   @override
   void initState() {
     application.currentScreen = 'Store List Screen';
-    _storeBloc.add(GetFirstTopStores());
     _authBloc.add(GetCurrentuser());
     super.initState();
   }
@@ -57,6 +56,7 @@ class _StoreListScreenState extends State<StoreListScreen> {
                 setState(() {
                   _userModel = state.userModel;
                 });
+                _storeBloc.add(GetFirstTopStores());
               }
             },
           ),
@@ -64,8 +64,10 @@ class _StoreListScreenState extends State<StoreListScreen> {
             bloc: _storeBloc,
             listener: (context, state) {
               if (state is GetFirstTopStoresSuccess) {
+                lastStore = null;
+                _list.clear();
                 if (state.list.isNotEmpty) {
-                  _list.addAll(state.list);
+                  _list = state.list;
 
                   lastStore = state.list.last;
 

@@ -205,7 +205,7 @@ class UserRepository {
   Future<List<StoreModel>> getNextTopStores(
       String lastUserId, num lastUserRating) async {
     final result = await _apiService.post(
-      url: 'users/top/searchfirst',
+      url: 'users/top/searchset',
       body: {
         "psk": psk,
         "itemcount": productCount,

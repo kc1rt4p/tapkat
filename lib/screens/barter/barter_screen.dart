@@ -42,10 +42,12 @@ import '../product/product_details_screen.dart';
 import 'bloc/barter_bloc.dart';
 
 class BarterScreen extends StatefulWidget {
+  final bool existing;
   final ProductModel? product;
   final ProductModel? initialOffer;
   final BarterRecordModel? barterRecord;
   final bool showChatFirst;
+  final bool buying;
 
   const BarterScreen({
     Key? key,
@@ -53,6 +55,8 @@ class BarterScreen extends StatefulWidget {
     this.barterRecord,
     this.showChatFirst = false,
     this.initialOffer,
+    this.existing = false,
+    this.buying = false,
   }) : super(key: key);
 
   @override
@@ -63,6 +67,7 @@ class _BarterScreenState extends State<BarterScreen> {
   final oCcy = new INTL.NumberFormat("#,##0.00", "en_US");
   late LocalStorage unsaveProductsStorage;
   ProductModel? _product;
+  num? initialCashOffer;
 
   final _authBloc = AuthBloc();
   late BarterBloc _barterBloc;
@@ -135,6 +140,10 @@ class _BarterScreenState extends State<BarterScreen> {
     } else {
       unsaveProductsStorage = new LocalStorage(
           '${application.currentUser!.uid + _product!.userid! + _product!.productid!}.json');
+    }
+
+    if (widget.buying) {
+      initialCashOffer = widget.product!.price;
     }
 
     _initialOffer = widget.initialOffer;
@@ -614,6 +623,11 @@ class _BarterScreenState extends State<BarterScreen> {
                         'unsavedOfferedProducts:: ${unsavedWantedProducts.length}');
                   }
 
+                  if (widget.buying && initialCashOffer != null) {
+                    _currentUserOfferedCash = widget.product!.price!;
+                    initialCashOffer = null;
+                  }
+
                   // check products that are not displayed - START
                   List<String> hiddenUserProducts = [];
                   List<String> hiddenRecipientProducts = [];
@@ -696,9 +710,8 @@ class _BarterScreenState extends State<BarterScreen> {
                     if (unsavedWantedCash != null) {
                       _remoteUserOfferedCash = unsavedWantedCash;
                     }
-
-                    _sortProducts();
                   });
+                  _sortProducts();
                 }
               });
             }
@@ -750,6 +763,14 @@ class _BarterScreenState extends State<BarterScreen> {
                 _currentUserModel = state.userModel;
               });
 
+              if (widget.existing) {
+                DialogMessage.show(
+                  context,
+                  message:
+                      'An existing pending barter deal was found for these products.',
+                );
+              }
+
               if (widget.barterRecord == null && _product != null) {
                 var thumbnail = '';
 
@@ -784,10 +805,25 @@ class _BarterScreenState extends State<BarterScreen> {
                       barterId: _barterId,
                       userid1: _currentUser!.uid,
                       userid2: _product!.userid,
-                      u2P1Id: _product!.productid!,
-                      u2P1Name: _product!.productname,
-                      u2P1Price: _product!.price!.toDouble(),
+                      u2P1Id: widget.product != null
+                          ? widget.product!.productid
+                          : null,
+                      u2P1Name: widget.product != null
+                          ? widget.product!.productname
+                          : null,
+                      u2P1Price: widget.product != null
+                          ? widget.product!.price!.toDouble()
+                          : null,
                       u2P1Image: thumbnail,
+                      u1P1Id: widget.initialOffer != null
+                          ? widget.initialOffer!.productid
+                          : null,
+                      u1P1Name: widget.initialOffer != null
+                          ? widget.initialOffer!.productname
+                          : null,
+                      u1P1Price: widget.initialOffer != null
+                          ? widget.initialOffer!.price!.toDouble()
+                          : null,
                       barterNo: 0,
                       dealDate: DateTime.now(),
                       userid1Role: 'sender',
@@ -1247,9 +1283,10 @@ class _BarterScreenState extends State<BarterScreen> {
             child: Container(
               margin: EdgeInsets.only(right: 8.0),
               child: CustomButton(
-                enabled: _offersChanged() ||
-                    (currentUserOffers.isNotEmpty &&
-                        remoteUserOffers.isNotEmpty),
+                enabled: ((currentUserOffers.isNotEmpty ||
+                        _currentUserOfferedCash != null &&
+                            _currentUserOfferedCash! > 0) &&
+                    remoteUserOffers.isNotEmpty),
                 removeMargin: true,
                 label: 'Make Offer',
                 onTap: _onSubmitTapped,
@@ -1280,6 +1317,10 @@ class _BarterScreenState extends State<BarterScreen> {
                 child: Container(
                   margin: EdgeInsets.only(right: 8.0),
                   child: CustomButton(
+                    enabled: (currentUserOffers.isNotEmpty ||
+                            _currentUserOfferedCash != null &&
+                                _currentUserOfferedCash! > 0) &&
+                        remoteUserOffers.isNotEmpty,
                     removeMargin: true,
                     label: 'Accept',
                     onTap: _onSubmitTapped,
@@ -1604,24 +1645,37 @@ class _BarterScreenState extends State<BarterScreen> {
 
   List<Widget> _buildYouWillReceiveWidgets(String userType) {
     List<Widget> widgets = [];
+    int lastIndex = -1;
 
-    widgets.addAll(
-      (userType == 'recipient' ? remoteUserItems : currentUserItems)
-          .where((prod) => prod.status != 'completed')
-          .toList()
-          .map((product) {
-        return _userItem(
-            userType == 'recipient' ? 'remote' : 'sender', product);
-      }),
-    );
-
-    final lastIndex =
+    if (_barterRecord!.dealStatus != 'completed') {
+      widgets.addAll(
         (userType == 'recipient' ? remoteUserItems : currentUserItems)
-            .lastIndexWhere((item) =>
-                (userType == 'recipient' ? remoteUserOffers : currentUserOffers)
-                    .any((offer) => offer.productId == item.productid));
+            .where((prod) => prod.status != 'completed')
+            .toList()
+            .map((product) {
+          return _userItem(
+              userType == 'recipient' ? 'remote' : 'sender', product);
+        }),
+      );
 
-    print(']====> last index: $lastIndex');
+      lastIndex = (userType == 'recipient' ? remoteUserItems : currentUserItems)
+          .lastIndexWhere((item) =>
+              (userType == 'recipient' ? remoteUserOffers : currentUserOffers)
+                  .any((offer) => offer.productId == item.productid));
+    } else {
+      widgets.addAll(
+        (userType == 'recipient' ? remoteUserItems : currentUserItems)
+            .where((prod) =>
+                prod.status != 'completed' &&
+                (userType == 'recipient' ? remoteUserOffers : currentUserOffers)
+                    .any((offer) => prod.productid == offer.productId))
+            .toList()
+            .map((product) {
+          return _userItem(
+              userType == 'recipient' ? 'remote' : 'sender', product);
+        }),
+      );
+    }
 
     widgets.insert(
       lastIndex > -1

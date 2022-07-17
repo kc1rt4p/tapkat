@@ -190,6 +190,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                 if (state is SearchSuccess) {
                   _refreshController.refreshCompleted();
                   _pagingController.refresh();
+                  lastProduct = null;
 
                   setState(() {
                     _markers.clear();
@@ -208,11 +209,11 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                       searchResults = state.searchResults;
                     });
 
-                    lastProduct = state.searchResults.last;
                     if (state.searchResults.length ==
                         (_selectedView == 'map' ? 50 : 10)) {
                       _pagingController.appendPage(
                           state.searchResults, currentPage + 1);
+                      lastProduct = state.searchResults.last;
                     } else {
                       _pagingController.appendLastPage(state.searchResults);
                     }

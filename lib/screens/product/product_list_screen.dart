@@ -163,6 +163,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
         child: BlocListener(
           bloc: _productBloc,
           listener: (context, state) {
+            print('X=====> current product list state: $state');
             if (state is ProductLoading) {
               setState(() {
                 _loading = true;
@@ -177,15 +178,6 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
             if (state is InitializeAddUpdateProductSuccess) {
               _categoryList = state.categories;
-
-              // if (widget.listType == 'reco' &&
-              //     application.currentUserModel!.interests != null &&
-              //     application.currentUserModel!.interests!.isNotEmpty) {
-              //   setState(() {
-              //     _selectedCategory = _categoryList.firstWhere((cat) =>
-              //         cat.code == application.currentUserModel!.interests![0]);
-              //   });
-              // }
 
               _productBloc.add(GetFirstProducts(
                 userid: application.currentUser!.uid,
@@ -203,15 +195,18 @@ class _ProductListScreenState extends State<ProductListScreen> {
             if (state is GetFirstProductsSuccess) {
               _refreshController.refreshCompleted();
               _pagingController.refresh();
+              lastProduct = null;
 
               if (state.list.isNotEmpty) {
                 _list = state.list;
                 _buildMarkers();
 
-                lastProduct = state.list.last;
+                final _productCount = (_selectedView == 'map') ? 50 : 10;
 
-                if (state.list.length == productCount) {
-                  _pagingController.appendPage(state.list, currentPage + 1);
+                if (state.list.length == _productCount) {
+                  currentPage += 1;
+                  _pagingController.appendPage(state.list, currentPage);
+                  lastProduct = state.list.last;
                 } else {
                   _pagingController.appendLastPage(state.list);
                 }
@@ -244,13 +239,6 @@ class _ProductListScreenState extends State<ProductListScreen> {
                   );
                 }
               }
-
-              // if (initialView != 'grid') {
-              //   setState(() {
-              //     _selectedView = 'map';
-              //     _buildMarkers();
-              //   });
-              // }
 
               _pagingController.addPageRequestListener((pageKey) {
                 if (lastProduct != null) {
@@ -286,31 +274,26 @@ class _ProductListScreenState extends State<ProductListScreen> {
                       loc: _currentCenter,
                     ),
                   );
-                } else {
-                  _pagingController.refresh();
                 }
               });
             }
 
             if (state is GetProductsSuccess) {
-              // setState(() {
-              //   _list = state.list;
-
-              //   indicators.add(_list.last);
-              // });
-              // print('==== CURRENT PAGE: $currentPage');
-
-              // indicators.asMap().forEach(
-              //     (key, value) => print('==== page $key: ${value.productid}'));
-              print('HEYYYY');
+              print('X=====> got next products');
               if (state.list.isNotEmpty) {
                 _list.addAll(state.list);
                 _buildMarkers();
-                lastProduct = state.list.last;
-                if (state.list.length == productCount) {
-                  _pagingController.appendPage(state.list, currentPage + 1);
+                print('X=====> no. of all products: ${_list.length}');
+
+                final _productCount = (_selectedView == 'map') ? 50 : 10;
+                if (state.list.length == _productCount) {
+                  currentPage += 1;
+                  _pagingController.appendPage(state.list, currentPage);
+                  lastProduct = state.list.last;
+                  print('X=====> appended next page');
                 } else {
                   _pagingController.appendLastPage(state.list);
+                  print('X=====> appended last page');
                 }
               } else {
                 _pagingController.appendLastPage([]);
@@ -340,31 +323,6 @@ class _ProductListScreenState extends State<ProductListScreen> {
                               onSubmitted: (val) => _onSearchSubmitted(val),
                             ),
                           ),
-                          // Visibility(
-                          //   visible: !widget.ownListing,
-                          //   child: Row(
-                          //     children: [
-                          //       SizedBox(width: 10.0),
-                          //       InkWell(
-                          //         onTap: _onSelectView,
-                          //         child: Container(
-                          //           padding: EdgeInsets.all(8.0),
-                          //           decoration: BoxDecoration(
-                          //             color: Color(0xFF005F73).withOpacity(0.3),
-                          //             borderRadius: BorderRadius.circular(10.0),
-                          //           ),
-                          //           child: Icon(
-                          //             _selectedView != 'map'
-                          //                 ? FontAwesomeIcons.mapMarkedAlt
-                          //                 : FontAwesomeIcons.thLarge,
-                          //             size: 16.0,
-                          //             color: kBackgroundColor,
-                          //           ),
-                          //         ),
-                          //       ),
-                          //     ],
-                          //   ),
-                          // ),
                         ],
                       ),
                       Container(
@@ -844,14 +802,14 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
     setState(() {
       _selectedRadius = distance;
-      _currentCircle = Circle(
-        circleId: CircleId('radius'),
-        center: _currentCenter,
-        radius: _selectedRadius.toDouble(),
-        strokeColor: kBackgroundColor,
-        strokeWidth: 1,
-        fillColor: kBackgroundColor.withOpacity(0.2),
-      );
+      // _currentCircle = Circle(
+      //   circleId: CircleId('radius'),
+      //   center: _currentCenter,
+      //   radius: _selectedRadius.toDouble(),
+      //   strokeColor: kBackgroundColor,
+      //   strokeWidth: 1,
+      //   fillColor: kBackgroundColor.withOpacity(0.2),
+      // );
     });
 
     if (_selectedView == 'map') {
@@ -1129,6 +1087,11 @@ class _ProductListScreenState extends State<ProductListScreen> {
                     CameraPosition(target: _currentCenter, zoom: mapZoomLevel),
                   ));
                 }
+              },
+              onCameraMove: (camPos) {
+                setState(() {
+                  _currentCenter = camPos.target;
+                });
               },
               onCameraIdle: (latLng) => googleMapsCenter = latLng,
               initialZoom: mapZoomLevel,

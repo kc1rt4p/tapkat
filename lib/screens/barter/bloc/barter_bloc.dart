@@ -112,7 +112,9 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
                     .streamBarterProducts(event.barterData.barterId!),
               ));
             } else {
-              print('EXISTING BARTER');
+              _barterRecord.deletedFor = [];
+              final updated = await _barterRepository.updateBarter(
+                  _barterRecord.barterId!, _barterRecord.toJson());
               add(StreamBarter(_barterRecord));
             }
           }
@@ -377,42 +379,47 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
           }
 
           if (event is StreamBarter) {
-            final barterRecord = await _barterRepository
-                .getBarterRecord(event.barterRecord.barterId!);
-            final senderUserId = barterRecord!.userid1Role == 'sender'
-                ? barterRecord.userid1
-                : barterRecord.userid2;
+            try {
+              final barterRecord = await _barterRepository
+                  .getBarterRecord(event.barterRecord.barterId!);
 
-            final recipientUserId = barterRecord.userid1Role == 'recipient'
-                ? barterRecord.userid1
-                : barterRecord.userid2;
+              final senderUserId = barterRecord!.userid1Role == 'sender'
+                  ? barterRecord.userid1
+                  : barterRecord.userid2;
 
-            final currentUserProducts =
-                await _productRepository.getFirstProducts(
-              'user',
-              sortBy: 'name',
-              userId: application.currentUser!.uid,
-              itemCount: 10,
-            );
+              final recipientUserId = barterRecord.userid1Role == 'recipient'
+                  ? barterRecord.userid1
+                  : barterRecord.userid2;
 
-            final remoteUserProducts =
-                await _productRepository.getFirstProducts(
-              'user',
-              sortBy: 'name',
-              userId: senderUserId == application.currentUser!.uid
-                  ? recipientUserId!
-                  : senderUserId!,
-              itemCount: 10,
-            );
+              final currentUserProducts =
+                  await _productRepository.getFirstProducts(
+                'user',
+                sortBy: 'name',
+                userId: application.currentUser!.uid,
+                itemCount: 10,
+              );
 
-            emit(BarterInitialized(
-              barterStream:
-                  _barterRepository.streamBarter(event.barterRecord.barterId!),
-              currentUserProducts: currentUserProducts,
-              remoteUserProducts: remoteUserProducts,
-              barterProductsStream: _barterRepository
-                  .streamBarterProducts(event.barterRecord.barterId!),
-            ));
+              final remoteUserProducts =
+                  await _productRepository.getFirstProducts(
+                'user',
+                sortBy: 'name',
+                userId: senderUserId == application.currentUser!.uid
+                    ? recipientUserId!
+                    : senderUserId!,
+                itemCount: 10,
+              );
+
+              emit(BarterInitialized(
+                barterStream: _barterRepository
+                    .streamBarter(event.barterRecord.barterId!),
+                currentUserProducts: currentUserProducts,
+                remoteUserProducts: remoteUserProducts,
+                barterProductsStream: _barterRepository
+                    .streamBarterProducts(event.barterRecord.barterId!),
+              ));
+            } catch (e) {
+              emit(BarterError(e.toString()));
+            }
           }
 
           if (event is InitializeBarterTransactions) {

@@ -25,6 +25,7 @@ import 'package:tapkat/screens/store/component/store_list_item.dart';
 import 'package:tapkat/screens/store/store_list_screen.dart';
 import 'package:tapkat/screens/store/store_screen.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
+import 'package:tapkat/utilities/dialog_message.dart';
 import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/utilities/style.dart';
 import 'package:tapkat/widgets/barter_list.dart';
@@ -115,7 +116,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           BlocListener(
             bloc: _homeBloc,
-            listener: (context, state) {
+            listener: (context, state) async {
               if (state is LoadProductsInCategoriesSuccess) {
                 _refreshController.refreshCompleted();
                 setState(() {
@@ -147,6 +148,31 @@ class _HomeScreenState extends State<HomeScreen> {
                 setState(() {
                   _loadingCatProducts = false;
                 });
+              }
+
+              if (state is BarterDoesNotExist) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => BarterScreen(
+                      product: state.product1,
+                      initialOffer: state.product2,
+                    ),
+                  ),
+                );
+              }
+
+              if (state is BarterExists) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => BarterScreen(
+                      product: state.product1,
+                      initialOffer: state.product2,
+                      existing: true,
+                    ),
+                  ),
+                );
               }
 
               if (state is LoadedRecommendedList) {
@@ -356,13 +382,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                             application.currentUser!.uid &&
                                         product.status != 'completed' &&
                                         product2.status != 'completed') {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => BarterScreen(
-                                            product: product,
-                                            initialOffer: product2,
-                                          ),
+                                      _homeBloc.add(
+                                        CheckBarter(
+                                          product1: product,
+                                          product2: product2,
                                         ),
                                       );
                                     }
@@ -401,15 +424,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                           _buildProductItem(product: product),
                                   onAccept: (ProductModel product2) {
                                     if (product.userid !=
-                                        application.currentUser!.uid) {
-                                      print(product.toJson());
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => BarterScreen(
-                                            product: product,
-                                            initialOffer: product2,
-                                          ),
+                                            application.currentUser!.uid &&
+                                        product.status != 'completed' &&
+                                        product2.status != 'completed') {
+                                      _homeBloc.add(
+                                        CheckBarter(
+                                          product1: product,
+                                          product2: product2,
                                         ),
                                       );
                                     }
@@ -447,14 +468,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                           _buildProductItem(product: product),
                                   onAccept: (ProductModel product2) {
                                     if (product.userid !=
-                                        application.currentUser!.uid) {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => BarterScreen(
-                                            product: product,
-                                            initialOffer: product2,
-                                          ),
+                                            application.currentUser!.uid &&
+                                        product.status != 'completed' &&
+                                        product2.status != 'completed') {
+                                      _homeBloc.add(
+                                        CheckBarter(
+                                          product1: product,
+                                          product2: product2,
                                         ),
                                       );
                                     }
@@ -497,16 +517,15 @@ class _HomeScreenState extends State<HomeScreen> {
                                                   product: product),
                                           onAccept: (ProductModel product2) {
                                             if (product.userid !=
-                                                application.currentUser!.uid) {
-                                              print(product.toJson());
-                                              Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      BarterScreen(
-                                                    product: product,
-                                                    initialOffer: product2,
-                                                  ),
+                                                    application
+                                                        .currentUser!.uid &&
+                                                product.status != 'completed' &&
+                                                product2.status !=
+                                                    'completed') {
+                                              _homeBloc.add(
+                                                CheckBarter(
+                                                  product1: product,
+                                                  product2: product2,
                                                 ),
                                               );
                                             }
@@ -759,6 +778,12 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+
+  // _onProductDragged(ProductModel product) {
+  //   final _barterId =
+  //       application.currentUser!.uid + product.userid! + product.productid!;
+  //   _homeBloc.add(CheckBarter(product));
+  // }
 
   _onSearchSubmitted(String? val) async {
     await Navigator.push(
