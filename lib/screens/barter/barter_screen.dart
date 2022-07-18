@@ -234,7 +234,7 @@ class _BarterScreenState extends State<BarterScreen> {
                           label: 'Yes',
                           onTap: () {
                             Navigator.pop(dContext, true);
-                            _onSubmitTapped();
+                            _onSubmitTapped(false);
                           },
                         ),
                       ),
@@ -629,6 +629,7 @@ class _BarterScreenState extends State<BarterScreen> {
                   if (widget.buying && initialCashOffer != null) {
                     _currentUserOfferedCash = widget.product!.price!;
                     initialCashOffer = null;
+                    _onSubmitTapped(true);
                   }
 
                   // check products that are not displayed - START
@@ -1292,7 +1293,7 @@ class _BarterScreenState extends State<BarterScreen> {
                     remoteUserOffers.isNotEmpty),
                 removeMargin: true,
                 label: 'Make Offer',
-                onTap: _onSubmitTapped,
+                onTap: () => _onSubmitTapped(false),
               ),
             ),
           ),
@@ -1326,7 +1327,7 @@ class _BarterScreenState extends State<BarterScreen> {
                         remoteUserOffers.isNotEmpty,
                     removeMargin: true,
                     label: 'Accept',
-                    onTap: _onSubmitTapped,
+                    onTap: () => _onSubmitTapped(false),
                   ),
                 ),
               ),
@@ -1368,7 +1369,7 @@ class _BarterScreenState extends State<BarterScreen> {
                 child: CustomButton(
                   removeMargin: true,
                   label: 'Complete',
-                  onTap: _onSubmitTapped,
+                  onTap: () => _onSubmitTapped(false),
                 ),
               ),
             ),
@@ -1688,86 +1689,94 @@ class _BarterScreenState extends State<BarterScreen> {
               ? lastIndex + 1
               : lastIndex
           : 0,
-      Stack(
-        children: [
-          InkWell(
-            onTap: () {
-              if (!_shouldShowAdd()) return;
+      Visibility(
+        visible: _barterRecord!.dealStatus != 'completed' ||
+            (_barterRecord!.dealStatus == 'completed' &&
+                (userType == 'recipient'
+                        ? _remoteUserOfferedCash
+                        : _currentUserOfferedCash) !=
+                    null),
+        child: Stack(
+          children: [
+            InkWell(
+              onTap: () {
+                if (!_shouldShowAdd()) return;
 
-              if (_barterRecord!.dealStatus != 'sold') {
-                _showAddCashDialog(userType);
-              }
-            },
-            child: buildCashItem((userType == 'recipient'
-                    ? _remoteUserOfferedCash
-                    : _currentUserOfferedCash) ??
-                0),
-          ),
-          Visibility(
-            visible: (userType == 'recipient'
-                    ? _remoteUserOfferedCash
-                    : _currentUserOfferedCash) ==
-                null,
-            child: Positioned.fill(
-              child: InkWell(
-                onTap: () {
-                  if (!_shouldShowAdd()) return;
-                  if (_barterRecord!.dealStatus != 'sold') {
-                    _showAddCashDialog(userType);
-                  }
-                },
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.5),
-                    borderRadius: BorderRadius.circular(20.0),
+                if (_barterRecord!.dealStatus != 'sold') {
+                  _showAddCashDialog(userType);
+                }
+              },
+              child: buildCashItem((userType == 'recipient'
+                      ? _remoteUserOfferedCash
+                      : _currentUserOfferedCash) ??
+                  0),
+            ),
+            Visibility(
+              visible: (userType == 'recipient'
+                      ? _remoteUserOfferedCash
+                      : _currentUserOfferedCash) ==
+                  null,
+              child: Positioned.fill(
+                child: InkWell(
+                  onTap: () {
+                    if (!_shouldShowAdd()) return;
+                    if (_barterRecord!.dealStatus != 'sold') {
+                      _showAddCashDialog(userType);
+                    }
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.5),
+                      borderRadius: BorderRadius.circular(20.0),
+                    ),
+                    child: _shouldShowAdd()
+                        ? Icon(
+                            FontAwesomeIcons.plus,
+                            color: Colors.white,
+                          )
+                        : Text(''),
                   ),
-                  child: _shouldShowAdd()
-                      ? Icon(
-                          FontAwesomeIcons.plus,
-                          color: Colors.white,
-                        )
-                      : Text(''),
                 ),
               ),
             ),
-          ),
-          Visibility(
-            visible: (userType == 'recipient'
-                        ? _remoteUserOfferedCash
-                        : _currentUserOfferedCash) !=
-                    null &&
-                _shouldShowAdd(),
-            child: Positioned(
-              top: 10.0,
-              right: 10.0,
-              child: InkWell(
-                onTap: () {
-                  setState(() {
-                    if (userType == 'recipient') {
-                      _remoteUserOfferedCash = null;
-                    } else {
-                      _currentUserOfferedCash = null;
-                    }
-                  });
-                },
-                child: Container(
-                  padding: EdgeInsets.all(5.0),
-                  decoration: BoxDecoration(
-                    color: Colors.red.shade400,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Center(
-                    child: Icon(
-                      FontAwesomeIcons.minus,
-                      color: Colors.white,
-                      size: SizeConfig.textScaleFactor * 14,
+            Visibility(
+              visible: (userType == 'recipient'
+                          ? _remoteUserOfferedCash
+                          : _currentUserOfferedCash) !=
+                      null &&
+                  _shouldShowAdd(),
+              child: Positioned(
+                top: 10.0,
+                right: 10.0,
+                child: InkWell(
+                  onTap: () {
+                    setState(() {
+                      if (userType == 'recipient') {
+                        _remoteUserOfferedCash = null;
+                      } else {
+                        _currentUserOfferedCash = null;
+                      }
+                    });
+                  },
+                  child: Container(
+                    padding: EdgeInsets.all(5.0),
+                    decoration: BoxDecoration(
+                      color: Colors.red.shade400,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Center(
+                      child: Icon(
+                        FontAwesomeIcons.minus,
+                        color: Colors.white,
+                        size: SizeConfig.textScaleFactor * 14,
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
 
@@ -2640,81 +2649,83 @@ class _BarterScreenState extends State<BarterScreen> {
     return changed;
   }
 
-  _onSubmitTapped() async {
-    if (_barterRecord != null && _barterRecord!.dealStatus == 'sold') {
-      return;
-    }
+  _onSubmitTapped(bool forced) async {
+    if (!forced) {
+      if (_barterRecord != null && _barterRecord!.dealStatus == 'sold') {
+        return;
+      }
 
-    if (!_closing) {
-      String message =
-          'You are about to submit this offer\n\nDo you want to continue?';
+      if (!_closing) {
+        String message =
+            'You are about to submit this offer\n\nDo you want to continue?';
 
-      if (_barterRecord!.dealStatus == 'accepted') {
-        if (_currentUserRole == 'recipient') {
-          if (_offersChanged()) {
+        if (_barterRecord!.dealStatus == 'accepted') {
+          if (_currentUserRole == 'recipient') {
+            if (_offersChanged()) {
+              message =
+                  'You are about to submit a counter offer\n\nDo you want to continue?';
+            } else {
+              message =
+                  'You are about to mark this item as sold.\n\nThis closes the transaction and cannot be reversed.\n\nIf there are any disputes after the transaction is closed, there is a \'Dispute\' button at the barter screen.\n\n\nDo you want to continue?';
+            }
+          } else {
+            message = 'Do you want to change your offer?';
+          }
+        }
+
+        if (_barterRecord!.dealStatus == 'rejected' ||
+            _barterRecord!.dealStatus == 'withdrawn') {
+          if (_currentUserRole == 'sender') {
             message =
-                'You are about to submit a counter offer\n\nDo you want to continue?';
+                'You are about to make a new offer\n\nDo you want to continue?';
           } else {
             message =
-                'You are about to mark this item as sold.\n\nThis closes the transaction and cannot be reversed.\n\nIf there are any disputes after the transaction is closed, there is a \'Dispute\' button at the barter screen.\n\n\nDo you want to continue?';
+                'You are about to counter offer\n\nDo you want to continue?';
           }
-        } else {
-          message = 'Do you want to change your offer?';
         }
-      }
 
-      if (_barterRecord!.dealStatus == 'rejected' ||
-          _barterRecord!.dealStatus == 'withdrawn') {
-        if (_currentUserRole == 'sender') {
-          message =
-              'You are about to make a new offer\n\nDo you want to continue?';
-        } else {
-          message =
-              'You are about to counter offer\n\nDo you want to continue?';
-        }
-      }
-
-      if (_barterRecord!.dealStatus == 'revoked') {
-        if (_currentUserRole == 'sender') {
-          message =
-              'You are about to make a new offer\n\nDo you want to continue?';
-        } else {
-          message =
-              'You are about to counter offer\n\nDo you want to continue?';
-        }
-      }
-
-      if (_barterRecord!.dealStatus == 'completed') {
-        message =
-            'You are about to submit this offer\n\nDo you want to continue?';
-      }
-
-      print('CURRENT USER ROLE: $_currentUserRole');
-
-      if (_barterRecord!.dealStatus == 'submitted') {
-        if (_currentUserRole == 'recipient') {
-          message = 'You are about to accept this offer';
-          if (_offersChanged()) {
-            message += ' and offer a counter proposal';
+        if (_barterRecord!.dealStatus == 'revoked') {
+          if (_currentUserRole == 'sender') {
+            message =
+                'You are about to make a new offer\n\nDo you want to continue?';
+          } else {
+            message =
+                'You are about to counter offer\n\nDo you want to continue?';
           }
-          message += '\n\nDp you want to continue?';
-        } else {
-          message =
-              'You are about to change your offer\n\nDo you want to continue?';
         }
+
+        if (_barterRecord!.dealStatus == 'completed') {
+          message =
+              'You are about to submit this offer\n\nDo you want to continue?';
+        }
+
+        print('CURRENT USER ROLE: $_currentUserRole');
+
+        if (_barterRecord!.dealStatus == 'submitted') {
+          if (_currentUserRole == 'recipient') {
+            message = 'You are about to accept this offer';
+            if (_offersChanged()) {
+              message += ' and offer a counter proposal';
+            }
+            message += '\n\nDp you want to continue?';
+          } else {
+            message =
+                'You are about to change your offer\n\nDo you want to continue?';
+          }
+        }
+
+        final shouldContinue = await DialogMessage.show(
+          context,
+          message: message,
+          title: 'Warning',
+          buttonText: 'Yes',
+          secondButtonText: 'No',
+          result1: true,
+          result2: false,
+        );
+
+        if (shouldContinue == null || !shouldContinue) return;
       }
-
-      final shouldContinue = await DialogMessage.show(
-        context,
-        message: message,
-        title: 'Warning',
-        buttonText: 'Yes',
-        secondButtonText: 'No',
-        result1: true,
-        result2: false,
-      );
-
-      if (shouldContinue == null || !shouldContinue) return;
     }
 
     List<BarterProductModel> _deletedProducts = [];

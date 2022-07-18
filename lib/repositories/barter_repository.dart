@@ -134,14 +134,17 @@ class BarterRepository {
 
     await Future.forEach(openBartersForUsersInvolved,
         (BarterRecordModel barter) async {
-      final docSnapshot = await barterRef
-          .doc(barter.barterId)
-          .collection('products')
-          .doc(productId)
-          .get();
+      final docSnapshot =
+          await barterRef.doc(barter.barterId).collection('products').get();
 
-      if (docSnapshot.exists) {
-        exists = true;
+      if (docSnapshot.docs.isNotEmpty) {
+        final products = docSnapshot.docs
+            .map((doc) => BarterProductModel.fromJson(doc.data()))
+            .toList();
+
+        if (products.any((prod) => prod.productId == productId)) {
+          exists = true;
+        }
       }
     });
 

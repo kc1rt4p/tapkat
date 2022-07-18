@@ -177,12 +177,14 @@ class AuthService {
 
   Future<User?> signInWithFacebook() async {
     // Trigger the sign-in flow
-    final LoginResult loginResult =
-        await FacebookAuth.instance.login(permissions: [
-      'email',
-      'public_profile',
-      'user_friends',
-    ]);
+    final LoginResult loginResult = await FacebookAuth.instance.login(
+      permissions: [
+        'email',
+        'public_profile',
+        'user_friends',
+      ],
+      loginBehavior: LoginBehavior.nativeWithFallback,
+    );
 
     if (loginResult.status != LoginStatus.success) return null;
 

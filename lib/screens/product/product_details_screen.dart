@@ -12,6 +12,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:geocoding/geocoding.dart' as geoCoding;
 import 'package:geolocator/geolocator.dart' as geoLocator;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:intl/intl.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
@@ -71,6 +72,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
 
   final _dynamicLinkService = DynamincLinkService();
   final _photoViewController = PageController();
+  final oCcy = new NumberFormat("#,##0.00", "en_US");
 
   @override
   void initState() {
@@ -404,50 +406,58 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                         ),
                                                       ),
                                                       SizedBox(width: 8.0),
-                                                      InkWell(
-                                                        onTap: () {
-                                                          if (_product!
-                                                                  .status ==
-                                                              'completed')
-                                                            return;
-                                                          final _barterId =
-                                                              application
-                                                                      .currentUser!
-                                                                      .uid +
-                                                                  _product!
-                                                                      .userid! +
-                                                                  _product!
-                                                                      .productid!;
-                                                          _productBloc.add(
-                                                              CheckIfBarterExists(
-                                                                  _barterId));
-                                                        },
-                                                        child: Container(
-                                                          padding: EdgeInsets
-                                                              .symmetric(
-                                                            vertical: 3.0,
-                                                            horizontal: 8.0,
+                                                      Visibility(
+                                                        visible: _product!
+                                                                .userid !=
+                                                            application
+                                                                .currentUser!
+                                                                .uid,
+                                                        child: InkWell(
+                                                          onTap: () {
+                                                            if (_product!
+                                                                    .status ==
+                                                                'completed')
+                                                              return;
+
+                                                            DialogMessage.show(
+                                                              context,
+                                                              buttonText: 'Yes',
+                                                              secondButtonText:
+                                                                  'No',
+                                                              firstButtonClicked:
+                                                                  _onBuyProduct,
+                                                              message:
+                                                                  'You are about to submit an offer to buy ${_product!.productname} for ${application.currentUserModel!.currency ?? 'PHP'} ${oCcy.format(_product!.price)}\n\nDo you want to proceed?',
+                                                            );
+                                                          },
+                                                          child: Container(
+                                                            padding: EdgeInsets
+                                                                .symmetric(
+                                                              vertical: 3.0,
+                                                              horizontal: 8.0,
+                                                            ),
+                                                            decoration:
+                                                                BoxDecoration(
+                                                              borderRadius: BorderRadius
+                                                                  .all(Radius
+                                                                      .circular(
+                                                                          15.0)),
+                                                              color: _product!.status !=
+                                                                      'completed'
+                                                                  ? Colors.red
+                                                                      .shade400
+                                                                  : Colors.grey,
+                                                            ),
+                                                            child: Text('BUY',
+                                                                style:
+                                                                    TextStyle(
+                                                                  color: Colors
+                                                                      .white,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                )),
                                                           ),
-                                                          decoration:
-                                                              BoxDecoration(
-                                                            borderRadius:
-                                                                BorderRadius.all(
-                                                                    Radius.circular(
-                                                                        15.0)),
-                                                            color: _product!.status !=
-                                                                    'completed'
-                                                                ? Colors.red
-                                                                    .shade400
-                                                                : Colors.grey,
-                                                          ),
-                                                          child: Text('BUY',
-                                                              style: TextStyle(
-                                                                color: Colors
-                                                                    .white,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
-                                                              )),
                                                         ),
                                                       ),
                                                     ],
@@ -1167,6 +1177,12 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
     if (meters < 100) return 'within 100m';
     if (meters < 300) return 'within 300m';
     return 'within 900m';
+  }
+
+  _onBuyProduct() {
+    final _barterId =
+        application.currentUser!.uid + _product!.userid! + _product!.productid!;
+    _productBloc.add(CheckIfBarterExists(_barterId));
   }
 
   _onMapViewTapped() {
