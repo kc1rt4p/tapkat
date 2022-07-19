@@ -195,6 +195,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                   setState(() {
                     _markers.clear();
                     searchResults.clear();
+                    _buildMarkers();
                   });
 
                   if (mapFirst) {
@@ -248,6 +249,11 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                       }
                     });
                   } else {
+                    setState(() {
+                      _markers.clear();
+                      searchResults.clear();
+                      _buildMarkers();
+                    });
                     if (_selectedRadius < 20000) {
                       _selectedRadius += 5000;
                       _searchBloc.add(InitializeSearch(

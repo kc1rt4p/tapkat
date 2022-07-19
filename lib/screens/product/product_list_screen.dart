@@ -196,6 +196,10 @@ class _ProductListScreenState extends State<ProductListScreen> {
               _refreshController.refreshCompleted();
               _pagingController.refresh();
               lastProduct = null;
+              setState(() {
+                _list.clear();
+                _buildMarkers();
+              });
 
               if (state.list.isNotEmpty) {
                 _list = state.list;
@@ -212,8 +216,10 @@ class _ProductListScreenState extends State<ProductListScreen> {
                 }
               } else {
                 _pagingController.appendLastPage([]);
-                _list.clear();
-                _buildMarkers();
+                setState(() {
+                  _list.clear();
+                  _buildMarkers();
+                });
 
                 if (_selectedRadius < 20000) {
                   _selectedRadius += 5000;

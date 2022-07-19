@@ -105,7 +105,8 @@ class BarterRepository {
     }
   }
 
-  Future<bool> checkIfBarterable(String userId, String productId) async {
+  Future<bool> checkIfBarterable(
+      String userId, String productId, String barterId) async {
     final querySnapshot = await barterRef.get();
     bool exists = false;
 
@@ -134,16 +135,18 @@ class BarterRepository {
 
     await Future.forEach(openBartersForUsersInvolved,
         (BarterRecordModel barter) async {
-      final docSnapshot =
-          await barterRef.doc(barter.barterId).collection('products').get();
+      if (barter.barterId != barterId) {
+        final docSnapshot =
+            await barterRef.doc(barter.barterId).collection('products').get();
 
-      if (docSnapshot.docs.isNotEmpty) {
-        final products = docSnapshot.docs
-            .map((doc) => BarterProductModel.fromJson(doc.data()))
-            .toList();
+        if (docSnapshot.docs.isNotEmpty) {
+          final products = docSnapshot.docs
+              .map((doc) => BarterProductModel.fromJson(doc.data()))
+              .toList();
 
-        if (products.any((prod) => prod.productId == productId)) {
-          exists = true;
+          if (products.any((prod) => prod.productId == productId)) {
+            exists = true;
+          }
         }
       }
     });

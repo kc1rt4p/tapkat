@@ -32,23 +32,29 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       try {
         final _user = application.currentUser;
         if (event is InitializeProfileScreen) {
-          if (_user != null) {
-            final userModel = await _userRepo.getUser(_user.uid);
-            if (userModel != null) {
-              application.currentUserModel = userModel;
-            }
-            final list = await _productRepo.getFirstProducts(
-              'user',
-              userId: _user.uid,
-              sortBy: 'distance',
-            );
-
-            emit(ProfileScreenInitialized(
-              user: _user,
-              list: list,
-              userModel: userModel!,
-            ));
+          List<ProductModel> list = [];
+          UserModel? userModel;
+          if (application.currentUser == null) {
+            application.currentUser = _authService.currentUser!.user;
           }
+
+          userModel = await _userRepo.getUser(application.currentUser!.uid);
+
+          list = await _productRepo.getFirstProducts(
+            'user',
+            userId: application.currentUser!.uid,
+            sortBy: 'distance',
+          );
+
+          if (userModel != null) {
+            application.currentUserModel = userModel;
+          }
+
+          emit(ProfileScreenInitialized(
+            user: _user,
+            list: list,
+            userModel: userModel!,
+          ));
         }
 
         if (event is InitializeUserRatingsScreen) {
@@ -143,10 +149,11 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
           emit(GetNextNotificationsSuccess(list));
         }
       } catch (e) {
-        FlutterLogs.logToFile(
-            logFileName: "Home Bloc",
-            overwrite: false,
-            logMessage: e.toString());
+        // FlutterLogs.logToFile(
+        //     logFileName: "Home Bloc",
+        //     overwrite: false,
+        //     logMessage: e.toString());
+        print('ERROR ON PROFILE BLOC::: ${e.toString()}');
       }
     });
   }

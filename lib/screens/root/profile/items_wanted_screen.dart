@@ -68,11 +68,9 @@ class _ItemsWantedScreenState extends State<ItemsWantedScreen> {
                       });
                       //
                     } else {
-                      if (!application.currentUserModel!.verifiedByPhone! ||
-                          (application.currentUserModel!.signin_method !=
-                                  null &&
-                              application.currentUserModel!.signin_method ==
-                                  'EMAIL')) {
+                      if (!application.currentUser!.emailVerified &&
+                          application.currentUserModel!.signin_method ==
+                              'EMAIL') {
                         Navigator.pushAndRemoveUntil(
                             context,
                             MaterialPageRoute(

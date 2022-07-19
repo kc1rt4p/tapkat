@@ -19,6 +19,7 @@ class UserItemsDialog extends StatefulWidget {
   final String userId;
   final String userType;
   final List<String> selectedProducts;
+  final String barterId;
   const UserItemsDialog({
     Key? key,
     required this.userId,
@@ -26,6 +27,7 @@ class UserItemsDialog extends StatefulWidget {
     required this.recipientName,
     required this.userType,
     required this.selectedProducts,
+    required this.barterId,
   }) : super(key: key);
 
   @override
@@ -162,7 +164,9 @@ class _UserItemsDialogState extends State<UserItemsDialog> {
 
                     return FutureBuilder(
                       future: _barterRepo.checkIfBarterable(
-                          widget.recipientUserId, product.productid!),
+                          widget.recipientUserId,
+                          product.productid!,
+                          widget.barterId),
                       builder: (context, snapshot) {
                         final barterable = snapshot.data as bool? ?? false;
                         print('X===> ${snapshot.data}');

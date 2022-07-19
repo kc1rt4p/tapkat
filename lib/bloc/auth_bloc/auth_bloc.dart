@@ -110,9 +110,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
             if (event.method == 'PHONE') {
               updateUser.signin_method = 'PHONE';
+              updateUser.verifiedByPhone = true;
               await maybeCreateUser(user);
-            } else {
+            } else if (event.method == 'EMAIL') {
               updateUser.signin_method = 'EMAIL';
+            } else {
+              updateUser.signin_method = 'OTHER';
             }
 
             await UsersRecord.collection
@@ -141,10 +144,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         if (event is SignInFacebook) {
           final user = await authService.signInWithFacebook();
           if (user != null) {
-            print('sdfsdf');
             application.currentUserModel = await userRepo.getUser(user.uid);
 
             if (application.currentUserModel != null) {
+              if (application.currentUserModel!.location == null) {
+                emit(ContinueSignUp());
+                return;
+              }
               await userRepo.updateUserOnlineStatus(true);
               emit(AuthSignedIn(user));
             } else {
@@ -160,6 +166,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             application.currentUser = user;
             final userModel = await userRepo.getUser(user.uid);
             if (userModel != null) {
+              if (application.currentUserModel!.location == null) {
+                emit(ContinueSignUp());
+                return;
+              }
               application.currentUserModel = userModel;
               await userRepo.updateUserOnlineStatus(true);
               emit(AuthSignedIn(user));
@@ -199,10 +209,17 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       }
 
       if (event is SkipSignUpPhoto) {
-        if (authService.currentUser != null) {
-          emit(AuthSignedIn(authService.currentUser!.user!));
+        print('X===> ${authService.currentUser!.user}');
+        if (application.currentUser != null) {
           // emit(ShowSignUpSocialMedia());
+        } else {
+          if (authService.currentUser != null)
+            application.currentUser = authService.currentUser!.user;
         }
+        application.currentUserModel =
+            await userRepo.getUser(application.currentUser!.uid);
+
+        emit(AuthSignedIn(application.currentUser!));
       }
 
       if (event is SkipSignUpSocialMedia) {

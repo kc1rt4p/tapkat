@@ -220,7 +220,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
               Visibility(
-                visible: !application.currentUser!.emailVerified &&
+                visible: application.currentUser != null &&
+                    !application.currentUser!.emailVerified &&
                     application.currentUserModel!.signin_method == 'EMAIL',
                 child: Container(
                   width: double.infinity,
@@ -450,14 +451,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 ),
                               ),
                               Visibility(
-                                visible:
-                                    application.currentUser!.emailVerified ||
-                                        (application.currentUserModel!
-                                                    .signin_method !=
-                                                null &&
-                                            application.currentUserModel!
-                                                    .signin_method ==
-                                                'PHONE'),
+                                visible: (application.currentUserModel!
+                                                .verifiedByPhone !=
+                                            null &&
+                                        !application.currentUserModel!
+                                            .verifiedByPhone!) ||
+                                    (application.currentUserModel!
+                                                .signin_method !=
+                                            null &&
+                                        application.currentUserModel!
+                                                .signin_method ==
+                                            'PHONE'),
                                 child: Expanded(
                                   child: Container(
                                     width: double.infinity,

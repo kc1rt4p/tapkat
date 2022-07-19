@@ -1605,6 +1605,7 @@ class _BarterScreenState extends State<BarterScreen> {
                 userId: userId,
                 userType: userType,
                 selectedProducts: selectedProducts,
+                barterId: _barterRecord!.barterId!,
               ),
             );
           },
@@ -1984,7 +1985,9 @@ class _BarterScreenState extends State<BarterScreen> {
                       _shouldShowAdd()
                   ? () async {
                       final barterable = await _barterRepo.checkIfBarterable(
-                          _recipientUserId!, product.productid!);
+                          _recipientUserId!,
+                          product.productid!,
+                          _barterRecord!.barterId!);
 
                       if (!barterable) {
                         await DialogMessage.show(
@@ -2327,7 +2330,15 @@ class _BarterScreenState extends State<BarterScreen> {
                   CustomButton(
                     bgColor: kBackgroundColor,
                     label: review == null ? 'SUBMIT' : 'UPDATE',
-                    onTap: () {
+                    onTap: () async {
+                      if (_rating < 1) {
+                        await DialogMessage.show(
+                          context,
+                          message: 'Please rate the user with stars',
+                        );
+
+                        return;
+                      }
                       Navigator.pop(context, {
                         'rating': _rating,
                         'review': _reviewTextController.text.trim(),

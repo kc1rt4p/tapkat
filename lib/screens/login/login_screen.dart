@@ -97,6 +97,16 @@ class _LoginScreenState extends State<LoginScreen> {
               ProgressHUD.of(context)!.dismiss();
             }
 
+            if (state is ContinueSignUp) {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => InitialSignUpScreen(
+                          method: 'OTHER',
+                        )),
+              );
+            }
+
             if (state is PhoneOtpSentSuccess) {
               setState(() {
                 _verificationId = state.verificationId;
@@ -115,9 +125,6 @@ class _LoginScreenState extends State<LoginScreen> {
                           method: 'PHONE',
                         )),
               );
-
-              if (application.currentUser != null)
-                application.currentUser = null;
             }
 
             if (state is AuthError) {

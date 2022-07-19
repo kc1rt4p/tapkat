@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:currency_text_input_formatter/currency_text_input_formatter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -235,6 +236,9 @@ class _ProductAddScreenState extends State<ProductAddScreen> {
                                               )),
                                         ),
                                       ),
+                                      inputFormatters: [
+                                        CurrencyTextInputFormatter(symbol: ''),
+                                      ],
                                     ),
                                   ),
                                   SizedBox(width: 10.0),
@@ -402,7 +406,7 @@ class _ProductAddScreenState extends State<ProductAddScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'Default Country',
+                        'Currency',
                         style: Style.subtitle2.copyWith(
                             color: kBackgroundColor,
                             fontWeight: FontWeight.bold),
