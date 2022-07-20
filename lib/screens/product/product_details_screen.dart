@@ -24,6 +24,7 @@ import 'package:tapkat/models/location.dart';
 import 'package:tapkat/models/media_primary_model.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/models/user.dart';
+import 'package:tapkat/repositories/barter_repository.dart';
 import 'package:tapkat/schemas/user_likes_record.dart';
 import 'package:tapkat/screens/barter/barter_screen.dart';
 import 'package:tapkat/screens/product/bloc/product_bloc.dart';
@@ -59,6 +60,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   final _productBloc = ProductBloc();
   int _currentCarouselIndex = 0;
   Map<String, dynamic>? mappedProductDetails;
+  final _barterRepo = BarterRepository();
   ProductModel? _product;
   User? _user;
   UserModel? _userModel;
@@ -1074,7 +1076,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                               'completed',
                                                       bgColor: kBackgroundColor,
                                                       label: 'BARTER',
-                                                      onTap: () {
+                                                      onTap: () async {
                                                         if (!application
                                                                 .currentUser!
                                                                 .emailVerified &&
@@ -1085,6 +1087,24 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                                         .currentUserModel!
                                                                         .signin_method ==
                                                                     'EMAIL')) {
+                                                          final barterable =
+                                                              await _barterRepo
+                                                                  .checkIfBarterable(
+                                                                      _product!
+                                                                          .userid!,
+                                                                      _product!
+                                                                          .productid!,
+                                                                      '---');
+                                                          if (!barterable) {
+                                                            await DialogMessage
+                                                                .show(
+                                                              context,
+                                                              message:
+                                                                  'You can\'t add this product to the barter as you already have a another pending barter with ${_product!.display_name!.toUpperCase()} for this ${_product!.productname}',
+                                                            );
+
+                                                            return;
+                                                          }
                                                           DialogMessage.show(
                                                             context,
                                                             message:

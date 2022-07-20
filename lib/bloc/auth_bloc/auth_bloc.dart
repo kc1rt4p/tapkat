@@ -164,13 +164,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           final user = await authService.signInWithGoogle();
           if (user != null) {
             application.currentUser = user;
-            final userModel = await userRepo.getUser(user.uid);
-            if (userModel != null) {
+            application.currentUserModel = await userRepo.getUser(user.uid);
+            if (application.currentUserModel != null) {
+              print('X=====> ${application.currentUserModel!.toJson()}');
               if (application.currentUserModel!.location == null) {
                 emit(ContinueSignUp());
                 return;
               }
-              application.currentUserModel = userModel;
               await userRepo.updateUserOnlineStatus(true);
               emit(AuthSignedIn(user));
             } else {
@@ -205,6 +205,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           }
         }
       } catch (e) {
+        print('X====> ${e.toString()}');
         emit(AuthError('auth error: ${e.toString()}'));
       }
 

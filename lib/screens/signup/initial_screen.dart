@@ -238,10 +238,11 @@ class _InitialSignUpScreenState extends State<InitialSignUpScreen> {
                                               : null,
                                     ),
                                     Visibility(
-                                      visible: application.currentUser ==
-                                              null ||
+                                      visible: (application.currentUser ==
+                                                  null &&
+                                              widget.method != 'OTHER') ||
                                           (application.currentUser != null &&
-                                              widget.method == 'EMAIL'),
+                                              widget.method != 'PHONE'),
                                       child: CustomTextFormField(
                                         hintText: 'Enter your mobile number',
                                         label: 'Mobile Number',
