@@ -140,74 +140,74 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         if (updated) emit(UpdateOnlineStatusSucces());
       }
 
-      try {
-        if (event is SignInFacebook) {
-          final user = await authService.signInWithFacebook();
-          if (user != null) {
-            application.currentUserModel = await userRepo.getUser(user.uid);
+      // try {
+      if (event is SignInFacebook) {
+        final user = await authService.signInWithFacebook();
+        if (user != null) {
+          application.currentUser = user;
+          application.currentUserModel = await userRepo.getUser(user.uid);
 
-            if (application.currentUserModel != null) {
-              if (application.currentUserModel!.location == null) {
-                emit(ContinueSignUp());
-                return;
-              }
-              await userRepo.updateUserOnlineStatus(true);
-              emit(AuthSignedIn(user));
-            } else {
-              emit(ShowSignUpPhoto());
+          if (application.currentUserModel != null) {
+            if (application.currentUserModel!.location == null) {
+              emit(ContinueSignUp());
+              return;
             }
-          } else
-            emit(AuthInitial());
-        }
-
-        if (event is SignInGoogle) {
-          final user = await authService.signInWithGoogle();
-          if (user != null) {
-            application.currentUser = user;
-            application.currentUserModel = await userRepo.getUser(user.uid);
-            if (application.currentUserModel != null) {
-              print('X=====> ${application.currentUserModel!.toJson()}');
-              if (application.currentUserModel!.location == null) {
-                emit(ContinueSignUp());
-                return;
-              }
-              await userRepo.updateUserOnlineStatus(true);
-              emit(AuthSignedIn(user));
-            } else {
-              emit(ShowSignUpPhoto());
-            }
-          }
-        }
-
-        if (event is SignInApple) {
-          final user = await authService.signInWithApple();
-          if (user != null) emit(AuthSignedIn(user));
-        }
-
-        if (event is SaveUserPhoto) {
-          final downloadUrl = await uploadData(
-              event.selectedMedia.storagePath, event.selectedMedia.bytes);
-
-          if (downloadUrl != null) {
-            final userRef =
-                UsersRecord.collection.doc(authService.currentUser!.user!.uid);
-
-            await userRef.update({"photo_url": downloadUrl});
-
-            application.currentUserModel =
-                await userRepo.getUser(application.currentUser!.uid);
-
-            emit(SaveUserPhotoSuccess());
-
-            // emit(AuthSignedIn(authService.currentUser!.user!));
+            await userRepo.updateUserOnlineStatus(true);
+            emit(AuthSignedIn(user));
           } else {
-            emit(AuthError('error saving user photo'));
+            emit(ShowSignUpPhoto());
+          }
+        } else
+          emit(AuthInitial());
+      }
+
+      if (event is SignInGoogle) {
+        final user = await authService.signInWithGoogle();
+        if (user != null) {
+          application.currentUser = user;
+          application.currentUserModel = await userRepo.getUser(user.uid);
+          if (application.currentUserModel != null) {
+            if (application.currentUserModel!.location == null) {
+              emit(ContinueSignUp());
+              return;
+            }
+            await userRepo.updateUserOnlineStatus(true);
+            emit(AuthSignedIn(user));
+          } else {
+            emit(ShowSignUpPhoto());
           }
         }
-      } catch (e) {
-        print('X====> ${e.toString()}');
-        emit(AuthError('auth error: ${e.toString()}'));
       }
+
+      if (event is SignInApple) {
+        final user = await authService.signInWithApple();
+        if (user != null) emit(AuthSignedIn(user));
+      }
+
+      if (event is SaveUserPhoto) {
+        final downloadUrl = await uploadData(
+            event.selectedMedia.storagePath, event.selectedMedia.bytes);
+
+        if (downloadUrl != null) {
+          final userRef =
+              UsersRecord.collection.doc(authService.currentUser!.user!.uid);
+
+          await userRef.update({"photo_url": downloadUrl});
+
+          application.currentUserModel =
+              await userRepo.getUser(application.currentUser!.uid);
+
+          emit(SaveUserPhotoSuccess());
+
+          // emit(AuthSignedIn(authService.currentUser!.user!));
+        } else {
+          emit(AuthError('error saving user photo'));
+        }
+      }
+      // } catch (e) {
+      //   print('X====> ${e.toString()}');
+      //   emit(AuthError('auth error: ${e.toString()}'));
+      // }
 
       if (event is SkipSignUpPhoto) {
         print('X===> ${authService.currentUser!.user}');
