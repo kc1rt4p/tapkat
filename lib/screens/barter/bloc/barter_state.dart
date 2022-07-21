@@ -77,6 +77,8 @@ class DeleteCashOfferSuccess extends BarterState {}
 
 class DeleteBarterProductsSuccess extends BarterState {}
 
+class BarterRemoved extends BarterState {}
+
 class GetUserReviewSuccess extends BarterState {
   final UserReviewModel? review;
 

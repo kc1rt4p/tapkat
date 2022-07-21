@@ -364,24 +364,58 @@ class BarterRepository {
     }
   }
 
+  Future<bool> removeBarter(String barterId) async {
+    try {
+      final messages =
+          await barterRef.doc(barterId).collection('messages').get();
+      if (messages.docs.isNotEmpty) {
+        messages.docs.forEach((msg) async {
+          await barterRef
+              .doc(barterId)
+              .collection('messages')
+              .doc(msg.id)
+              .delete();
+        });
+      }
+
+      final products =
+          await barterRef.doc(barterId).collection('products').get();
+      if (products.docs.isNotEmpty) {
+        await Future.forEach(products.docs, (QueryDocumentSnapshot prod) async {
+          await barterRef
+              .doc(barterId)
+              .collection('products')
+              .doc(prod.id)
+              .delete();
+        });
+
+        // BarterRecordModel? barterRecord = await getBarterRecord(barterId);
+
+        // if (barterRecord != null) {
+        //   barterRecord.deletedFor = [];
+        //   barterRecord.dealStatus = 'new';
+        //   barterRecord.dealDate = DateTime.now();
+
+        //   await barterRef.doc(barterId).update(barterRecord.toJson());
+        // }
+
+        // products.docs.forEach((prod) async {
+        //   await barterRef
+        //       .doc(barterId)
+        //       .collection('products')
+        //       .doc(prod.id)
+        //       .delete();
+        // });
+      }
+      await barterRef.doc(barterId).delete();
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
   Future<bool> deleteBarter(String id) async {
     try {
-      // final messages = await barterRef.doc(id).collection('messages').get();
-      // if (messages.docs.isNotEmpty) {
-      //   messages.docs.forEach((msg) async {
-      //     await barterRef.doc(id).collection('messages').doc(msg.id).delete();
-      //   });
-      // }
-
-      // final products = await barterRef.doc(id).collection('products').get();
-      // if (products.docs.isNotEmpty) {
-      //   products.docs.forEach((prod) async {
-      //     await barterRef.doc(id).collection('products').doc(prod.id).delete();
-      //   });
-      // }
-
-      // final _barterRecord = await barterRef.doc(id).get();
-
       await barterRef.doc(id).update({
         'deletedFor': [application.currentUser!.uid],
       });

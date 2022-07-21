@@ -76,6 +76,12 @@ class DeleteBarter extends BarterEvent {
   DeleteBarter(this.id);
 }
 
+class RemoveBarter extends BarterEvent {
+  final String barterId;
+
+  RemoveBarter(this.barterId);
+}
+
 class DeleteBarterProducts extends BarterEvent {
   final String barterId;
   final List<BarterProductModel> products;

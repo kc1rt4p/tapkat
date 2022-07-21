@@ -121,6 +121,8 @@ class _BarterScreenState extends State<BarterScreen> {
 
   List<SelectedMedia> _selectedMedia = [];
 
+  bool _existing = false;
+
   @override
   void setState(fn) {
     if (mounted) {
@@ -152,6 +154,7 @@ class _BarterScreenState extends State<BarterScreen> {
     _initialOffer = widget.initialOffer;
 
     super.initState();
+    _existing = widget.existing;
   }
 
   @override
@@ -470,6 +473,70 @@ class _BarterScreenState extends State<BarterScreen> {
               // // await unsaveProductsStorage.clear();
             }
 
+            if (state is BarterRemoved) {
+              if (widget.barterRecord == null && _product != null) {
+                var thumbnail = '';
+
+                if (_product!.mediaPrimary != null &&
+                    _product!.mediaPrimary!.url != null &&
+                    _product!.mediaPrimary!.url!.isNotEmpty)
+                  thumbnail = _product!.mediaPrimary!.url!;
+
+                if (_product!.mediaPrimary != null &&
+                    _product!.mediaPrimary!.url_t != null &&
+                    _product!.mediaPrimary!.url_t!.isNotEmpty)
+                  thumbnail = _product!.mediaPrimary!.url_t!;
+
+                if (_product!.mediaPrimary == null ||
+                    _product!.mediaPrimary!.url!.isEmpty &&
+                        _product!.mediaPrimary!.url_t!.isEmpty &&
+                        _product!.media != null &&
+                        _product!.media!.isNotEmpty)
+                  thumbnail = _product!.media!.first.url_t != null
+                      ? _product!.media!.first.url_t!
+                      : _product!.media!.first.url!;
+
+                setState(() {
+                  _barterId = _currentUser!.uid +
+                      _product!.userid! +
+                      _product!.productid!;
+                });
+
+                _barterBloc.add(
+                  InitializeBarter(
+                    BarterRecordModel(
+                      barterId: _barterId,
+                      userid1: _currentUser!.uid,
+                      userid2: _product!.userid,
+                      u2P1Id: widget.product != null
+                          ? widget.product!.productid
+                          : null,
+                      u2P1Name: widget.product != null
+                          ? widget.product!.productname
+                          : null,
+                      u2P1Price: widget.product != null
+                          ? widget.product!.price!.toDouble()
+                          : null,
+                      u2P1Image: thumbnail,
+                      u1P1Id: widget.initialOffer != null
+                          ? widget.initialOffer!.productid
+                          : null,
+                      u1P1Name: widget.initialOffer != null
+                          ? widget.initialOffer!.productname
+                          : null,
+                      u1P1Price: widget.initialOffer != null
+                          ? widget.initialOffer!.price!.toDouble()
+                          : null,
+                      barterNo: 0,
+                      dealDate: DateTime.now(),
+                      userid1Role: 'sender',
+                      userid2Role: 'recipient',
+                    ),
+                  ),
+                );
+              }
+            }
+
             if (state is BarterInitialized) {
               setState(() {
                 remoteUserItems = state.remoteUserProducts;
@@ -480,18 +547,28 @@ class _BarterScreenState extends State<BarterScreen> {
                   .forEach((element) => print('X==> ${element.toJson()}'));
 
               _barterStreamSub = state.barterStream.listen((barterRecord) {
-                if (barterRecord == null ||
-                    (barterRecord.deletedFor != null &&
+                if ((barterRecord == null && !widget.existing) ||
+                    (barterRecord != null &&
+                        barterRecord.deletedFor != null &&
                         barterRecord.deletedFor!
                             .contains(application.currentUser!.uid))) {
                   Navigator.pop(context);
                   return;
                 } else {
-                  print('-===== ${barterRecord.toJson()}');
                   setState(() {
                     _barterRecord = barterRecord;
                     if (_barterId == null) {
                       _barterId = _barterRecord!.barterId;
+                    }
+
+                    print(
+                        '-===== widge.existing: ${widget.existing} || dealStatus: ${_barterRecord!.dealStatus}');
+                    if (_existing &&
+                        ['withdrawn', 'rejected', 'completed']
+                            .contains(_barterRecord!.dealStatus)) {
+                      _existing = false;
+                      _barterBloc.add(RemoveBarter(_barterRecord!.barterId!));
+                      return;
                     }
 
                     _barterBloc.add(InitializeBarterChat(_barterId!));
@@ -717,6 +794,18 @@ class _BarterScreenState extends State<BarterScreen> {
                   });
                   _sortProducts();
                 }
+
+                if (_existing &&
+                    !['withdrawn', 'rejected', 'completed']
+                        .contains(_barterRecord!.dealStatus) &&
+                    currentUserOffers.isNotEmpty) {
+                  print('HAHAHAHAHA');
+                  DialogMessage.show(
+                    context,
+                    message:
+                        'An existing pending barter deal was found for these products.',
+                  );
+                }
               });
             }
 
@@ -766,14 +855,6 @@ class _BarterScreenState extends State<BarterScreen> {
                 _currentUser = state.user;
                 _currentUserModel = state.userModel;
               });
-
-              if (widget.existing) {
-                DialogMessage.show(
-                  context,
-                  message:
-                      'An existing pending barter deal was found for these products.',
-                );
-              }
 
               if (widget.barterRecord == null && _product != null) {
                 var thumbnail = '';
@@ -1290,7 +1371,9 @@ class _BarterScreenState extends State<BarterScreen> {
                 enabled: ((currentUserOffers.isNotEmpty ||
                         _currentUserOfferedCash != null &&
                             _currentUserOfferedCash! > 0) &&
-                    remoteUserOffers.isNotEmpty),
+                    (remoteUserOffers.isNotEmpty ||
+                        _remoteUserOfferedCash != null &&
+                            _remoteUserOfferedCash! > 0)),
                 removeMargin: true,
                 label: 'Make Offer',
                 onTap: () => _onSubmitTapped(false),
@@ -2661,6 +2744,7 @@ class _BarterScreenState extends State<BarterScreen> {
   }
 
   _onSubmitTapped(bool forced) async {
+    _existing = false;
     if (!forced) {
       if (_barterRecord != null && _barterRecord!.dealStatus == 'sold') {
         return;

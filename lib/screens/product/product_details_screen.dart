@@ -69,6 +69,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
 
   LatLng? googleMapsCenter;
   late LocationModel _location;
+  bool _isBuying = false;
 
   final _refreshController = RefreshController();
 
@@ -108,7 +109,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
             BlocListener(
               bloc: _productBloc,
               listener: (context, state) async {
-                print('----- current details state: $state');
+                print('X====> current details state: $state');
                 if (state is ProductLoading) {
                   // ProgressHUD.of(context)!.show();
                   setState(() {
@@ -161,7 +162,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                     MaterialPageRoute(
                       builder: (context) => BarterScreen(
                         product: _product!,
-                        buying: true,
+                        buying: _isBuying,
                       ),
                     ),
                   );
@@ -174,7 +175,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                       builder: (context) => BarterScreen(
                         product: _product!,
                         existing: true,
-                        buying: true,
+                        buying: _isBuying,
                       ),
                     ),
                   );
@@ -1087,24 +1088,6 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                                         .currentUserModel!
                                                                         .signin_method ==
                                                                     'EMAIL')) {
-                                                          final barterable =
-                                                              await _barterRepo
-                                                                  .checkIfBarterable(
-                                                                      _product!
-                                                                          .userid!,
-                                                                      _product!
-                                                                          .productid!,
-                                                                      '---');
-                                                          if (!barterable) {
-                                                            await DialogMessage
-                                                                .show(
-                                                              context,
-                                                              message:
-                                                                  'You can\'t add this product to the barter as you already have a another pending barter with ${_product!.display_name!.toUpperCase()} for this ${_product!.productname}',
-                                                            );
-
-                                                            return;
-                                                          }
                                                           DialogMessage.show(
                                                             context,
                                                             message:
@@ -1117,15 +1100,18 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                           );
                                                           return;
                                                         }
-                                                        Navigator.push(
-                                                          context,
-                                                          MaterialPageRoute(
-                                                            builder: (context) =>
-                                                                BarterScreen(
-                                                                    product:
-                                                                        _product!),
-                                                          ),
-                                                        );
+                                                        _isBuying = false;
+                                                        final _barterId =
+                                                            application
+                                                                    .currentUser!
+                                                                    .uid +
+                                                                _product!
+                                                                    .userid! +
+                                                                _product!
+                                                                    .productid!;
+                                                        _productBloc.add(
+                                                            CheckIfBarterExists(
+                                                                _barterId));
                                                       },
                                                     ),
                                                   ),
@@ -1200,6 +1186,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   }
 
   _onBuyProduct() {
+    _isBuying = true;
     final _barterId =
         application.currentUser!.uid + _product!.userid! + _product!.productid!;
     _productBloc.add(CheckIfBarterExists(_barterId));

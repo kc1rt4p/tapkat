@@ -119,6 +119,15 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
             }
           }
 
+          if (event is RemoveBarter) {
+            final removed =
+                await _barterRepository.removeBarter(event.barterId);
+            if (removed)
+              emit(BarterRemoved());
+            else
+              emit(BarterError('Unable to remove barter'));
+          }
+
           if (event is GetCurrentUserItems) {
             final list = await _productRepository.getFirstProducts(
               'user',

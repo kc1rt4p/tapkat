@@ -15,6 +15,7 @@ import 'package:tapkat/models/upload_product_image_response.dart';
 import 'package:tapkat/repositories/barter_repository.dart';
 import 'package:tapkat/repositories/product_repository.dart';
 import 'package:tapkat/repositories/reference_repository.dart';
+import 'package:tapkat/screens/barter/bloc/barter_bloc.dart';
 import 'package:tapkat/utilities/upload_media.dart';
 import 'package:geolocator/geolocator.dart' as geoLocator;
 import 'package:tapkat/utilities/application.dart' as application;
@@ -29,6 +30,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
     final _barterRepo = BarterRepository();
 
     on<ProductEvent>((event, emit) async {
+      print('X====> product bloc event: $event');
       try {
         final _user = application.currentUser;
         final _userModel = application.currentUserModel;
@@ -205,6 +207,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
         }
 
         if (event is CheckIfBarterExists) {
+          emit(ProductInitial());
           try {
             final record = await _barterRepo.getBarterRecord(event.barterId);
             if (record != null)
@@ -212,7 +215,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
             else
               emit(ProductBarterDoesNotExist());
           } catch (e) {
-            print('X===> ${e.toString()}');
+            print('X====> ${e.toString()}');
           }
         }
 
