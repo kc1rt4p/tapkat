@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:custom_info_window/custom_info_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -8,16 +9,20 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
+import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/models/product_category.dart';
+import 'package:tapkat/screens/barter/barter_screen.dart';
 import 'package:tapkat/screens/product/bloc/product_bloc.dart';
 import 'package:tapkat/screens/product/product_details_screen.dart';
+import 'package:tapkat/screens/root/home/bloc/home_bloc.dart';
 import 'package:tapkat/screens/search/search_result_screen.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/constants.dart';
 import 'package:tapkat/utilities/dialog_message.dart';
 import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/utilities/style.dart';
+import 'package:tapkat/widgets/barter_list.dart';
 import 'package:tapkat/widgets/barter_list_item.dart';
 import 'package:tapkat/widgets/custom_app_bar.dart';
 import 'package:tapkat/widgets/custom_button.dart';
@@ -50,6 +55,7 @@ class ProductListScreen extends StatefulWidget {
 
 class _ProductListScreenState extends State<ProductListScreen> {
   final _productBloc = ProductBloc();
+  final _homeBloc = HomeBloc();
   late String _title;
   List<ProductModel> _list = [];
 
@@ -74,6 +80,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
       PagingController<int, ProductModel>(firstPageKey: 0);
 
   ProductModel? lastProduct;
+  ProductModel? lastUserProduct;
 
   bool _loading = false;
   Set<Marker> _markers = {};
@@ -96,6 +103,14 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
   late LatLng _currentCenter;
 
+  bool _loadingUserProducts = true;
+  final _panelController = PanelController();
+  bool _showYourItems = false;
+  List<ProductModel> _myProductList = [];
+
+  final _userItemsPagingController =
+      PagingController<int, ProductModel>(firstPageKey: 0);
+
   @override
   void initState() {
     application.currentScreen = 'Product List Screen';
@@ -105,7 +120,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
     }
 
     _productBloc.add(InitializeAddUpdateProduct());
-
+    _productBloc.add(GetFirstUserItems());
     super.initState();
     initialView = widget.initialView;
     setOriginalCenter();
@@ -160,152 +175,226 @@ class _ProductListScreenState extends State<ProductListScreen> {
         barrierEnabled: false,
         indicatorColor: kBackgroundColor,
         backgroundColor: Colors.white,
-        child: BlocListener(
-          bloc: _productBloc,
-          listener: (context, state) {
-            print('X=====> current product list state: $state');
-            if (state is ProductLoading) {
-              setState(() {
-                _loading = true;
-                ProgressHUD.of(context)!.show();
-              });
-            } else {
-              setState(() {
-                _loading = false;
-              });
-              ProgressHUD.of(context)!.dismiss();
-            }
-
-            if (state is InitializeAddUpdateProductSuccess) {
-              _categoryList = state.categories;
-
-              _productBloc.add(GetFirstProducts(
-                userid: application.currentUser!.uid,
-                loc: _currentCenter,
-                listType: widget.listType,
-                sortBy: _selectedSortBy,
-                distance: _selectedRadius,
-                category: _selectedCategory != null
-                    ? [_selectedCategory!.code!]
-                    : null,
-                itemCount: _selectedView == 'map' ? 50 : null,
-              ));
-            }
-
-            if (state is GetFirstProductsSuccess) {
-              _refreshController.refreshCompleted();
-              _pagingController.refresh();
-              lastProduct = null;
-              setState(() {
-                _list.clear();
-                _buildMarkers();
-              });
-
-              if (state.list.isNotEmpty) {
-                _list = state.list;
-                _buildMarkers();
-
-                final _productCount = (_selectedView == 'map') ? 50 : 10;
-
-                if (state.list.length == _productCount) {
-                  currentPage += 1;
-                  _pagingController.appendPage(state.list, currentPage);
-                  lastProduct = state.list.last;
-                } else {
-                  _pagingController.appendLastPage(state.list);
-                }
-              } else {
-                _pagingController.appendLastPage([]);
-                setState(() {
-                  _list.clear();
-                  _buildMarkers();
-                });
-
-                if (_selectedRadius < 20000) {
-                  _selectedRadius += 5000;
-
-                  _productBloc.add(
-                    GetFirstProducts(
-                      userid: application.currentUser!.uid,
-                      loc: _currentCenter,
-                      listType: widget.listType,
-                      sortBy: _selectedSortBy,
-                      distance: _selectedRadius,
-                      category: _selectedCategory != null
-                          ? [_selectedCategory!.code!]
-                          : null,
-                      itemCount: _selectedView == 'map' ? 50 : null,
-                    ),
-                  );
-                } else {
-                  DialogMessage.show(
+        child: MultiBlocListener(
+          listeners: [
+            BlocListener(
+              bloc: _homeBloc,
+              listener: (context, state) {
+                if (state is BarterDoesNotExist) {
+                  Navigator.push(
                     context,
-                    message:
-                        'No results found.\nTry to change your search criteria.',
-                  );
-                }
-              }
-
-              _pagingController.addPageRequestListener((pageKey) {
-                if (lastProduct != null) {
-                  var startAfterVal;
-                  switch (_selectedSortBy.toLowerCase()) {
-                    case 'rating':
-                      startAfterVal = lastProduct!.rating;
-                      break;
-                    case 'name':
-                      startAfterVal = lastProduct!.productname;
-                      break;
-                    case 'distance':
-                      startAfterVal = lastProduct!.distance;
-                      break;
-
-                    default:
-                      startAfterVal = lastProduct!.price;
-                  }
-                  _productBloc.add(
-                    GetNextProducts(
-                      listType: widget.listType,
-                      lastProductId: lastProduct!.productid!,
-                      startAfterVal: widget.listType != 'demand'
-                          ? startAfterVal
-                          : lastProduct!.likes.toString(),
-                      userId: widget.listType == 'user' ? widget.userId : '',
-                      sortBy: _selectedSortBy,
-                      distance: _selectedRadius,
-                      category: _selectedCategory != null
-                          ? [_selectedCategory!.code!]
-                          : null,
-                      itemCount: _selectedView == 'map' ? 50 : null,
-                      loc: _currentCenter,
+                    MaterialPageRoute(
+                      builder: (context) => BarterScreen(
+                        product: state.product1,
+                        initialOffer: state.product2,
+                      ),
                     ),
                   );
                 }
-              });
-            }
 
-            if (state is GetProductsSuccess) {
-              print('X=====> got next products');
-              if (state.list.isNotEmpty) {
-                _list.addAll(state.list);
-                _buildMarkers();
-                print('X=====> no. of all products: ${_list.length}');
-
-                final _productCount = (_selectedView == 'map') ? 50 : 10;
-                if (state.list.length == _productCount) {
-                  currentPage += 1;
-                  _pagingController.appendPage(state.list, currentPage);
-                  lastProduct = state.list.last;
-                  print('X=====> appended next page');
-                } else {
-                  _pagingController.appendLastPage(state.list);
-                  print('X=====> appended last page');
+                if (state is BarterExists) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => BarterScreen(
+                        product: state.product1,
+                        initialOffer: state.product2,
+                        existing: true,
+                      ),
+                    ),
+                  );
                 }
-              } else {
-                _pagingController.appendLastPage([]);
-              }
-            }
-          },
+              },
+            ),
+            BlocListener(
+              bloc: _productBloc,
+              listener: (context, state) {
+                print('X=====> current product list state: $state');
+                if (state is ProductLoading) {
+                  setState(() {
+                    _loading = true;
+                    ProgressHUD.of(context)!.show();
+                  });
+                } else {
+                  setState(() {
+                    _loading = false;
+                  });
+                  ProgressHUD.of(context)!.dismiss();
+                }
+
+                if (state is InitializeAddUpdateProductSuccess) {
+                  _categoryList = state.categories;
+
+                  _productBloc.add(GetFirstProducts(
+                    userid: application.currentUser!.uid,
+                    loc: _currentCenter,
+                    listType: widget.listType,
+                    sortBy: _selectedSortBy,
+                    distance: _selectedRadius,
+                    category: _selectedCategory != null
+                        ? [_selectedCategory!.code!]
+                        : null,
+                    itemCount: _selectedView == 'map' ? 50 : null,
+                  ));
+                }
+
+                if (state is GetFirstProductsSuccess) {
+                  _refreshController.refreshCompleted();
+                  _pagingController.refresh();
+                  lastProduct = null;
+                  setState(() {
+                    _list.clear();
+                    _buildMarkers();
+                  });
+
+                  if (state.list.isNotEmpty) {
+                    _list = state.list;
+                    _buildMarkers();
+
+                    final _productCount = (_selectedView == 'map') ? 50 : 10;
+
+                    if (state.list.length == _productCount) {
+                      currentPage += 1;
+                      _pagingController.appendPage(state.list, currentPage);
+                      lastProduct = state.list.last;
+                    } else {
+                      _pagingController.appendLastPage(state.list);
+                    }
+                  } else {
+                    _pagingController.appendLastPage([]);
+                    setState(() {
+                      _list.clear();
+                      _buildMarkers();
+                    });
+
+                    if (_selectedRadius < 20000) {
+                      _selectedRadius += 5000;
+
+                      _productBloc.add(
+                        GetFirstProducts(
+                          userid: application.currentUser!.uid,
+                          loc: _currentCenter,
+                          listType: widget.listType,
+                          sortBy: _selectedSortBy,
+                          distance: _selectedRadius,
+                          category: _selectedCategory != null
+                              ? [_selectedCategory!.code!]
+                              : null,
+                          itemCount: _selectedView == 'map' ? 50 : null,
+                        ),
+                      );
+                    } else {
+                      DialogMessage.show(
+                        context,
+                        message:
+                            'No results found.\nTry to change your search criteria.',
+                      );
+                    }
+                  }
+
+                  _pagingController.addPageRequestListener((pageKey) {
+                    if (lastProduct != null) {
+                      var startAfterVal;
+                      switch (_selectedSortBy.toLowerCase()) {
+                        case 'rating':
+                          startAfterVal = lastProduct!.rating;
+                          break;
+                        case 'name':
+                          startAfterVal = lastProduct!.productname;
+                          break;
+                        case 'distance':
+                          startAfterVal = lastProduct!.distance;
+                          break;
+
+                        default:
+                          startAfterVal = lastProduct!.price;
+                      }
+                      _productBloc.add(
+                        GetNextProducts(
+                          listType: widget.listType,
+                          lastProductId: lastProduct!.productid!,
+                          startAfterVal: widget.listType != 'demand'
+                              ? startAfterVal
+                              : lastProduct!.likes.toString(),
+                          userId:
+                              widget.listType == 'user' ? widget.userId : '',
+                          sortBy: _selectedSortBy,
+                          distance: _selectedRadius,
+                          category: _selectedCategory != null
+                              ? [_selectedCategory!.code!]
+                              : null,
+                          itemCount: _selectedView == 'map' ? 50 : null,
+                          loc: _currentCenter,
+                        ),
+                      );
+                    }
+                  });
+                }
+
+                if (state is GetFirstUserItemsSuccess) {
+                  _userItemsPagingController.refresh();
+
+                  if (state.list.isNotEmpty) {
+                    lastUserProduct = state.list.last;
+                    if (state.list.length == productCount) {
+                      _userItemsPagingController.appendPage(
+                          state.list, currentPage + 1);
+                    } else {
+                      _userItemsPagingController.appendLastPage(state.list);
+                    }
+                  } else {
+                    _userItemsPagingController.appendLastPage([]);
+                  }
+                  _userItemsPagingController.addPageRequestListener((pageKey) {
+                    if (lastUserProduct != null) {
+                      _productBloc.add(
+                        GetNextUserItems(
+                          lastProductId: lastProduct!.productid!,
+                          startAfterVal: lastProduct!.price.toString(),
+                        ),
+                      );
+                    }
+                  });
+                }
+
+                if (state is GetNextUserItemsSuccess) {
+                  if (state.list.isNotEmpty) {
+                    lastProduct = state.list.last;
+                    if (state.list.length == productCount) {
+                      _userItemsPagingController.appendPage(
+                          state.list, currentPage + 1);
+                    } else {
+                      _userItemsPagingController.appendLastPage(state.list);
+                    }
+                  } else {
+                    _userItemsPagingController.appendLastPage([]);
+                  }
+                }
+
+                if (state is GetProductsSuccess) {
+                  print('X=====> got next products');
+                  if (state.list.isNotEmpty) {
+                    _list.addAll(state.list);
+                    _buildMarkers();
+                    print('X=====> no. of all products: ${_list.length}');
+
+                    final _productCount = (_selectedView == 'map') ? 50 : 10;
+                    if (state.list.length == _productCount) {
+                      currentPage += 1;
+                      _pagingController.appendPage(state.list, currentPage);
+                      lastProduct = state.list.last;
+                      print('X=====> appended next page');
+                    } else {
+                      _pagingController.appendLastPage(state.list);
+                      print('X=====> appended last page');
+                    }
+                  } else {
+                    _pagingController.appendLastPage([]);
+                  }
+                }
+              },
+            ),
+          ],
           child: Container(
             child: Column(
               children: [
@@ -560,7 +649,217 @@ class _ProductListScreenState extends State<ProductListScreen> {
                 Expanded(
                   child: Container(
                       child: _selectedView == 'grid'
-                          ? _buildGridView2()
+                          ? Column(
+                              children: [
+                                Expanded(child: _buildGridView2()),
+                                SlidingUpPanel(
+                                  isDraggable: true,
+                                  controller: _panelController,
+                                  backdropEnabled: false,
+                                  minHeight: SizeConfig.screenHeight * 0.06,
+                                  maxHeight: SizeConfig.screenHeight * 0.22,
+                                  onPanelClosed: () {
+                                    setState(() {
+                                      _showYourItems = false;
+                                    });
+                                    application.chatOpened = false;
+                                  },
+                                  onPanelOpened: () {
+                                    setState(() {
+                                      _showYourItems = true;
+                                    });
+                                    application.chatOpened = true;
+                                  },
+                                  collapsed: InkWell(
+                                    onTap: () {
+                                      _panelController.open();
+                                    },
+                                    child: Container(
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: 15.0, vertical: 5.0),
+                                      color: Colors.white,
+                                      child: Row(
+                                        children: [
+                                          Text(
+                                            'Your Items',
+                                            style: Style.subtitle2.copyWith(
+                                              color: kBackgroundColor,
+                                              fontWeight: FontWeight.bold,
+                                              decoration:
+                                                  TextDecoration.underline,
+                                            ),
+                                          ),
+                                          Icon(
+                                            _showYourItems
+                                                ? Icons.arrow_drop_down
+                                                : Icons.arrow_drop_up,
+                                            color: kBackgroundColor,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  panel: Container(
+                                    color: Colors.white,
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 20.0,
+                                      vertical: 10.0,
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        InkWell(
+                                          onTap: () => _panelController.close(),
+                                          child: Row(
+                                            children: [
+                                              Text(
+                                                'Your Items',
+                                                style: Style.subtitle2.copyWith(
+                                                  color: kBackgroundColor,
+                                                  fontWeight: FontWeight.bold,
+                                                  decoration:
+                                                      TextDecoration.underline,
+                                                ),
+                                              ),
+                                              Icon(
+                                                _showYourItems
+                                                    ? Icons.arrow_drop_down
+                                                    : Icons.arrow_drop_up,
+                                                color: kBackgroundColor,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        Expanded(
+                                          child:
+                                              PagedGridView<int, ProductModel>(
+                                            pagingController:
+                                                _userItemsPagingController,
+                                            showNewPageProgressIndicatorAsGridChild:
+                                                false,
+                                            showNewPageErrorIndicatorAsGridChild:
+                                                false,
+                                            showNoMoreItemsIndicatorAsGridChild:
+                                                false,
+                                            padding: EdgeInsets.symmetric(
+                                              vertical: 10.0,
+                                            ),
+                                            gridDelegate:
+                                                SliverGridDelegateWithFixedCrossAxisCount(
+                                              crossAxisCount: 1,
+                                            ),
+                                            scrollDirection: Axis.horizontal,
+                                            builderDelegate:
+                                                PagedChildBuilderDelegate<
+                                                    ProductModel>(
+                                              itemBuilder:
+                                                  (context, product, index) {
+                                                var thumbnail = '';
+
+                                                if (product.media != null &&
+                                                    product.media!.isNotEmpty) {
+                                                  for (var media
+                                                      in product.media!) {
+                                                    thumbnail =
+                                                        media.url_t ?? '';
+                                                    if (thumbnail.isNotEmpty)
+                                                      break;
+                                                  }
+                                                }
+
+                                                if (thumbnail.isEmpty) {
+                                                  if (product.mediaPrimary !=
+                                                          null &&
+                                                      product.mediaPrimary!
+                                                              .url_t !=
+                                                          null &&
+                                                      product.mediaPrimary!
+                                                          .url_t!.isNotEmpty)
+                                                    thumbnail = product
+                                                        .mediaPrimary!.url_t!;
+                                                }
+                                                return LongPressDraggable(
+                                                  data: product,
+                                                  childWhenDragging: Container(
+                                                    height: SizeConfig
+                                                            .screenHeight *
+                                                        0.12,
+                                                    width: SizeConfig
+                                                            .screenHeight *
+                                                        0.12,
+                                                    decoration: BoxDecoration(
+                                                      color: kBackgroundColor,
+                                                      borderRadius:
+                                                          BorderRadius.only(
+                                                        topLeft:
+                                                            Radius.circular(
+                                                                20.0),
+                                                        topRight:
+                                                            Radius.circular(
+                                                                20.0),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  feedback: Container(
+                                                    height: 100.0,
+                                                    width: 100.0,
+                                                    decoration: BoxDecoration(
+                                                      shape: BoxShape.circle,
+                                                      image: DecorationImage(
+                                                        image: thumbnail
+                                                                .isNotEmpty
+                                                            ? CachedNetworkImageProvider(
+                                                                thumbnail)
+                                                            : AssetImage(
+                                                                    'assets/images/image_placeholder.jpg')
+                                                                as ImageProvider,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  child: BarterListItem(
+                                                    height: SizeConfig
+                                                            .screenHeight *
+                                                        0.07,
+                                                    width: SizeConfig
+                                                            .screenHeight *
+                                                        0.12,
+                                                    hideLikeBtn: true,
+                                                    hideDistance: true,
+                                                    showRating: false,
+                                                    product: product,
+                                                    onTapped: () async {
+                                                      final changed =
+                                                          await Navigator.push(
+                                                        context,
+                                                        MaterialPageRoute(
+                                                          builder: (context) =>
+                                                              ProductDetailsScreen(
+                                                            productId: product
+                                                                    .productid ??
+                                                                '',
+                                                            ownItem: false,
+                                                          ),
+                                                        ),
+                                                      );
+
+                                                      if (changed == true) {
+                                                        _productBloc.add(
+                                                            InitializeAddUpdateProduct());
+                                                      }
+                                                    },
+                                                  ),
+                                                );
+                                              },
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            )
                           : _buildMapView()),
                 ),
               ],
@@ -616,32 +915,45 @@ class _ProductListScreenState extends State<ProductListScreen> {
         ),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           mainAxisSpacing: 16,
-          crossAxisCount: 2,
+          crossAxisCount: SizeConfig.screenWidth > 500 ? 3 : 2,
         ),
         builderDelegate: PagedChildBuilderDelegate<ProductModel>(
           itemBuilder: (context, product, index) {
-            return FittedBox(
-              child: BarterListItem(
-                hideLikeBtn: widget.ownListing,
-                product: product,
-                onTapped: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ProductDetailsScreen(
-                      productId: product.productid ?? '',
-                      ownItem: widget.ownListing ? true : false,
+            return DragTarget(
+                builder: (context, candidateData, rejectedData) => FittedBox(
+                      child: BarterListItem(
+                        hideLikeBtn: widget.ownListing,
+                        product: product,
+                        onTapped: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ProductDetailsScreen(
+                              productId: product.productid ?? '',
+                              ownItem: widget.ownListing ? true : false,
+                            ),
+                          ),
+                        ),
+                        onLikeTapped: (val) {
+                          if (val.isNegative) {
+                            _productBloc.add(AddLike(product));
+                          } else {
+                            _productBloc.add(Unlike(product));
+                          }
+                        },
+                      ),
                     ),
-                  ),
-                ),
-                onLikeTapped: (val) {
-                  if (val.isNegative) {
-                    _productBloc.add(AddLike(product));
-                  } else {
-                    _productBloc.add(Unlike(product));
+                onAccept: (ProductModel product2) {
+                  if (product.userid != application.currentUser!.uid &&
+                      product.status != 'completed' &&
+                      product2.status != 'completed') {
+                    _homeBloc.add(
+                      CheckBarter(
+                        product1: product,
+                        product2: product2,
+                      ),
+                    );
                   }
-                },
-              ),
-            );
+                });
           },
         ),
       ),

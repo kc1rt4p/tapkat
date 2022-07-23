@@ -366,6 +366,7 @@ class BarterRepository {
 
   Future<bool> removeBarter(String barterId) async {
     try {
+      final barterRecord = await getBarterRecord(barterId);
       final messages =
           await barterRef.doc(barterId).collection('messages').get();
       if (messages.docs.isNotEmpty) {
@@ -381,12 +382,16 @@ class BarterRepository {
       final products =
           await barterRef.doc(barterId).collection('products').get();
       if (products.docs.isNotEmpty) {
-        await Future.forEach(products.docs, (QueryDocumentSnapshot prod) async {
-          await barterRef
-              .doc(barterId)
-              .collection('products')
-              .doc(prod.id)
-              .delete();
+        await Future.forEach(products.docs,
+            (QueryDocumentSnapshot<Map<String, dynamic>> prod) async {
+          final product = BarterProductModel.fromJson(prod.data());
+          if (product.productId != barterRecord!.u2P1Id) {
+            await barterRef
+                .doc(barterId)
+                .collection('products')
+                .doc(prod.id)
+                .delete();
+          }
         });
 
         // BarterRecordModel? barterRecord = await getBarterRecord(barterId);
@@ -407,7 +412,10 @@ class BarterRepository {
         //       .delete();
         // });
       }
-      await barterRef.doc(barterId).delete();
+      // await barterRef.doc(barterId).delete();
+
+      await updateBarterStatus(barterId, 'new');
+
       return true;
     } catch (e) {
       return false;

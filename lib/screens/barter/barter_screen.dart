@@ -123,6 +123,8 @@ class _BarterScreenState extends State<BarterScreen> {
 
   bool _existing = false;
 
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
+
   @override
   void setState(fn) {
     if (mounted) {
@@ -331,6 +333,7 @@ class _BarterScreenState extends State<BarterScreen> {
     return WillPopScope(
       onWillPop: _onWillPop,
       child: Scaffold(
+        key: _scaffoldKey,
         backgroundColor: Color(0xFFEBFBFF),
         body: ProgressHUD(
           indicatorColor: kBackgroundColor,
@@ -798,13 +801,15 @@ class _BarterScreenState extends State<BarterScreen> {
                 if (_existing &&
                     !['withdrawn', 'rejected', 'completed']
                         .contains(_barterRecord!.dealStatus) &&
-                    currentUserOffers.isNotEmpty) {
-                  print('HAHAHAHAHA');
+                    (currentUserOffers.isNotEmpty ||
+                        _currentUserOfferedCash != null &&
+                            _currentUserOfferedCash! > 0)) {
                   DialogMessage.show(
                     context,
                     message:
                         'An existing pending barter deal was found for these products.',
                   );
+                  _existing = false;
                 }
               });
             }
@@ -3321,12 +3326,24 @@ class _BarterScreenState extends State<BarterScreen> {
     setState(() {
       remoteUserOffers.addAll(items);
     });
+    if (items.length == 1)
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(
+            '${items.first.productName} has been added to products you will receive.'),
+        duration: Duration(seconds: 1),
+      ));
   }
 
   _add_currentUserOfferedItems(List<BarterProductModel> items) {
     setState(() {
       currentUserOffers.addAll(items);
     });
+    if (items.length == 1)
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(
+            '${items.first.productName} has been added to products you will send.'),
+        duration: Duration(seconds: 1),
+      ));
   }
 
   _showCurrentUserItems() {

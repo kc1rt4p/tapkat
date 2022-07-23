@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_progress_hud/flutter_progress_hud.dart';
@@ -7,11 +8,14 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
+import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/models/product_category.dart';
 import 'package:tapkat/schemas/product_markers_record.dart';
+import 'package:tapkat/screens/barter/barter_screen.dart';
 import 'package:tapkat/screens/product/bloc/product_bloc.dart';
 import 'package:tapkat/screens/product/product_details_screen.dart';
+import 'package:tapkat/screens/root/home/bloc/home_bloc.dart';
 import 'package:tapkat/screens/search/bloc/search_bloc.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/constants.dart';
@@ -47,6 +51,7 @@ class SearchResultScreen extends StatefulWidget {
 
 class _SearchResultScreenState extends State<SearchResultScreen> {
   final _searchBloc = SearchBloc();
+  final _homeBloc = HomeBloc();
   final _keyWordTextController = TextEditingController();
   List<ProductModel> searchResults = [];
   List<ProductMarkersRecord?> productMarkers = [];
@@ -62,6 +67,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
   int currentPage = 0;
 
   ProductModel? lastProduct;
+  ProductModel? lastUserProduct;
 
   final _productBloc = ProductBloc();
 
@@ -91,6 +97,14 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
   late LatLng _currentCenter;
 
   bool mapFirst = false;
+
+  bool _loadingUserProducts = true;
+  final _panelController = PanelController();
+  bool _showYourItems = false;
+  List<ProductModel> _myProductList = [];
+
+  final _userItemsPagingController =
+      PagingController<int, ProductModel>(firstPageKey: 0);
 
   @override
   void initState() {
@@ -148,6 +162,35 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
         barrierEnabled: false,
         child: MultiBlocListener(
           listeners: [
+            BlocListener(
+              bloc: _homeBloc,
+              listener: (context, state) {
+                if (state is BarterDoesNotExist) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => BarterScreen(
+                        product: state.product1,
+                        initialOffer: state.product2,
+                      ),
+                    ),
+                  );
+                }
+
+                if (state is BarterExists) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => BarterScreen(
+                        product: state.product1,
+                        initialOffer: state.product2,
+                        existing: true,
+                      ),
+                    ),
+                  );
+                }
+              },
+            ),
             BlocListener(
               bloc: _searchBloc,
               listener: (context, state) {
@@ -288,6 +331,47 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                       _selectedCategory = _categoryList
                           .firstWhere((cat) => cat.code == widget.category);
                   });
+                  _productBloc.add(GetFirstUserItems());
+                }
+
+                if (state is GetFirstUserItemsSuccess) {
+                  _userItemsPagingController.refresh();
+
+                  if (state.list.isNotEmpty) {
+                    lastUserProduct = state.list.last;
+                    if (state.list.length == productCount) {
+                      _userItemsPagingController.appendPage(
+                          state.list, currentPage + 1);
+                    } else {
+                      _userItemsPagingController.appendLastPage(state.list);
+                    }
+                  } else {
+                    _userItemsPagingController.appendLastPage([]);
+                  }
+                  _userItemsPagingController.addPageRequestListener((pageKey) {
+                    if (lastUserProduct != null) {
+                      _productBloc.add(
+                        GetNextUserItems(
+                          lastProductId: lastProduct!.productid!,
+                          startAfterVal: lastProduct!.price.toString(),
+                        ),
+                      );
+                    }
+                  });
+                }
+
+                if (state is GetNextUserItemsSuccess) {
+                  if (state.list.isNotEmpty) {
+                    lastProduct = state.list.last;
+                    if (state.list.length == productCount) {
+                      _userItemsPagingController.appendPage(
+                          state.list, currentPage + 1);
+                    } else {
+                      _userItemsPagingController.appendLastPage(state.list);
+                    }
+                  } else {
+                    _userItemsPagingController.appendLastPage([]);
+                  }
                 }
               },
             ),
@@ -497,7 +581,249 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                           child: _selectedView == 'map'
                               ? _buildMapView()
                               : searchResults.isNotEmpty
-                                  ? _buildGridView2()
+                                  ? Column(
+                                      children: [
+                                        Expanded(child: _buildGridView2()),
+                                        SlidingUpPanel(
+                                          isDraggable: true,
+                                          controller: _panelController,
+                                          backdropEnabled: false,
+                                          minHeight:
+                                              SizeConfig.screenHeight * 0.06,
+                                          maxHeight:
+                                              SizeConfig.screenHeight * 0.22,
+                                          onPanelClosed: () {
+                                            setState(() {
+                                              _showYourItems = false;
+                                            });
+                                            application.chatOpened = false;
+                                          },
+                                          onPanelOpened: () {
+                                            setState(() {
+                                              _showYourItems = true;
+                                            });
+                                            application.chatOpened = true;
+                                          },
+                                          collapsed: InkWell(
+                                            onTap: () {
+                                              _panelController.open();
+                                            },
+                                            child: Container(
+                                              padding: EdgeInsets.symmetric(
+                                                  horizontal: 15.0,
+                                                  vertical: 5.0),
+                                              color: Colors.white,
+                                              child: Row(
+                                                children: [
+                                                  Text(
+                                                    'Your Items',
+                                                    style: Style.subtitle2
+                                                        .copyWith(
+                                                      color: kBackgroundColor,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      decoration: TextDecoration
+                                                          .underline,
+                                                    ),
+                                                  ),
+                                                  Icon(
+                                                    _showYourItems
+                                                        ? Icons.arrow_drop_down
+                                                        : Icons.arrow_drop_up,
+                                                    color: kBackgroundColor,
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                          panel: Container(
+                                            color: Colors.white,
+                                            padding: EdgeInsets.symmetric(
+                                              horizontal: 20.0,
+                                              vertical: 10.0,
+                                            ),
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                InkWell(
+                                                  onTap: () =>
+                                                      _panelController.close(),
+                                                  child: Row(
+                                                    children: [
+                                                      Text(
+                                                        'Your Items',
+                                                        style: Style.subtitle2
+                                                            .copyWith(
+                                                          color:
+                                                              kBackgroundColor,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          decoration:
+                                                              TextDecoration
+                                                                  .underline,
+                                                        ),
+                                                      ),
+                                                      Icon(
+                                                        _showYourItems
+                                                            ? Icons
+                                                                .arrow_drop_down
+                                                            : Icons
+                                                                .arrow_drop_up,
+                                                        color: kBackgroundColor,
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                Expanded(
+                                                  child: PagedGridView<int,
+                                                      ProductModel>(
+                                                    pagingController:
+                                                        _userItemsPagingController,
+                                                    showNewPageProgressIndicatorAsGridChild:
+                                                        false,
+                                                    showNewPageErrorIndicatorAsGridChild:
+                                                        false,
+                                                    showNoMoreItemsIndicatorAsGridChild:
+                                                        false,
+                                                    padding:
+                                                        EdgeInsets.symmetric(
+                                                      vertical: 10.0,
+                                                    ),
+                                                    gridDelegate:
+                                                        SliverGridDelegateWithFixedCrossAxisCount(
+                                                      crossAxisCount: 1,
+                                                    ),
+                                                    scrollDirection:
+                                                        Axis.horizontal,
+                                                    builderDelegate:
+                                                        PagedChildBuilderDelegate<
+                                                            ProductModel>(
+                                                      itemBuilder: (context,
+                                                          product, index) {
+                                                        var thumbnail = '';
+
+                                                        if (product.media !=
+                                                                null &&
+                                                            product.media!
+                                                                .isNotEmpty) {
+                                                          for (var media
+                                                              in product
+                                                                  .media!) {
+                                                            thumbnail =
+                                                                media.url_t ??
+                                                                    '';
+                                                            if (thumbnail
+                                                                .isNotEmpty)
+                                                              break;
+                                                          }
+                                                        }
+
+                                                        if (thumbnail.isEmpty) {
+                                                          if (product.mediaPrimary != null &&
+                                                              product.mediaPrimary!
+                                                                      .url_t !=
+                                                                  null &&
+                                                              product
+                                                                  .mediaPrimary!
+                                                                  .url_t!
+                                                                  .isNotEmpty)
+                                                            thumbnail = product
+                                                                .mediaPrimary!
+                                                                .url_t!;
+                                                        }
+                                                        return LongPressDraggable(
+                                                          data: product,
+                                                          childWhenDragging:
+                                                              Container(
+                                                            height: SizeConfig
+                                                                    .screenHeight *
+                                                                0.12,
+                                                            width: SizeConfig
+                                                                    .screenHeight *
+                                                                0.12,
+                                                            decoration:
+                                                                BoxDecoration(
+                                                              color:
+                                                                  kBackgroundColor,
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .only(
+                                                                topLeft: Radius
+                                                                    .circular(
+                                                                        20.0),
+                                                                topRight: Radius
+                                                                    .circular(
+                                                                        20.0),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                          feedback: Container(
+                                                            height: 100.0,
+                                                            width: 100.0,
+                                                            decoration:
+                                                                BoxDecoration(
+                                                              shape: BoxShape
+                                                                  .circle,
+                                                              image:
+                                                                  DecorationImage(
+                                                                image: thumbnail
+                                                                        .isNotEmpty
+                                                                    ? CachedNetworkImageProvider(
+                                                                        thumbnail)
+                                                                    : AssetImage(
+                                                                            'assets/images/image_placeholder.jpg')
+                                                                        as ImageProvider,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                          child: BarterListItem(
+                                                            height: SizeConfig
+                                                                    .screenHeight *
+                                                                0.07,
+                                                            width: SizeConfig
+                                                                    .screenHeight *
+                                                                0.12,
+                                                            hideLikeBtn: true,
+                                                            hideDistance: true,
+                                                            showRating: false,
+                                                            product: product,
+                                                            onTapped: () async {
+                                                              final changed =
+                                                                  await Navigator
+                                                                      .push(
+                                                                context,
+                                                                MaterialPageRoute(
+                                                                  builder:
+                                                                      (context) =>
+                                                                          ProductDetailsScreen(
+                                                                    productId:
+                                                                        product.productid ??
+                                                                            '',
+                                                                    ownItem:
+                                                                        false,
+                                                                  ),
+                                                                ),
+                                                              );
+
+                                                              if (changed ==
+                                                                  true) {
+                                                                _productBloc.add(
+                                                                    InitializeAddUpdateProduct());
+                                                              }
+                                                            },
+                                                          ),
+                                                        );
+                                                      },
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    )
                                   : Container(
                                       padding: EdgeInsets.symmetric(
                                           horizontal: 30.0),
@@ -1301,31 +1627,44 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisSpacing: 10.0,
           mainAxisSpacing: 10.0,
-          crossAxisCount: 2,
+          crossAxisCount: SizeConfig.screenWidth > 500 ? 3 : 2,
         ),
         builderDelegate: PagedChildBuilderDelegate<ProductModel>(
           itemBuilder: (context, product, index) {
-            return FittedBox(
-              child: BarterListItem(
-                likeLeftMargin: 25,
-                product: product,
-                onTapped: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ProductDetailsScreen(
-                      productId: product.productid ?? '',
+            return DragTarget(
+                builder: (context, candidateData, rejectedData) => FittedBox(
+                      child: BarterListItem(
+                        likeLeftMargin: 25,
+                        product: product,
+                        onTapped: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ProductDetailsScreen(
+                              productId: product.productid ?? '',
+                            ),
+                          ),
+                        ),
+                        onLikeTapped: (val) {
+                          if (val.isNegative) {
+                            _productBloc.add(AddLike(product));
+                          } else {
+                            _productBloc.add(Unlike(product));
+                          }
+                        },
+                      ),
                     ),
-                  ),
-                ),
-                onLikeTapped: (val) {
-                  if (val.isNegative) {
-                    _productBloc.add(AddLike(product));
-                  } else {
-                    _productBloc.add(Unlike(product));
+                onAccept: (ProductModel product2) {
+                  if (product.userid != application.currentUser!.uid &&
+                      product.status != 'completed' &&
+                      product2.status != 'completed') {
+                    _homeBloc.add(
+                      CheckBarter(
+                        product1: product,
+                        product2: product2,
+                      ),
+                    );
                   }
-                },
-              ),
-            );
+                });
           },
         ),
       ),

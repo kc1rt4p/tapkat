@@ -150,3 +150,15 @@ class DeleteImages extends ProductEvent {
 
   DeleteImages(this.imgUrls, this.productId);
 }
+
+class GetFirstUserItems extends ProductEvent {}
+
+class GetNextUserItems extends ProductEvent {
+  final String lastProductId;
+  final String startAfterVal;
+
+  GetNextUserItems({
+    required this.lastProductId,
+    required this.startAfterVal,
+  });
+}

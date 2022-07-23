@@ -87,6 +87,18 @@ class AddProductImageSuccess extends ProductState {
   AddProductImageSuccess(this.result);
 }
 
+class GetFirstUserItemsSuccess extends ProductState {
+  final List<ProductModel> list;
+
+  GetFirstUserItemsSuccess(this.list);
+}
+
+class GetNextUserItemsSuccess extends ProductState {
+  final List<ProductModel> list;
+
+  GetNextUserItemsSuccess(this.list);
+}
+
 class GetProductsSuccess extends ProductState {
   final List<ProductModel> list;
 

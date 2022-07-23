@@ -209,6 +209,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
         if (event is CheckIfBarterExists) {
           emit(ProductInitial());
           try {
+            print('X=======> barterId: ${event.barterId}');
             final record = await _barterRepo.getBarterRecord(event.barterId);
             if (record != null)
               emit(ProductBarterExist());
@@ -217,6 +218,29 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
           } catch (e) {
             print('X====> ${e.toString()}');
           }
+        }
+
+        if (event is GetFirstUserItems) {
+          final list = await _productRepo.getFirstProducts(
+            'user',
+            sortBy: 'productname',
+            userId: application.currentUser!.uid,
+            itemCount: 10,
+          );
+          emit(GetFirstUserItemsSuccess(list));
+        }
+
+        if (event is GetNextUserItems) {
+          final list = await _productRepo.getNextProducts(
+            listType: 'user',
+            lastProductId: event.lastProductId,
+            startAfterVal: event.startAfterVal,
+            userId: application.currentUser!.uid,
+            sortBy: 'productname',
+            itemCount: 10,
+          );
+
+          emit(GetNextUserItemsSuccess(list));
         }
 
         if (event is GetNextProducts) {
