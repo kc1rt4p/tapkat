@@ -50,7 +50,15 @@ class BarterRepository {
   Future<bool> doesBarterExist(String barterId) async {
     final barterDoc = await barterRef.doc(barterId).get();
 
-    return barterDoc.exists;
+    if (!barterDoc.exists) return false;
+
+    final barterRecord = BarterRecordModel.fromJson(barterDoc.data()!);
+
+    if (barterRecord.deletedFor != null &&
+        barterRecord.deletedFor!.contains(application.currentUser!.uid))
+      return false;
+
+    return true;
   }
 
   Future<bool> counterOffer(BarterRecordModel barterRecord) async {
@@ -119,8 +127,10 @@ class BarterRepository {
     final openBarters = barters
         .where((barter) =>
             barter.dealStatus != 'completed' &&
-            barter.dealStatus != 'rejected' &&
-            barter.dealStatus != 'withdrawn')
+                barter.dealStatus != 'rejected' &&
+                barter.dealStatus != 'withdrawn' ||
+            (barter.deletedFor != null &&
+                !barter.deletedFor!.contains(application.currentUser!.uid)))
         .toList();
 
     final usersInvolved = [userId, application.currentUser!.uid];

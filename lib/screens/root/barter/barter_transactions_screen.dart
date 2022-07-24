@@ -250,22 +250,26 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                       Expanded(
                         child: (_view == 'open'
                                     ? openInitiatedList.where((barter) =>
-                                        barter.deletedFor != null &&
-                                        !barter.deletedFor!.contains(
-                                            application.currentUser!.uid))
+                                        barter.deletedFor == null ||
+                                        (barter.deletedFor != null &&
+                                            barter.deletedFor!.isEmpty) ||
+                                        (barter.deletedFor != null &&
+                                            barter.deletedFor!.isNotEmpty &&
+                                            !barter.deletedFor!.contains(
+                                                application.currentUser!.uid)))
                                     : completedInitiatedList.where((barter) =>
-                                        barter.deletedFor != null &&
-                                        !barter.deletedFor!.contains(
-                                            application.currentUser!.uid)))
+                                        barter.deletedFor == null ||
+                                        (barter.deletedFor != null &&
+                                            barter.deletedFor!.isEmpty) ||
+                                        (barter.deletedFor != null &&
+                                            barter.deletedFor!.isNotEmpty &&
+                                            !barter.deletedFor!.contains(
+                                                application.currentUser!.uid))))
                                 .isNotEmpty
                             ? _buildListContainer(
                                 _view == 'open'
-                                    ? openInitiatedList
-                                        .where((barter) =>
-                                            barter.deletedFor != null &&
-                                            !barter.deletedFor!.contains(application.currentUser!.uid))
-                                        .toList()
-                                    : completedInitiatedList.where((barter) => barter.deletedFor != null && !barter.deletedFor!.contains(application.currentUser!.uid)).toList(),
+                                    ? openInitiatedList.where((barter) => barter.deletedFor == null || (barter.deletedFor != null && barter.deletedFor!.isEmpty) || (barter.deletedFor != null && barter.deletedFor!.isNotEmpty && !barter.deletedFor!.contains(application.currentUser!.uid))).toList()
+                                    : completedInitiatedList.where((barter) => barter.deletedFor == null || (barter.deletedFor != null && barter.deletedFor!.isEmpty) || (barter.deletedFor != null && barter.deletedFor!.isNotEmpty && !barter.deletedFor!.contains(application.currentUser!.uid))).toList(),
                                 'For')
                             : Center(
                                 child: Text('No barters found'),
@@ -300,22 +304,22 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                           Expanded(
                             child: (_view == 'open'
                                         ? openOffersList.where((barter) =>
-                                            barter.deletedFor != null &&
-                                            !barter.deletedFor!.contains(
-                                                application.currentUser!.uid))
+                                            barter.deletedFor == null ||
+                                            (barter.deletedFor != null &&
+                                                barter.deletedFor!.isEmpty) ||
+                                            (barter.deletedFor != null &&
+                                                !barter.deletedFor!.contains(
+                                                    application
+                                                        .currentUser!.uid)))
                                         : completedOffersList.where((barter) =>
-                                            barter.deletedFor != null &&
-                                            !barter.deletedFor!.contains(
-                                                application.currentUser!.uid)))
+                                            barter.deletedFor == null ||
+                                            (barter.deletedFor != null &&
+                                                barter.deletedFor!.isEmpty) ||
+                                            (barter.deletedFor != null &&
+                                                !barter.deletedFor!.contains(
+                                                    application.currentUser!.uid))))
                                     .isNotEmpty
-                                ? _buildListContainer(
-                                    _view == 'open'
-                                        ? openOffersList
-                                            .where((barter) =>
-                                                barter.deletedFor != null && !barter.deletedFor!.contains(application.currentUser!.uid))
-                                            .toList()
-                                        : completedOffersList.where((barter) => barter.deletedFor != null && !barter.deletedFor!.contains(application.currentUser!.uid)).toList(),
-                                    'From')
+                                ? _buildListContainer(_view == 'open' ? openOffersList.where((barter) => barter.deletedFor == null || (barter.deletedFor != null && barter.deletedFor!.isEmpty) || (barter.deletedFor != null && barter.deletedFor!.isNotEmpty && !barter.deletedFor!.contains(application.currentUser!.uid))).toList() : completedOffersList.where((barter) => barter.deletedFor == null || (barter.deletedFor != null && barter.deletedFor!.isEmpty) || (barter.deletedFor != null && barter.deletedFor!.isNotEmpty && !barter.deletedFor!.contains(application.currentUser!.uid))).toList(), 'From')
                                 : Center(
                                     child: Text('No offers found'),
                                   ),

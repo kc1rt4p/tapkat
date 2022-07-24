@@ -16,7 +16,6 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_logs/flutter_logs.dart';
 import 'package:flutter_phoenix/flutter_phoenix.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:restart_app/restart_app.dart';
 import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
 import 'package:tapkat/firebase_options.dart';
 import 'package:tapkat/models/location.dart';
@@ -28,7 +27,6 @@ import 'package:tapkat/services/auth_service.dart';
 import 'package:geolocator/geolocator.dart' as geoLocator;
 
 import 'package:geocoding/geocoding.dart' as geoCoding;
-import 'package:tapkat/services/dynamic_link.dart';
 import 'package:tapkat/services/http/api_service.dart';
 import 'package:tapkat/utilities/application.dart' as application;
 import 'package:tapkat/utilities/dialog_message.dart';
@@ -82,7 +80,6 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
-  final _dynamincLinkService = DynamincLinkService();
   late AuthBloc _authBloc;
   late BarterBloc _barterBloc;
   String barterId = '';
@@ -109,8 +106,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     // FirebaseDynamicLinks.getInitialLInk does a call to firebase to get us the real link because we have shortened it.
     var link = await FirebaseDynamicLinks.instance.getInitialLink();
     // print('_-= $link');
-    var message = await FirebaseDynamicLinks.instance
-        .getDynamicLink(Uri.parse(_dynamincLinkService.Link));
+    // var message = await FirebaseDynamicLinks.instance
+    //     .getDynamicLink(Uri.parse(_dynamincLinkService.Link));
     // print('_-= $message');
 
     // This link may exist if the app was opened fresh so we'll want to handle it the same way onLink will.
