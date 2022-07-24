@@ -332,14 +332,14 @@ class _BarterScreenState extends State<BarterScreen> {
     SizeConfig().init(context);
     return WillPopScope(
       onWillPop: _onWillPop,
-      child: Scaffold(
-        key: _scaffoldKey,
-        backgroundColor: Color(0xFFEBFBFF),
-        body: ProgressHUD(
-          indicatorColor: kBackgroundColor,
-          backgroundColor: Colors.white,
-          barrierEnabled: false,
-          child: SingleChildScrollView(
+      child: ProgressHUD(
+        indicatorColor: kBackgroundColor,
+        backgroundColor: Colors.white,
+        barrierEnabled: false,
+        child: Scaffold(
+          key: _scaffoldKey,
+          backgroundColor: Color(0xFFEBFBFF),
+          body: SingleChildScrollView(
             child: Column(
               children: [
                 Container(
@@ -568,8 +568,12 @@ class _BarterScreenState extends State<BarterScreen> {
                     print(
                         '-===== widge.existing: ${widget.existing} || dealStatus: ${_barterRecord!.dealStatus}');
                     if (_existing &&
-                        ['withdrawn', 'rejected', 'completed']
-                            .contains(_barterRecord!.dealStatus)) {
+                        (['withdrawn', 'rejected', 'completed']
+                                .contains(_barterRecord!.dealStatus) ||
+                            _barterRecord!.deletedFor == null ||
+                            _barterRecord!.deletedFor != null &&
+                                _barterRecord!.deletedFor!
+                                    .contains(application.currentUser!.uid))) {
                       _existing = false;
                       // _barterBloc.add(RemoveBarter(_barterRecord!.barterId!));
                       _barterRecord = null;
@@ -598,7 +602,7 @@ class _BarterScreenState extends State<BarterScreen> {
                       _barterBloc.add(
                         InitializeBarter(
                           BarterRecordModel(
-                            barterId: _barterId! + '2',
+                            barterId: _barterId! + '_2',
                             userid1: _currentUser!.uid,
                             userid2: _product!.userid,
                             u2P1Id: widget.product != null
@@ -706,6 +710,8 @@ class _BarterScreenState extends State<BarterScreen> {
                       }
                     }
                   });
+
+                  _sortProducts();
 
                   if (_initialOffer != null &&
                       _barterRecord!.dealStatus == 'new') {
@@ -2053,6 +2059,98 @@ class _BarterScreenState extends State<BarterScreen> {
             ),
           ),
         ),
+        FutureBuilder(
+          future: _barterRepo.checkIfBarterable(
+              product.userid!, product.productid!, _barterId!),
+          builder: (context, AsyncSnapshot<bool> snapshot) {
+            if (snapshot.connectionState == ConnectionState.done) {
+              if (!snapshot.data!) {
+                return Visibility(
+                  visible: [
+                    'completed',
+                    'withdrawn',
+                    'rejected',
+                  ].contains(_barterRecord!.dealStatus),
+                  child: Positioned.fill(
+                    bottom: 0,
+                    child: Container(
+                      padding: EdgeInsets.symmetric(vertical: 5.0),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.5),
+                        borderRadius: BorderRadius.circular(20.0),
+                      ),
+                      child: Center(
+                        child: Text(
+                          'UNAVAILABLE',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: SizeConfig.textScaleFactor * 12,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              } else {
+                return Visibility(
+                  visible: !offers.any((BarterProductModel prod) =>
+                      prod.productId == product.productid),
+                  child: Positioned.fill(
+                    child: InkWell(
+                      onTap: !offers.any((BarterProductModel prod) =>
+                                  prod.productId == product.productid) &&
+                              _shouldShowAdd()
+                          ? () async {
+                              final barterable =
+                                  await _barterRepo.checkIfBarterable(
+                                      _recipientUserId!,
+                                      product.productid!,
+                                      _barterRecord!.barterId!);
+
+                              if (!barterable) {
+                                await DialogMessage.show(
+                                  context,
+                                  message:
+                                      'You can\'t add this product to the barter as you already have a another pending barter with ${_recipientName.toUpperCase()} for this ${product.productname}',
+                                );
+
+                                return;
+                              }
+
+                              final item =
+                                  BarterProductModel.fromProductModel(product);
+                              if (owner == 'remote') {
+                                _addWantedItems([item]);
+                              } else {
+                                _add_currentUserOfferedItems([item]);
+                              }
+
+                              _sortProducts();
+                            }
+                          : null,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.5),
+                          borderRadius: BorderRadius.circular(20.0),
+                        ),
+                        child: _shouldShowAdd()
+                            ? Icon(
+                                FontAwesomeIcons.plus,
+                                color: Colors.white,
+                              )
+                            : Text(''),
+                      ),
+                    ),
+                  ),
+                );
+              }
+            }
+
+            return Container();
+          },
+        ),
         Visibility(
           visible:
               _barterRecord!.dealStatus == 'completed' && owner == 'remote',
@@ -2114,55 +2212,6 @@ class _BarterScreenState extends State<BarterScreen> {
                     size: SizeConfig.textScaleFactor * 14,
                   ),
                 ),
-              ),
-            ),
-          ),
-        ),
-        Visibility(
-          visible: !offers.any(
-              (BarterProductModel prod) => prod.productId == product.productid),
-          child: Positioned.fill(
-            child: InkWell(
-              onTap: !offers.any((BarterProductModel prod) =>
-                          prod.productId == product.productid) &&
-                      _shouldShowAdd()
-                  ? () async {
-                      final barterable = await _barterRepo.checkIfBarterable(
-                          _recipientUserId!,
-                          product.productid!,
-                          _barterRecord!.barterId!);
-
-                      if (!barterable) {
-                        await DialogMessage.show(
-                          context,
-                          message:
-                              'You can\'t add this product to the barter as you already have a another pending barter with ${_recipientName.toUpperCase()} for this ${product.productname}',
-                        );
-
-                        return;
-                      }
-
-                      final item = BarterProductModel.fromProductModel(product);
-                      if (owner == 'remote') {
-                        _addWantedItems([item]);
-                      } else {
-                        _add_currentUserOfferedItems([item]);
-                      }
-
-                      _sortProducts();
-                    }
-                  : null,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.5),
-                  borderRadius: BorderRadius.circular(20.0),
-                ),
-                child: _shouldShowAdd()
-                    ? Icon(
-                        FontAwesomeIcons.plus,
-                        color: Colors.white,
-                      )
-                    : Text(''),
               ),
             ),
           ),
@@ -2804,9 +2853,11 @@ class _BarterScreenState extends State<BarterScreen> {
   }
 
   _onSubmitTapped(bool forced) async {
+    ProgressHUD.of(_scaffoldKey.currentContext!)!.show();
     _existing = false;
     if (!forced) {
       if (_barterRecord != null && _barterRecord!.dealStatus == 'sold') {
+        ProgressHUD.of(_scaffoldKey.currentContext!)!.dismiss();
         return;
       }
 
@@ -2879,8 +2930,33 @@ class _BarterScreenState extends State<BarterScreen> {
           result2: false,
         );
 
-        if (shouldContinue == null || !shouldContinue) return;
+        if (shouldContinue == null || !shouldContinue) {
+          ProgressHUD.of(_scaffoldKey.currentContext!)!.dismiss();
+          return;
+        }
       }
+    }
+
+    final itemsInBarter = remoteUserOffers + currentUserOffers;
+    List<BarterProductModel> unavailableItems = [];
+
+    await Future.forEach(itemsInBarter, (BarterProductModel item) async {
+      final exists = await _barterRepo.checkIfBarterable(
+          item.userId!, item.productId!, _barterId!);
+      if (exists) {
+        unavailableItems.add(item);
+      }
+    });
+
+    if (unavailableItems.length > 0) {
+      DialogMessage.show(
+        context,
+        message:
+            'There are unavailable items added to the barter, please make sure all items are available to proceed.',
+      );
+
+      ProgressHUD.of(_scaffoldKey.currentContext!)!.dismiss();
+      return;
     }
 
     List<BarterProductModel> _deletedProducts = [];
@@ -2998,7 +3074,10 @@ class _BarterScreenState extends State<BarterScreen> {
       result2: false,
     );
 
-    if (!shouldContinue) return;
+    if (!shouldContinue) {
+      ProgressHUD.of(_scaffoldKey.currentContext!)!.dismiss();
+      return;
+    }
 
     switch (_barterRecord!.dealStatus) {
       case 'submitted':
@@ -3023,6 +3102,8 @@ class _BarterScreenState extends State<BarterScreen> {
         break;
       default:
     }
+
+    ProgressHUD.of(_scaffoldKey.currentContext!)!.dismiss();
   }
 
   Container _buildBarterList({

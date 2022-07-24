@@ -562,7 +562,8 @@ class _ProductAddScreenState extends State<ProductAddScreen> {
         productname: _nameTextController.text.trim(),
         productdesc: _descTextController.text.trim(),
         free: isFree,
-        price: double.parse(_priceTextController.text.trim()),
+        price:
+            double.parse(_priceTextController.text.trim().replaceAll(',', '')),
         type: _selectedOfferType!,
         location: LocationModel(
           longitude: _selectedLocation!.geometry!.location.lng,
