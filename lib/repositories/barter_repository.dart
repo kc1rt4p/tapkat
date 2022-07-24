@@ -127,10 +127,12 @@ class BarterRepository {
     final openBarters = barters
         .where((barter) =>
             barter.dealStatus != 'completed' &&
-                barter.dealStatus != 'rejected' &&
-                barter.dealStatus != 'withdrawn' ||
-            (barter.deletedFor != null &&
-                !barter.deletedFor!.contains(application.currentUser!.uid)))
+            barter.dealStatus != 'rejected' &&
+            barter.dealStatus != 'withdrawn' &&
+            (barter.deletedFor == null ||
+                (barter.deletedFor != null &&
+                    !barter.deletedFor!
+                        .contains(application.currentUser!.uid))))
         .toList();
 
     final usersInvolved = [userId, application.currentUser!.uid];
