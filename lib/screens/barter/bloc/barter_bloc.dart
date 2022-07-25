@@ -112,10 +112,29 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
                     .streamBarterProducts(event.barterData.barterId!),
               ));
             } else {
-              _barterRecord.deletedFor = [];
-              final updated = await _barterRepository.updateBarter(
-                  _barterRecord.barterId!, _barterRecord.toJson());
-              add(StreamBarter(_barterRecord));
+              if ((['withdrawn', 'rejected', 'completed']
+                      .contains(_barterRecord.dealStatus) ||
+                  _barterRecord.deletedFor == null ||
+                  _barterRecord.deletedFor != null &&
+                      _barterRecord.deletedFor!
+                          .contains(application.currentUser!.uid))) {
+                final _barterId = event.barterData.barterId!.split('_');
+                var newBarterId = '';
+                if (_barterId.length > 1) {
+                  newBarterId = _barterId[0] +
+                      '_' +
+                      (int.parse(_barterId[1]) + 1).toString();
+                } else {
+                  newBarterId = _barterId[0] + '_1';
+                }
+                event.barterData.barterId = newBarterId;
+                add(InitializeBarter(event.barterData));
+              } else {
+                _barterRecord.deletedFor = [];
+                await _barterRepository.updateBarter(
+                    _barterRecord.barterId!, _barterRecord.toJson());
+                add(StreamBarter(_barterRecord));
+              }
             }
           }
 
