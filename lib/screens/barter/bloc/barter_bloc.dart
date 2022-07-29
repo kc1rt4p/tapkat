@@ -39,9 +39,11 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
         _user = application.currentUser;
         if (_user != null) {
           if (event is InitializeBarter) {
-            print('=== barter id: ${event.barterData.barterId}');
             var _barterRecord = await _barterRepository
                 .getBarterRecord(event.barterData.barterId!);
+
+            print(
+                '=== barter id: ${event.barterData.barterId} value: ${_barterRecord != null ? _barterRecord.toJson() : _barterRecord}');
 
             if (_barterRecord == null) {
               event.barterData.dealStatus = 'new';
@@ -51,8 +53,21 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
               final user2Model =
                   await _userRepo.getUser(event.barterData.userid2!);
 
+              if (user2Model == null) {
+                emit(BarterUserError(
+                    'Unable to find owner of ${event.barterData.u2P1Name}'));
+                return;
+              }
+
               event.barterData.userid1Name = user1Model!.display_name;
-              event.barterData.userid2Name = user2Model!.display_name;
+              event.barterData.userid2Name = user2Model.display_name;
+
+              final product =
+                  await _productRepository.getProduct(event.barterData.u2P1Id!);
+
+              if (product.status == 'completed') {
+                event.barterData.dealStatus = 'inquiry';
+              }
 
               final newBarter =
                   await _barterRepository.setBarterRecord(event.barterData);
@@ -60,20 +75,22 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
               var barterProducts = await _barterRepository
                   .getBarterProducts(event.barterData.barterId!);
 
-              if (!barterProducts
-                  .any((bProd) => bProd.productId == event.barterData.u2P1Id)) {
-                await _barterRepository
-                    .addBarterProducts(event.barterData.barterId!, [
-                  BarterProductModel(
-                    productId: event.barterData.u2P1Id,
-                    userId: event.barterData.userid2,
-                    productName: event.barterData.u2P1Name,
-                    price: event.barterData.u2P1Price,
-                    imgUrl: event.barterData.u2P1Image,
-                  )
-                ]);
-                barterProducts = await _barterRepository
-                    .getBarterProducts(event.barterData.barterId!);
+              if (product.status != 'completed') {
+                if (!barterProducts.any(
+                    (bProd) => bProd.productId == event.barterData.u2P1Id)) {
+                  await _barterRepository
+                      .addBarterProducts(event.barterData.barterId!, [
+                    BarterProductModel(
+                      productId: event.barterData.u2P1Id,
+                      userId: event.barterData.userid2,
+                      productName: event.barterData.u2P1Name,
+                      price: event.barterData.u2P1Price,
+                      imgUrl: event.barterData.u2P1Image,
+                    )
+                  ]);
+                  barterProducts = await _barterRepository
+                      .getBarterProducts(event.barterData.barterId!);
+                }
               }
 
               _barterRecord = await _barterRepository
@@ -112,10 +129,9 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
                     .streamBarterProducts(event.barterData.barterId!),
               ));
             } else {
-              if ((['withdrawn', 'rejected', 'completed']
+              if (['withdrawn', 'rejected', 'completed']
                       .contains(_barterRecord.dealStatus) ||
-                  _barterRecord.deletedFor == null ||
-                  _barterRecord.deletedFor != null &&
+                  (_barterRecord.deletedFor != null &&
                       _barterRecord.deletedFor!
                           .contains(application.currentUser!.uid))) {
                 final _barterId = event.barterData.barterId!.split('_');
@@ -130,7 +146,9 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
                 event.barterData.barterId = newBarterId;
                 add(InitializeBarter(event.barterData));
               } else {
-                _barterRecord.deletedFor = [];
+                if (_barterRecord.deletedFor != null &&
+                    _barterRecord.deletedFor!
+                        .contains(application.currentUser!.uid)) {}
                 await _barterRepository.updateBarter(
                     _barterRecord.barterId!, _barterRecord.toJson());
                 add(StreamBarter(_barterRecord));

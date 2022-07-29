@@ -69,6 +69,9 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
   List<LocalizationModel> _locList = [];
   LocalizationModel? _selectedLocalization;
 
+  bool showImageError = false;
+  bool showOfferTypeError = false;
+
   @override
   void initState() {
     application.currentScreen = 'Product Edit Screen';
@@ -116,7 +119,8 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
 
               setState(() {
                 state.urls.forEach((url) {
-                  _media.removeWhere((media) => media.url == url);
+                  _media.removeWhere(
+                      (media) => media.url == url || media.url_t == url);
                 });
               });
             }
@@ -127,8 +131,9 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
 
                 if (_product.currency != null &&
                     _product.currency!.isNotEmpty) {
-                  _selectedLocalization = _locList
-                      .firstWhere((loc) => loc.currency == _product.currency);
+                  _selectedLocalization = _locList.firstWhere(
+                      (loc) => loc.currency == _product.currency,
+                      orElse: () => _locList[0]);
                 } else {
                   if (application.currentUserModel!.currency != null &&
                       application.currentUserModel!.currency!.isNotEmpty)
@@ -158,10 +163,11 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
             if (state is AddProductImageSuccess) {
               await DialogMessage.show(context,
                   message: 'An image has been uploaded for this product.');
-              setState(() {
-                _media.addAll(state.result.media!
-                    .where((media) => !_media.any((m) => m.url == media.url))
-                    .toList());
+
+              await Future.delayed(Duration(milliseconds: 500), () {
+                setState(() {
+                  _media = state.result.media ?? [];
+                });
               });
             }
           },
@@ -188,17 +194,17 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
                                     height: SizeConfig.screenHeight * 0.1)
                                 : SizedBox(),
                             _buildPhoto(),
-                            // Visibility(
-                            //       visible: showImageError,
-                            //       child: Text(
-                            //         'Please select image(s) of your offer',
-                            //         style: TextStyle(
-                            //           fontSize: 12.0,
-                            //           color: Colors.red.shade400,
-                            //           fontStyle: FontStyle.italic,
-                            //         ),
-                            //       ),
-                            //     ),
+                            Visibility(
+                              visible: showImageError,
+                              child: Text(
+                                'Please select image(s) of your offer',
+                                style: TextStyle(
+                                  fontSize: 12.0,
+                                  color: Colors.red.shade400,
+                                  fontStyle: FontStyle.italic,
+                                ),
+                              ),
+                            ),
                             SizedBox(height: 16.0),
                             CustomTextFormField(
                               label: 'Name',
@@ -220,10 +226,21 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
                                       hintText: 'Enter the price you want',
                                       controller: _priceTextController,
                                       color: kBackgroundColor,
-                                      validator: (val) =>
-                                          val != null && val.isEmpty
-                                              ? 'Required'
-                                              : null,
+                                      maxLength: 14,
+                                      validator: (val) {
+                                        if (val != null && val.isEmpty)
+                                          return 'Required';
+                                        else if (val != null &&
+                                            val.isNotEmpty) {
+                                          final amount = double.parse(
+                                              val.replaceAll(',', ''));
+                                          if (amount > 100000000) {
+                                            return 'Max amount is 100,000,000.00';
+                                          }
+                                        }
+
+                                        return null;
+                                      },
                                       keyboardType: TextInputType.number,
                                       isReadOnly: isFree,
                                       removeMargin: true,
@@ -356,6 +373,17 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
                                         )
                                       : Container(),
                                 ],
+                              ),
+                            ),
+                            Visibility(
+                              visible: showOfferTypeError,
+                              child: Text(
+                                'Required',
+                                style: TextStyle(
+                                  fontSize: 12.0,
+                                  color: Colors.red.shade400,
+                                  fontStyle: FontStyle.italic,
+                                ),
                               ),
                             ),
                             CustomTextFormField(
@@ -518,8 +546,28 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
   }
 
   void _onUpdateTapped() {
+    if (_media.length < 1) {
+      setState(() {
+        showImageError = true;
+      });
+      return;
+    }
+
     if (!_formKey.currentState!.validate()) return;
+
+    if (_selectedOfferType == null) {
+      setState(() {
+        showOfferTypeError = true;
+      });
+      return;
+    } else {
+      setState(() {
+        showOfferTypeError = false;
+      });
+    }
+
     var productRequest = ProductRequestModel.fromProduct(_product);
+
     productRequest.productname = _nameTextController.text.trim();
     productRequest.productdesc = _descTextController.text.trim();
     productRequest.price =
@@ -793,6 +841,7 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
 
     if (selectedMedia != null &&
         validateFileFormat(selectedMedia.storagePath, context)) {
+      showImageError = false;
       _productBloc.add(AddProductImage(_product.productid!, [selectedMedia]));
     }
   }

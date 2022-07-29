@@ -85,6 +85,12 @@ class GetUserReviewSuccess extends BarterState {
   GetUserReviewSuccess(this.review);
 }
 
+class BarterUserError extends BarterState {
+  final String message;
+
+  BarterUserError(this.message);
+}
+
 class GetProductReviewSuccess extends BarterState {
   final ProductReviewModel? review;
 

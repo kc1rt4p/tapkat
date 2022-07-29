@@ -169,7 +169,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     builder: (context) => BarterScreen(
                       product: state.product1,
                       initialOffer: state.product2,
-                      existing: true,
+                      // existing: true,
                     ),
                   ),
                 );

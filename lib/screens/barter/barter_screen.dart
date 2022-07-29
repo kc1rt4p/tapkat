@@ -172,12 +172,12 @@ class _BarterScreenState extends State<BarterScreen> {
   }
 
   Future<bool> _onWillPop() async {
-    if (_barterRecord!.dealStatus == 'new' &&
-        (currentUserOffers.isEmpty && _currentUserOfferedCash == null)) {
-      // unsaveProductsStorage.clear();
-      _barterBloc.add(DeleteBarter(_barterId!));
-      return false;
-    }
+    // if (_barterRecord!.dealStatus == 'new' &&
+    //     (currentUserOffers.isEmpty && _currentUserOfferedCash == null)) {
+    //   // unsaveProductsStorage.clear();
+    //   // _barterBloc.add(DeleteBarter(_barterId!));
+    //   return false;
+    // }
 
     setState(() {
       _closing = true;
@@ -254,7 +254,11 @@ class _BarterScreenState extends State<BarterScreen> {
 
       if (result != null) {
         shouldExit = result;
-      } else if (result == null) {
+
+        await unsaveProductsStorage.clear();
+      } else if (result == null &&
+          ['new', 'rejected', 'withdrawn']
+              .contains(_barterRecord!.dealStatus)) {
         List<dynamic> _unsavedOfferedProducts = [];
         List<dynamic> _unsavedWantedProducts = [];
 
@@ -304,7 +308,7 @@ class _BarterScreenState extends State<BarterScreen> {
         await unsaveProductsStorage.setItem(
             'wantedDateUpdated', DateTime.now().toString());
 
-        if (_currentUserOfferedCash != null && _currentUserOfferedCash! > 0 ||
+        if (_currentUserOfferedCash != null ||
             (_origCurrentUserOfferedCash != null &&
                 _origCurrentUserOfferedCash != _currentUserOfferedCash)) {
           await unsaveProductsStorage.setItem(
@@ -345,7 +349,13 @@ class _BarterScreenState extends State<BarterScreen> {
                 Container(
                   height: SizeConfig.screenHeight,
                   child: SlidingUpPanel(
-                    maxHeight: SizeConfig.screenHeight * 0.7,
+                    maxHeight: (widget.showChatFirst &&
+                            widget.product != null &&
+                            widget.product!.status! == 'completed' &&
+                            _barterRecord != null &&
+                            _barterRecord!.dealStatus == 'inquiry')
+                        ? SizeConfig.screenHeight * 0.75
+                        : SizeConfig.screenHeight * 0.7,
                     minHeight: kToolbarHeight,
                     controller: _panelController,
                     isDraggable: false,
@@ -451,6 +461,11 @@ class _BarterScreenState extends State<BarterScreen> {
                 _origRemoteUserOfferedCash = _remoteUserOfferedCash;
               });
 
+              // unsaveProductsStorage.ready
+              // // await unsaveProductsStorage.clear();
+            }
+
+            if (state is UpdateBarterStatusSuccess) {
               String message = '';
 
               switch (_barterRecord!.dealStatus) {
@@ -470,72 +485,6 @@ class _BarterScreenState extends State<BarterScreen> {
                   title: 'Info',
                   message: message,
                   hideClose: true,
-                );
-              }
-              // unsaveProductsStorage.ready
-              // // await unsaveProductsStorage.clear();
-            }
-
-            if (state is BarterRemoved) {
-              if (widget.barterRecord == null && _product != null) {
-                var thumbnail = '';
-
-                if (_product!.mediaPrimary != null &&
-                    _product!.mediaPrimary!.url != null &&
-                    _product!.mediaPrimary!.url!.isNotEmpty)
-                  thumbnail = _product!.mediaPrimary!.url!;
-
-                if (_product!.mediaPrimary != null &&
-                    _product!.mediaPrimary!.url_t != null &&
-                    _product!.mediaPrimary!.url_t!.isNotEmpty)
-                  thumbnail = _product!.mediaPrimary!.url_t!;
-
-                if (_product!.mediaPrimary == null ||
-                    _product!.mediaPrimary!.url!.isEmpty &&
-                        _product!.mediaPrimary!.url_t!.isEmpty &&
-                        _product!.media != null &&
-                        _product!.media!.isNotEmpty)
-                  thumbnail = _product!.media!.first.url_t != null
-                      ? _product!.media!.first.url_t!
-                      : _product!.media!.first.url!;
-
-                setState(() {
-                  _barterId = _currentUser!.uid +
-                      _product!.userid! +
-                      _product!.productid!;
-                });
-
-                _barterBloc.add(
-                  InitializeBarter(
-                    BarterRecordModel(
-                      barterId: _barterId,
-                      userid1: _currentUser!.uid,
-                      userid2: _product!.userid,
-                      u2P1Id: widget.product != null
-                          ? widget.product!.productid
-                          : null,
-                      u2P1Name: widget.product != null
-                          ? widget.product!.productname
-                          : null,
-                      u2P1Price: widget.product != null
-                          ? widget.product!.price!.toDouble()
-                          : null,
-                      u2P1Image: thumbnail,
-                      u1P1Id: widget.initialOffer != null
-                          ? widget.initialOffer!.productid
-                          : null,
-                      u1P1Name: widget.initialOffer != null
-                          ? widget.initialOffer!.productname
-                          : null,
-                      u1P1Price: widget.initialOffer != null
-                          ? widget.initialOffer!.price!.toDouble()
-                          : null,
-                      barterNo: 0,
-                      dealDate: DateTime.now(),
-                      userid1Role: 'sender',
-                      userid2Role: 'recipient',
-                    ),
-                  ),
                 );
               }
             }
@@ -560,6 +509,7 @@ class _BarterScreenState extends State<BarterScreen> {
                 } else {
                   setState(() {
                     _barterRecord = barterRecord;
+
                     print('X=======>       ${barterRecord!.toJson()}');
                     _barterId = _barterRecord!.barterId;
 
@@ -772,7 +722,14 @@ class _BarterScreenState extends State<BarterScreen> {
                         'unsavedOfferedProducts:: ${unsavedWantedProducts.length}');
                   }
 
-                  if (widget.buying && initialCashOffer != null) {
+                  print(
+                      '0----> barter id: ${_barterId} | buying: ${widget.buying} | initialCashOffer: $initialCashOffer | existing: ${widget.existing}');
+
+                  if (widget.buying &&
+                      initialCashOffer != null &&
+                      (!widget.existing ||
+                          _barterRecord!.dealStatus == 'new' &&
+                              currentUserOffers.isEmpty)) {
                     _currentUserOfferedCash = widget.product!.price!;
                     initialCashOffer = null;
                     _onSubmitTapped(true);
@@ -865,8 +822,7 @@ class _BarterScreenState extends State<BarterScreen> {
                     !['withdrawn', 'rejected', 'completed']
                         .contains(_barterRecord!.dealStatus) &&
                     (currentUserOffers.isNotEmpty ||
-                        _currentUserOfferedCash != null &&
-                            _currentUserOfferedCash! > 0)) {
+                        _currentUserOfferedCash != null)) {
                   DialogMessage.show(
                     context,
                     message:
@@ -905,7 +861,20 @@ class _BarterScreenState extends State<BarterScreen> {
             }
 
             if (state is BarterError) {
-              print('error: ${state.message}');
+              DialogMessage.show(
+                context,
+                title: 'Error',
+                message: state.message,
+              );
+            }
+
+            if (state is BarterUserError) {
+              await DialogMessage.show(
+                context,
+                title: 'Error',
+                message: state.message,
+              );
+              Navigator.pop(context);
             }
           },
         ),
@@ -1006,6 +975,14 @@ class _BarterScreenState extends State<BarterScreen> {
                   GestureDetector(
                     onTap: () async {
                       if (!_panelClosed) {
+                        if (widget.showChatFirst &&
+                            widget.product != null &&
+                            widget.product!.status! == 'completed' &&
+                            _barterRecord != null &&
+                            _barterRecord!.dealStatus == 'inquiry') {
+                          Navigator.pop(context);
+                          return;
+                        }
                         _panelController.close();
                         _chatFocusNode.unfocus();
                         application.chatOpened = false;
@@ -1025,7 +1002,7 @@ class _BarterScreenState extends State<BarterScreen> {
                     ),
                   ),
                   Text(
-                    'Barter with $_recipientName',
+                    '${(widget.showChatFirst && widget.product != null && widget.product!.status! == 'completed' && _barterRecord != null && _barterRecord!.dealStatus == 'inquiry') ? 'Chat' : 'Barter'} with $_recipientName',
                     style: Style.subtitle1.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
@@ -1094,6 +1071,7 @@ class _BarterScreenState extends State<BarterScreen> {
             child: BlocListener(
               bloc: _barterBloc,
               listener: (context, state) {
+                print('--- CURRENT BARTER STATE: $state');
                 if (state is BarterLoading) {
                   ProgressHUD.of(context)!.show();
                 } else {
@@ -1128,7 +1106,7 @@ class _BarterScreenState extends State<BarterScreen> {
                 }
 
                 if (state is BarterChatInitialized) {
-                  if (widget.showChatFirst) {
+                  if (widget.showChatFirst && widget.product != null) {
                     _panelController.open();
 
                     _barterBloc
@@ -1171,7 +1149,11 @@ class _BarterScreenState extends State<BarterScreen> {
                             child: Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: Text(
-                                'Barter Chat',
+                                (widget.showChatFirst &&
+                                        widget.product != null &&
+                                        widget.product!.status! == 'completed')
+                                    ? 'Chat'
+                                    : 'Barter Chat',
                                 style: Style.subtitle2
                                     .copyWith(color: kBackgroundColor),
                               ),
@@ -1184,6 +1166,13 @@ class _BarterScreenState extends State<BarterScreen> {
                                 padding: const EdgeInsets.all(8.0),
                                 child: InkWell(
                                   onTap: () {
+                                    if (widget.showChatFirst &&
+                                        widget.product != null &&
+                                        widget.product!.status! ==
+                                            'completed' &&
+                                        _barterRecord != null &&
+                                        _barterRecord!.dealStatus == 'inquiry')
+                                      return;
                                     _panelController.close();
                                     _chatFocusNode.unfocus();
 
@@ -1193,7 +1182,15 @@ class _BarterScreenState extends State<BarterScreen> {
                                     child: Icon(
                                       Icons.close,
                                       size: 30.0,
-                                      color: kBackgroundColor,
+                                      color: (widget.showChatFirst &&
+                                              widget.product != null &&
+                                              widget.product!.status! ==
+                                                  'completed' &&
+                                              _barterRecord != null &&
+                                              _barterRecord!.dealStatus ==
+                                                  'inquiry')
+                                          ? Colors.grey
+                                          : kBackgroundColor,
                                     ),
                                   ),
                                 ),
@@ -1217,26 +1214,33 @@ class _BarterScreenState extends State<BarterScreen> {
                                   .toList(),
                             ),
                           ),
-                          Container(
-                            constraints: BoxConstraints(maxWidth: 500.0),
-                            padding: const EdgeInsets.all(8.0),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                ..._buildUserButtons(true),
-                                _shouldShowAdd()
-                                    ? Expanded(
-                                        child: CustomButton(
-                                          bgColor: kBackgroundColor,
-                                          label: 'Add offer',
-                                          onTap: _showCurrentUserItems,
-                                          removeMargin: true,
-                                        ),
-                                      )
-                                    : Text(''),
-                              ],
-                            ),
-                          ),
+                          (widget.showChatFirst &&
+                                  widget.product != null &&
+                                  widget.product!.status! == 'completed' &&
+                                  _barterRecord != null &&
+                                  _barterRecord!.dealStatus == 'inquiry')
+                              ? Container()
+                              : Container(
+                                  constraints: BoxConstraints(maxWidth: 500.0),
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      ..._buildUserButtons(true),
+                                      _shouldShowAdd()
+                                          ? Expanded(
+                                              child: CustomButton(
+                                                bgColor: kBackgroundColor,
+                                                label: 'Add offer',
+                                                onTap: _showCurrentUserItems,
+                                                removeMargin: true,
+                                              ),
+                                            )
+                                          : Text(''),
+                                    ],
+                                  ),
+                                ),
                         ],
                       ),
                     ),
@@ -1437,8 +1441,7 @@ class _BarterScreenState extends State<BarterScreen> {
               margin: EdgeInsets.only(right: 8.0),
               child: CustomButton(
                 enabled: ((currentUserOffers.isNotEmpty ||
-                        _currentUserOfferedCash != null &&
-                            _currentUserOfferedCash! > 0) &&
+                        _currentUserOfferedCash != null) &&
                     (remoteUserOffers.isNotEmpty ||
                         _remoteUserOfferedCash != null &&
                             _remoteUserOfferedCash! > 0)),
@@ -1473,9 +1476,9 @@ class _BarterScreenState extends State<BarterScreen> {
                   margin: EdgeInsets.only(right: 8.0),
                   child: CustomButton(
                     enabled: (currentUserOffers.isNotEmpty ||
-                            _currentUserOfferedCash != null &&
-                                _currentUserOfferedCash! > 0) &&
-                        remoteUserOffers.isNotEmpty,
+                            _currentUserOfferedCash != null) &&
+                        (remoteUserOffers.isNotEmpty ||
+                            _remoteUserOfferedCash != null),
                     removeMargin: true,
                     label: 'Accept',
                     onTap: () => _onSubmitTapped(false),
@@ -2108,7 +2111,7 @@ class _BarterScreenState extends State<BarterScreen> {
                         ? () async {
                             final barterable =
                                 await _barterRepo.checkIfBarterable(
-                                    _recipientUserId!,
+                                    product.userid!,
                                     product.productid!,
                                     _barterRecord!.barterId!);
 
@@ -2753,9 +2756,90 @@ class _BarterScreenState extends State<BarterScreen> {
       }).toList(),
     );
 
+    if (widget.showChatFirst &&
+        widget.product != null &&
+        widget.product!.status! == 'completed' &&
+        _barterRecord != null &&
+        _barterRecord!.dealStatus == 'inquiry') {
+      var thumbnail = '';
+      final product = widget.product!;
+
+      if (product.media != null && product.media!.isNotEmpty) {
+        for (var media in product.media!) {
+          thumbnail = media.url_t ?? '';
+          if (thumbnail.isNotEmpty) break;
+        }
+      }
+
+      if (thumbnail.isEmpty) {
+        if (product.mediaPrimary != null &&
+            product.mediaPrimary!.url_t != null &&
+            product.mediaPrimary!.url_t!.isNotEmpty)
+          thumbnail = product.mediaPrimary!.url_t!;
+      }
+
+      return Container(
+        padding: EdgeInsets.all(20.0),
+        height: (widget.showChatFirst &&
+                widget.product != null &&
+                widget.product!.status! == 'completed' &&
+                _barterRecord != null &&
+                _barterRecord!.dealStatus == 'inquiry')
+            ? (SizeConfig.screenHeight * 0.25) -
+                (kToolbarHeight + SizeConfig.paddingTop)
+            : (SizeConfig.screenHeight * 0.3) -
+                (kToolbarHeight + SizeConfig.paddingTop),
+        width: double.infinity,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  height: SizeConfig.textScaleFactor * 65,
+                  width: SizeConfig.textScaleFactor * 65,
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: kBackgroundColor,
+                      width: 1.5,
+                    ),
+                    borderRadius: BorderRadius.circular(8.0),
+                    image: DecorationImage(
+                      image: thumbnail.isNotEmpty
+                          ? NetworkImage(thumbnail)
+                          : AssetImage('assets/images/image_placeholder.jpg')
+                              as ImageProvider<Object>,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+                SizedBox(width: SizeConfig.textScaleFactor * 30),
+                Column(
+                  children: [
+                    Text(product.productname ?? ''),
+                    Text(product.price != null
+                        ? oCcy.format(product.price!)
+                        : ''),
+                  ],
+                ),
+              ],
+            )
+          ],
+        ),
+      );
+    }
+
     return Container(
-      height: (SizeConfig.screenHeight * 0.3) -
-          (kToolbarHeight + SizeConfig.paddingTop),
+      height: (widget.showChatFirst &&
+              widget.product != null &&
+              widget.product!.status! == 'completed' &&
+              _barterRecord != null &&
+              _barterRecord!.dealStatus == 'inquiry')
+          ? (SizeConfig.screenHeight * 0.25) -
+              (kToolbarHeight + SizeConfig.paddingTop)
+          : (SizeConfig.screenHeight * 0.3) -
+              (kToolbarHeight + SizeConfig.paddingTop),
       width: double.infinity,
       padding: EdgeInsets.symmetric(
         horizontal: 10.0,
@@ -2857,20 +2941,29 @@ class _BarterScreenState extends State<BarterScreen> {
                           ),
                         ],
                       ),
-                      SizedBox(height: 8.0),
-                      Center(
-                        child: Text(
-                          _barterRecord != null &&
-                                  _barterRecord!.dealStatus != 'completed'
-                              ? 'Tap here to edit your offer'
-                              : 'Tap here to view barter',
-                          style: TextStyle(
-                            fontSize: SizeConfig.textScaleFactor * 13,
-                            fontWeight: FontWeight.w600,
-                            decoration: TextDecoration.underline,
-                          ),
-                        ),
-                      ),
+                      (widget.showChatFirst &&
+                              widget.product != null &&
+                              widget.product!.status! == 'completed' &&
+                              _barterRecord != null &&
+                              _barterRecord!.dealStatus == 'inquiry')
+                          ? Container()
+                          : Center(
+                              child: Container(
+                                margin: EdgeInsets.only(top: 8.0),
+                                child: Text(
+                                  _barterRecord != null &&
+                                          _barterRecord!.dealStatus !=
+                                              'completed'
+                                      ? 'Tap here to edit your offer'
+                                      : 'Tap here to view barter',
+                                  style: TextStyle(
+                                    fontSize: SizeConfig.textScaleFactor * 13,
+                                    fontWeight: FontWeight.w600,
+                                    decoration: TextDecoration.underline,
+                                  ),
+                                ),
+                              ),
+                            ),
                     ],
                   ),
                 ),
@@ -3119,7 +3212,7 @@ class _BarterScreenState extends State<BarterScreen> {
     final shouldContinue = await DialogMessage.show(
       context,
       message: _currentUserRole == 'recipient'
-          ? 'You are about to reject this offer, do you want to continue?'
+          ? 'You are about to reject/revoke this offer, do you want to continue?'
           : 'You are about to withdraw this barter, do you want to continue?',
       title: 'Warning',
       buttonText: 'Yes',
@@ -3437,8 +3530,16 @@ class _BarterScreenState extends State<BarterScreen> {
                       controller: amounTextController,
                       keyboardType:
                           TextInputType.numberWithOptions(decimal: true),
+                      maxLength: 14,
                       validator: (val) {
-                        if (val == null || val.length < 1) return 'Required';
+                        if (val != null && val.isEmpty)
+                          return 'Required';
+                        else if (val != null && val.isNotEmpty) {
+                          final amount = double.parse(val.replaceAll(',', ''));
+                          if (amount > 100000000) {
+                            return 'Max amount is 100,000,000.00';
+                          }
+                        }
 
                         return null;
                       },

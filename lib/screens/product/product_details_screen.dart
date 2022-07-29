@@ -1101,17 +1101,35 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                           return;
                                                         }
                                                         _isBuying = false;
-                                                        final _barterId =
-                                                            application
-                                                                    .currentUser!
-                                                                    .uid +
-                                                                _product!
-                                                                    .userid! +
-                                                                _product!
-                                                                    .productid!;
-                                                        _productBloc.add(
-                                                            CheckIfBarterExists(
-                                                                _barterId));
+                                                        // final _barterId =
+                                                        //     application
+                                                        //             .currentUser!
+                                                        //             .uid +
+                                                        //         _product!
+                                                        //             .userid! +
+                                                        //         _product!
+                                                        //             .productid!;
+                                                        final barterable =
+                                                            await _barterRepo
+                                                                .checkIfBarterable(
+                                                                    _product!
+                                                                        .userid!,
+                                                                    _product!
+                                                                        .productid!,
+                                                                    '');
+                                                        Navigator.push(
+                                                          context,
+                                                          MaterialPageRoute(
+                                                            builder: (context) =>
+                                                                BarterScreen(
+                                                              product:
+                                                                  _product!,
+                                                              existing:
+                                                                  !barterable,
+                                                              buying: _isBuying,
+                                                            ),
+                                                          ),
+                                                        );
                                                       },
                                                     ),
                                                   ),
@@ -1185,11 +1203,20 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
     return 'within 900m';
   }
 
-  _onBuyProduct() {
+  _onBuyProduct() async {
     _isBuying = true;
-    final _barterId =
-        application.currentUser!.uid + _product!.userid! + _product!.productid!;
-    _productBloc.add(CheckIfBarterExists(_barterId));
+    final barterable = await _barterRepo.checkIfBarterable(
+        _product!.userid!, _product!.productid!, '');
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => BarterScreen(
+          product: _product!,
+          existing: !barterable,
+          buying: _isBuying,
+        ),
+      ),
+    );
   }
 
   _onMapViewTapped() {

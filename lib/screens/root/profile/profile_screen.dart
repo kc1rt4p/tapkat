@@ -523,7 +523,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                           child: Row(
                                             children: [
                                               Text(
-                                                'Products',
+                                                'Products/Services',
                                                 style: Style.subtitle2.copyWith(
                                                     color: Colors.white),
                                               ),

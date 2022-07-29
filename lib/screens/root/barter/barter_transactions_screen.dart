@@ -135,10 +135,14 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                         if (list.isNotEmpty) {
                           byYouList = list;
                           openInitiatedList = byYouList
-                              .where((br) => br.dealStatus != 'completed')
+                              .where((br) =>
+                                  br.dealStatus != 'completed' &&
+                                  br.dealStatus != 'inquiry')
                               .toList();
                           completedInitiatedList = byYouList
-                              .where((br) => br.dealStatus == 'completed')
+                              .where((br) =>
+                                  br.dealStatus == 'completed' &&
+                                  br.dealStatus != 'inquiry')
                               .toList();
                         } else {
                           byYouList.clear();
@@ -185,10 +189,14 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                                   barterRecord.dealStatus != 'new')
                               .toList();
                           openOffersList = fromOthersList
-                              .where((br) => br.dealStatus != 'completed')
+                              .where((br) =>
+                                  br.dealStatus != 'completed' &&
+                                  br.dealStatus != 'inquiry')
                               .toList();
                           completedOffersList = fromOthersList
-                              .where((br) => br.dealStatus == 'completed')
+                              .where((br) =>
+                                  br.dealStatus == 'completed' &&
+                                  br.dealStatus != 'inquiry')
                               .toList();
                         } else {
                           fromOthersList.clear();

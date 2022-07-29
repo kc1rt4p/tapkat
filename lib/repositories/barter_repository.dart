@@ -126,9 +126,9 @@ class BarterRepository {
 
     final openBarters = barters
         .where((barter) =>
-            barter.dealStatus != 'completed' &&
-            barter.dealStatus != 'rejected' &&
-            barter.dealStatus != 'withdrawn' &&
+            barter.barterId != barterId &&
+            !['new', 'completed', 'rejected', 'withdrawn']
+                .contains(barter.dealStatus) &&
             (barter.deletedFor == null ||
                 (barter.deletedFor != null &&
                     !barter.deletedFor!
@@ -156,7 +156,9 @@ class BarterRepository {
               .map((doc) => BarterProductModel.fromJson(doc.data()))
               .toList();
 
-          if (products.any((prod) => prod.productId == productId)) {
+          if (products
+              .where((p) => !p.productId!.contains('cash'))
+              .any((prod) => prod.productId == productId)) {
             exists = true;
           }
         }

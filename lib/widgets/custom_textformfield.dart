@@ -19,6 +19,7 @@ class CustomTextFormField extends StatefulWidget {
   final List<TextInputFormatter>? inputFormatters;
   final bool removeMargin;
   final Widget? prefix;
+  final int maxLength;
   final TextInputAction? textInputAction;
 
   const CustomTextFormField({
@@ -40,6 +41,7 @@ class CustomTextFormField extends StatefulWidget {
     this.removeMargin = false,
     this.prefix,
     this.textInputAction,
+    this.maxLength = 60,
   }) : super(key: key);
 
   @override
@@ -82,6 +84,7 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
                     color: widget.textColor ?? Colors.white,
                     fontSize: 15.0,
                   ),
+                  maxLength: widget.maxLength,
                   obscureText: widget.obscureText,
                   keyboardType: widget.isPhone
                       ? TextInputType.phone
@@ -103,6 +106,7 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
                     border: InputBorder.none,
                     contentPadding: EdgeInsets.symmetric(vertical: 6.0),
                     isDense: true,
+                    counterText: '',
                     hintText: widget.hintText,
                     hintStyle: TextStyle(
                       color:
