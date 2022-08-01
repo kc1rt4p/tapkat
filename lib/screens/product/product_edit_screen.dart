@@ -126,6 +126,7 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
             }
 
             if (state is InitializeAddUpdateProductSuccess) {
+              print('X===> ${state.types}');
               setState(() {
                 _locList = state.locList;
 
@@ -135,13 +136,19 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
                       (loc) => loc.currency == _product.currency,
                       orElse: () => _locList[0]);
                 } else {
-                  if (application.currentUserModel!.currency != null &&
-                      application.currentUserModel!.currency!.isNotEmpty)
-                    _selectedLocalization = _locList.firstWhere((loc) =>
-                        loc.currency == application.currentUserModel!.currency);
-                  else
-                    _selectedLocalization = _locList.firstWhere((loc) =>
-                        loc.country_code == application.currentCountry);
+                  if (_locList.isNotEmpty) {
+                    if (application.currentUserModel!.currency != null &&
+                        application.currentUserModel!.currency!.isNotEmpty)
+                      _selectedLocalization = _locList.firstWhere((loc) =>
+                          loc.currency ==
+                          application.currentUserModel!.currency);
+                    else {
+                      if (application.currentCountry != null) {
+                        _selectedLocalization = _locList.firstWhere((loc) =>
+                            loc.country_code == application.currentCountry);
+                      }
+                    }
+                  }
                 }
 
                 _categories = state.categories;
@@ -161,14 +168,20 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
             }
 
             if (state is AddProductImageSuccess) {
-              await DialogMessage.show(context,
-                  message: 'An image has been uploaded for this product.');
-
-              await Future.delayed(Duration(milliseconds: 500), () {
+              await Future.delayed(Duration(milliseconds: 1000), () {
                 setState(() {
-                  _media = state.result.media ?? [];
+                  if (state.result.media != null) {
+                    // final newMedia = state.result.media!
+                    //     .where((m) => !_media
+                    //         .any((n) => n.url != m.url || n.url_t != m.url_t))
+                    //     .toList();
+                    // _media.addAll(newMedia);
+                    _media = state.result.media!;
+                  }
                 });
               });
+              await DialogMessage.show(context,
+                  message: 'An image has been uploaded for this product.');
             }
           },
           child: Container(
@@ -188,6 +201,8 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
                       child: Form(
                         key: _formKey,
                         child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             SizeConfig.screenWidth > 500
                                 ? SizedBox(
@@ -546,6 +561,7 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
   }
 
   void _onUpdateTapped() {
+    print(_media.length);
     if (_media.length < 1) {
       setState(() {
         showImageError = true;

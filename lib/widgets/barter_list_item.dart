@@ -145,24 +145,6 @@ class _BarterListItemState extends State<BarterListItem> {
                                 ),
                               );
                             },
-                            // placeholder: (context, text) => Container(
-                            //   height: widget.height ??
-                            //       SizeConfig.screenHeight * 0.15,
-                            //   width: widget.width ??
-                            //       SizeConfig.screenHeight * 0.19,
-                            //   decoration: BoxDecoration(
-                            //     borderRadius: BorderRadius.only(
-                            //       topLeft: Radius.circular(20.0),
-                            //       topRight: Radius.circular(20.0),
-                            //     ),
-                            //     color: Colors.grey,
-                            //     image: DecorationImage(
-                            //       image: AssetImage(
-                            //           'assets/images/image_placeholder.jpg'),
-                            //       fit: BoxFit.cover,
-                            //     ),
-                            //   ),
-                            // ),
                             errorWidget: (context, url, error) => Container(
                               height: widget.height ??
                                   SizeConfig.screenHeight * 0.13,
@@ -333,45 +315,47 @@ class _BarterListItemState extends State<BarterListItem> {
                         ),
                       ),
                       SizedBox(height: 3.0),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          product.free != null && product.free!
-                              ? Container()
-                              : Padding(
-                                  padding: const EdgeInsets.only(right: 2.0),
-                                  child: Text(
-                                    product.currency != null &&
-                                            product.currency!.isNotEmpty
-                                        ? product.currency!
-                                        : application.currentUserModel!
-                                                        .currency !=
-                                                    null &&
-                                                application.currentUserModel!
-                                                    .currency!.isNotEmpty
-                                            ? application
-                                                .currentUserModel!.currency!
-                                            : '',
-                                    style: TextStyle(
-                                      fontSize: widget.fontSize ??
-                                          SizeConfig.textScaleFactor * 8,
-                                      fontWeight: FontWeight.w600,
+                      FittedBox(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            product.free != null && product.free!
+                                ? Container()
+                                : Container(
+                                    padding: const EdgeInsets.only(right: 2.0),
+                                    child: Text(
+                                      product.currency != null &&
+                                              product.currency!.isNotEmpty
+                                          ? product.currency!
+                                          : application.currentUserModel!
+                                                          .currency !=
+                                                      null &&
+                                                  application.currentUserModel!
+                                                      .currency!.isNotEmpty
+                                              ? application
+                                                  .currentUserModel!.currency!
+                                              : '',
+                                      style: TextStyle(
+                                        fontSize: widget.fontSize ??
+                                            SizeConfig.textScaleFactor * 8,
+                                        fontWeight: FontWeight.w600,
+                                      ),
                                     ),
                                   ),
-                                ),
-                          Text(
-                            product.free != null && product.free!
-                                ? 'FREE'
-                                : product.price != null
-                                    ? oCcy.format(product.price!)
-                                    : '0.00',
-                            style: TextStyle(
-                              fontSize: widget.fontSize ??
-                                  SizeConfig.textScaleFactor * 9.5,
-                              fontWeight: FontWeight.w700,
+                            Text(
+                              product.free != null && product.free!
+                                  ? 'FREE'
+                                  : product.price != null
+                                      ? oCcy.format(product.price!)
+                                      : '0.00',
+                              style: TextStyle(
+                                fontSize: widget.fontSize ??
+                                    SizeConfig.textScaleFactor * 9.5,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                       Row(
                         children: [

@@ -215,10 +215,21 @@ class _ProductAddScreenState extends State<ProductAddScreen> {
                                       hintText: 'Enter the price you want',
                                       controller: _priceTextController,
                                       color: kBackgroundColor,
-                                      validator: (val) =>
-                                          val != null && val.isEmpty
-                                              ? 'Required'
-                                              : null,
+                                      maxLength: 14,
+                                      validator: (val) {
+                                        if (val != null && val.isEmpty)
+                                          return 'Required';
+                                        else if (val != null &&
+                                            val.isNotEmpty) {
+                                          final amount = double.parse(
+                                              val.replaceAll(',', ''));
+                                          if (amount > 100000000) {
+                                            return 'Max amount is 100,000,000.00';
+                                          }
+                                        }
+
+                                        return null;
+                                      },
                                       keyboardType: TextInputType.number,
                                       isReadOnly: isFree,
                                       removeMargin: true,
@@ -543,6 +554,7 @@ class _ProductAddScreenState extends State<ProductAddScreen> {
       setState(() {
         showImageError = true;
       });
+      return;
     }
     if (!_formKey.currentState!.validate()) return;
 

@@ -123,6 +123,8 @@ class _BarterScreenState extends State<BarterScreen> {
 
   bool _existing = false;
 
+  bool _loading = false;
+
   final _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
@@ -178,6 +180,7 @@ class _BarterScreenState extends State<BarterScreen> {
     //   // _barterBloc.add(DeleteBarter(_barterId!));
     //   return false;
     // }
+    if (_loading) return false;
 
     setState(() {
       _closing = true;
@@ -339,7 +342,6 @@ class _BarterScreenState extends State<BarterScreen> {
       child: ProgressHUD(
         indicatorColor: kBackgroundColor,
         backgroundColor: Colors.white,
-        barrierEnabled: false,
         child: Scaffold(
           key: _scaffoldKey,
           backgroundColor: Color(0xFFEBFBFF),
@@ -349,13 +351,7 @@ class _BarterScreenState extends State<BarterScreen> {
                 Container(
                   height: SizeConfig.screenHeight,
                   child: SlidingUpPanel(
-                    maxHeight: (widget.showChatFirst &&
-                            widget.product != null &&
-                            widget.product!.status! == 'completed' &&
-                            _barterRecord != null &&
-                            _barterRecord!.dealStatus == 'inquiry')
-                        ? SizeConfig.screenHeight * 0.75
-                        : SizeConfig.screenHeight * 0.7,
+                    maxHeight: SizeConfig.screenHeight * 0.7,
                     minHeight: kToolbarHeight,
                     controller: _panelController,
                     isDraggable: false,
@@ -391,8 +387,10 @@ class _BarterScreenState extends State<BarterScreen> {
           bloc: _barterBloc,
           listener: (context, state) async {
             if (state is BarterLoading) {
+              _loading = true;
               ProgressHUD.of(context)!.show();
             } else {
+              _loading = false;
               ProgressHUD.of(context)!.dismiss();
             }
 
@@ -474,6 +472,15 @@ class _BarterScreenState extends State<BarterScreen> {
                   break;
                 case 'revoked':
                   message = 'You have revoked acceptance for this offer';
+                  break;
+                case 'completed':
+                  message = 'You marked this barter as completed';
+                  break;
+                case 'withdrawn':
+                  message = 'You have withdrawn your offer';
+                  break;
+                case 'rejected':
+                  message = 'You have rejected the offer';
                   break;
                 default:
                   message = 'You have submitted this offer';
@@ -884,8 +891,10 @@ class _BarterScreenState extends State<BarterScreen> {
             print('auth bloc current state: $state');
             if (state is AuthLoading) {
               ProgressHUD.of(context)!.show();
+              _loading = true;
             } else {
               ProgressHUD.of(context)!.dismiss();
+              _loading = false;
             }
             if (state is GetCurrentUsersuccess) {
               setState(() {
@@ -975,14 +984,14 @@ class _BarterScreenState extends State<BarterScreen> {
                   GestureDetector(
                     onTap: () async {
                       if (!_panelClosed) {
-                        if (widget.showChatFirst &&
-                            widget.product != null &&
-                            widget.product!.status! == 'completed' &&
-                            _barterRecord != null &&
-                            _barterRecord!.dealStatus == 'inquiry') {
-                          Navigator.pop(context);
-                          return;
-                        }
+                        // if (widget.showChatFirst &&
+                        //     widget.product != null &&
+                        //     widget.product!.status! == 'completed' &&
+                        //     _barterRecord != null &&
+                        //     _barterRecord!.dealStatus == 'inquiry') {
+                        //   Navigator.pop(context);
+                        //   return;
+                        // }
                         _panelController.close();
                         _chatFocusNode.unfocus();
                         application.chatOpened = false;
@@ -1002,7 +1011,7 @@ class _BarterScreenState extends State<BarterScreen> {
                     ),
                   ),
                   Text(
-                    '${(widget.showChatFirst && widget.product != null && widget.product!.status! == 'completed' && _barterRecord != null && _barterRecord!.dealStatus == 'inquiry') ? 'Chat' : 'Barter'} with $_recipientName',
+                    'Barter with $_recipientName',
                     style: Style.subtitle1.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
@@ -1073,8 +1082,10 @@ class _BarterScreenState extends State<BarterScreen> {
               listener: (context, state) {
                 print('--- CURRENT BARTER STATE: $state');
                 if (state is BarterLoading) {
+                  _loading = true;
                   ProgressHUD.of(context)!.show();
                 } else {
+                  _loading = false;
                   ProgressHUD.of(context)!.dismiss();
                 }
 
@@ -1149,11 +1160,7 @@ class _BarterScreenState extends State<BarterScreen> {
                             child: Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: Text(
-                                (widget.showChatFirst &&
-                                        widget.product != null &&
-                                        widget.product!.status! == 'completed')
-                                    ? 'Chat'
-                                    : 'Barter Chat',
+                                'Barter Chat',
                                 style: Style.subtitle2
                                     .copyWith(color: kBackgroundColor),
                               ),
@@ -1166,13 +1173,13 @@ class _BarterScreenState extends State<BarterScreen> {
                                 padding: const EdgeInsets.all(8.0),
                                 child: InkWell(
                                   onTap: () {
-                                    if (widget.showChatFirst &&
-                                        widget.product != null &&
-                                        widget.product!.status! ==
-                                            'completed' &&
-                                        _barterRecord != null &&
-                                        _barterRecord!.dealStatus == 'inquiry')
-                                      return;
+                                    // if (widget.showChatFirst &&
+                                    //     widget.product != null &&
+                                    //     widget.product!.status! ==
+                                    //         'completed' &&
+                                    //     _barterRecord != null &&
+                                    //     _barterRecord!.dealStatus == 'inquiry')
+                                    //   return;
                                     _panelController.close();
                                     _chatFocusNode.unfocus();
 
@@ -1182,15 +1189,17 @@ class _BarterScreenState extends State<BarterScreen> {
                                     child: Icon(
                                       Icons.close,
                                       size: 30.0,
-                                      color: (widget.showChatFirst &&
-                                              widget.product != null &&
-                                              widget.product!.status! ==
-                                                  'completed' &&
-                                              _barterRecord != null &&
-                                              _barterRecord!.dealStatus ==
-                                                  'inquiry')
-                                          ? Colors.grey
-                                          : kBackgroundColor,
+                                      color:
+                                          // (widget.showChatFirst &&
+                                          //         widget.product != null &&
+                                          //         widget.product!.status! ==
+                                          //             'completed' &&
+                                          //         _barterRecord != null &&
+                                          //         _barterRecord!.dealStatus ==
+                                          //             'inquiry')
+                                          //     ? Colors.grey
+                                          //     :
+                                          kBackgroundColor,
                                     ),
                                   ),
                                 ),
@@ -1214,33 +1223,33 @@ class _BarterScreenState extends State<BarterScreen> {
                                   .toList(),
                             ),
                           ),
-                          (widget.showChatFirst &&
-                                  widget.product != null &&
-                                  widget.product!.status! == 'completed' &&
-                                  _barterRecord != null &&
-                                  _barterRecord!.dealStatus == 'inquiry')
-                              ? Container()
-                              : Container(
-                                  constraints: BoxConstraints(maxWidth: 500.0),
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      ..._buildUserButtons(true),
-                                      _shouldShowAdd()
-                                          ? Expanded(
-                                              child: CustomButton(
-                                                bgColor: kBackgroundColor,
-                                                label: 'Add offer',
-                                                onTap: _showCurrentUserItems,
-                                                removeMargin: true,
-                                              ),
-                                            )
-                                          : Text(''),
-                                    ],
-                                  ),
-                                ),
+                          // (widget.showChatFirst &&
+                          //         widget.product != null &&
+                          //         widget.product!.status! == 'completed' &&
+                          //         _barterRecord != null &&
+                          //         _barterRecord!.dealStatus == 'inquiry')
+                          //     ? Container()
+                          //     :
+                          Container(
+                            constraints: BoxConstraints(maxWidth: 500.0),
+                            padding: const EdgeInsets.all(8.0),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                ..._buildUserButtons(true),
+                                _shouldShowAdd()
+                                    ? Expanded(
+                                        child: CustomButton(
+                                          bgColor: kBackgroundColor,
+                                          label: 'Add offer',
+                                          onTap: _showCurrentUserItems,
+                                          removeMargin: true,
+                                        ),
+                                      )
+                                    : Text(''),
+                              ],
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -1440,11 +1449,10 @@ class _BarterScreenState extends State<BarterScreen> {
             child: Container(
               margin: EdgeInsets.only(right: 8.0),
               child: CustomButton(
-                enabled: ((currentUserOffers.isNotEmpty ||
+                enabled: (currentUserOffers.isNotEmpty ||
                         _currentUserOfferedCash != null) &&
                     (remoteUserOffers.isNotEmpty ||
-                        _remoteUserOfferedCash != null &&
-                            _remoteUserOfferedCash! > 0)),
+                        _remoteUserOfferedCash != null),
                 removeMargin: true,
                 label: 'Make Offer',
                 onTap: () => _onSubmitTapped(false),
@@ -1829,7 +1837,8 @@ class _BarterScreenState extends State<BarterScreen> {
             .where((prod) =>
                 prod.status != 'completed' &&
                 (userType == 'recipient' ? remoteUserOffers : currentUserOffers)
-                    .any((offer) => prod.productid == offer.productId))
+                    .any((offer) => prod.productid == offer.productId) &&
+                (prod.productid != null && prod.productid!.isNotEmpty))
             .toList()
             .map((product) {
           return _userItem(
@@ -1939,6 +1948,7 @@ class _BarterScreenState extends State<BarterScreen> {
   }
 
   Widget _userItem(String owner, ProductModel product) {
+    print('X====> PRODUCT:: ${product.toJson()}');
     var thumbnail = '';
 
     if (product.media != null && product.media!.isNotEmpty) {
@@ -2065,11 +2075,11 @@ class _BarterScreenState extends State<BarterScreen> {
           ),
         ),
         Visibility(
-          visible: [
-            'completed',
-            'withdrawn',
-            'rejected',
-          ].contains(_barterRecord!.dealStatus),
+          // visible: [
+          //   'completed',
+          //   'withdrawn',
+          //   'rejected',
+          // ].contains(_barterRecord!.dealStatus),
           child: FutureBuilder(
             future: _barterRepo.checkIfBarterable(
                 product.userid!, product.productid!, _barterId!),
@@ -2097,117 +2107,127 @@ class _BarterScreenState extends State<BarterScreen> {
                       ),
                     ),
                   );
-                }
-              }
+                } else {
+                  return Visibility(
+                    visible: !offers.any((BarterProductModel prod) =>
+                        prod.productId == product.productid),
+                    child: Positioned.fill(
+                      child: InkWell(
+                        onTap: !offers.any((BarterProductModel prod) =>
+                                    prod.productId == product.productid) &&
+                                _shouldShowAdd()
+                            ? () async {
+                                final barterable =
+                                    await _barterRepo.checkIfBarterable(
+                                        product.userid!,
+                                        product.productid!,
+                                        _barterRecord!.barterId!);
 
-              return Visibility(
-                visible: !offers.any((BarterProductModel prod) =>
-                    prod.productId == product.productid),
-                child: Positioned.fill(
-                  child: InkWell(
-                    onTap: !offers.any((BarterProductModel prod) =>
-                                prod.productId == product.productid) &&
-                            _shouldShowAdd()
-                        ? () async {
-                            final barterable =
-                                await _barterRepo.checkIfBarterable(
-                                    product.userid!,
-                                    product.productid!,
-                                    _barterRecord!.barterId!);
+                                if (!barterable) {
+                                  await DialogMessage.show(
+                                    context,
+                                    message:
+                                        'You can\'t add this product to the barter as you already have a another pending barter with ${_recipientName.toUpperCase()} for this ${product.productname}',
+                                  );
 
-                            if (!barterable) {
-                              await DialogMessage.show(
-                                context,
-                                message:
-                                    'You can\'t add this product to the barter as you already have a another pending barter with ${_recipientName.toUpperCase()} for this ${product.productname}',
-                              );
+                                  return;
+                                }
 
-                              return;
-                            }
+                                final item =
+                                    BarterProductModel.fromProductModel(
+                                        product);
+                                if (owner == 'remote') {
+                                  _addWantedItems([item]);
+                                } else {
+                                  _add_currentUserOfferedItems([item]);
+                                }
 
-                            final item =
-                                BarterProductModel.fromProductModel(product);
-                            if (owner == 'remote') {
-                              _addWantedItems([item]);
-                            } else {
-                              _add_currentUserOfferedItems([item]);
-                            }
-
-                            _sortProducts();
-                          }
-                        : null,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.5),
-                        borderRadius: BorderRadius.circular(20.0),
+                                _sortProducts();
+                              }
+                            : null,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.5),
+                            borderRadius: BorderRadius.circular(20.0),
+                          ),
+                          child: _shouldShowAdd()
+                              ? Icon(
+                                  FontAwesomeIcons.plus,
+                                  color: Colors.white,
+                                )
+                              : Text(''),
+                        ),
                       ),
-                      child: _shouldShowAdd()
-                          ? Icon(
-                              FontAwesomeIcons.plus,
-                              color: Colors.white,
-                            )
-                          : Text(''),
+                    ),
+                  );
+                }
+              } else {
+                return Positioned.fill(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.5),
+                      borderRadius: BorderRadius.circular(20.0),
                     ),
                   ),
-                ),
-              );
+                );
+              }
             },
           ),
         ),
-        Visibility(
-          visible: !offers.any((BarterProductModel prod) =>
-                  prod.productId == product.productid) &&
-              ![
-                'completed',
-                'withdrawn',
-                'rejected',
-              ].contains(_barterRecord!.dealStatus),
-          child: Positioned.fill(
-            child: InkWell(
-              onTap: !offers.any((BarterProductModel prod) =>
-                          prod.productId == product.productid) &&
-                      _shouldShowAdd()
-                  ? () async {
-                      final barterable = await _barterRepo.checkIfBarterable(
-                          _recipientUserId!,
-                          product.productid!,
-                          _barterRecord!.barterId!);
+        // Visibility(
+        //   visible: !offers.any((BarterProductModel prod) =>
+        //           prod.productId == product.productid) &&
+        //       ![
+        //         'completed',
+        //         'withdrawn',
+        //         'rejected',
+        //       ].contains(_barterRecord!.dealStatus),
+        //   child: Positioned.fill(
+        //     child: InkWell(
+        //       onTap: !offers.any((BarterProductModel prod) =>
+        //                   prod.productId == product.productid) &&
+        //               _shouldShowAdd()
+        //           ? () async {
+        //               final barterable = await _barterRepo.checkIfBarterable(
+        //                   _recipientUserId!,
+        //                   product.productid!,
+        //                   _barterRecord!.barterId!);
 
-                      if (!barterable) {
-                        await DialogMessage.show(
-                          context,
-                          message:
-                              'You can\'t add this product to the barter as you already have a another pending barter with ${_recipientName.toUpperCase()} for this ${product.productname}',
-                        );
+        //               if (!barterable) {
+        //                 await DialogMessage.show(
+        //                   context,
+        //                   message:
+        //                       'You can\'t add this product to the barter as you already have a another pending barter with ${_recipientName.toUpperCase()} for this ${product.productname}',
+        //                 );
 
-                        return;
-                      }
+        //                 return;
+        //               }
 
-                      final item = BarterProductModel.fromProductModel(product);
-                      if (owner == 'remote') {
-                        _addWantedItems([item]);
-                      } else {
-                        _add_currentUserOfferedItems([item]);
-                      }
+        //               final item = BarterProductModel.fromProductModel(product);
+        //               if (owner == 'remote') {
+        //                 _addWantedItems([item]);
+        //               } else {
+        //                 _add_currentUserOfferedItems([item]);
+        //               }
 
-                      _sortProducts();
-                    }
-                  : null,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.5),
-                  borderRadius: BorderRadius.circular(20.0),
-                ),
-                child: _shouldShowAdd()
-                    ? Icon(
-                        FontAwesomeIcons.plus,
-                        color: Colors.white,
-                      )
-                    : Text(''),
-              ),
-            ),
-          ),
-        ),
+        //               _sortProducts();
+        //             }
+        //           : null,
+        //       child: Container(
+        //         decoration: BoxDecoration(
+        //           color: Colors.black.withOpacity(0.5),
+        //           borderRadius: BorderRadius.circular(20.0),
+        //         ),
+        //         child: _shouldShowAdd()
+        //             ? Icon(
+        //                 FontAwesomeIcons.plus,
+        //                 color: Colors.white,
+        //               )
+        //             : Text(''),
+        //       ),
+        //     ),
+        //   ),
+        // ),
         Visibility(
           visible:
               _barterRecord!.dealStatus == 'completed' && owner == 'remote',
@@ -2756,89 +2776,84 @@ class _BarterScreenState extends State<BarterScreen> {
       }).toList(),
     );
 
-    if (widget.showChatFirst &&
-        widget.product != null &&
-        widget.product!.status! == 'completed' &&
-        _barterRecord != null &&
-        _barterRecord!.dealStatus == 'inquiry') {
-      var thumbnail = '';
-      final product = widget.product!;
+    // if (widget.showChatFirst &&
+    //     widget.product != null &&
+    //     widget.product!.status! == 'completed' &&
+    //     _barterRecord != null &&
+    //     _barterRecord!.dealStatus == 'inquiry') {
+    //   var thumbnail = '';
+    //   final product = widget.product!;
 
-      if (product.media != null && product.media!.isNotEmpty) {
-        for (var media in product.media!) {
-          thumbnail = media.url_t ?? '';
-          if (thumbnail.isNotEmpty) break;
-        }
-      }
+    //   if (product.media != null && product.media!.isNotEmpty) {
+    //     for (var media in product.media!) {
+    //       thumbnail = media.url_t ?? '';
+    //       if (thumbnail.isNotEmpty) break;
+    //     }
+    //   }
 
-      if (thumbnail.isEmpty) {
-        if (product.mediaPrimary != null &&
-            product.mediaPrimary!.url_t != null &&
-            product.mediaPrimary!.url_t!.isNotEmpty)
-          thumbnail = product.mediaPrimary!.url_t!;
-      }
+    //   if (thumbnail.isEmpty) {
+    //     if (product.mediaPrimary != null &&
+    //         product.mediaPrimary!.url_t != null &&
+    //         product.mediaPrimary!.url_t!.isNotEmpty)
+    //       thumbnail = product.mediaPrimary!.url_t!;
+    //   }
 
-      return Container(
-        padding: EdgeInsets.all(20.0),
-        height: (widget.showChatFirst &&
-                widget.product != null &&
-                widget.product!.status! == 'completed' &&
-                _barterRecord != null &&
-                _barterRecord!.dealStatus == 'inquiry')
-            ? (SizeConfig.screenHeight * 0.25) -
-                (kToolbarHeight + SizeConfig.paddingTop)
-            : (SizeConfig.screenHeight * 0.3) -
-                (kToolbarHeight + SizeConfig.paddingTop),
-        width: double.infinity,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  height: SizeConfig.textScaleFactor * 65,
-                  width: SizeConfig.textScaleFactor * 65,
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: kBackgroundColor,
-                      width: 1.5,
-                    ),
-                    borderRadius: BorderRadius.circular(8.0),
-                    image: DecorationImage(
-                      image: thumbnail.isNotEmpty
-                          ? NetworkImage(thumbnail)
-                          : AssetImage('assets/images/image_placeholder.jpg')
-                              as ImageProvider<Object>,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ),
-                SizedBox(width: SizeConfig.textScaleFactor * 30),
-                Column(
-                  children: [
-                    Text(product.productname ?? ''),
-                    Text(product.price != null
-                        ? oCcy.format(product.price!)
-                        : ''),
-                  ],
-                ),
-              ],
-            )
-          ],
-        ),
-      );
-    }
+    //   return Container(
+    //     padding: EdgeInsets.all(20.0),
+    //     height: (SizeConfig.screenHeight * 0.3) -
+    //         (kToolbarHeight + SizeConfig.paddingTop),
+    //     width: double.infinity,
+    //     child: Column(
+    //       mainAxisAlignment: MainAxisAlignment.center,
+    //       children: [
+    //         Row(
+    //           mainAxisAlignment: MainAxisAlignment.center,
+    //           children: [
+    //             Container(
+    //               height: SizeConfig.textScaleFactor * 65,
+    //               width: SizeConfig.textScaleFactor * 65,
+    //               decoration: BoxDecoration(
+    //                 border: Border.all(
+    //                   color: kBackgroundColor,
+    //                   width: 1.5,
+    //                 ),
+    //                 borderRadius: BorderRadius.circular(8.0),
+    //                 image: DecorationImage(
+    //                   image: thumbnail.isNotEmpty
+    //                       ? NetworkImage(thumbnail)
+    //                       : AssetImage('assets/images/image_placeholder.jpg')
+    //                           as ImageProvider<Object>,
+    //                   fit: BoxFit.cover,
+    //                 ),
+    //               ),
+    //             ),
+    //             SizedBox(width: SizeConfig.textScaleFactor * 30),
+    //             Column(
+    //               children: [
+    //                 Text(product.productname ?? ''),
+    //                 Text(product.price != null
+    //                     ? oCcy.format(product.price!)
+    //                     : ''),
+    //               ],
+    //             ),
+    //           ],
+    //         )
+    //       ],
+    //     ),
+    //   );
+    // }
 
     return Container(
-      height: (widget.showChatFirst &&
-              widget.product != null &&
-              widget.product!.status! == 'completed' &&
-              _barterRecord != null &&
-              _barterRecord!.dealStatus == 'inquiry')
-          ? (SizeConfig.screenHeight * 0.25) -
-              (kToolbarHeight + SizeConfig.paddingTop)
-          : (SizeConfig.screenHeight * 0.3) -
+      height:
+          //  (widget.showChatFirst &&
+          //         widget.product != null &&
+          //         widget.product!.status! == 'completed' &&
+          //         _barterRecord != null &&
+          //         _barterRecord!.dealStatus == 'inquiry')
+          //     ? (SizeConfig.screenHeight * 0.25) -
+          //         (kToolbarHeight + SizeConfig.paddingTop)
+          //     :
+          (SizeConfig.screenHeight * 0.3) -
               (kToolbarHeight + SizeConfig.paddingTop),
       width: double.infinity,
       padding: EdgeInsets.symmetric(
@@ -2941,29 +2956,29 @@ class _BarterScreenState extends State<BarterScreen> {
                           ),
                         ],
                       ),
-                      (widget.showChatFirst &&
-                              widget.product != null &&
-                              widget.product!.status! == 'completed' &&
-                              _barterRecord != null &&
-                              _barterRecord!.dealStatus == 'inquiry')
-                          ? Container()
-                          : Center(
-                              child: Container(
-                                margin: EdgeInsets.only(top: 8.0),
-                                child: Text(
-                                  _barterRecord != null &&
-                                          _barterRecord!.dealStatus !=
-                                              'completed'
-                                      ? 'Tap here to edit your offer'
-                                      : 'Tap here to view barter',
-                                  style: TextStyle(
-                                    fontSize: SizeConfig.textScaleFactor * 13,
-                                    fontWeight: FontWeight.w600,
-                                    decoration: TextDecoration.underline,
-                                  ),
-                                ),
-                              ),
+                      // (widget.showChatFirst &&
+                      //         widget.product != null &&
+                      //         widget.product!.status! == 'completed' &&
+                      //         _barterRecord != null &&
+                      //         _barterRecord!.dealStatus == 'inquiry')
+                      //     ? Container()
+                      //     :
+                      Center(
+                        child: Container(
+                          margin: EdgeInsets.only(top: 8.0),
+                          child: Text(
+                            _barterRecord != null &&
+                                    _barterRecord!.dealStatus != 'completed'
+                                ? 'Tap here to edit your offer'
+                                : 'Tap here to view barter',
+                            style: TextStyle(
+                              fontSize: SizeConfig.textScaleFactor * 13,
+                              fontWeight: FontWeight.w600,
+                              decoration: TextDecoration.underline,
                             ),
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -3615,7 +3630,11 @@ class _BarterScreenState extends State<BarterScreen> {
 
   _addWantedItems(List<BarterProductModel> items) {
     setState(() {
-      remoteUserOffers.addAll(items);
+      // remoteUserOffers.addAll(items);
+      items.forEach((item) {
+        if (!remoteUserOffers.any((bProd) => bProd.productId == item.productId))
+          remoteUserOffers.add(item);
+      });
     });
     if (items.length == 1)
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -3627,7 +3646,11 @@ class _BarterScreenState extends State<BarterScreen> {
 
   _add_currentUserOfferedItems(List<BarterProductModel> items) {
     setState(() {
-      currentUserOffers.addAll(items);
+      items.forEach((item) {
+        if (!currentUserOffers
+            .any((bProd) => bProd.productId == item.productId))
+          currentUserOffers.add(item);
+      });
     });
     if (items.length == 1)
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(

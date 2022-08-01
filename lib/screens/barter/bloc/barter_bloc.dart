@@ -35,533 +35,530 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
       print('current event: $event');
       emit(BarterLoading());
 
-      try {
-        _user = application.currentUser;
-        if (_user != null) {
-          if (event is InitializeBarter) {
-            var _barterRecord = await _barterRepository
-                .getBarterRecord(event.barterData.barterId!);
+      // try {
+      _user = application.currentUser;
+      if (_user != null) {
+        if (event is InitializeBarter) {
+          var _barterRecord = await _barterRepository
+              .getBarterRecord(event.barterData.barterId!);
 
-            print(
-                '=== barter id: ${event.barterData.barterId} value: ${_barterRecord != null ? _barterRecord.toJson() : _barterRecord}');
+          print(
+              '=== barter id: ${event.barterData.barterId} value: ${_barterRecord != null ? _barterRecord.toJson() : _barterRecord}');
 
-            if (_barterRecord == null) {
-              event.barterData.dealStatus = 'new';
+          if (_barterRecord == null) {
+            event.barterData.dealStatus = 'new';
 
-              final user1Model =
-                  await _userRepo.getUser(event.barterData.userid1!);
-              final user2Model =
-                  await _userRepo.getUser(event.barterData.userid2!);
+            final user1Model =
+                await _userRepo.getUser(event.barterData.userid1!);
+            final user2Model =
+                await _userRepo.getUser(event.barterData.userid2!);
 
-              if (user2Model == null) {
-                emit(BarterUserError(
-                    'Unable to find owner of ${event.barterData.u2P1Name}'));
-                return;
-              }
+            if (user2Model == null) {
+              emit(BarterUserError(
+                  'Unable to find owner of ${event.barterData.u2P1Name}'));
+              return;
+            }
 
-              event.barterData.userid1Name = user1Model!.display_name;
-              event.barterData.userid2Name = user2Model.display_name;
+            event.barterData.userid1Name = user1Model!.display_name;
+            event.barterData.userid2Name = user2Model.display_name;
 
-              final product =
-                  await _productRepository.getProduct(event.barterData.u2P1Id!);
+            final product =
+                await _productRepository.getProduct(event.barterData.u2P1Id!);
 
-              if (product.status == 'completed') {
-                event.barterData.dealStatus = 'inquiry';
-              }
+            // if (product.status == 'completed') {
+            //   event.barterData.dealStatus = 'inquiry';
+            // }
 
-              final newBarter =
-                  await _barterRepository.setBarterRecord(event.barterData);
+            final newBarter =
+                await _barterRepository.setBarterRecord(event.barterData);
 
-              var barterProducts = await _barterRepository
-                  .getBarterProducts(event.barterData.barterId!);
+            var barterProducts = await _barterRepository
+                .getBarterProducts(event.barterData.barterId!);
 
-              if (product.status != 'completed') {
-                if (!barterProducts.any(
-                    (bProd) => bProd.productId == event.barterData.u2P1Id)) {
-                  await _barterRepository
-                      .addBarterProducts(event.barterData.barterId!, [
-                    BarterProductModel(
-                      productId: event.barterData.u2P1Id,
-                      userId: event.barterData.userid2,
-                      productName: event.barterData.u2P1Name,
-                      price: event.barterData.u2P1Price,
-                      imgUrl: event.barterData.u2P1Image,
-                    )
-                  ]);
-                  barterProducts = await _barterRepository
-                      .getBarterProducts(event.barterData.barterId!);
-                }
-              }
-
-              _barterRecord = await _barterRepository
-                  .getBarterRecord(event.barterData.barterId!);
-
-              final senderUserId = _barterRecord!.userid1Role == 'sender'
-                  ? _barterRecord.userid1
-                  : _barterRecord.userid2;
-
-              final recipientUserId = _barterRecord.userid1Role == 'recipient'
-                  ? _barterRecord.userid1
-                  : _barterRecord.userid2;
-
-              final currentUserProducts =
-                  await _productRepository.getFirstProducts(
-                'user',
-                sortBy: 'name',
-                userId: application.currentUser!.uid,
-              );
-
-              final remoteUserProducts =
-                  await _productRepository.getFirstProducts(
-                'user',
-                sortBy: 'name',
-                userId: senderUserId == application.currentUser!.uid
-                    ? recipientUserId!
-                    : senderUserId!,
-              );
-
-              emit(BarterInitialized(
-                barterStream:
-                    _barterRepository.streamBarter(event.barterData.barterId!),
-                remoteUserProducts: remoteUserProducts,
-                currentUserProducts: currentUserProducts,
-                barterProductsStream: _barterRepository
-                    .streamBarterProducts(event.barterData.barterId!),
-              ));
-            } else {
-              if (['withdrawn', 'rejected', 'completed']
-                      .contains(_barterRecord.dealStatus) ||
-                  (_barterRecord.deletedFor != null &&
-                      _barterRecord.deletedFor!
-                          .contains(application.currentUser!.uid))) {
-                final _barterId = event.barterData.barterId!.split('_');
-                var newBarterId = '';
-                if (_barterId.length > 1) {
-                  newBarterId = _barterId[0] +
-                      '_' +
-                      (int.parse(_barterId[1]) + 1).toString();
-                } else {
-                  newBarterId = _barterId[0] + '_1';
-                }
-                event.barterData.barterId = newBarterId;
-                add(InitializeBarter(event.barterData));
-              } else {
-                if (_barterRecord.deletedFor != null &&
-                    _barterRecord.deletedFor!
-                        .contains(application.currentUser!.uid)) {}
-                await _barterRepository.updateBarter(
-                    _barterRecord.barterId!, _barterRecord.toJson());
-                add(StreamBarter(_barterRecord));
+            if (product.status != 'completed') {
+              if (!barterProducts
+                  .any((bProd) => bProd.productId == event.barterData.u2P1Id)) {
+                await _barterRepository
+                    .addBarterProducts(event.barterData.barterId!, [
+                  BarterProductModel(
+                    productId: event.barterData.u2P1Id,
+                    userId: event.barterData.userid2,
+                    productName: event.barterData.u2P1Name,
+                    price: event.barterData.u2P1Price,
+                    imgUrl: event.barterData.u2P1Image,
+                  )
+                ]);
+                barterProducts = await _barterRepository
+                    .getBarterProducts(event.barterData.barterId!);
               }
             }
-          }
 
-          if (event is RemoveBarter) {
-            final removed =
-                await _barterRepository.removeBarter(event.barterId);
-            if (removed)
-              emit(BarterRemoved());
-            else
-              emit(BarterError('Unable to remove barter'));
-          }
+            _barterRecord = await _barterRepository
+                .getBarterRecord(event.barterData.barterId!);
 
-          if (event is GetCurrentUserItems) {
-            final list = await _productRepository.getFirstProducts(
+            final senderUserId = _barterRecord!.userid1Role == 'sender'
+                ? _barterRecord.userid1
+                : _barterRecord.userid2;
+
+            final recipientUserId = _barterRecord.userid1Role == 'recipient'
+                ? _barterRecord.userid1
+                : _barterRecord.userid2;
+
+            final currentUserProducts =
+                await _productRepository.getFirstProducts(
               'user',
               sortBy: 'name',
               userId: application.currentUser!.uid,
             );
-            emit(GetCurrentUserItemsSuccess(list));
-          }
 
-          if (event is RateProduct) {
-            final added =
-                await _productRepository.addProductReview(event.review);
+            final remoteUserProducts =
+                await _productRepository.getFirstProducts(
+              'user',
+              sortBy: 'name',
+              userId: senderUserId == application.currentUser!.uid
+                  ? recipientUserId!
+                  : senderUserId!,
+            );
 
-            if (added)
-              emit(RateProductSuccess());
-            else
-              add(UpdateProductRating(event.review));
-          }
-
-          if (event is GetUserReview) {
-            final review =
-                await _userRepo.getUserReview(event.userId, event.reviewerId);
-            emit(GetUserReviewSuccess(review));
-          }
-
-          if (event is GetProductReview) {
-            final review = await _productRepository.getProductReview(
-                event.productId, event.userId);
-            emit(GetProductReviewSuccess(review));
-          }
-
-          if (event is UpdateProductRating) {
-            final updated =
-                await _productRepository.updateProductReview(event.review);
-            if (updated) emit(UpdateProductRatingSuccess());
-          }
-
-          if (event is AddUserReview) {
-            final userToReview = await _userRepo.getUser(event.review.userid!);
-            event.review.user_image_url = userToReview!.photo_url!;
-            final added = await _userRepo.addUserReview(event.review);
-
-            if (added) {
-              emit(AddUserReviewSuccess());
-            } else {
-              add(UpdateUserReview(event.review));
-            }
-          }
-
-          if (event is GetHiddenProducuts) {
-            List<ProductModel> hiddenSenderProducts = [];
-            List<ProductModel> hiddenRecipientProducts = [];
-
-            if (event.hiddenSenderProducts.isNotEmpty) {
-              await Future.forEach(event.hiddenSenderProducts,
-                  (String prodId) async {
-                hiddenSenderProducts
-                    .add(await _productRepository.getProduct(prodId));
-              });
-            }
-
-            if (event.hiddenRecipientProducts.isNotEmpty) {
-              await Future.forEach(event.hiddenRecipientProducts,
-                  (String prodId) async {
-                hiddenRecipientProducts
-                    .add(await _productRepository.getProduct(prodId));
-              });
-            }
-
-            emit(GetHiddenProducutsDone(
-              hiddenSenderProducts: hiddenSenderProducts,
-              hiddenRecipientProducts: hiddenRecipientProducts,
+            emit(BarterInitialized(
+              barterStream:
+                  _barterRepository.streamBarter(event.barterData.barterId!),
+              remoteUserProducts: remoteUserProducts,
+              currentUserProducts: currentUserProducts,
+              barterProductsStream: _barterRepository
+                  .streamBarterProducts(event.barterData.barterId!),
             ));
-          }
-
-          if (event is UpdateUserReview) {
-            final updated = await _userRepo.updateUserReview(event.review);
-
-            if (updated) emit(UpdateUserReviewSuccess());
-          }
-
-          if (event is CounterOffer) {
-            final _barterRecord =
-                await _barterRepository.getBarterRecord(event.barterId);
-
-            if (_barterRecord != null) {
-              var _newBarterRecord = _barterRecord;
-              _newBarterRecord.userid1Role =
-                  _newBarterRecord.userid1Role == 'sender'
-                      ? 'recipient'
-                      : 'sender';
-              _newBarterRecord.userid2Role =
-                  _newBarterRecord.userid2Role == 'sender'
-                      ? 'recipient'
-                      : 'sender';
-              _newBarterRecord.dealDate = DateTime.now();
-              if (event.product != null) {
-                _newBarterRecord.u2P1Id = event.product!.productId;
-                _newBarterRecord.u2P1Name = event.product!.productName;
-                _newBarterRecord.u2P1Price = event.product!.price != null
-                    ? double.parse(event.product!.price.toString())
-                    : 0;
-                _newBarterRecord.u2P1Image = event.product!.imgUrl;
+          } else {
+            if (['withdrawn', 'rejected', 'completed']
+                    .contains(_barterRecord.dealStatus) ||
+                (_barterRecord.deletedFor != null &&
+                    _barterRecord.deletedFor!
+                        .contains(application.currentUser!.uid))) {
+              final _barterId = event.barterData.barterId!.split('_');
+              var newBarterId = '';
+              if (_barterId.length > 1) {
+                newBarterId = _barterId[0] +
+                    '_' +
+                    (int.parse(_barterId[1]) + 1).toString();
+              } else {
+                newBarterId = _barterId[0] + '_1';
               }
-              _newBarterRecord.dealStatus = 'submitted';
-              _newBarterRecord.deletedFor = [];
-
-              final updated =
-                  await _barterRepository.counterOffer(_newBarterRecord);
-
-              if (updated) {
-                _barterRepository.addMessage(ChatMessageModel(
-                  barterId: event.barterId,
-                  userId: application.currentUser!.uid,
-                  userName: application.currentUser!.displayName,
-                  message: 'Offer SUBMITTED (Counter Offer)',
-                  dateCreated: DateTime.now(),
-                ));
-
-                _notifRepo.sendNotification(
-                  body: 'Offer SUBMITTED (Counter Offer)',
-                  title: application.currentUserModel!.display_name!,
-                  receiver: _newBarterRecord.userid1 == _user!.uid
-                      ? _newBarterRecord.userid2!
-                      : _newBarterRecord.userid1!,
-                  sender: _user!.uid,
-                  barterId: _barterRecord.barterId!,
-                );
-
-                emit(UpdateBarterStatusSuccess());
-              } else
-                emit(BarterError('unable to counter offer'));
+              event.barterData.barterId = newBarterId;
+              add(InitializeBarter(event.barterData));
+            } else {
+              if (_barterRecord.deletedFor != null &&
+                  _barterRecord.deletedFor!
+                      .contains(application.currentUser!.uid)) {}
+              await _barterRepository.updateBarter(
+                  _barterRecord.barterId!, _barterRecord.toJson());
+              add(StreamBarter(_barterRecord));
             }
           }
+        }
 
-          if (event is UpdateBarterStatus) {
-            await _barterRepository.updateBarterStatus(
-                event.barterId, event.status);
-            final barterRecord =
-                await _barterRepository.getBarterRecord(event.barterId);
-            if (barterRecord != null) {
-              // if (['accepted', 'rejected', 'completed']
-              //     .contains(event.status)) {
-              //   barterRecord.deletedFor = [];
+        if (event is RemoveBarter) {
+          final removed = await _barterRepository.removeBarter(event.barterId);
+          if (removed)
+            emit(BarterRemoved());
+          else
+            emit(BarterError('Unable to remove barter'));
+        }
 
-              // }
-              // final senderUserId = barterRecord.userid1Role == 'sender'
-              //     ? barterRecord.userid1
-              //     : barterRecord.userid2;
-              // final recipientUserId = barterRecord.userid1Role == 'recipient'
-              //     ? barterRecord.userid1
-              //     : barterRecord.userid2;
+        if (event is GetCurrentUserItems) {
+          final list = await _productRepository.getFirstProducts(
+            'user',
+            sortBy: 'name',
+            userId: application.currentUser!.uid,
+          );
+          emit(GetCurrentUserItemsSuccess(list));
+        }
 
-              // String userId =
-              //     ['accepted', 'rejected', 'completed'].contains(event.status)
-              //         ? recipientUserId!
-              //         : senderUserId!;
+        if (event is RateProduct) {
+          final added = await _productRepository.addProductReview(event.review);
 
+          if (added)
+            emit(RateProductSuccess());
+          else
+            add(UpdateProductRating(event.review));
+        }
+
+        if (event is GetUserReview) {
+          final review =
+              await _userRepo.getUserReview(event.userId, event.reviewerId);
+          emit(GetUserReviewSuccess(review));
+        }
+
+        if (event is GetProductReview) {
+          final review = await _productRepository.getProductReview(
+              event.productId, event.userId);
+          emit(GetProductReviewSuccess(review));
+        }
+
+        if (event is UpdateProductRating) {
+          final updated =
+              await _productRepository.updateProductReview(event.review);
+          if (updated) emit(UpdateProductRatingSuccess());
+        }
+
+        if (event is AddUserReview) {
+          final userToReview = await _userRepo.getUser(event.review.userid!);
+          event.review.user_image_url =
+              userToReview!.photo_url != null ? userToReview.photo_url! : '';
+          final added = await _userRepo.addUserReview(event.review);
+
+          if (added) {
+            emit(AddUserReviewSuccess());
+          } else {
+            add(UpdateUserReview(event.review));
+          }
+        }
+
+        if (event is GetHiddenProducuts) {
+          List<ProductModel> hiddenSenderProducts = [];
+          List<ProductModel> hiddenRecipientProducts = [];
+
+          if (event.hiddenSenderProducts.isNotEmpty) {
+            await Future.forEach(event.hiddenSenderProducts,
+                (String prodId) async {
+              hiddenSenderProducts
+                  .add(await _productRepository.getProduct(prodId));
+            });
+          }
+
+          if (event.hiddenRecipientProducts.isNotEmpty) {
+            await Future.forEach(event.hiddenRecipientProducts,
+                (String prodId) async {
+              hiddenRecipientProducts
+                  .add(await _productRepository.getProduct(prodId));
+            });
+          }
+
+          emit(GetHiddenProducutsDone(
+            hiddenSenderProducts: hiddenSenderProducts,
+            hiddenRecipientProducts: hiddenRecipientProducts,
+          ));
+        }
+
+        if (event is UpdateUserReview) {
+          final updated = await _userRepo.updateUserReview(event.review);
+
+          if (updated) emit(UpdateUserReviewSuccess());
+        }
+
+        if (event is CounterOffer) {
+          final _barterRecord =
+              await _barterRepository.getBarterRecord(event.barterId);
+
+          if (_barterRecord != null) {
+            var _newBarterRecord = _barterRecord;
+            _newBarterRecord.userid1Role =
+                _newBarterRecord.userid1Role == 'sender'
+                    ? 'recipient'
+                    : 'sender';
+            _newBarterRecord.userid2Role =
+                _newBarterRecord.userid2Role == 'sender'
+                    ? 'recipient'
+                    : 'sender';
+            _newBarterRecord.dealDate = DateTime.now();
+            if (event.product != null) {
+              _newBarterRecord.u2P1Id = event.product!.productId;
+              _newBarterRecord.u2P1Name = event.product!.productName;
+              _newBarterRecord.u2P1Price = event.product!.price != null
+                  ? double.parse(event.product!.price.toString())
+                  : 0;
+              _newBarterRecord.u2P1Image = event.product!.imgUrl;
+            }
+            _newBarterRecord.dealStatus = 'submitted';
+            _newBarterRecord.deletedFor = [];
+
+            final updated =
+                await _barterRepository.counterOffer(_newBarterRecord);
+
+            if (updated) {
               _barterRepository.addMessage(ChatMessageModel(
                 barterId: event.barterId,
                 userId: application.currentUser!.uid,
                 userName: application.currentUser!.displayName,
-                message: 'Offer ${event.status.toUpperCase()}',
+                message: 'Offer SUBMITTED (Counter Offer)',
                 dateCreated: DateTime.now(),
               ));
 
               _notifRepo.sendNotification(
-                body: 'Offer ${event.status.toUpperCase()}',
+                body: 'Offer SUBMITTED (Counter Offer)',
                 title: application.currentUserModel!.display_name!,
-                receiver: barterRecord.userid1 == _user!.uid
-                    ? barterRecord.userid2!
-                    : barterRecord.userid1!,
+                receiver: _newBarterRecord.userid1 == _user!.uid
+                    ? _newBarterRecord.userid2!
+                    : _newBarterRecord.userid1!,
                 sender: _user!.uid,
-                barterId: barterRecord.barterId!,
-              );
-
-              // update products' status
-              // final barterProducts =
-              //     await _barterRepository.getBarterProducts(event.barterId);
-
-              // if (barterProducts.isNotEmpty &&
-              //     barterRecord.dealStatus != 'new') {
-              //   final productsToUpdate = barterProducts
-              //       .where((bProduct) => !bProduct.productId!.contains('cash'));
-
-              //   for (var product in productsToUpdate) {
-              //     final productModel =
-              //         await _productRepository.getProduct(product.productId!);
-
-              //     var updatedData =
-              //         ProductRequestModel.fromProduct(productModel);
-
-              //     switch (event.status) {
-              //       case 'accepted':
-              //         updatedData.status = 'reserved';
-              //         break;
-              //       case 'completed':
-              //         updatedData.status = 'sold';
-              //         if (product.userId == senderUserId) {
-              //           updatedData.acquired_by = recipientUserId;
-              //         } else {
-              //           updatedData.acquired_by = senderUserId;
-              //         }
-
-              //         break;
-              //       default:
-              //         updatedData.status = 'available';
-              //     }
-
-              //     await _productRepository.updateProduct(updatedData);
-              //   }
-              // }
-            }
-            emit(UpdateBarterStatusSuccess());
-          }
-
-          if (event is UpdateBarterProducts) {
-            final barterProducts =
-                await _barterRepository.getBarterProducts(event.barterId);
-            final _products = event.products;
-            barterProducts.forEach((bProduct) {
-              final _product = ProductModel.fromJson(bProduct.toJson());
-              if (_products.any((_p) => _p.productId == _product.productid)) {
-                _products
-                    .removeWhere((__p) => __p.productId == _product.productid);
-              }
-            });
-            final success = await _barterRepository.addBarterProducts(
-                event.barterId, _products);
-            if (success) emit(UpdateBarterProductsSuccess());
-          }
-
-          if (event is AddCashOffer) {
-            final added = await _barterRepository.addCashOffer(
-              event.barterId,
-              BarterProductModel(
-                productId: 'cash-${DateTime.now().millisecondsSinceEpoch}',
-                productName: 'Cash',
-                price: event.amount,
-                currency: event.currency,
-                userId: event.userId,
-              ),
-            );
-
-            if (added) emit(AddCashOfferSuccess());
-          }
-
-          if (event is DeleteCashOffer) {
-            print('deleting cash with prodId: ${event.productId}');
-            final deleted = await _barterRepository.deleteCashOffer(
-              event.barterId,
-              BarterProductModel(
-                productId: event.productId,
-              ),
-            );
-
-            if (deleted) emit(DeleteCashOfferSuccess());
-          }
-
-          if (event is StreamBarter) {
-            try {
-              final barterRecord = await _barterRepository
-                  .getBarterRecord(event.barterRecord.barterId!);
-
-              final senderUserId = barterRecord!.userid1Role == 'sender'
-                  ? barterRecord.userid1
-                  : barterRecord.userid2;
-
-              final recipientUserId = barterRecord.userid1Role == 'recipient'
-                  ? barterRecord.userid1
-                  : barterRecord.userid2;
-
-              final currentUserProducts =
-                  await _productRepository.getFirstProducts(
-                'user',
-                sortBy: 'name',
-                userId: application.currentUser!.uid,
-                itemCount: 10,
-              );
-
-              final remoteUserProducts =
-                  await _productRepository.getFirstProducts(
-                'user',
-                sortBy: 'name',
-                userId: senderUserId == application.currentUser!.uid
-                    ? recipientUserId!
-                    : senderUserId!,
-                itemCount: 10,
-              );
-
-              emit(BarterInitialized(
-                barterStream: _barterRepository
-                    .streamBarter(event.barterRecord.barterId!),
-                currentUserProducts: currentUserProducts,
-                remoteUserProducts: remoteUserProducts,
-                barterProductsStream: _barterRepository
-                    .streamBarterProducts(event.barterRecord.barterId!),
-              ));
-            } catch (e) {
-              emit(BarterError(e.toString()));
-            }
-          }
-
-          if (event is InitializeBarterTransactions) {
-            emit(BarterTransactionsInitialized(
-              byYouStream:
-                  await _barterRepository.streamBartersByUser(_user!.uid),
-              fromOthersStream:
-                  await _barterRepository.streamBartersFromOthers(_user!.uid),
-            ));
-          }
-
-          if (event is InitializeBarterChat) {
-            final barterChatStream =
-                await _barterRepository.streamMessages(event.barterId);
-            emit(BarterChatInitialized(
-                user: _user!, barterChatStream: barterChatStream));
-          }
-
-          if (event is SendMessage) {
-            event.message.dateCreated = DateTime.now();
-
-            List<String> fileUrls = [];
-            if (event.message.imagesFile != null &&
-                event.message.imagesFile!.isNotEmpty) {
-              final files = event.message.imagesFile!;
-              await Future.forEach(files, (SelectedMedia file) async {
-                final url = await uploadData(file.storagePath, file.bytes);
-                fileUrls.add(url!);
-              });
-            }
-
-            event.message.images = fileUrls;
-
-            final _barterRecord = await _barterRepository
-                .getBarterRecord(event.message.barterId!);
-            final sent = await _barterRepository.addMessage(event.message);
-
-            if (!sent) {
-              emit(BarterError('Unable to send message'));
-            } else {
-              _notifRepo.sendNotification(
-                body: event.message.message ?? '',
-                title: application.currentUserModel!.display_name!,
-                receiver: _barterRecord!.userid1 ==
-                        application.currentUserModel!.userid
-                    ? _barterRecord.userid2!
-                    : _barterRecord.userid1!,
-                sender: application.currentUserModel!.userid!,
                 barterId: _barterRecord.barterId!,
               );
-              emit(SendMessageSuccess());
-            }
-          }
 
-          if (event is DeleteBarter) {
-            final success = await _barterRepository.deleteBarter(event.id);
-            if (success)
-              emit(DeleteBarterSuccess());
-            else
-              emit(BarterError('Unable to delete barter record'));
-          }
-
-          if (event is DeleteBarterProducts) {
-            final success = await _barterRepository.removeBarterProduct(
-                event.barterId,
-                event.products.map((prod) => prod.productId!).toList());
-            if (success) {
-              emit(DeleteBarterProductsSuccess());
-            }
-          }
-
-          if (event is GetUnreadBarterMessages) {
-            final messages = await _barterRepository.getUnreadBarterMessages();
-            application.unreadBarterMessages = messages;
-            emit(GetUnreadBarterMessagesSuccess(messages));
-          }
-
-          if (event is MarkMessagesAsRead) {
-            final messages = application.unreadBarterMessages
-                .where((msg) => msg.barterId == event.barterId)
-                .toList();
-            final marked = await _barterRepository.markAsRead(
-                messages.where((msg) => msg.isRead == false).toList());
-            if (marked) {
-              emit(MarkMessagesAsReadSuccess());
-              add(GetUnreadBarterMessages());
-            }
+              emit(UpdateBarterStatusSuccess());
+            } else
+              emit(BarterError('unable to counter offer'));
           }
         }
-      } catch (e) {
-        emit(BarterError(e.toString()));
-        FlutterLogs.logToFile(
-            logFileName: "Home Bloc",
-            overwrite: false,
-            logMessage: e.toString());
+
+        if (event is UpdateBarterStatus) {
+          await _barterRepository.updateBarterStatus(
+              event.barterId, event.status);
+          final barterRecord =
+              await _barterRepository.getBarterRecord(event.barterId);
+          if (barterRecord != null) {
+            // if (['accepted', 'rejected', 'completed']
+            //     .contains(event.status)) {
+            //   barterRecord.deletedFor = [];
+
+            // }
+            // final senderUserId = barterRecord.userid1Role == 'sender'
+            //     ? barterRecord.userid1
+            //     : barterRecord.userid2;
+            // final recipientUserId = barterRecord.userid1Role == 'recipient'
+            //     ? barterRecord.userid1
+            //     : barterRecord.userid2;
+
+            // String userId =
+            //     ['accepted', 'rejected', 'completed'].contains(event.status)
+            //         ? recipientUserId!
+            //         : senderUserId!;
+
+            _barterRepository.addMessage(ChatMessageModel(
+              barterId: event.barterId,
+              userId: application.currentUser!.uid,
+              userName: application.currentUser!.displayName,
+              message: 'Offer ${event.status.toUpperCase()}',
+              dateCreated: DateTime.now(),
+            ));
+
+            _notifRepo.sendNotification(
+              body: 'Offer ${event.status.toUpperCase()}',
+              title: application.currentUserModel!.display_name!,
+              receiver: barterRecord.userid1 == _user!.uid
+                  ? barterRecord.userid2!
+                  : barterRecord.userid1!,
+              sender: _user!.uid,
+              barterId: barterRecord.barterId!,
+            );
+
+            // update products' status
+            // final barterProducts =
+            //     await _barterRepository.getBarterProducts(event.barterId);
+
+            // if (barterProducts.isNotEmpty &&
+            //     barterRecord.dealStatus != 'new') {
+            //   final productsToUpdate = barterProducts
+            //       .where((bProduct) => !bProduct.productId!.contains('cash'));
+
+            //   for (var product in productsToUpdate) {
+            //     final productModel =
+            //         await _productRepository.getProduct(product.productId!);
+
+            //     var updatedData =
+            //         ProductRequestModel.fromProduct(productModel);
+
+            //     switch (event.status) {
+            //       case 'accepted':
+            //         updatedData.status = 'reserved';
+            //         break;
+            //       case 'completed':
+            //         updatedData.status = 'sold';
+            //         if (product.userId == senderUserId) {
+            //           updatedData.acquired_by = recipientUserId;
+            //         } else {
+            //           updatedData.acquired_by = senderUserId;
+            //         }
+
+            //         break;
+            //       default:
+            //         updatedData.status = 'available';
+            //     }
+
+            //     await _productRepository.updateProduct(updatedData);
+            //   }
+            // }
+          }
+          emit(UpdateBarterStatusSuccess());
+        }
+
+        if (event is UpdateBarterProducts) {
+          final barterProducts =
+              await _barterRepository.getBarterProducts(event.barterId);
+          final _products = event.products;
+          barterProducts.forEach((bProduct) {
+            final _product = ProductModel.fromJson(bProduct.toJson());
+            if (_products.any((_p) => _p.productId == _product.productid)) {
+              _products
+                  .removeWhere((__p) => __p.productId == _product.productid);
+            }
+          });
+          final success = await _barterRepository.addBarterProducts(
+              event.barterId, _products);
+          if (success) emit(UpdateBarterProductsSuccess());
+        }
+
+        if (event is AddCashOffer) {
+          final added = await _barterRepository.addCashOffer(
+            event.barterId,
+            BarterProductModel(
+              productId: 'cash-${DateTime.now().millisecondsSinceEpoch}',
+              productName: 'Cash',
+              price: event.amount,
+              currency: event.currency,
+              userId: event.userId,
+            ),
+          );
+
+          if (added) emit(AddCashOfferSuccess());
+        }
+
+        if (event is DeleteCashOffer) {
+          print('deleting cash with prodId: ${event.productId}');
+          final deleted = await _barterRepository.deleteCashOffer(
+            event.barterId,
+            BarterProductModel(
+              productId: event.productId,
+            ),
+          );
+
+          if (deleted) emit(DeleteCashOfferSuccess());
+        }
+
+        if (event is StreamBarter) {
+          // try {
+          final barterRecord = await _barterRepository
+              .getBarterRecord(event.barterRecord.barterId!);
+
+          final senderUserId = barterRecord!.userid1Role == 'sender'
+              ? barterRecord.userid1
+              : barterRecord.userid2;
+
+          final recipientUserId = barterRecord.userid1Role == 'recipient'
+              ? barterRecord.userid1
+              : barterRecord.userid2;
+
+          final currentUserProducts = await _productRepository.getFirstProducts(
+            'user',
+            sortBy: 'name',
+            userId: application.currentUser!.uid,
+            itemCount: 10,
+          );
+
+          final remoteUserProducts = await _productRepository.getFirstProducts(
+            'user',
+            sortBy: 'name',
+            userId: senderUserId == application.currentUser!.uid
+                ? recipientUserId!
+                : senderUserId!,
+            itemCount: 10,
+          );
+
+          emit(BarterInitialized(
+            barterStream:
+                _barterRepository.streamBarter(event.barterRecord.barterId!),
+            currentUserProducts: currentUserProducts,
+            remoteUserProducts: remoteUserProducts,
+            barterProductsStream: _barterRepository
+                .streamBarterProducts(event.barterRecord.barterId!),
+          ));
+          // } catch (e) {
+          //   emit(BarterError(e.toString()));
+          // }
+        }
+
+        if (event is InitializeBarterTransactions) {
+          emit(BarterTransactionsInitialized(
+            byYouStream:
+                await _barterRepository.streamBartersByUser(_user!.uid),
+            fromOthersStream:
+                await _barterRepository.streamBartersFromOthers(_user!.uid),
+          ));
+        }
+
+        if (event is InitializeBarterChat) {
+          final barterChatStream =
+              await _barterRepository.streamMessages(event.barterId);
+          emit(BarterChatInitialized(
+              user: _user!, barterChatStream: barterChatStream));
+        }
+
+        if (event is SendMessage) {
+          event.message.dateCreated = DateTime.now();
+
+          List<String> fileUrls = [];
+          if (event.message.imagesFile != null &&
+              event.message.imagesFile!.isNotEmpty) {
+            final files = event.message.imagesFile!;
+            await Future.forEach(files, (SelectedMedia file) async {
+              final url = await uploadData(file.storagePath, file.bytes);
+              fileUrls.add(url!);
+            });
+          }
+
+          event.message.images = fileUrls;
+
+          final _barterRecord =
+              await _barterRepository.getBarterRecord(event.message.barterId!);
+          final sent = await _barterRepository.addMessage(event.message);
+
+          if (!sent) {
+            emit(BarterError('Unable to send message'));
+          } else {
+            _notifRepo.sendNotification(
+              body: event.message.message ?? '',
+              title: application.currentUserModel!.display_name!,
+              receiver:
+                  _barterRecord!.userid1 == application.currentUserModel!.userid
+                      ? _barterRecord.userid2!
+                      : _barterRecord.userid1!,
+              sender: application.currentUserModel!.userid!,
+              barterId: _barterRecord.barterId!,
+            );
+            emit(SendMessageSuccess());
+          }
+        }
+
+        if (event is DeleteBarter) {
+          final success = await _barterRepository.deleteBarter(event.id);
+          if (success)
+            emit(DeleteBarterSuccess());
+          else
+            emit(BarterError('Unable to delete barter record'));
+        }
+
+        if (event is DeleteBarterProducts) {
+          final success = await _barterRepository.removeBarterProduct(
+              event.barterId,
+              event.products.map((prod) => prod.productId!).toList());
+          if (success) {
+            emit(DeleteBarterProductsSuccess());
+          }
+        }
+
+        if (event is GetUnreadBarterMessages) {
+          final messages = await _barterRepository.getUnreadBarterMessages();
+          application.unreadBarterMessages = messages;
+          emit(GetUnreadBarterMessagesSuccess(messages));
+        }
+
+        if (event is MarkMessagesAsRead) {
+          final messages = application.unreadBarterMessages
+              .where((msg) => msg.barterId == event.barterId)
+              .toList();
+          final marked = await _barterRepository.markAsRead(
+              messages.where((msg) => msg.isRead == false).toList());
+          if (marked) {
+            emit(MarkMessagesAsReadSuccess());
+            add(GetUnreadBarterMessages());
+          }
+        }
       }
+      // } catch (e) {
+      //   emit(BarterError(e.toString()));
+      //   FlutterLogs.logToFile(
+      //       logFileName: "Home Bloc",
+      //       overwrite: false,
+      //       logMessage: e.toString());
+      // }
     });
   }
 }
