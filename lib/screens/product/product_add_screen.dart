@@ -127,11 +127,14 @@ class _ProductAddScreenState extends State<ProductAddScreen> {
                     _locList = state.locList;
 
                     if (application.currentUserModel!.currency != null &&
-                        application.currentUserModel!.currency!.isNotEmpty)
+                        application.currentUserModel!.currency!
+                            .isNotEmpty) if (_locList.any((loc) =>
+                        loc.currency == application.currentUserModel!.currency))
                       _selectedLocalization = _locList.firstWhere((loc) =>
                           loc.currency ==
                           application.currentUserModel!.currency);
-                    else
+                    else if (_locList.any((loc) =>
+                        loc.country_code == application.currentCountry))
                       _selectedLocalization = _locList.firstWhere((loc) =>
                           loc.country_code == application.currentCountry);
                   });

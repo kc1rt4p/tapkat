@@ -2,10 +2,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:tapkat/models/barter_product.dart';
 import 'package:tapkat/models/barter_record_model.dart';
 import 'package:tapkat/models/chat_message.dart';
+import 'package:tapkat/repositories/product_repository.dart';
 import 'package:tapkat/utilities/application.dart' as application;
 
 class BarterRepository {
   final barterRef = FirebaseFirestore.instance.collection('barter');
+  final _productRepo = ProductRepository();
 
   Future<bool> setBarterRecord(BarterRecordModel barterRecord) async {
     await barterRef.doc(barterRecord.barterId).set(barterRecord.toJson());
@@ -21,16 +23,21 @@ class BarterRepository {
     final q = await barterRef.doc(barterId).collection('products').get();
     if (q.docs.isEmpty) return [];
 
-    return q.docs
-        .map((snapshot) => BarterProductModel.fromJson(snapshot.data()))
-        .toList();
+    return q.docs.map((snapshot) {
+      final bProd = BarterProductModel.fromJson(snapshot.data());
+      return bProd;
+    }).toList();
   }
 
   Stream<List<BarterProductModel>> streamBarterProducts(String barterId) {
-    return barterRef.doc(barterId).collection('products').snapshots().map(
-        (query) => query.docs
-            .map((doc) => BarterProductModel.fromJson(doc.data()))
-            .toList());
+    return barterRef
+        .doc(barterId)
+        .collection('products')
+        .snapshots()
+        .map((query) => query.docs.map((doc) {
+              final bProd = BarterProductModel.fromJson(doc.data());
+              return bProd;
+            }).toList());
   }
 
   Future<BarterRecordModel?> getBarterRecord(String barterId) async {

@@ -55,15 +55,23 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
 
             if (user2Model == null) {
               emit(BarterUserError(
-                  'Unable to find owner of ${event.barterData.u2P1Name}'));
+                  'No data found for ${event.barterData.userid2Name}'));
               return;
             }
 
-            event.barterData.userid1Name = user1Model!.display_name;
+            if (user1Model == null) {
+              emit(BarterUserError(
+                  'No data found for ${event.barterData.userid1Name}'));
+              return;
+            }
+
+            event.barterData.userid1Name = user1Model.display_name;
             event.barterData.userid2Name = user2Model.display_name;
 
             final product =
                 await _productRepository.getProduct(event.barterData.u2P1Id!);
+
+            print('1 remote product::::: ${product!.toJson()}');
 
             // if (product.status == 'completed') {
             //   event.barterData.dealStatus = 'inquiry';
@@ -129,6 +137,11 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
                   .streamBarterProducts(event.barterData.barterId!),
             ));
           } else {
+            final product =
+                await _productRepository.getProduct(event.barterData.u2P1Id!);
+
+            print('remote product::::: ${product!.toJson()}');
+
             if (['withdrawn', 'rejected', 'completed']
                     .contains(_barterRecord.dealStatus) ||
                 (_barterRecord.deletedFor != null &&
@@ -220,16 +233,20 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
           if (event.hiddenSenderProducts.isNotEmpty) {
             await Future.forEach(event.hiddenSenderProducts,
                 (String prodId) async {
-              hiddenSenderProducts
-                  .add(await _productRepository.getProduct(prodId));
+              final product = await _productRepository.getProduct(prodId);
+              if (product != null) {
+                hiddenSenderProducts.add(product);
+              }
             });
           }
 
           if (event.hiddenRecipientProducts.isNotEmpty) {
             await Future.forEach(event.hiddenRecipientProducts,
                 (String prodId) async {
-              hiddenRecipientProducts
-                  .add(await _productRepository.getProduct(prodId));
+              final product = await _productRepository.getProduct(prodId);
+              if (product != null) {
+                hiddenRecipientProducts.add(product);
+              }
             });
           }
 
@@ -428,7 +445,16 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
           final barterRecord = await _barterRepository
               .getBarterRecord(event.barterRecord.barterId!);
 
-          final senderUserId = barterRecord!.userid1Role == 'sender'
+          final product =
+              await _productRepository.getProduct(barterRecord!.u2P1Id!);
+
+          if (product == null) {
+            emit(BarterUserError(
+                'This barter is no longer valid as one or more of the items cannot be retrieved'));
+            return;
+          }
+
+          final senderUserId = barterRecord.userid1Role == 'sender'
               ? barterRecord.userid1
               : barterRecord.userid2;
 

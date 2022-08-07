@@ -72,6 +72,8 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
   bool showImageError = false;
   bool showOfferTypeError = false;
 
+  int _deleteIndex = 0;
+
   @override
   void initState() {
     application.currentScreen = 'Product Edit Screen';
@@ -107,6 +109,7 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
         child: BlocListener(
           bloc: _productBloc,
           listener: (context, state) async {
+            print('X----> CURRENT STATE:: $state');
             if (state is ProductLoading) {
               ProgressHUD.of(context)!.show();
             } else {
@@ -117,10 +120,16 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
               await DialogMessage.show(context,
                   message: 'An image has been deleted.');
 
-              setState(() {
-                state.urls.forEach((url) {
-                  _media.removeWhere(
-                      (media) => media.url == url || media.url_t == url);
+              await Future.delayed(Duration(milliseconds: 500), () {
+                setState(() {
+                  if (_media.length > 1) {
+                    _media.removeAt(_currentCarouselIndex);
+                  } else {
+                    _media.clear();
+                  }
+                  if (_media.isNotEmpty && _currentCarouselIndex > 0) {
+                    _currentCarouselIndex = _currentCarouselIndex - 1;
+                  }
                 });
               });
             }
@@ -168,7 +177,8 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
             }
 
             if (state is AddProductImageSuccess) {
-              await Future.delayed(Duration(milliseconds: 1000), () {
+              ProgressHUD.of(context)!.show();
+              await Future.delayed(Duration(milliseconds: 2000), () {
                 setState(() {
                   if (state.result.media != null) {
                     // final newMedia = state.result.media!
@@ -180,8 +190,13 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
                   }
                 });
               });
+              ProgressHUD.of(context)!.dismiss();
               await DialogMessage.show(context,
                   message: 'An image has been uploaded for this product.');
+              setState(() {
+                _currentCarouselIndex += 1;
+                _carouselController.nextPage();
+              });
             }
           },
           child: Container(
@@ -693,127 +708,196 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
     }
   }
 
-  Stack _buildPhoto() {
-    return Stack(
-      children: [
-        _media.length > 0
-            ? Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20.0),
-                ),
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    CarouselSlider(
-                      carouselController: _carouselController,
-                      options: CarouselOptions(
-                          height: 160.0,
-                          enableInfiniteScroll: false,
-                          aspectRatio: 1,
-                          viewportFraction: 1,
-                          onPageChanged: (index, _) {
-                            setState(() {
-                              _currentCarouselIndex = index;
-                            });
-                          }),
-                      items: _media.map((media) {
-                        return Stack(
-                          children: [
-                            Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(20.0),
-                                color: Colors.white,
-                                image: DecorationImage(
-                                  image: CachedNetworkImageProvider(media.url !=
-                                              null &&
-                                          media.url!.isNotEmpty
-                                      ? media.url!
-                                      : 'https://storage.googleapis.com/map-surf-assets/noimage.jpg'),
-                                  scale: 1.0,
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                              height: 160.0,
-                              width: double.infinity,
-                            ),
-                            Positioned(
-                              top: 5,
-                              right: 10,
-                              child: InkWell(
-                                onTap: () {
-                                  _productBloc.add(DeleteImages(
-                                      [media.url!], _product.productid!));
-                                },
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: Colors.red,
-                                    borderRadius: BorderRadius.circular(50.0),
-                                    // border: Border.all(color: Colors.black45),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black,
-                                        offset: Offset(0, 0),
-                                        blurRadius: 3.0,
-                                      ),
-                                    ],
-                                  ),
-                                  height: 30.0,
-                                  width: 30.0,
-                                  child: Icon(
-                                    Icons.delete,
-                                    color: Colors.white,
-                                    size: 20.0,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        );
-                      }).toList(),
-                    ),
-                    Positioned(
-                      bottom: 8,
-                      child: Container(
-                        width: SizeConfig.screenWidth,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: _media.asMap().keys.map((key) {
-                            return Container(
-                              margin: _media.length > 1
-                                  ? key < 5
-                                      ? EdgeInsets.only(right: 8.0)
-                                      : null
-                                  : null,
-                              height: 8.0,
-                              width: 8.0,
-                              decoration: BoxDecoration(
-                                color: _currentCarouselIndex == key
-                                    ? Colors.white
-                                    : Colors.grey,
-                                shape: BoxShape.circle,
-                              ),
-                            );
-                          }).toList(),
-                        ),
+  Widget _buildPhoto() {
+    if (_media.isEmpty)
+      return Stack(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20.0),
+              color: Colors.grey,
+              image: DecorationImage(
+                image: AssetImage('assets/images/image_placeholder.jpg'),
+                scale: 1.0,
+                fit: BoxFit.cover,
+              ),
+            ),
+            child: Text(''),
+            height: 160.0,
+            width: double.infinity,
+          ),
+          Visibility(
+            visible: _media.length < 10,
+            child: Positioned(
+              bottom: 5,
+              right: 10,
+              child: InkWell(
+                onTap: _onPhotoTapped,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: kBackgroundColor,
+                    borderRadius: BorderRadius.circular(50.0),
+                    // border: Border.all(color: Colors.black45),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black,
+                        offset: Offset(0, 0),
+                        blurRadius: 3.0,
                       ),
-                    ),
-                  ],
-                ),
-              )
-            : Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20.0),
-                  color: Colors.grey,
-                  image: DecorationImage(
-                    image: AssetImage('assets/images/image_placeholder.jpg'),
-                    scale: 1.0,
-                    fit: BoxFit.cover,
+                    ],
+                  ),
+                  height: 30.0,
+                  width: 30.0,
+                  child: Icon(
+                    _media.length > 0 ? Icons.add_a_photo : Icons.photo_camera,
+                    color: Colors.white,
+                    size: 20.0,
                   ),
                 ),
-                child: Text(''),
-                height: 160.0,
-                width: double.infinity,
               ),
+            ),
+          ),
+        ],
+      );
+
+    return Stack(
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20.0),
+          ),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              CarouselSlider(
+                carouselController: _carouselController,
+                options: CarouselOptions(
+                    height: 160.0,
+                    enableInfiniteScroll: false,
+                    aspectRatio: 1,
+                    viewportFraction: 1,
+                    onPageChanged: (index, _) {
+                      setState(() {
+                        _currentCarouselIndex = index;
+                      });
+                    }),
+                items: _media.map((media) {
+                  return Stack(
+                    children: [
+                      // Image(
+                      //   image: NetworkImage(
+                      //     media.url != null && media.url!.isNotEmpty
+                      //         ? media.url!
+                      //         : 'https://storage.googleapis.com/map-surf-assets/noimage.jpg',
+                      //     scale: 1,
+                      //   ),
+                      //   height: 160.0,
+                      //   width: double.infinity,
+                      //   fit: BoxFit.cover,
+                      // ),
+                      CachedNetworkImage(
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) => Container(
+                          padding: EdgeInsets.all(10.0),
+                          child: Container(
+                            child: Center(
+                              child: SizedBox(
+                                height: 50.0,
+                                width: 50.0,
+                                child: CircularProgressIndicator(),
+                              ),
+                            ),
+                          ),
+                        ),
+                        errorWidget: (context, url, error) => Icon(Icons.error),
+                        height: 160.0,
+                        width: double.infinity,
+                        imageUrl: (media.url != null && media.url!.isNotEmpty
+                            ? media.url!
+                            : 'https://storage.googleapis.com/map-surf-assets/noimage.jpg'),
+                      ),
+                      // Container(
+                      //   decoration: BoxDecoration(
+                      //     borderRadius: BorderRadius.circular(20.0),
+                      //     color: Colors.white,
+                      //     image: DecorationImage(
+                      //       image: CachedNetworkImageProvider(
+                      //         media.url != null && media.url!.isNotEmpty
+                      //             ? media.url!
+                      //             : 'https://storage.googleapis.com/map-surf-assets/noimage.jpg',
+                      //         errorListener: () => print('error img'),
+                      //       ),
+                      //       scale: 1.0,
+                      //       fit: BoxFit.cover,
+                      //     ),
+                      //   ),
+                      //   height: 160.0,
+                      //   width: double.infinity,
+                      // ),
+                      Positioned(
+                        top: 5,
+                        right: 10,
+                        child: InkWell(
+                          onTap: () {
+                            _productBloc.add(DeleteImages(
+                                [media.url!], _product.productid!));
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.red,
+                              borderRadius: BorderRadius.circular(50.0),
+                              // border: Border.all(color: Colors.black45),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black,
+                                  offset: Offset(0, 0),
+                                  blurRadius: 3.0,
+                                ),
+                              ],
+                            ),
+                            height: 30.0,
+                            width: 30.0,
+                            child: Icon(
+                              Icons.delete,
+                              color: Colors.white,
+                              size: 20.0,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                }).toList(),
+              ),
+              Positioned(
+                bottom: 8,
+                child: Container(
+                  width: SizeConfig.screenWidth,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: _media.asMap().keys.map((key) {
+                      return Container(
+                        margin: _media.length > 1
+                            ? key < 5
+                                ? EdgeInsets.only(right: 8.0)
+                                : null
+                            : null,
+                        height: 8.0,
+                        width: 8.0,
+                        decoration: BoxDecoration(
+                          color: _currentCarouselIndex == key
+                              ? Colors.white
+                              : Colors.grey,
+                          shape: BoxShape.circle,
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
         Visibility(
           visible: _media.length < 10,
           child: Positioned(

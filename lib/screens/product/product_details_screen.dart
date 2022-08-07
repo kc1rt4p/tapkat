@@ -186,6 +186,16 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                     state is UnlikeSuccess) {
                   _productBloc.add(GetProductDetails(widget.productId));
                 }
+
+                if (state is ProductError) {
+                  await DialogMessage.show(
+                    context,
+                    title: 'Error',
+                    message: state.message,
+                  );
+
+                  Navigator.pop(context);
+                }
               },
             ),
             // BlocListener(
@@ -1313,6 +1323,23 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
         ),
       );
     } else {
+      if (_product!.media != null && _product!.media!.isEmpty) {
+        return Container(
+          height: SizeConfig.screenHeight * .3,
+          padding: EdgeInsets.all(5.0),
+          decoration: BoxDecoration(
+            color: Colors.grey,
+            image: DecorationImage(
+              image: AssetImage('assets/images/image_placeholder.jpg'),
+              scale: 1.0,
+              fit: BoxFit.cover,
+            ),
+          ),
+          child: Text(''),
+          width: double.infinity,
+        );
+      }
+
       return Container(
         height: SizeConfig.screenHeight * .3,
         child: PhotoViewGallery.builder(

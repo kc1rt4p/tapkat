@@ -63,10 +63,15 @@ class ProductRepository {
         .toList();
   }
 
-  Future<ProductModel> getProduct(String id) async {
-    final response = await _apiService.get(url: 'products/single/$id');
-
-    return ProductModel.fromJson(response.data);
+  Future<ProductModel?> getProduct(String id) async {
+    try {
+      final response = await _apiService.get(url: 'products/single/$id');
+      if (response.data['status'].toString().toLowerCase() != 'available')
+        return null;
+      return ProductModel.fromJson(response.data);
+    } catch (e) {
+      return null;
+    }
   }
 
   Future<String?> addProduct(ProductRequestModel product) async {
@@ -153,13 +158,13 @@ class ProductRepository {
         quality: 15,
       );
 
-      print('0---> ORIGINAL FILE SIZE: ${await thumbnail!.length()}');
-      print('0---> THUMBNAIL FILE SIZE ${await _imageFile.length()}');
-
       _imgsToUpload.addAll([
         img,
-        SelectedMedia(fileName, appDocDirectory.path + '/' + fileName,
-            thumbnail.readAsBytesSync(), appDocDirectory.path + '/' + fileName),
+        SelectedMedia(
+            fileName,
+            appDocDirectory.path + '/' + fileName,
+            thumbnail!.readAsBytesSync(),
+            appDocDirectory.path + '/' + fileName),
       ]);
     }
 

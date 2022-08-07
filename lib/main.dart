@@ -153,6 +153,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         'error ${details.stack}',
         details.exception.toString(),
       );
+      if (details.exception is HttpException) return;
       final timeString = DateTime.now().millisecondsSinceEpoch.toString();
       FlutterLogs.logToFile(
         logFileName: timeString,
@@ -198,7 +199,10 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         );
       });
 
-      if (kReleaseMode) exit(1);
+      if (kReleaseMode) {
+        // exit(1);
+        Navigator.pop(context);
+      }
     };
   }
 
