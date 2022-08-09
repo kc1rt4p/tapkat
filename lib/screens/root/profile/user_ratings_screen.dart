@@ -535,7 +535,7 @@ class _UserRatingsScreenState extends State<UserRatingsScreen> {
         UserReviewModel(
           rating: rating['rating'] as double,
           review: rating['review'] as String?,
-          reviewerid: review.userid,
+          reviewerid: review.reviewerid,
           reviewername: review.reviewername,
           userid: review.userid,
           username: review.username,
@@ -657,6 +657,7 @@ class _UserRatingsScreenState extends State<UserRatingsScreen> {
           productname: review.productname,
           image_url_t: review.image_url_t,
           userid: review.userid,
+          reviewerid: review.reviewerid,
         ),
       ));
     }
@@ -671,6 +672,92 @@ class _UserRatingsScreenState extends State<UserRatingsScreen> {
       pagingController: _userPagingController,
       builderDelegate: PagedChildBuilderDelegate<UserReviewModel>(
         itemBuilder: (context, rating, index) {
+          return InkWell(
+            onLongPress: () => _onLongPressUser(rating),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => StoreScreen(
+                  userId: rating.userid!,
+                  userName: rating.username!,
+                ),
+              ),
+            ),
+            child: Card(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 25,
+                          height: 25,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                            image: DecorationImage(
+                              image: rating.user_image_url != null &&
+                                      rating.user_image_url!.isNotEmpty
+                                  ? NetworkImage(rating.user_image_url!)
+                                  : AssetImage(
+                                          'assets/images/image_placeholder.jpg')
+                                      as ImageProvider<Object>,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: 5.0),
+                        Expanded(
+                          child: Text(
+                            rating.username ?? '',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: 8.0),
+                        Text(
+                          timeago.format(DateTime.parse(rating.review_date!)),
+                          style: TextStyle(
+                            fontSize: SizeConfig.textScaleFactor * 10,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Divider(),
+                    RatingBar.builder(
+                      ignoreGestures: true,
+                      initialRating: rating.rating != null
+                          ? rating.rating!.roundToDouble()
+                          : 0,
+                      minRating: 0,
+                      direction: Axis.horizontal,
+                      allowHalfRating: true,
+                      itemCount: 5,
+                      itemSize: SizeConfig.textScaleFactor * 13,
+                      tapOnlyMode: true,
+                      itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
+                      itemBuilder: (context, _) => Icon(
+                        Icons.star,
+                        color: Colors.amber,
+                      ),
+                      onRatingUpdate: (rating) {
+                        //
+                      },
+                    ),
+                    SizedBox(height: 8.0),
+                    Text(
+                      rating.review != null && rating.review!.isNotEmpty
+                          ? '"${rating.review}"'
+                          : '-',
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
           return InkWell(
             onLongPress: () => _onLongPressUser(rating),
             onTap: () => Navigator.push(
@@ -703,12 +790,11 @@ class _UserRatingsScreenState extends State<UserRatingsScreen> {
                               fontSize: SizeConfig.textScaleFactor * 10)),
                     ],
                   ),
-                  SizedBox(height: 8.0),
                   Row(
                     children: [
                       Container(
-                        width: SizeConfig.screenWidth * .2,
-                        height: SizeConfig.screenWidth * .2,
+                        width: SizeConfig.screenWidth * .17,
+                        height: SizeConfig.screenWidth * .17,
                         decoration: BoxDecoration(
                           color: Colors.white,
                           image: DecorationImage(
@@ -726,20 +812,6 @@ class _UserRatingsScreenState extends State<UserRatingsScreen> {
                       Expanded(
                         child: Column(
                           children: [
-                            Container(
-                              height: 100.0,
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 10.0),
-                              child: SingleChildScrollView(
-                                child: Text(
-                                  rating.review != null &&
-                                          rating.review!.isNotEmpty
-                                      ? '"${rating.review}"'
-                                      : '-',
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-                            ),
                             Align(
                               alignment: Alignment.bottomCenter,
                               child: RatingBar.builder(
@@ -762,6 +834,20 @@ class _UserRatingsScreenState extends State<UserRatingsScreen> {
                                 onRatingUpdate: (rating) {
                                   //
                                 },
+                              ),
+                            ),
+                            Container(
+                              height: 100.0,
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 10.0),
+                              child: SingleChildScrollView(
+                                child: Text(
+                                  rating.review != null &&
+                                          rating.review!.isNotEmpty
+                                      ? '"${rating.review}"'
+                                      : '-',
+                                  textAlign: TextAlign.center,
+                                ),
                               ),
                             ),
                           ],

@@ -54,12 +54,17 @@ class _ProductMeetUpLocationsScreenState
     _productRequest = widget.productRequest;
     _list = List.from(_productRequest.meet_location ?? []);
     if (!widget.updating) {
-      _list.add(AddressModel(
-        city: application.currentUserModel!.city,
-        country: application.currentUserModel!.country,
-        address: application.currentUserModel!.address,
-        location: application.currentUserModel!.location,
-      ));
+      if (application.currentUserModel!.city != null &&
+          application.currentUserModel!.country != null &&
+          application.currentUserModel!.address != null &&
+          application.currentUserModel!.location != null) {
+        _list.add(AddressModel(
+          city: application.currentUserModel!.city,
+          country: application.currentUserModel!.country,
+          address: application.currentUserModel!.address,
+          location: application.currentUserModel!.location,
+        ));
+      }
     }
     super.initState();
   }
@@ -155,6 +160,11 @@ class _ProductMeetUpLocationsScreenState
                                     const EdgeInsets.symmetric(vertical: 10.0),
                                 child: ListView(
                                   children: _list
+                                      .where((item) =>
+                                          item.city != null &&
+                                          item.country != null &&
+                                          item.address != null &&
+                                          item.location != null)
                                       .map(
                                         (address) => Container(
                                           child: Column(

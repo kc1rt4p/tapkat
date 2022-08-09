@@ -7,6 +7,7 @@ class ProductReviewModel {
   num? rating;
   String? review;
   DateTime? review_date;
+  String? reviewerid;
 
   ProductReviewModel({
     this.productid,
@@ -16,6 +17,7 @@ class ProductReviewModel {
     this.display_name,
     this.rating,
     this.review,
+    this.reviewerid,
     this.review_date,
   });
 
@@ -25,6 +27,7 @@ class ProductReviewModel {
       productname: json['productname'] as String?,
       image_url_t: json['image_url_t'] as String?,
       userid: json['userid'] as String?,
+      reviewerid: json['reviewerid'] as String?,
       display_name: json['display_name'] as String?,
       rating: json['rating'] as num?,
       review: json['review'] as String?,
@@ -42,6 +45,7 @@ class ProductReviewModel {
       "rating": this.rating,
       "review": this.review,
       "review_date": this.review_date,
+      'reviewerid': this.reviewerid,
     };
   }
 }

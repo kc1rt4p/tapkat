@@ -135,7 +135,7 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
             }
 
             if (state is InitializeAddUpdateProductSuccess) {
-              print('X===> ${state.types}');
+              print('X=..==> ${application.currentCountry}');
               setState(() {
                 _locList = state.locList;
 
@@ -152,7 +152,9 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
                           loc.currency ==
                           application.currentUserModel!.currency);
                     else {
-                      if (application.currentCountry != null) {
+                      if (application.currentCountry != null &&
+                          _locList.any((loc) =>
+                              loc.country_code == application.currentCountry)) {
                         _selectedLocalization = _locList.firstWhere((loc) =>
                             loc.country_code == application.currentCountry);
                       }
@@ -350,6 +352,7 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
                               controller: _descTextController,
                               color: kBackgroundColor,
                               maxLines: 3,
+                              maxLength: 120,
                               validator: (val) => val != null && val.isEmpty
                                   ? 'Required'
                                   : null,

@@ -294,6 +294,7 @@ class _ProductAddScreenState extends State<ProductAddScreen> {
                               controller: _descTextController,
                               color: kBackgroundColor,
                               maxLines: 3,
+                              maxLength: 120,
                               keyboardType: TextInputType.text,
                               validator: (val) => val != null && val.isEmpty
                                   ? 'Required'

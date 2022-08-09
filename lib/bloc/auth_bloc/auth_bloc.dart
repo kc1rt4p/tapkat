@@ -147,12 +147,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           application.currentUserModel = await userRepo.getUser(user.uid);
 
           if (application.currentUserModel != null) {
+            print('user model::: ${application.currentUserModel!.toJson()}');
             if (application.currentUserModel!.location == null) {
               emit(ContinueSignUp());
               return;
+            } else {
+              await userRepo.updateUserOnlineStatus(true);
+              emit(AuthSignedIn(user));
             }
-            await userRepo.updateUserOnlineStatus(true);
-            emit(AuthSignedIn(user));
           } else {
             emit(ShowSignUpPhoto());
           }
@@ -169,9 +171,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             if (application.currentUserModel!.location == null) {
               emit(ContinueSignUp());
               return;
+            } else {
+              await userRepo.updateUserOnlineStatus(true);
+              emit(AuthSignedIn(user));
             }
-            await userRepo.updateUserOnlineStatus(true);
-            emit(AuthSignedIn(user));
           } else {
             emit(ShowSignUpPhoto());
           }

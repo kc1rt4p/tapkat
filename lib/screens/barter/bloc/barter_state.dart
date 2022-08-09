@@ -60,12 +60,14 @@ class BarterInitialized extends BarterState {
   final List<ProductModel> remoteUserProducts;
   final Stream<List<BarterProductModel>> barterProductsStream;
   final List<ProductModel> currentUserProducts;
+  final bool existing;
 
   BarterInitialized({
     required this.barterStream,
     required this.remoteUserProducts,
     required this.currentUserProducts,
     required this.barterProductsStream,
+    this.existing = false,
   });
 }
 

@@ -79,7 +79,17 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
               event.product1.userid! +
               event.product1.productid!;
           final barterRecord = await _barterRepo.getBarterRecord(barterId);
+
           if (barterRecord != null) {
+            if (barterRecord.deletedFor != null &&
+                barterRecord.deletedFor!
+                    .contains(application.currentUser!.uid)) {
+              emit(BarterDoesNotExist(
+                product1: event.product1,
+                product2: event.product2,
+              ));
+              return;
+            }
             emit(BarterExists(
               product1: event.product1,
               product2: event.product2,

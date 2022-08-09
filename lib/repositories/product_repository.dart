@@ -66,7 +66,7 @@ class ProductRepository {
   Future<ProductModel?> getProduct(String id) async {
     try {
       final response = await _apiService.get(url: 'products/single/$id');
-      if (response.data['status'].toString().toLowerCase() != 'available')
+      if (response.data['status'].toString().toLowerCase() == 'fail')
         return null;
       return ProductModel.fromJson(response.data);
     } catch (e) {

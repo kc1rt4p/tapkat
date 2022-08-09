@@ -159,9 +159,6 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
               event.barterData.barterId = newBarterId;
               add(InitializeBarter(event.barterData));
             } else {
-              if (_barterRecord.deletedFor != null &&
-                  _barterRecord.deletedFor!
-                      .contains(application.currentUser!.uid)) {}
               await _barterRepository.updateBarter(
                   _barterRecord.barterId!, _barterRecord.toJson());
               add(StreamBarter(_barterRecord));
@@ -485,6 +482,7 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
             remoteUserProducts: remoteUserProducts,
             barterProductsStream: _barterRepository
                 .streamBarterProducts(event.barterRecord.barterId!),
+            existing: true,
           ));
           // } catch (e) {
           //   emit(BarterError(e.toString()));
