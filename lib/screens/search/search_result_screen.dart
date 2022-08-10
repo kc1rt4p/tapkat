@@ -22,6 +22,7 @@ import 'package:tapkat/utilities/constants.dart';
 import 'package:tapkat/utilities/dialog_message.dart';
 import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/utilities/style.dart';
+import 'package:tapkat/utilities/utilities.dart';
 import 'package:tapkat/widgets/barter_list_item.dart';
 import 'package:tapkat/widgets/custom_app_bar.dart';
 import 'package:tapkat/widgets/custom_button.dart';
@@ -1653,16 +1654,19 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                         },
                       ),
                     ),
-                onAccept: (ProductModel product2) {
+                onAccept: (ProductModel product2) async {
                   if (product.userid != application.currentUser!.uid &&
                       product.status != 'completed' &&
                       product2.status != 'completed') {
-                    _homeBloc.add(
-                      CheckBarter(
-                        product1: product,
-                        product2: product2,
-                      ),
-                    );
+                    final result = await onQuickBuy(context, product, product2);
+                    if (result == false) {
+                      _homeBloc.add(
+                        CheckBarter(
+                          product1: product,
+                          product2: product2,
+                        ),
+                      );
+                    }
                   }
                 });
           },
