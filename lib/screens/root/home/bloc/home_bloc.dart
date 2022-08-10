@@ -33,7 +33,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
             'reco',
             location: _location,
             sortBy: 'distance',
-            radius: 5000,
+            radius: 20000,
             userId: application.currentUser!.uid,
             interests: application.currentUserModel != null &&
                     application.currentUserModel!.interests != null &&
@@ -53,7 +53,6 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
           );
           emit(LoadedUserList(
               userItems.where((item) => item.status != 'completed').toList()));
-          add(LoadProductsInCategories());
         }
 
         if (event is LoadTopStores) {
@@ -120,6 +119,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
             'demand',
             location: _location,
             userId: application.currentUser!.uid,
+            radius: 20000,
             sortBy: 'distance',
           );
 
@@ -137,6 +137,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
             location: _location,
             userId: application.currentUser!.uid,
             sortBy: 'distance',
+            radius: 20000,
           );
           emit(LoadedFreeList(list));
           add(LoadUserList());

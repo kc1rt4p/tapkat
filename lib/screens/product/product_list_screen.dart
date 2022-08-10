@@ -180,14 +180,20 @@ class _ProductListScreenState extends State<ProductListScreen> {
           listeners: [
             BlocListener(
               bloc: _homeBloc,
-              listener: (context, state) {
+              listener: (context, state) async {
                 if (state is BarterDoesNotExist) {
+                  final product = state.product1;
+                  final product2 = state.product2;
+                  final result =
+                      await onQuickBarter(context, product, product2);
+                  if (result == null) return;
                   Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => BarterScreen(
-                        product: state.product1,
-                        initialOffer: state.product2,
+                        product: product,
+                        initialOffer: product2,
+                        quickBarter: result ? true : false,
                       ),
                     ),
                   );
@@ -947,15 +953,12 @@ class _ProductListScreenState extends State<ProductListScreen> {
                   if (product.userid != application.currentUser!.uid &&
                       product.status != 'completed' &&
                       product2.status != 'completed') {
-                    final result = await onQuickBuy(context, product, product2);
-                    if (result == false) {
-                      _homeBloc.add(
-                        CheckBarter(
-                          product1: product,
-                          product2: product2,
-                        ),
-                      );
-                    }
+                    _homeBloc.add(
+                      CheckBarter(
+                        product1: product,
+                        product2: product2,
+                      ),
+                    );
                   }
                 });
           },

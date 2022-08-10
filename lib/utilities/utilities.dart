@@ -5,7 +5,7 @@ import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/widgets/custom_button.dart';
 
-Future<bool?> onQuickBuy(
+Future<bool?> onQuickBarter(
     BuildContext context, ProductModel product1, ProductModel product2) async {
   print('--quickbuy-product1--> ${product1.toJson()}');
   print('--quickbuy-product2--> ${product2.toJson()}');

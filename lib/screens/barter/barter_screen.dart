@@ -50,6 +50,7 @@ class BarterScreen extends StatefulWidget {
   final BarterRecordModel? barterRecord;
   final bool showChatFirst;
   final bool buying;
+  final bool quickBarter;
 
   const BarterScreen({
     Key? key,
@@ -59,6 +60,7 @@ class BarterScreen extends StatefulWidget {
     this.initialOffer,
     this.existing = false,
     this.buying = false,
+    this.quickBarter = false,
   }) : super(key: key);
 
   @override
@@ -500,7 +502,17 @@ class _BarterScreenState extends State<BarterScreen> {
                   message = 'You have submitted this offer';
               }
 
-              if (!_closing) {
+              if (!_closing &&
+                  _barterRecord!.dealStatus == 'submitted' &&
+                  widget.quickBarter) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text('Your offer has been submitted'),
+                  duration: Duration(seconds: 2),
+                ));
+                Navigator.pop(context);
+              }
+
+              if (!_closing && !widget.quickBarter) {
                 await DialogMessage.show(
                   context,
                   title: 'Info',
@@ -661,6 +673,10 @@ class _BarterScreenState extends State<BarterScreen> {
                           ),
                         );
                       });
+                    }
+
+                    if (widget.quickBarter) {
+                      _onSubmitTapped(true);
                     }
 
                     _initialOffer = null;
