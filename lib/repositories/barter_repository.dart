@@ -147,7 +147,7 @@ class BarterRepository {
 
     final openBartersForUsersInvolved = openBarters
         .where((barter) =>
-            usersInvolved.contains(barter.userid1) ||
+            usersInvolved.contains(barter.userid1) &&
             usersInvolved.contains(barter.userid2))
         .toList();
 
