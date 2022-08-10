@@ -135,10 +135,9 @@ class BarterRepository {
         final docSnapshot = await barterRef.doc(bProd.barterid).get();
         if (docSnapshot.exists) {
           final barterRecord = BarterRecordModel.fromJson(docSnapshot.data()!);
-          final usersInvolved = [userId, application.currentUser!.uid];
+          final usersInvolved = [barterRecord.userid1, barterRecord.userid2];
 
-          if (usersInvolved.contains(barterRecord.userid1) &&
-              usersInvolved.contains(barterRecord.userid2)) {
+          if (usersInvolved.contains(application.currentUser!.uid)) {
             if (!['new', 'completed', 'rejected', 'withdrawn']
                     .contains(barterRecord.dealStatus) &&
                 (barterRecord.deletedFor == null ||

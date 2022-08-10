@@ -656,15 +656,13 @@ class _HomeScreenState extends State<HomeScreen> {
                         return LongPressDraggable(
                           data: product,
                           childWhenDragging: Container(
-                            height: SizeConfig.screenHeight * 0.12,
-                            width: SizeConfig.screenHeight * 0.12,
+                            height: SizeConfig.screenHeight * 0.1,
+                            width: SizeConfig.screenHeight * 0.1,
                             decoration: BoxDecoration(
                               color: kBackgroundColor,
-                              borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(20.0),
-                                topRight: Radius.circular(20.0),
-                              ),
+                              shape: BoxShape.circle,
                             ),
+                            child: Text(''),
                           ),
                           feedback: Container(
                             height: 100.0,
