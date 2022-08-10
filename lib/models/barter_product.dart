@@ -8,9 +8,11 @@ class BarterProductModel {
   num? price;
   String? imgUrl;
   String? currency;
+  String? barterid;
   DateTime? dateAdded;
 
   BarterProductModel({
+    this.barterid,
     this.id,
     this.productId,
     this.userId,
@@ -21,7 +23,8 @@ class BarterProductModel {
     this.dateAdded,
   });
 
-  factory BarterProductModel.fromProductModel(ProductModel product) {
+  factory BarterProductModel.fromProductModel(
+      ProductModel product, String barterId) {
     var thumbnail = '';
 
     if (product.mediaPrimary != null &&
@@ -48,6 +51,7 @@ class BarterProductModel {
       productName: product.productname,
       price: product.price,
       imgUrl: thumbnail,
+      barterid: barterId,
       currency: product.currency,
     );
   }
@@ -59,6 +63,7 @@ class BarterProductModel {
       productName: json['productname'],
       price: json['price'],
       imgUrl: json['imgUrl'],
+      barterid: json['barterid'],
       currency: json['currency'],
       dateAdded: json['dateAdded'] != null ? json['dateAdded'].toDate() : null,
     );
@@ -68,6 +73,7 @@ class BarterProductModel {
     var json = {
       'productid': this.productId,
       'userid': this.userId,
+      'barterid': this.barterid,
       'productname': this.productName,
       'price': this.price,
       'imgUrl': this.imgUrl,

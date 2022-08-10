@@ -94,6 +94,7 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
                     productName: event.barterData.u2P1Name,
                     price: event.barterData.u2P1Price,
                     imgUrl: event.barterData.u2P1Image,
+                    barterid: event.barterData.barterId,
                   )
                 ]);
                 barterProducts = await _barterRepository
@@ -419,6 +420,7 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
               price: event.amount,
               currency: event.currency,
               userId: event.userId,
+              barterid: event.barterId,
             ),
           );
 
@@ -431,6 +433,7 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
             event.barterId,
             BarterProductModel(
               productId: event.productId,
+              barterid: event.barterId,
             ),
           );
 

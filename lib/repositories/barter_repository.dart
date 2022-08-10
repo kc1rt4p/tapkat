@@ -3,10 +3,13 @@ import 'package:tapkat/models/barter_product.dart';
 import 'package:tapkat/models/barter_record_model.dart';
 import 'package:tapkat/models/chat_message.dart';
 import 'package:tapkat/repositories/product_repository.dart';
+import 'package:tapkat/schemas/barter_record.dart';
 import 'package:tapkat/utilities/application.dart' as application;
 
 class BarterRepository {
   final barterRef = FirebaseFirestore.instance.collection('barter');
+  final barterProductRef =
+      FirebaseFirestore.instance.collection('barter_product');
   final _productRepo = ProductRepository();
 
   Future<bool> setBarterRecord(BarterRecordModel barterRecord) async {
@@ -20,7 +23,8 @@ class BarterRepository {
   }
 
   Future<List<BarterProductModel>> getBarterProducts(String barterId) async {
-    final q = await barterRef.doc(barterId).collection('products').get();
+    final q =
+        await barterProductRef.where('barterid', isEqualTo: barterId).get();
     if (q.docs.isEmpty) return [];
 
     return q.docs.map((snapshot) {
@@ -30,9 +34,8 @@ class BarterRepository {
   }
 
   Stream<List<BarterProductModel>> streamBarterProducts(String barterId) {
-    return barterRef
-        .doc(barterId)
-        .collection('products')
+    return barterProductRef
+        .where('barterid', isEqualTo: barterId)
         .snapshots()
         .map((query) => query.docs.map((doc) {
               final bProd = BarterProductModel.fromJson(doc.data());
@@ -81,9 +84,8 @@ class BarterRepository {
 
   Future<bool> addCashOffer(
       String barterId, BarterProductModel barterProduct) async {
-    final existingProducts = await barterRef
-        .doc(barterId)
-        .collection('products')
+    final existingProducts = await barterProductRef
+        .where('barterid', isEqualTo: barterId)
         .where('userid', isEqualTo: barterProduct.userId)
         .get();
 
@@ -91,20 +93,13 @@ class BarterRepository {
       existingProducts.docs.forEach((doc) async {
         final product = BarterProductModel.fromJson(doc.data());
         if (product.productId!.contains('cash')) {
-          await barterRef
-              .doc(barterId)
-              .collection('products')
-              .doc(doc.id)
-              .delete();
+          await barterProductRef.doc(doc.id).delete();
         }
       });
     }
 
     barterProduct.dateAdded = DateTime.now();
-    final docRef = await barterRef
-        .doc(barterId)
-        .collection('products')
-        .add(barterProduct.toJson());
+    final docRef = await barterProductRef.add(barterProduct.toJson());
 
     final newOffer = await docRef.get();
 
@@ -122,64 +117,101 @@ class BarterRepository {
 
   Future<bool> checkIfBarterable(
       String userId, String productId, String barterId) async {
-    final querySnapshot = await barterRef.get();
-    bool exists = false;
+    bool barterable = true;
+    final querySnapshot =
+        await barterProductRef.where('productid', isEqualTo: productId).get();
 
     if (querySnapshot.docs.isEmpty) return true;
 
-    final barters = querySnapshot.docs
-        .map((doc) => BarterRecordModel.fromJson(doc.data()))
+    final _barterProducts = querySnapshot.docs
+        .map((doc) => BarterProductModel.fromJson(doc.data()))
         .toList();
 
-    final openBarters = barters
-        .where((barter) =>
-            barter.barterId != barterId &&
-            !['new', 'completed', 'rejected', 'withdrawn']
-                .contains(barter.dealStatus) &&
-            (barter.deletedFor == null ||
-                (barter.deletedFor != null &&
-                    !barter.deletedFor!
-                        .contains(application.currentUser!.uid))))
-        .toList();
+    final barterProducts =
+        _barterProducts.where((bProd) => bProd.barterid != barterId).toList();
 
-    final usersInvolved = [userId, application.currentUser!.uid];
+    if (barterProducts.isNotEmpty) {
+      await Future.forEach(barterProducts, (BarterProductModel bProd) async {
+        final docSnapshot = await barterRef.doc(bProd.barterid).get();
+        if (docSnapshot.exists) {
+          final barterRecord = BarterRecordModel.fromJson(docSnapshot.data()!);
+          final usersInvolved = [userId, application.currentUser!.uid];
 
-    final openBartersForUsersInvolved = openBarters
-        .where((barter) =>
-            usersInvolved.contains(barter.userid1) &&
-            usersInvolved.contains(barter.userid2))
-        .toList();
-
-    if (openBartersForUsersInvolved.isEmpty) return true;
-
-    await Future.forEach(openBartersForUsersInvolved,
-        (BarterRecordModel barter) async {
-      if (barter.barterId != barterId) {
-        final docSnapshot =
-            await barterRef.doc(barter.barterId).collection('products').get();
-
-        if (docSnapshot.docs.isNotEmpty) {
-          final products = docSnapshot.docs
-              .map((doc) => BarterProductModel.fromJson(doc.data()))
-              .toList();
-
-          if (products
-              .where((p) => !p.productId!.contains('cash'))
-              .any((prod) => prod.productId == productId)) {
-            exists = true;
+          if (usersInvolved.contains(barterRecord.userid1) &&
+              usersInvolved.contains(barterRecord.userid2)) {
+            if (!['new', 'completed', 'rejected', 'withdrawn']
+                    .contains(barterRecord.dealStatus) &&
+                (barterRecord.deletedFor == null ||
+                    (barterRecord.deletedFor != null &&
+                        !barterRecord.deletedFor!
+                            .contains(application.currentUser!.uid)) ||
+                    (barterRecord.deletedFor != null &&
+                        barterRecord.deletedFor!.isEmpty))) {
+              barterable = false;
+            }
           }
         }
-      }
-    });
+      });
+    }
 
-    return exists ? false : true;
+    return barterable;
+    // final querySnapshot = await barterRef.get();
+    // bool exists = false;
+
+    // if (querySnapshot.docs.isEmpty) return true;
+
+    // final barters = querySnapshot.docs
+    //     .map((doc) => BarterRecordModel.fromJson(doc.data()))
+    //     .toList();
+
+    // final openBarters = barters
+    //     .where((barter) =>
+    //         barter.barterId != barterId &&
+    //         !['new', 'completed', 'rejected', 'withdrawn']
+    //             .contains(barter.dealStatus) &&
+    //         (barter.deletedFor == null ||
+    //             (barter.deletedFor != null &&
+    //                 !barter.deletedFor!
+    //                     .contains(application.currentUser!.uid))))
+    //     .toList();
+
+    // final usersInvolved = [userId, application.currentUser!.uid];
+
+    // final openBartersForUsersInvolved = openBarters
+    //     .where((barter) =>
+    //         usersInvolved.contains(barter.userid1) &&
+    //         usersInvolved.contains(barter.userid2))
+    //     .toList();
+
+    // if (openBartersForUsersInvolved.isEmpty) return true;
+
+    // await Future.forEach(openBartersForUsersInvolved,
+    //     (BarterRecordModel barter) async {
+    //   if (barter.barterId != barterId) {
+    //     final docSnapshot =
+    //         await barterProductRef.where('barterid', isEqualTo: barterId).get();
+
+    //     if (docSnapshot.docs.isNotEmpty) {
+    //       final products = docSnapshot.docs
+    //           .map((doc) => BarterProductModel.fromJson(doc.data()))
+    //           .toList();
+
+    //       if (products
+    //           .where((p) => !p.productId!.contains('cash'))
+    //           .any((prod) => prod.productId == productId)) {
+    //         exists = true;
+    //       }
+    //     }
+    //   }
+    // });
+
+    // return exists ? false : true;
   }
 
   Future<bool> deleteCashOffer(
       String barterId, BarterProductModel barterProduct) async {
-    final snapshot = await barterRef
-        .doc(barterId)
-        .collection('products')
+    final snapshot = await barterProductRef
+        .where('barterid', isEqualTo: barterId)
         .where('productid', isEqualTo: barterProduct.productId)
         .limit(1)
         .get();
@@ -189,7 +221,7 @@ class BarterRepository {
     final doc = snapshot.docs.first;
 
     try {
-      await barterRef.doc(barterId).collection('products').doc(doc.id).delete();
+      await barterProductRef.doc(doc.id).delete();
       return true;
     } catch (e) {
       return false;
@@ -200,10 +232,7 @@ class BarterRepository {
       String barterId, List<BarterProductModel> products) async {
     try {
       products.forEach((product) async {
-        await barterRef
-            .doc(barterId)
-            .collection('products')
-            .add(product.toJson());
+        await barterProductRef.add(product.toJson());
       });
       return true;
     } catch (e) {
@@ -216,17 +245,12 @@ class BarterRepository {
     try {
       print('barterId: $barterId');
       productIds.forEach((pId) async {
-        final prod = await barterRef
-            .doc(barterId)
-            .collection('products')
+        final prod = await barterProductRef
+            .where('barterid', isEqualTo: barterId)
             .where('productid', isEqualTo: pId)
             .get();
         if (prod.docs.length > 0) {
-          await barterRef
-              .doc(barterId)
-              .collection('products')
-              .doc(prod.docs.first.id)
-              .delete();
+          await barterProductRef.doc(prod.docs.first.id).delete();
         }
       });
       return true;
@@ -401,17 +425,13 @@ class BarterRepository {
       }
 
       final products =
-          await barterRef.doc(barterId).collection('products').get();
+          await barterProductRef.where('barterid', isEqualTo: barterId).get();
       if (products.docs.isNotEmpty) {
         await Future.forEach(products.docs,
             (QueryDocumentSnapshot<Map<String, dynamic>> prod) async {
           final product = BarterProductModel.fromJson(prod.data());
           if (product.productId != barterRecord!.u2P1Id) {
-            await barterRef
-                .doc(barterId)
-                .collection('products')
-                .doc(prod.id)
-                .delete();
+            await barterProductRef.doc(prod.id).delete();
           }
         });
 

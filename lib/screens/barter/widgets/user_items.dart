@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/repositories/barter_repository.dart';
 import 'package:tapkat/screens/product/bloc/product_bloc.dart';
@@ -168,67 +169,111 @@ class _UserItemsDialogState extends State<UserItemsDialog> {
                           product.productid!,
                           widget.barterId),
                       builder: (context, snapshot) {
-                        final barterable = snapshot.data as bool? ?? false;
                         print('X===> ${snapshot.data}');
-                        return FittedBox(
-                          child: Stack(
-                            children: [
-                              BarterListItem(
-                                product: product,
-                                onTapped: () async {
-                                  if (!barterable) {
-                                    await DialogMessage.show(
-                                      context,
-                                      message:
-                                          'You can\'t add this product to the barter as you already have a another pending barter with ${widget.recipientName.toUpperCase()} for this ${product.productname}',
-                                    );
+                        if (snapshot.connectionState == ConnectionState.done) {
+                          final barterable = snapshot.data as bool? ?? false;
+                          return FittedBox(
+                            child: Stack(
+                              children: [
+                                BarterListItem(
+                                  product: product,
+                                  onTapped: () async {
+                                    if (!barterable) {
+                                      await DialogMessage.show(
+                                        context,
+                                        message:
+                                            'You can\'t add this product to the barter as you already have a another pending barter with ${widget.recipientName.toUpperCase()} for this ${product.productname}',
+                                      );
 
-                                    return;
-                                  }
-                                  if (_added || _selected) return;
-                                  setState(() {
-                                    _selectedProducts.add(product);
-                                  });
-                                },
-                                hideLikeBtn: true,
-                                showRating: false,
-                                hideDistance: true,
-                              ),
-                              Visibility(
-                                visible: _added || _selected,
-                                child: Positioned.fill(
-                                  child: InkWell(
-                                    onTap: () async {
-                                      if (_added) return;
-                                      setState(() {
-                                        _selectedProducts.remove(product);
-                                      });
-                                    },
+                                      return;
+                                    }
+                                    if (_added || _selected) return;
+                                    setState(() {
+                                      _selectedProducts.add(product);
+                                    });
+                                  },
+                                  hideLikeBtn: true,
+                                  showRating: false,
+                                  hideDistance: true,
+                                ),
+                                Visibility(
+                                  visible: !barterable,
+                                  child: Positioned.fill(
+                                    bottom: 0,
                                     child: Container(
+                                      padding:
+                                          EdgeInsets.symmetric(vertical: 5.0),
                                       decoration: BoxDecoration(
-                                        color: Colors.black.withOpacity(0.6),
+                                        color: Colors.black.withOpacity(0.5),
                                         borderRadius:
                                             BorderRadius.circular(20.0),
                                       ),
                                       child: Center(
-                                          child: _added
-                                              ? Text(
-                                                  'ADDED',
-                                                  style: TextStyle(
-                                                    color: Colors.white,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                )
-                                              : Icon(
-                                                  FontAwesomeIcons.check,
-                                                  color: Colors.white,
-                                                  size: 35.0,
-                                                )),
+                                        child: Text(
+                                          'UNAVAILABLE',
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                            fontSize:
+                                                SizeConfig.textScaleFactor * 12,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                            ],
+                                Visibility(
+                                  visible: _added || _selected,
+                                  child: Positioned.fill(
+                                    child: InkWell(
+                                      onTap: () async {
+                                        if (_added) return;
+                                        setState(() {
+                                          _selectedProducts.remove(product);
+                                        });
+                                      },
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          color: Colors.black.withOpacity(0.6),
+                                          borderRadius:
+                                              BorderRadius.circular(20.0),
+                                        ),
+                                        child: Center(
+                                            child: _added
+                                                ? Text(
+                                                    'ADDED',
+                                                    style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  )
+                                                : Icon(
+                                                    FontAwesomeIcons.check,
+                                                    color: Colors.white,
+                                                    size: 35.0,
+                                                  )),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }
+
+                        return FittedBox(
+                          child: Shimmer.fromColors(
+                            highlightColor: kBackgroundColor,
+                            baseColor: kBackgroundColor.withOpacity(0.8),
+                            child: Container(
+                              height: SizeConfig.screenHeight * 0.17,
+                              width: SizeConfig.screenHeight * 0.15,
+                              decoration: BoxDecoration(
+                                  color: Colors.grey.withOpacity(0.7),
+                                  borderRadius: BorderRadius.circular(20)),
+                            ),
                           ),
                         );
                       },
