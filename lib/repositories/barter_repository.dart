@@ -142,11 +142,12 @@ class BarterRepository {
                         .contains(application.currentUser!.uid))))
         .toList();
 
-    final usersInvolved = [userId, application.currentUser!.uid];
+    // final usersInvolved = [userId, application.currentUser!.uid];
+    final usersInvolved = [application.currentUser!.uid];
 
     final openBartersForUsersInvolved = openBarters
         .where((barter) =>
-            usersInvolved.contains(barter.userid1) &&
+            usersInvolved.contains(barter.userid1) ||
             usersInvolved.contains(barter.userid2))
         .toList();
 

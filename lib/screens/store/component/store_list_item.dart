@@ -36,7 +36,8 @@ class _StoreListItemState extends State<StoreListItem> {
             Stack(
               children: [
                 Container(
-                  child: widget.store.photo_url!.isNotEmpty
+                  child: widget.store.photo_url != null &&
+                          widget.store.photo_url!.isNotEmpty
                       ? CachedNetworkImage(
                           progressIndicatorBuilder: (context, url, progress) {
                             return Container(

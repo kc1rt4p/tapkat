@@ -184,13 +184,14 @@ class _BarterScreenState extends State<BarterScreen> {
 
     if (_barterRecord!.dealStatus!.toLowerCase() == 'completed') return true;
 
-    if ((_remoteUserOfferedCash == null ||
-            (_remoteUserOfferedCash != null && _remoteUserOfferedCash! < 1)) &&
+    if (((_remoteUserOfferedCash == null ||
+                (_remoteUserOfferedCash != null &&
+                    _remoteUserOfferedCash! < 1)) &&
+            remoteUserOffers.isEmpty) ||
         (_currentUserOfferedCash == null ||
-            (_currentUserOfferedCash != null &&
-                _currentUserOfferedCash! < 1)) &&
-        remoteUserOffers.isEmpty &&
-        currentUserOffers.isEmpty) {
+                (_currentUserOfferedCash != null &&
+                    _currentUserOfferedCash! < 1)) &&
+            currentUserOffers.isEmpty) {
       return true;
     }
 

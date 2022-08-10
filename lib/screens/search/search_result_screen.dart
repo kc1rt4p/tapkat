@@ -352,8 +352,8 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                     if (lastUserProduct != null) {
                       _productBloc.add(
                         GetNextUserItems(
-                          lastProductId: lastProduct!.productid!,
-                          startAfterVal: lastProduct!.price.toString(),
+                          lastProductId: lastUserProduct!.productid!,
+                          startAfterVal: lastUserProduct!.price.toString(),
                         ),
                       );
                     }
