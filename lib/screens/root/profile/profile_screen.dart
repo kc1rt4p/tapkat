@@ -18,7 +18,7 @@ import 'package:tapkat/models/product.dart';
 import 'package:tapkat/models/request/update_user.dart';
 import 'package:tapkat/models/user.dart';
 import 'package:tapkat/screens/product/bloc/product_bloc.dart';
-import 'package:tapkat/screens/product/product_add_screen.dart';
+import 'package:tapkat/screens/product/product_add-edit_screen.dart';
 import 'package:tapkat/screens/product/product_details_screen.dart';
 import 'package:tapkat/screens/reviews/user_review_list_screen.dart';
 import 'package:tapkat/screens/root/profile/bloc/profile_bloc.dart';

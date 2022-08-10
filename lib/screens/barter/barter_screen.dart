@@ -28,7 +28,7 @@ import 'package:tapkat/screens/barter/widgets/cash_item.dart';
 import 'package:tapkat/screens/barter/widgets/chat_item.dart';
 import 'package:tapkat/screens/barter/widgets/user_items.dart';
 import 'package:tapkat/screens/product/bloc/product_bloc.dart';
-import 'package:tapkat/screens/product/product_add_screen.dart';
+import 'package:tapkat/screens/product/product_add-edit_screen.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/dialog_message.dart';
 import 'package:tapkat/utilities/size_config.dart';
@@ -3997,7 +3997,7 @@ class _BarterScreenState extends State<BarterScreen> {
                                                     arguments:
                                                         Map<String, dynamic>()),
                                                 builder: (context) =>
-                                                    ProductAddScreen()));
+                                                    ProductAddEditScreen()));
                                         if (data != false) {
                                           _barterBloc
                                               .add(GetCurrentUserItems());
@@ -4039,7 +4039,7 @@ class _BarterScreenState extends State<BarterScreen> {
                                                   arguments:
                                                       Map<String, dynamic>()),
                                               builder: (context) =>
-                                                  ProductAddScreen()));
+                                                  ProductAddEditScreen()));
                                       if (data != false) {
                                         _barterBloc.add(GetCurrentUserItems());
                                       }

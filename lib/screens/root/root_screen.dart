@@ -14,7 +14,7 @@ import 'package:tapkat/models/barter_record_model.dart';
 import 'package:tapkat/screens/barter/barter_screen.dart';
 import 'package:tapkat/screens/barter/bloc/barter_bloc.dart';
 import 'package:tapkat/screens/product/bloc/product_bloc.dart';
-import 'package:tapkat/screens/product/product_add_screen.dart';
+import 'package:tapkat/screens/product/product_add-edit_screen.dart';
 import 'package:tapkat/screens/product/product_details_screen.dart';
 import 'package:tapkat/screens/root/barter/barter_transactions_screen.dart';
 import 'package:tapkat/screens/root/home/home_screen.dart';
@@ -449,7 +449,7 @@ class _RootScreenState extends State<RootScreen> {
     await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ProductAddScreen(),
+        builder: (context) => ProductAddEditScreen(),
       ),
     );
 

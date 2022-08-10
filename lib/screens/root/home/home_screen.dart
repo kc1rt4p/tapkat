@@ -703,13 +703,14 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             content: Container(
                               width: double.infinity,
-                              height: SizeConfig.screenHeight * .65,
+                              height: SizeConfig.screenHeight * .66,
                               padding: EdgeInsets.only(top: 60.0),
                               child: PagedGridView<int, ProductModel>(
                                 pagingController: _categoryPagingController,
                                 showNewPageProgressIndicatorAsGridChild: false,
                                 showNewPageErrorIndicatorAsGridChild: false,
                                 showNoMoreItemsIndicatorAsGridChild: false,
+                                shrinkWrap: true,
                                 padding: EdgeInsets.symmetric(
                                   vertical: 10.0,
                                 ),

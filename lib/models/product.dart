@@ -27,6 +27,9 @@ class ProductModel {
   double? distance;
   List<String>? tradeFor;
   bool? free;
+  int stock_count;
+  bool track_stock;
+  int deal_count;
 
   ProductModel({
     this.productid,
@@ -52,6 +55,9 @@ class ProductModel {
     this.tradeFor,
     this.free,
     this.meet_location,
+    this.stock_count = 0,
+    this.track_stock = false,
+    this.deal_count = 0,
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
@@ -104,6 +110,9 @@ class ProductModel {
               .map((item) => AddressModel.fromJson(item))
               .toList()
           : [],
+      track_stock: json['track_stock'] as bool? ?? false,
+      stock_count: json['stock_count'] as int? ?? 0,
+      deal_count: json['deal_count'] as int? ?? 0,
     );
   }
 
@@ -127,6 +136,9 @@ class ProductModel {
       'tradefor': this.tradeFor,
       'free': this.free,
       'meet_location': this.meet_location,
+      'stock_count': this.stock_count,
+      'track_stock': this.track_stock,
+      'deal_count': this.deal_count,
     };
     return json..addAll({'productid': this.productid});
   }

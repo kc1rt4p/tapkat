@@ -28,6 +28,7 @@ import 'package:tapkat/repositories/barter_repository.dart';
 import 'package:tapkat/schemas/user_likes_record.dart';
 import 'package:tapkat/screens/barter/barter_screen.dart';
 import 'package:tapkat/screens/product/bloc/product_bloc.dart';
+import 'package:tapkat/screens/product/product_add-edit_screen.dart';
 import 'package:tapkat/screens/product/product_edit_screen.dart';
 import 'package:tapkat/screens/product/product_ratings_screen.dart';
 import 'package:tapkat/screens/store/store_screen.dart';
@@ -1009,6 +1010,127 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                   ],
                                                 )
                                               : Text(''),
+
+                                          Visibility(
+                                            visible: _product!.track_stock,
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Padding(
+                                                  padding: EdgeInsets.only(
+                                                      bottom: 10.0),
+                                                  child: Divider(
+                                                    thickness: 0.6,
+                                                    color: kBackgroundColor,
+                                                  ),
+                                                ),
+                                                Container(
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Row(
+                                                        children: [
+                                                          Expanded(
+                                                            child: Text(
+                                                              'Quantity',
+                                                              style: Style
+                                                                  .subtitle2
+                                                                  .copyWith(
+                                                                color:
+                                                                    kBackgroundColor,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w600,
+                                                                fontSize: SizeConfig
+                                                                        .textScaleFactor *
+                                                                    14,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                          Text(
+                                                            _product!
+                                                                .stock_count
+                                                                .toString(),
+                                                            style: Style
+                                                                .subtitle2
+                                                                .copyWith(
+                                                              color:
+                                                                  kBackgroundColor,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w600,
+                                                              fontSize: SizeConfig
+                                                                      .textScaleFactor *
+                                                                  14,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                Padding(
+                                                  padding: EdgeInsets.only(
+                                                      bottom: 10.0),
+                                                  child: Divider(
+                                                    thickness: 0.6,
+                                                    color: kBackgroundColor,
+                                                  ),
+                                                ),
+                                                Container(
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Row(
+                                                        children: [
+                                                          Expanded(
+                                                            child: Text(
+                                                              'No. of times dealt',
+                                                              style: Style
+                                                                  .subtitle2
+                                                                  .copyWith(
+                                                                color:
+                                                                    kBackgroundColor,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w600,
+                                                                fontSize: SizeConfig
+                                                                        .textScaleFactor *
+                                                                    14,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                          Text(
+                                                            _product!.deal_count
+                                                                .toString(),
+                                                            style: Style
+                                                                .subtitle2
+                                                                .copyWith(
+                                                              color:
+                                                                  kBackgroundColor,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w600,
+                                                              fontSize: SizeConfig
+                                                                      .textScaleFactor *
+                                                                  14,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                SizedBox(height: 16.0),
+                                              ],
+                                            ),
+                                          ),
+
                                           _product != null
                                               ? Text(
                                                   'Last updated ${timeago.format(_product!.updated_time ?? DateTime.now())}.',
@@ -1411,7 +1533,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
     await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ProductEditScreen(product: _product!),
+        builder: (context) => ProductAddEditScreen(product: _product!),
       ),
     );
     _productBloc.add(GetProductDetails(widget.productId));
