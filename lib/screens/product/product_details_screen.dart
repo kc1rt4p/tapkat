@@ -972,6 +972,10 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                                 Axis.vertical,
                                                             children: _product!
                                                                 .meet_location!
+                                                                .where((mLoc) =>
+                                                                    mLoc.address !=
+                                                                    null)
+                                                                .toList()
                                                                 .map((loc) {
                                                               return Container(
                                                                 margin: EdgeInsets
