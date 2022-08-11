@@ -1,9 +1,12 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:gallery_saver/gallery_saver.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:tapkat/models/chat_message.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
+import 'package:tapkat/utilities/helper.dart';
 import 'package:tapkat/utilities/size_config.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
@@ -55,12 +58,14 @@ Container buildChatItem(BuildContext context, ChatMessageModel msg,
                         children: msg.images!
                             .map(
                               (img) => InkWell(
-                                onTap: () => _onChatImageTapped(context, img),
+                                onTap: () => _onChatImageTapped(context, img,
+                                    msg.userId != currentUser.uid),
                                 child: Container(
                                   height: 100.0,
                                   width: 150.0,
-                                  margin: EdgeInsets.only(right: 5.0),
-                                  padding: EdgeInsets.all(5.0),
+                                  padding: msg.images!.length > 1
+                                      ? EdgeInsets.all(5.0)
+                                      : null,
                                   decoration: BoxDecoration(
                                     color: Colors.white,
                                     image: DecorationImage(
@@ -100,7 +105,7 @@ Container buildChatItem(BuildContext context, ChatMessageModel msg,
   );
 }
 
-_onChatImageTapped(BuildContext context, String imgUrl) {
+_onChatImageTapped(BuildContext context, String imgUrl, bool showDownload) {
   SizeConfig().init(context);
   showGeneralDialog(
     context: context,
@@ -116,16 +121,46 @@ _onChatImageTapped(BuildContext context, String imgUrl) {
             Positioned(
               top: 15.0 + SizeConfig.paddingTop,
               right: 15.0,
-              child: GestureDetector(
-                onTap: () => Navigator.pop(ctx),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
+              child: Row(
+                children: [
+                  Visibility(
+                    visible: showDownload,
+                    child: GestureDetector(
+                      onTap: () async {
+                        final downloaded =
+                            await _saveNetworkImage(context, imgUrl);
+                        if (downloaded != null && downloaded == true) {
+                          showSnackbar(
+                              ctx, 'Image successfully saved to Gallery');
+                        } else {
+                          showSnackbar(ctx, 'Unable to save image in Gallery');
+                        }
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                        ),
+                        padding: EdgeInsets.all(8.0),
+                        child: Icon(FontAwesomeIcons.download,
+                            color: kBackgroundColor),
+                      ),
+                    ),
                   ),
-                  padding: EdgeInsets.all(5.0),
-                  child: Icon(Icons.close, color: kBackgroundColor),
-                ),
+                  SizedBox(width: 10.0),
+                  GestureDetector(
+                    onTap: () => Navigator.pop(ctx),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                      ),
+                      padding: EdgeInsets.all(8.0),
+                      child:
+                          Icon(FontAwesomeIcons.times, color: kBackgroundColor),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -133,4 +168,8 @@ _onChatImageTapped(BuildContext context, String imgUrl) {
       );
     },
   );
+}
+
+Future<bool?> _saveNetworkImage(BuildContext context, String path) async {
+  return await GallerySaver.saveImage(path, albumName: 'TapKat - Barter');
 }

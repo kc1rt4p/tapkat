@@ -137,7 +137,8 @@ class BarterRepository {
           final barterRecord = BarterRecordModel.fromJson(docSnapshot.data()!);
           final usersInvolved = [barterRecord.userid1, barterRecord.userid2];
 
-          if (usersInvolved.contains(application.currentUser!.uid)) {
+          if (usersInvolved.contains(application.currentUser!.uid) &&
+              usersInvolved.contains(userId)) {
             if (!['new', 'completed', 'rejected', 'withdrawn']
                     .contains(barterRecord.dealStatus) &&
                 (barterRecord.deletedFor == null ||

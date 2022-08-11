@@ -2,6 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_maps_webservice/places.dart';
 import 'package:tapkat/backend.dart';
 import 'package:tapkat/models/localization.dart';
@@ -144,10 +145,16 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         final user = await authService.signInWithFacebook();
         if (user != null) {
           application.currentUser = user;
+          print('x---provider data---->   ${user.providerData.first}');
+
           application.currentUserModel = await userRepo.getUser(user.uid);
 
           if (application.currentUserModel != null) {
             print('user model::: ${application.currentUserModel!.toJson()}');
+            final userLink =
+                await FacebookAuth.instance.getUserData(fields: 'user_link');
+
+            print('x---user_link---> ${userLink}');
             if (application.currentUserModel!.location == null) {
               emit(ContinueSignUp());
               return;
@@ -206,10 +213,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           emit(AuthError('error saving user photo'));
         }
       }
-      // } catch (e) {
-      //   print('X====> ${e.toString()}');
-      //   emit(AuthError('auth error: ${e.toString()}'));
-      // }
 
       if (event is SkipSignUpPhoto) {
         print('X===> ${authService.currentUser!.user}');

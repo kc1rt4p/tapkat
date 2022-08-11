@@ -2105,6 +2105,22 @@ class _BarterScreenState extends State<BarterScreen> {
                     ),
                   ),
                 ),
+                Visibility(
+                  visible: !_shouldShowAdd() &&
+                      barterable &&
+                      !offers.any((BarterProductModel prod) =>
+                          prod.productId == product.productid),
+                  child: Positioned.fill(
+                    bottom: 0,
+                    child: Container(
+                      padding: EdgeInsets.symmetric(vertical: 5.0),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.5),
+                        borderRadius: BorderRadius.circular(20.0),
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
           );

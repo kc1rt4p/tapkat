@@ -175,6 +175,18 @@ class AuthService {
     return signInOrCreateAccount(createAccountFunc, registering: true);
   }
 
+  Future<Map<String, dynamic>?> linkWithFacebook() async {
+    final LoginResult loginResult = await FacebookAuth.instance.login(
+      permissions: [
+        'email',
+        'user_link',
+      ],
+      loginBehavior: LoginBehavior.nativeWithFallback,
+    );
+    if (loginResult.status != LoginStatus.success) return null;
+    return await FacebookAuth.instance.getUserData(fields: 'email, user_link');
+  }
+
   Future<User?> signInWithFacebook() async {
     // Trigger the sign-in flow
     final LoginResult loginResult = await FacebookAuth.instance.login(
@@ -182,6 +194,7 @@ class AuthService {
         'email',
         'public_profile',
         'user_friends',
+        'user_link',
       ],
       loginBehavior: LoginBehavior.nativeWithFallback,
     );

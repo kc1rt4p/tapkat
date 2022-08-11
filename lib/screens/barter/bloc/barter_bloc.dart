@@ -39,7 +39,7 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
       _user = application.currentUser;
       if (_user != null) {
         if (event is InitializeBarter) {
-          var _barterRecord = await _barterRepository
+          BarterRecordModel? _barterRecord = await _barterRepository
               .getBarterRecord(event.barterData.barterId!);
 
           print(
@@ -140,6 +140,25 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
           } else {
             final product =
                 await _productRepository.getProduct(event.barterData.u2P1Id!);
+
+            final barterProducts = await _barterRepository
+                .getBarterProducts(_barterRecord.barterId!);
+
+            if (barterProducts.isNotEmpty) {
+              if (!barterProducts
+                  .any((bProd) => bProd.productId == _barterRecord!.u2P1Id)) {
+                final _newProd = barterProducts.firstWhere((bProd) =>
+                    bProd.userId == _barterRecord!.userid2 &&
+                    !bProd.productId!.contains('cash'));
+                _barterRecord.u2P1Id = _newProd.productId;
+                _barterRecord.u2P1Image = _newProd.imgUrl;
+                _barterRecord.u2P1Name = _newProd.productName;
+                _barterRecord.u2P1Price =
+                    double.parse((_newProd.price ?? 0).toString());
+                _barterRepository.updateBarter(
+                    _barterRecord.barterId!, _barterRecord.toJson());
+              }
+            }
 
             print('remote product::::: ${product!.toJson()}');
 
@@ -452,6 +471,25 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
             emit(BarterUserError(
                 'This barter is no longer valid as one or more of the items cannot be retrieved'));
             return;
+          }
+
+          final barterProducts =
+              await _barterRepository.getBarterProducts(barterRecord.barterId!);
+
+          if (barterProducts.isNotEmpty) {
+            if (!barterProducts
+                .any((bProd) => bProd.productId == barterRecord.u2P1Id)) {
+              final _newProd = barterProducts.firstWhere((bProd) =>
+                  bProd.userId == barterRecord.userid2 &&
+                  !bProd.productId!.contains('cash'));
+              barterRecord.u2P1Id = _newProd.productId;
+              barterRecord.u2P1Image = _newProd.imgUrl;
+              barterRecord.u2P1Name = _newProd.productName;
+              barterRecord.u2P1Price =
+                  double.parse((_newProd.price ?? 0).toString());
+              _barterRepository.updateBarter(
+                  barterRecord.barterId!, barterRecord.toJson());
+            }
           }
 
           final senderUserId = barterRecord.userid1Role == 'sender'
