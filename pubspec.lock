@@ -1395,6 +1395,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.0"
+  scroll_to_index:
+    dependency: "direct main"
+    description:
+      name: scroll_to_index
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.1.1"
   share_plus:
     dependency: "direct main"
     description:
@@ -1603,6 +1610,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.2.0"
+  sticky_infinite_list:
+    dependency: "direct main"
+    description:
+      name: sticky_infinite_list
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "4.0.1"
   stream_channel:
     dependency: transitive
     description:

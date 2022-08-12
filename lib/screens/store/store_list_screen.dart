@@ -341,12 +341,6 @@ class _StoreListScreenState extends State<StoreListScreen> {
   //       position: _currentCenter,
   //     ));
   //   });
-
-  //   // if (markers.isNotEmpty) {
-  //   //   setState(() {
-  //   //     _markers = markers;
-  //   //   });
-  //   // }
   // }
 
   void setOriginalCenter() {
