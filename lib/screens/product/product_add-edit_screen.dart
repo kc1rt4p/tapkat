@@ -358,10 +358,9 @@ class _ProductAddEditScreenState extends State<ProductAddEditScreen> {
                                       ),
                                       inputFormatters: [
                                         CurrencyTextInputFormatter(symbol: ''),
-                                        FilteringTextInputFormatter.allow(
-                                            RegExp(r'[0-9]')),
-// for version 2 and greater youcan also use this
-                                        FilteringTextInputFormatter.digitsOnly
+                                        // FilteringTextInputFormatter.allow(
+                                        //     RegExp(r'[0-9]')),
+                                        // FilteringTextInputFormatter.digitsOnly
                                       ],
                                     ),
                                   ),
@@ -932,15 +931,14 @@ class _ProductAddEditScreenState extends State<ProductAddEditScreen> {
       allowPhoto: true,
     );
 
-    if (selectedMedia != null &&
-        validateFileFormat(selectedMedia.storagePath, context)) {
+    if (selectedMedia != null) {
       setState(() {
         showImageError = false;
         if (widget.product != null)
-          _productBloc.add(
-              AddProductImage(widget.product!.productid!, [selectedMedia]));
+          _productBloc
+              .add(AddProductImage(widget.product!.productid!, selectedMedia));
         else
-          _selectedMedia.add(selectedMedia);
+          _selectedMedia.addAll(selectedMedia);
       });
     }
   }

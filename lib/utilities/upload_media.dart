@@ -24,7 +24,7 @@ enum MediaSource {
   camera,
 }
 
-Future<SelectedMedia?> selectMediaWithSourceBottomSheet({
+Future<List<SelectedMedia>?> selectMediaWithSourceBottomSheet({
   required BuildContext context,
   double? maxWidth,
   double? maxHeight,
@@ -34,6 +34,7 @@ Future<SelectedMedia?> selectMediaWithSourceBottomSheet({
   Color textColor = const Color(0xFF111417),
   Color backgroundColor = const Color(0xFFF5F5F5),
   String? fileName,
+  bool multipleImage = false,
 }) async {
   final createUploadMediaListTile =
       (String label, MediaSource mediaSource) => ListTile(
@@ -118,7 +119,7 @@ Future<SelectedMedia?> selectMediaWithSourceBottomSheet({
   );
 }
 
-Future<SelectedMedia?> selectMedia({
+Future<List<SelectedMedia>?> selectMedia({
   double? maxWidth,
   double? maxHeight,
   bool isVideo = false,
@@ -128,31 +129,44 @@ Future<SelectedMedia?> selectMedia({
   final source = mediaSource == MediaSource.camera
       ? ImageSource.camera
       : ImageSource.gallery;
+  print('X====> $source');
   final pickedMediaFuture = isVideo
       ? picker.pickVideo(source: source)
-      : picker.pickImage(
-          maxWidth: maxWidth,
-          maxHeight: maxHeight,
-          source: source,
-          imageQuality: 50,
-        );
-  final pickedMedia = await pickedMediaFuture;
-  final mediaBytes = await pickedMedia?.readAsBytes();
-  if (mediaBytes == null) {
-    return null;
-  }
-  final timestamp = DateTime.now().millisecondsSinceEpoch.toString();
-  final _newFile = await changeFileNameOnly(File(pickedMedia!.path), timestamp);
+      : source == ImageSource.camera
+          ? picker.pickImage(source: source)
+          : picker.pickMultiImage();
+  await pickedMediaFuture;
+  final pickedMedia = source == ImageSource.camera
+      ? await pickedMediaFuture != null
+          ? [await pickedMediaFuture as XFile]
+          : []
+      : await pickedMediaFuture as List<XFile>?;
+  if (pickedMedia == null || pickedMedia.isEmpty) return null;
 
-  final path = storagePath(currentUserUid, pickedMedia.path, isVideo);
+  List<SelectedMedia> mediaList = [];
 
-  print('current path: $path');
-  print('storage path: ${_newFile.path.split('/').last}');
-  return SelectedMedia(
-      timestamp + '.jpg',
-      _newFile.path.split('/').last + timestamp + '.jpg',
-      _newFile.readAsBytesSync(),
-      _newFile.path);
+  await Future.forEach(pickedMedia, (media) async {
+    final mediaBytes = await (media as XFile).readAsBytes();
+
+    final timestamp = DateTime.now().millisecondsSinceEpoch.toString();
+    final _newFile = await changeFileNameOnly(File(media.path), timestamp);
+
+    // final path = storagePath(currentUserUid, media.path, isVideo);
+    mediaList.add(SelectedMedia(
+        timestamp + '.jpg',
+        _newFile.path.split('/').last + timestamp + '.jpg',
+        _newFile.readAsBytesSync(),
+        _newFile.path));
+  });
+
+  return mediaList;
+  // print('current path: $path');
+  // print('storage path: ${_newFile.path.split('/').last}');
+  // return SelectedMedia(
+  //     timestamp + '.jpg',
+  //     _newFile.path.split('/').last + timestamp + '.jpg',
+  //     _newFile.readAsBytesSync(),
+  //     _newFile.path);
 }
 
 Future<File> changeFileNameOnly(File file, String newFileName) {

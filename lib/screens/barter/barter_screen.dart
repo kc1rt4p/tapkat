@@ -1399,11 +1399,10 @@ class _BarterScreenState extends State<BarterScreen> {
       allowPhoto: true,
     );
 
-    if (selectedMedia != null &&
-        validateFileFormat(selectedMedia.storagePath, context)) {
+    if (selectedMedia != null) {
       if (!_selectedMedia.contains(selectedMedia)) {
         setState(() {
-          _selectedMedia.add(selectedMedia);
+          _selectedMedia.addAll(selectedMedia);
         });
       }
     }

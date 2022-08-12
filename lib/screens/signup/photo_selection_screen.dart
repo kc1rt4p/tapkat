@@ -243,10 +243,9 @@ class _SignUpPhotoSelectionScreenState
       allowPhoto: true,
     );
 
-    if (selectedMedia != null &&
-        validateFileFormat(selectedMedia.storagePath, context)) {
+    if (selectedMedia != null) {
       setState(() {
-        _selectedMedia = selectedMedia;
+        _selectedMedia = selectedMedia.first;
       });
     }
   }

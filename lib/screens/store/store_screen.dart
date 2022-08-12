@@ -30,6 +30,7 @@ import 'package:tapkat/widgets/barter_list_item.dart';
 import 'package:tapkat/widgets/custom_app_bar.dart';
 import 'package:tapkat/widgets/custom_search_bar.dart';
 import 'package:tapkat/widgets/tapkat_map.dart';
+import 'package:toggle_switch/toggle_switch.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:label_marker/label_marker.dart';
 import 'package:tapkat/utilities/application.dart' as application;
@@ -59,6 +60,8 @@ class _StoreScreenState extends State<StoreScreen> {
   String storeOwnerName = '';
   UserModel? _storeOwner;
 
+  String _selectedView = 'grid';
+
   ProductModel? lastProduct;
 
   final _refreshController = RefreshController();
@@ -68,8 +71,6 @@ class _StoreScreenState extends State<StoreScreen> {
 
   LatLng? googleMapsCenter;
   late GoogleMapController googleMapsController;
-
-  String _selectedView = 'grid';
 
   bool _isFollowing = false;
 
