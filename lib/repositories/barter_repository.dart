@@ -444,11 +444,15 @@ class BarterRepository {
     }
   }
 
-  Future<bool> deleteBarter(String id) async {
+  Future<bool> deleteBarter(String id, {bool permanent = false}) async {
     try {
-      await barterRef.doc(id).update({
-        'deletedFor': [application.currentUser!.uid],
-      });
+      if (!permanent) {
+        await barterRef.doc(id).update({
+          'deletedFor': [application.currentUser!.uid],
+        });
+      } else {
+        await barterRef.doc(id).delete();
+      }
 
       return true;
     } catch (e) {

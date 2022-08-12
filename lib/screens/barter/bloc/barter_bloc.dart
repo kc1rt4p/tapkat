@@ -73,10 +73,6 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
 
             print('1 remote product::::: ${product!.toJson()}');
 
-            // if (product.status == 'completed') {
-            //   event.barterData.dealStatus = 'inquiry';
-            // }
-
             final newBarter =
                 await _barterRepository.setBarterRecord(event.barterData);
 
@@ -141,6 +137,12 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
                 await _productRepository.getProduct(event.barterData.u2P1Id!);
 
             print('remote product::::: ${product!.toJson()}');
+            if (_barterRecord.dealStatus == 'new') {
+              await _barterRepository.deleteBarter(_barterRecord.barterId!,
+                  permanent: true);
+              add(InitializeBarter(event.barterData));
+              return;
+            }
 
             if (['withdrawn', 'rejected', 'completed']
                     .contains(_barterRecord.dealStatus) ||
