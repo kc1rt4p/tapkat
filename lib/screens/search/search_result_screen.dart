@@ -153,6 +153,13 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
   }
 
   @override
+  void setState(fn) {
+    if (mounted) {
+      super.setState(fn);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
     return Scaffold(
@@ -309,11 +316,13 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                         loc: _currentCenter,
                       ));
                     } else {
-                      DialogMessage.show(
-                        context,
-                        message:
-                            'No results found.\nTry to change your search criteria.',
-                      );
+                      if (mounted) {
+                        DialogMessage.show(
+                          context,
+                          message:
+                              'No results found.\nTry to change your search criteria.',
+                        );
+                      }
                     }
                   }
 
