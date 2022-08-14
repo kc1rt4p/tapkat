@@ -2388,6 +2388,7 @@ class _BarterScreenState extends State<BarterScreen> {
   }
 
   Widget _buildBarterStatus() {
+    currentUserOffers.forEach((cuOffer) => print('___-=> ${cuOffer.toJson()}'));
     if (_barterRecord == null) return Container();
     print('current barter status: ${_barterRecord!.dealStatus}');
     var message = '';

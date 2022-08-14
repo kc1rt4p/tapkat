@@ -136,6 +136,25 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
             final product =
                 await _productRepository.getProduct(event.barterData.u2P1Id!);
 
+            final barterProducts = await _barterRepository
+                .getBarterProducts(_barterRecord.barterId!);
+
+            if (barterProducts.isNotEmpty) {
+              List<String> toDeleteIds = [];
+              await Future.forEach(barterProducts,
+                  (BarterProductModel bProd) async {
+                final prod =
+                    await _productRepository.getProduct(bProd.productId!);
+                if (prod == null ||
+                    (prod.status == 'completed' &&
+                        _barterRecord!.dealStatus != 'completed')) {
+                  toDeleteIds.add(bProd.productId!);
+                }
+              });
+              await _barterRepository.removeBarterProduct(
+                  _barterRecord.barterId!, toDeleteIds);
+            }
+
             print('remote product::::: ${product!.toJson()}');
             if (_barterRecord.dealStatus == 'new') {
               await _barterRepository.deleteBarter(_barterRecord.barterId!,
@@ -451,6 +470,25 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
             emit(BarterUserError(
                 'This barter is no longer valid as one or more of the items cannot be retrieved'));
             return;
+          }
+
+          final barterProducts =
+              await _barterRepository.getBarterProducts(barterRecord.barterId!);
+
+          if (barterProducts.isNotEmpty) {
+            List<String> toDeleteIds = [];
+            await Future.forEach(barterProducts,
+                (BarterProductModel bProd) async {
+              final prod =
+                  await _productRepository.getProduct(bProd.productId!);
+              if (prod == null ||
+                  (prod.status == 'completed' &&
+                      barterRecord.dealStatus != 'completed')) {
+                toDeleteIds.add(bProd.productId!);
+              }
+            });
+            await _barterRepository.removeBarterProduct(
+                barterRecord.barterId!, toDeleteIds);
           }
 
           final senderUserId = barterRecord.userid1Role == 'sender'

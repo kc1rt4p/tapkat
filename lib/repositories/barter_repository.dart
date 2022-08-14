@@ -232,6 +232,7 @@ class BarterRepository {
       });
       return true;
     } catch (e) {
+      print('error deleting barter product: ${e.toString()}');
       return false;
     }
   }
