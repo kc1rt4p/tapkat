@@ -24,7 +24,6 @@ part 'barter_event.dart';
 part 'barter_state.dart';
 
 class BarterBloc extends Bloc<BarterEvent, BarterState> {
-  List<ChatMessageModel> unreadMessages = [];
   BarterBloc() : super(BarterInitial()) {
     final _productRepository = ProductRepository();
     final _barterRepository = BarterRepository();
@@ -72,10 +71,6 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
                 await _productRepository.getProduct(event.barterData.u2P1Id!);
 
             print('1 remote product::::: ${product!.toJson()}');
-
-            // if (product.status == 'completed') {
-            //   event.barterData.dealStatus = 'inquiry';
-            // }
 
             final newBarter =
                 await _barterRepository.setBarterRecord(event.barterData);
@@ -141,26 +136,13 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
             final product =
                 await _productRepository.getProduct(event.barterData.u2P1Id!);
 
-            final barterProducts = await _barterRepository
-                .getBarterProducts(_barterRecord.barterId!);
-
-            if (barterProducts.isNotEmpty) {
-              if (!barterProducts
-                  .any((bProd) => bProd.productId == _barterRecord!.u2P1Id)) {
-                final _newProd = barterProducts.firstWhere((bProd) =>
-                    bProd.userId == _barterRecord!.userid2 &&
-                    !bProd.productId!.contains('cash'));
-                _barterRecord.u2P1Id = _newProd.productId;
-                _barterRecord.u2P1Image = _newProd.imgUrl;
-                _barterRecord.u2P1Name = _newProd.productName;
-                _barterRecord.u2P1Price =
-                    double.parse((_newProd.price ?? 0).toString());
-                _barterRepository.updateBarter(
-                    _barterRecord.barterId!, _barterRecord.toJson());
-              }
-            }
-
             print('remote product::::: ${product!.toJson()}');
+            if (_barterRecord.dealStatus == 'new') {
+              await _barterRepository.deleteBarter(_barterRecord.barterId!,
+                  permanent: true);
+              add(InitializeBarter(event.barterData));
+              return;
+            }
 
             if (['withdrawn', 'rejected', 'completed']
                     .contains(_barterRecord.dealStatus) ||
@@ -496,25 +478,6 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
             return;
           }
 
-          final barterProducts =
-              await _barterRepository.getBarterProducts(barterRecord.barterId!);
-
-          if (barterProducts.isNotEmpty) {
-            if (!barterProducts
-                .any((bProd) => bProd.productId == barterRecord.u2P1Id)) {
-              final _newProd = barterProducts.firstWhere((bProd) =>
-                  bProd.userId == barterRecord.userid2 &&
-                  !bProd.productId!.contains('cash'));
-              barterRecord.u2P1Id = _newProd.productId;
-              barterRecord.u2P1Image = _newProd.imgUrl;
-              barterRecord.u2P1Name = _newProd.productName;
-              barterRecord.u2P1Price =
-                  double.parse((_newProd.price ?? 0).toString());
-              _barterRepository.updateBarter(
-                  barterRecord.barterId!, barterRecord.toJson());
-            }
-          }
-
           final senderUserId = barterRecord.userid1Role == 'sender'
               ? barterRecord.userid1
               : barterRecord.userid2;
@@ -649,6 +612,8 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
       // }
     });
   }
+
+  List<ChatMessageModel> unreadMessages = [];
 }
 
 final home = {

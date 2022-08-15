@@ -638,11 +638,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         floating: true,
                         automaticallyImplyLeading: false,
                         pinned: true,
-                        toolbarHeight: 100.0,
+                        toolbarHeight: 80.0,
                         title: Column(
                           children: [
                             Container(
-                              height: 60.0,
+                              height: 50.0,
                               width: double.infinity,
                               child: ListView(
                                 controller: _catScrollController,
@@ -682,7 +682,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                       child: Container(
                                         width: 90.0,
                                         margin: EdgeInsets.only(right: 8.0),
-                                        padding: EdgeInsets.all(5.0),
                                         decoration: BoxDecoration(
                                           color: _selectedCategory == cat.value
                                               ? kBackgroundColor
@@ -693,20 +692,17 @@ class _HomeScreenState extends State<HomeScreen> {
                                           borderRadius:
                                               BorderRadius.circular(10.0),
                                         ),
-                                        child: Center(
-                                          child: Text(
-                                            cat.value['name'] as String,
-                                            textAlign: TextAlign.center,
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.w500,
-                                              fontSize:
-                                                  SizeConfig.textScaleFactor *
-                                                      11,
-                                              color:
-                                                  _selectedCategory == cat.value
-                                                      ? Colors.white
-                                                      : kBackgroundColor,
-                                            ),
+                                        child: Text(
+                                          cat.value['name'] as String,
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.w500,
+                                            fontSize:
+                                                SizeConfig.textScaleFactor * 11,
+                                            color:
+                                                _selectedCategory == cat.value
+                                                    ? Colors.white
+                                                    : kBackgroundColor,
                                           ),
                                         ),
                                       ),

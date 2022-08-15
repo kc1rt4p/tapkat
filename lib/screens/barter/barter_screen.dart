@@ -523,15 +523,6 @@ class _BarterScreenState extends State<BarterScreen> {
             }
 
             if (state is BarterInitialized) {
-              if (!widget.existing &&
-                  state.existing &&
-                  widget.barterRecord == null) {
-                DialogMessage.show(
-                  context,
-                  message:
-                      'An existing pending barter deal was found for these products.',
-                );
-              }
               setState(() {
                 remoteUserItems = state.remoteUserProducts;
                 print(
@@ -590,6 +581,16 @@ class _BarterScreenState extends State<BarterScreen> {
                         ? _recipientName.substring(0, 7) + '...'
                         : _recipientName;
                   });
+
+                  if (!widget.existing &&
+                      state.existing &&
+                      widget.barterRecord == null) {
+                    DialogMessage.show(
+                      context,
+                      message:
+                          'An existing pending barter deal was found for these products.',
+                    );
+                  }
                 }
               });
 
@@ -2609,6 +2610,7 @@ class _BarterScreenState extends State<BarterScreen> {
   }
 
   Widget _buildBarterStatus() {
+    currentUserOffers.forEach((cuOffer) => print('___-=> ${cuOffer.toJson()}'));
     if (_barterRecord == null) return Container();
     print('current barter status: ${_barterRecord!.dealStatus}');
     var message = '';

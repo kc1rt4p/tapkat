@@ -166,6 +166,13 @@ class _ProductListScreenState extends State<ProductListScreen> {
     }
   }
 
+  // @override
+  // void setState(fn) {
+  //   if (mounted) {
+  //     super.setState(fn);
+  //   }
+  // }
+
   @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
@@ -290,11 +297,13 @@ class _ProductListScreenState extends State<ProductListScreen> {
                         ),
                       );
                     } else {
-                      DialogMessage.show(
-                        context,
-                        message:
-                            'No results found.\nTry to change your search criteria.',
-                      );
+                      if (mounted) {
+                        DialogMessage.show(
+                          context,
+                          message:
+                              'No results found.\nTry to change your search criteria.',
+                        );
+                      }
                     }
                   }
 

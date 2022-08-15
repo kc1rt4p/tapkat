@@ -155,8 +155,27 @@ class BarterRepository {
     }
 
     return barterable;
-    // final querySnapshot = await barterRef.get();
-    // bool exists = false;
+    // // final querySnapshot = await barterRef.get();
+    // // bool exists = false;
+    // final openBarters = barters
+    //     .where((barter) =>
+    //         barter.barterId != barterId &&
+    //         !['new', 'completed', 'rejected', 'withdrawn']
+    //             .contains(barter.dealStatus) &&
+    //         (barter.deletedFor == null ||
+    //             (barter.deletedFor != null &&
+    //                 !barter.deletedFor!
+    //                     .contains(application.currentUser!.uid))))
+    //     .toList();
+
+    // final usersInvolved = [userId, application.currentUser!.uid];
+    // final usersInvolved = [application.currentUser!.uid];
+
+    // final openBartersForUsersInvolved = openBarters
+    //     .where((barter) =>
+    //         usersInvolved.contains(barter.userid1) &&
+    //         usersInvolved.contains(barter.userid2))
+    //     .toList();
 
     // if (querySnapshot.docs.isEmpty) return true;
 
@@ -255,6 +274,7 @@ class BarterRepository {
       });
       return true;
     } catch (e) {
+      print('error deleting barter product: ${e.toString()}');
       return false;
     }
   }
@@ -463,11 +483,15 @@ class BarterRepository {
     }
   }
 
-  Future<bool> deleteBarter(String id) async {
+  Future<bool> deleteBarter(String id, {bool permanent = false}) async {
     try {
-      await barterRef.doc(id).update({
-        'deletedFor': [application.currentUser!.uid],
-      });
+      if (!permanent) {
+        await barterRef.doc(id).update({
+          'deletedFor': [application.currentUser!.uid],
+        });
+      } else {
+        await barterRef.doc(id).delete();
+      }
 
       return true;
     } catch (e) {

@@ -36,7 +36,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   List<LocalizationModel> _localizations = [];
   LocalizationModel? _selectedLocalization;
 
-  final _currentVerDate = DateTime(2022, 8, 10, 12, 03);
+  final _currentVerDate = DateTime(2022, 8, 15, 11, 47);
 
   @override
   void initState() {
