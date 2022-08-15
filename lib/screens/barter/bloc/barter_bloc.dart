@@ -165,8 +165,7 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
               return;
             }
 
-            if (['withdrawn', 'rejected', 'completed']
-                    .contains(_barterRecord.dealStatus) ||
+            if (['withdrawn', 'rejected'].contains(_barterRecord.dealStatus) ||
                 (_barterRecord.deletedFor != null &&
                     _barterRecord.deletedFor!
                         .contains(application.currentUser!.uid))) {

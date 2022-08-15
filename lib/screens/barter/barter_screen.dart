@@ -1410,7 +1410,11 @@ class _BarterScreenState extends State<BarterScreen> {
                 enabled: (currentUserOffers.isNotEmpty ||
                         _currentUserOfferedCash != null) &&
                     (remoteUserOffers.isNotEmpty ||
-                        _remoteUserOfferedCash != null),
+                        _remoteUserOfferedCash != null) &&
+                    !((currentUserOffers.isEmpty &&
+                            _currentUserOfferedCash != null) &&
+                        (remoteUserOffers.isEmpty &&
+                            _remoteUserOfferedCash != null)),
                 removeMargin: true,
                 label: 'Make Offer',
                 onTap: () => _onSubmitTapped(false),
@@ -2846,7 +2850,10 @@ class _BarterScreenState extends State<BarterScreen> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
-                                  Text('You will receive',
+                                  Text(
+                                      _barterRecord!.dealStatus != 'completed'
+                                          ? 'You will receive'
+                                          : 'You received',
                                       style: TextStyle(
                                         fontSize:
                                             SizeConfig.textScaleFactor * 13,
@@ -2891,7 +2898,10 @@ class _BarterScreenState extends State<BarterScreen> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text('You will send',
+                                  Text(
+                                      _barterRecord!.dealStatus != 'completed'
+                                          ? 'You will send'
+                                          : 'You sent',
                                       style: TextStyle(
                                         fontSize:
                                             SizeConfig.textScaleFactor * 13,
