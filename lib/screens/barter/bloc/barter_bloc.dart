@@ -141,7 +141,9 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
 
             if (barterProducts.isNotEmpty) {
               List<String> toDeleteIds = [];
-              await Future.forEach(barterProducts,
+              await Future.forEach(
+                  barterProducts
+                      .where((bProd) => !bProd.productId!.contains('cash')),
                   (BarterProductModel bProd) async {
                 final prod =
                     await _productRepository.getProduct(bProd.productId!);
@@ -477,7 +479,9 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
 
           if (barterProducts.isNotEmpty) {
             List<String> toDeleteIds = [];
-            await Future.forEach(barterProducts,
+            await Future.forEach(
+                barterProducts
+                    .where((bProd) => !bProd.productId!.contains('cash')),
                 (BarterProductModel bProd) async {
               final prod =
                   await _productRepository.getProduct(bProd.productId!);
