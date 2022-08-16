@@ -458,28 +458,6 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
             //     await _productRepository.updateProduct(updatedData);
             //   }
             // }
-
-            List<BarterProductModel> barterProducts =
-                await _barterRepository.getBarterProducts(event.barterId);
-            barterProducts = barterProducts
-                .where((bProd) => !bProd.productId!.contains('cash'))
-                .toList();
-            if (barterProducts.isNotEmpty) {
-              if (!barterProducts.contains((BarterProductModel bProd) =>
-                  bProd.productId == barterRecord.u2P1Id)) {
-                final bProd = barterProducts.firstWhere(
-                    (bProd) =>
-                        !bProd.productId!.contains('cash') &&
-                        bProd.userId != application.currentUser!.uid,
-                    orElse: () => barterProducts.first);
-                barterRecord.u2P1Id = bProd.productId;
-                barterRecord.u2P1Image = bProd.imgUrl;
-                barterRecord.u2P1Name = bProd.productName;
-                barterRecord.u2P1Price = (bProd.price ?? 0).toDouble();
-                await _barterRepository.updateBarter(
-                    event.barterId, barterRecord.toJson());
-              }
-            }
           }
           emit(UpdateBarterStatusSuccess());
         }
