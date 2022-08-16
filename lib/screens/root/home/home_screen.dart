@@ -635,9 +635,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         elevation: 0,
                         centerTitle: true,
                         primary: false,
-                        floating: true,
+                        // floating: true,
                         automaticallyImplyLeading: false,
                         pinned: true,
+                        stretch: true,
                         toolbarHeight: 80.0,
                         title: Column(
                           children: [
@@ -647,6 +648,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               child: ListView(
                                 controller: _catScrollController,
                                 scrollDirection: Axis.horizontal,
+                                shrinkWrap: true,
                                 children:
                                     _categories.asMap().entries.map((cat) {
                                   return AutoScrollTag(
@@ -681,6 +683,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       },
                                       child: Container(
                                         width: 90.0,
+                                        height: 50.0,
                                         margin: EdgeInsets.only(right: 8.0),
                                         decoration: BoxDecoration(
                                           color: _selectedCategory == cat.value
@@ -692,17 +695,23 @@ class _HomeScreenState extends State<HomeScreen> {
                                           borderRadius:
                                               BorderRadius.circular(10.0),
                                         ),
-                                        child: Text(
-                                          cat.value['name'] as String,
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.w500,
-                                            fontSize:
-                                                SizeConfig.textScaleFactor * 11,
-                                            color:
-                                                _selectedCategory == cat.value
-                                                    ? Colors.white
-                                                    : kBackgroundColor,
+                                        child: Center(
+                                          child: Text(
+                                            cat.value['name'] as String,
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                              fontWeight:
+                                                  _selectedCategory == cat.value
+                                                      ? FontWeight.bold
+                                                      : FontWeight.w500,
+                                              fontSize:
+                                                  SizeConfig.textScaleFactor *
+                                                      11,
+                                              color:
+                                                  _selectedCategory == cat.value
+                                                      ? Colors.white
+                                                      : kBackgroundColor,
+                                            ),
                                           ),
                                         ),
                                       ),

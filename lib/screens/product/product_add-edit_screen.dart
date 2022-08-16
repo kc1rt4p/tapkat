@@ -16,7 +16,9 @@ import 'package:geolocator/geolocator.dart' as geoLocator;
 import 'package:google_api_headers/google_api_headers.dart';
 import 'package:google_maps_webservice/places.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:scroll_to_index/scroll_to_index.dart';
 import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
+import 'package:tapkat/models/address.dart';
 import 'package:tapkat/models/localization.dart';
 import 'package:tapkat/models/location.dart';
 import 'package:tapkat/models/media_primary_model.dart';
@@ -62,12 +64,18 @@ class _ProductAddEditScreenState extends State<ProductAddEditScreen> {
   final _locationTextController = TextEditingController();
   final _quantityTextController = TextEditingController();
 
+  final inputTextController = TextEditingController();
+  final focusNode = FocusNode();
+
+  List<String> _tradeForlist = [];
+
   bool showImageError = false;
   bool showOfferTypeError = false;
   String? _selectedOfferType;
   PlaceDetails? _selectedLocation;
 
   List<LocalizationModel> _locList = [];
+  List<AddressModel> _meetUpList = [];
   LocalizationModel? _selectedLocalization;
   String _selectedStatus = 'available';
 
@@ -84,6 +92,13 @@ class _ProductAddEditScreenState extends State<ProductAddEditScreen> {
   bool isFree = false;
   bool trackStock = true;
   List<MediaPrimaryModel> _media = [];
+
+  final _scrollController = AutoScrollController();
+  ProductCategoryModel? _selectedCategory;
+  bool _textIsEmpty = true;
+  bool showCategoryError = false;
+  bool showTradeForError = false;
+  bool showMeetUpError = false;
 
   @override
   void initState() {
@@ -102,14 +117,29 @@ class _ProductAddEditScreenState extends State<ProductAddEditScreen> {
           _product.price != null ? _product.price.toString() : '0.00';
       _offerTypeTextController.text = _product.type ?? '';
       _descTextController.text = _product.productdesc ?? '';
-      _locationTextController.text =
-          '${_product.address!.address ?? ''}, ${_product.address!.city ?? ''}, ${_product.address!.country ?? ''}';
+      // _locationTextController.text =
+      //     '${_product.address!.address ?? ''}, ${_product.address!.city ?? ''}, ${_product.address!.country ?? ''}';
       isFree = _product.free ?? false;
       _selectedStatus = _product.status != null
           ? _product.status!.toLowerCase()
           : 'available';
       trackStock = _product.track_stock;
       _quantityTextController.text = _product.stock_count.toString();
+
+      _tradeForlist = widget.product!.tradeFor ?? [];
+      _meetUpList = List.from(widget.product!.meet_location ?? []);
+    } else {
+      if (application.currentUserModel!.city != null &&
+          application.currentUserModel!.country != null &&
+          application.currentUserModel!.address != null &&
+          application.currentUserModel!.location != null) {
+        _meetUpList.add(AddressModel(
+          city: application.currentUserModel!.city,
+          country: application.currentUserModel!.country,
+          address: application.currentUserModel!.address,
+          location: application.currentUserModel!.location,
+        ));
+      }
     }
   }
 
@@ -150,12 +180,35 @@ class _ProductAddEditScreenState extends State<ProductAddEditScreen> {
                   ProgressHUD.of(context)!.dismiss();
                 }
 
+                if (state is SaveProductSuccess) {
+                  await DialogMessage.show(
+                    context,
+                    message: 'An offer has been added',
+                    firstButtonClicked: () => DialogMessage.dismiss(),
+                  );
+
+                  Navigator.pop(context);
+                }
+
+                if (state is EditProductSuccess) {
+                  await DialogMessage.show(context,
+                      message: 'The product has been updated.');
+                  Navigator.pop(context);
+                }
+
                 if (state is InitializeAddUpdateProductSuccess) {
                   setState(() {
                     _productCategories = state.categories;
                     _productTypes = state.types;
                     _selectedOfferType = _productTypes[0].code;
                     _locList = state.locList;
+
+                    if (widget.product != null) {
+                      if (widget.product!.category != null) {
+                        _selectedCategory = _productCategories.firstWhere(
+                            (cat) => cat.code == widget.product!.category);
+                      }
+                    }
 
                     if (application.currentUserModel!.currency != null &&
                         application.currentUserModel!.currency!
@@ -169,13 +222,6 @@ class _ProductAddEditScreenState extends State<ProductAddEditScreen> {
                       _selectedLocalization = _locList.firstWhere((loc) =>
                           loc.country_code == application.currentCountry);
                   });
-                }
-
-                if (state is SaveProductSuccess) {
-                  await DialogMessage.show(context,
-                      message: 'An offer has been added');
-
-                  Navigator.pop(context);
                 }
                 if (state is AddProductImageSuccess) {
                   ProgressHUD.of(context)!.show();
@@ -224,7 +270,7 @@ class _ProductAddEditScreenState extends State<ProductAddEditScreen> {
             ),
           ],
           child: Container(
-            color: Color(0xFFEBFBFF),
+            // color: Color(0xFFEBFBFF),
             child: Column(
               children: [
                 CustomAppBar(
@@ -237,384 +283,728 @@ class _ProductAddEditScreenState extends State<ProductAddEditScreen> {
                   child: Container(
                     constraints: BoxConstraints(maxWidth: 500.0),
                     width: double.infinity,
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 30.0,
-                      vertical: 10.0,
-                    ),
-                    child: SingleChildScrollView(
-                      child: Form(
-                        key: _formKey,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            SizeConfig.screenWidth > 500
-                                ? SizedBox(
-                                    height: SizeConfig.screenHeight * 0.1)
-                                : SizedBox(),
-                            Visibility(
-                              visible: widget.product == null,
-                              child: Text(
-                                'Add a product, event or service you want to offer',
-                                style: Style.bodyText2,
-                              ),
-                            ),
-                            SizedBox(height: 10.0),
-                            widget.product != null
-                                ? _buildPhotoForEdit()
-                                : _buildPhotoForAdd(),
-                            Visibility(
-                              visible: showImageError,
-                              child: Text(
-                                'Please select image(s) of your offer',
-                                style: TextStyle(
-                                  fontSize: 12.0,
-                                  color: Colors.red.shade400,
-                                  fontStyle: FontStyle.italic,
-                                ),
-                              ),
-                            ),
-                            SizedBox(height: 16.0),
-                            CustomTextFormField(
-                              label: 'Name',
-                              hintText: 'Enter your offer\'s name',
-                              controller: _nameTextController,
-                              color: kBackgroundColor,
-                              validator: (val) => val != null && val.isEmpty
-                                  ? 'Required'
-                                  : null,
-                            ),
-                            Container(
-                              margin: EdgeInsets.only(bottom: 16),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Column(
-                                    children: [
-                                      Text('FREE',
-                                          style: TextStyle(
-                                            fontSize:
-                                                SizeConfig.textScaleFactor * 13,
-                                            color: kBackgroundColor,
-                                            fontWeight: FontWeight.w600,
-                                          )),
-                                      SizedBox(height: 5.0),
-                                      GestureDetector(
-                                        onTap: () {
-                                          setState(() {
-                                            isFree = !isFree;
-                                          });
-
-                                          _priceTextController.text =
-                                              isFree ? '0' : '';
-                                        },
-                                        child: Icon(
-                                          isFree
-                                              ? Icons.check_box
-                                              : Icons.check_box_outline_blank,
-                                          color: kBackgroundColor,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  SizedBox(width: 10.0),
-                                  Expanded(
-                                    child: CustomTextFormField(
-                                      label: 'Price',
-                                      hintText: 'Enter the price you want',
-                                      controller: _priceTextController,
-                                      color: kBackgroundColor,
-                                      maxLength: 14,
-                                      validator: (val) {
-                                        if (val != null && val.isEmpty)
-                                          return 'Required';
-                                        else if (val != null &&
-                                            val.isNotEmpty) {
-                                          final amount = double.parse(
-                                              val.replaceAll(',', ''));
-                                          if (amount > 100000000) {
-                                            return 'Max amount is 100,000,000.00';
-                                          }
-                                        }
-
-                                        return null;
-                                      },
-                                      keyboardType: TextInputType.number,
-                                      isReadOnly: isFree,
-                                      removeMargin: true,
-                                      prefix: InkWell(
-                                        onTap: _onCurrencySelect,
-                                        child: Container(
-                                          margin: EdgeInsets.only(right: 8.0),
-                                          child: Text(
-                                              _selectedLocalization != null
-                                                  ? _selectedLocalization!
-                                                      .currency!
-                                                  : 'PHP',
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                              )),
-                                        ),
-                                      ),
-                                      inputFormatters: [
-                                        CurrencyTextInputFormatter(symbol: ''),
-                                        // FilteringTextInputFormatter.allow(
-                                        //     RegExp(r'[0-9]')),
-                                        // FilteringTextInputFormatter.digitsOnly
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Container(
-                              margin: EdgeInsets.only(bottom: 16),
-                              child: Row(
-                                children: [
-                                  Column(
-                                    children: [
-                                      Text('Track Quantity',
-                                          style: TextStyle(
-                                            fontSize:
-                                                SizeConfig.textScaleFactor * 13,
-                                            color: kBackgroundColor,
-                                            fontWeight: FontWeight.w600,
-                                          )),
-                                      SizedBox(height: 5.0),
-                                      GestureDetector(
-                                        onTap: () {
-                                          setState(() {
-                                            trackStock = !trackStock;
-                                          });
-
-                                          _quantityTextController.text =
-                                              trackStock ? '1' : '';
-                                        },
-                                        child: Icon(
-                                          trackStock
-                                              ? Icons.check_box
-                                              : Icons.check_box_outline_blank,
-                                          color: kBackgroundColor,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  SizedBox(width: 10.0),
-                                  Expanded(
-                                    child: CustomTextFormField(
-                                      label: 'Quantity',
-                                      hintText: 'Enter quantity of your',
-                                      controller: _quantityTextController,
-                                      color: kBackgroundColor,
-                                      validator: (val) {
-                                        if (val != null && val.isEmpty)
-                                          return 'Required';
-
-                                        return null;
-                                      },
-                                      keyboardType: TextInputType.number,
-                                      isReadOnly: !trackStock,
-                                      removeMargin: true,
-                                      inputFormatters: <TextInputFormatter>[
-                                        FilteringTextInputFormatter.allow(
-                                            RegExp(r'[0-9]')),
-// for version 2 and greater youcan also use this
-                                        FilteringTextInputFormatter.digitsOnly
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            CustomTextFormField(
-                              label: 'Description',
-                              hintText: 'Enter a description',
-                              textInputAction: TextInputAction.done,
-                              controller: _descTextController,
-                              color: kBackgroundColor,
-                              maxLines: 3,
-                              maxLength: 120,
-                              keyboardType: TextInputType.text,
-                              validator: (val) => val != null && val.isEmpty
-                                  ? 'Required'
-                                  : null,
-                            ),
-                            Container(
-                              width: double.infinity,
-                              margin: EdgeInsets.only(bottom: 16.0),
-                              padding: EdgeInsets.symmetric(
-                                  vertical: 10.0, horizontal: 10.0),
-                              decoration: BoxDecoration(
-                                color: kBackgroundColor,
-                                borderRadius: BorderRadius.circular(12.0),
-                                border: Border.all(
-                                  color: kBackgroundColor,
-                                ),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Offer Type',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                  SizedBox(height: 12.0),
-                                  _productTypes.length > 0
-                                      ? FittedBox(
-                                          child: ToggleSwitch(
-                                            activeBgColor: [
-                                              kBackgroundColor,
-                                            ],
-                                            initialLabelIndex: 0,
-                                            minWidth: double.infinity,
-                                            minHeight: 25.0,
-                                            borderColor: [Color(0xFFEBFBFF)],
-                                            totalSwitches: _productTypes.length,
-                                            labels: _productTypes
-                                                .map((pt) => pt.name!)
-                                                .toList(),
-                                            onToggle: (index) {
-                                              _selectedOfferType =
-                                                  _productTypes[index!].code;
-                                            },
-                                            customTextStyles: [
-                                              TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize:
-                                                    SizeConfig.textScaleFactor *
-                                                        15,
-                                                color: Colors.white,
-                                              ),
-                                              TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize:
-                                                    SizeConfig.textScaleFactor *
-                                                        15,
-                                                color: Colors.white,
-                                              ),
-                                            ],
-                                          ),
-                                        )
-                                      : Container(),
-                                ],
-                              ),
-                            ),
-                            Visibility(
-                              visible: showOfferTypeError,
-                              child: Text(
-                                'Required',
-                                style: TextStyle(
-                                  fontSize: 12.0,
-                                  color: Colors.red.shade400,
-                                  fontStyle: FontStyle.italic,
-                                ),
-                              ),
-                            ),
-                            CustomTextFormField(
-                              label: 'Location',
-                              hintText: 'Tap to search location',
-                              controller: _locationTextController,
-                              isReadOnly: true,
-                              color: kBackgroundColor,
-                              suffixIcon: Icon(
-                                Icons.location_on,
-                                color: Colors.white,
-                              ),
-                              onTap: () => _onSelectLocation(),
-                              validator: (val) => val != null && val.isEmpty
-                                  ? 'Required'
-                                  : null,
-                            ),
-                            Visibility(
-                              visible: widget.product != null,
-                              child: Container(
-                                width: double.infinity,
-                                margin: EdgeInsets.only(bottom: 16.0),
-                                padding: EdgeInsets.symmetric(
-                                    vertical: 10.0, horizontal: 10.0),
-                                decoration: BoxDecoration(
-                                  color: kBackgroundColor,
-                                  borderRadius: BorderRadius.circular(12.0),
-                                  border: Border.all(
-                                    color: kBackgroundColor,
-                                  ),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Status',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                    SizedBox(height: 12.0),
-                                    productStatusList.length > 0 &&
-                                            widget.product != null
-                                        ? FittedBox(
-                                            child: ToggleSwitch(
-                                              initialLabelIndex:
-                                                  productStatusList
-                                                      .map((s) =>
-                                                          s.toLowerCase())
-                                                      .toList()
-                                                      .indexOf(_selectedStatus),
-                                              minWidth: double.infinity,
-                                              minHeight: 25.0,
-                                              activeBgColor: [
-                                                kBackgroundColor,
-                                              ],
-                                              borderColor: [Color(0xFFEBFBFF)],
-                                              totalSwitches:
-                                                  productStatusList.length,
-                                              labels: productStatusList
-                                                  .map((pt) => pt.toUpperCase())
-                                                  .toList(),
-                                              onToggle: (index) {
-                                                setState(() {
-                                                  _selectedStatus =
-                                                      productStatusList[
-                                                          index ?? 0];
-                                                });
-                                                print(productStatusList
-                                                    .map((s) => s.toLowerCase())
-                                                    .toList()
-                                                    .indexOf(widget.product!
-                                                                .status !=
-                                                            null
-                                                        ? widget
-                                                            .product!.status!
-                                                            .toLowerCase()
-                                                        : _selectedStatus));
-                                              },
-                                              fontSize:
-                                                  SizeConfig.textScaleFactor *
-                                                      12,
-                                            ),
-                                          )
-                                        : Container(),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            CustomButton(
-                              label: 'Next',
-                              onTap: () => widget.product == null
-                                  ? _onSaveTapped()
-                                  : _onUpdateTapped(),
-                            ),
-                          ],
-                        ),
+                    child: Form(
+                      key: _formKey,
+                      child: ListView(
+                        controller: _scrollController,
+                        padding: EdgeInsets.zero,
+                        children: [
+                          AutoScrollTag(
+                              key: ValueKey(0),
+                              index: 0,
+                              controller: _scrollController,
+                              child: _buildDetailsForm()),
+                          AutoScrollTag(
+                            key: ValueKey(1),
+                            index: 1,
+                            controller: _scrollController,
+                            child: _buildCategoryForm(),
+                          ),
+                          AutoScrollTag(
+                            key: ValueKey(2),
+                            index: 2,
+                            controller: _scrollController,
+                            child: _buildTradeForForm(),
+                          ),
+                          AutoScrollTag(
+                            key: ValueKey(3),
+                            index: 3,
+                            controller: _scrollController,
+                            child: _buildMeetUpForm(),
+                          ),
+                        ],
                       ),
                     ),
+                  ),
+                ),
+                Container(
+                  color: Colors.transparent,
+                  padding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 0.0),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: CustomButton(
+                          label: 'Cancel',
+                          bgColor: Colors.red.shade400,
+                          onTap: () => Navigator.pop(context),
+                        ),
+                      ),
+                      SizedBox(width: 10.0),
+                      Expanded(
+                        child: CustomButton(
+                          label: 'Submit',
+                          onTap: () => _onSubmitTapped(),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Container _buildTradeForForm() {
+    return Container(
+      color: Color(0xFFEBFBFF),
+      padding: EdgeInsets.symmetric(
+        horizontal: 30.0,
+        vertical: 10.0,
+      ),
+      child: Column(
+        children: [
+          Text('What do you want to get in return for this item?',
+              style: Style.subtitle2),
+          Visibility(
+            visible: showTradeForError,
+            child: Text(
+              'Required',
+              style: TextStyle(
+                fontSize: 12.0,
+                color: Colors.red.shade400,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ),
+          SizedBox(height: 16.0),
+          TextFormField(
+            focusNode: focusNode,
+            controller: inputTextController,
+            decoration: InputDecoration(
+              border: UnderlineInputBorder(),
+              focusedBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: kBackgroundColor),
+              ),
+              suffixIcon: GestureDetector(
+                onTap: !_textIsEmpty
+                    ? () {
+                        setState(() {
+                          _tradeForlist.add(inputTextController.text.trim());
+                        });
+                        inputTextController.clear();
+                        focusNode.requestFocus();
+                      }
+                    : null,
+                child: Icon(
+                  FontAwesomeIcons.plus,
+                  color: _textIsEmpty ? Colors.grey : kBackgroundColor,
+                  size: 15.0,
+                ),
+              ),
+            ),
+            onChanged: (val) {
+              setState(() {
+                _textIsEmpty = val.isEmpty;
+              });
+            },
+            onFieldSubmitted: (val) {
+              if (val.isNotEmpty) {
+                setState(() {
+                  _tradeForlist.add(val);
+                });
+                inputTextController.clear();
+                focusNode.requestFocus();
+              }
+            },
+          ),
+          SizedBox(height: 25.0),
+          Visibility(
+            visible: _tradeForlist.isNotEmpty,
+            child: Container(
+              padding: EdgeInsets.all(10.0),
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(10.0),
+              ),
+              child: Wrap(
+                alignment: WrapAlignment.center,
+                runSpacing: 8.0,
+                spacing: 8.0,
+                children: [
+                  ..._tradeForlist
+                      .map(
+                        (val) => InkWell(
+                          onTap: () {
+                            setState(() {
+                              _tradeForlist.remove(val);
+                            });
+                          },
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 10.0,
+                              vertical: 5.0,
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.close,
+                                  size: SizeConfig.textScaleFactor * 13,
+                                  color: Colors.white,
+                                ),
+                                SizedBox(width: 5.0),
+                                Text(
+                                  val,
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: SizeConfig.textScaleFactor * 15,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.blue,
+                              borderRadius: BorderRadius.circular(15.0),
+                            ),
+                          ),
+                        ),
+                      )
+                      .toList(),
+                ],
+              ),
+            ),
+          ),
+          Visibility(
+            visible: _tradeForlist.isNotEmpty,
+            child: Align(
+              alignment: Alignment.bottomRight,
+              child: GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _tradeForlist.clear();
+                  });
+                },
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(0.0, 5.0, 5.0, 0.0),
+                  child: Text(
+                    'Clear items',
+                    style: TextStyle(
+                      color: kBackgroundColor,
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Container _buildCategoryForm() {
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: 30.0,
+        vertical: 10.0,
+      ),
+      color: Colors.white,
+      child: Column(
+        children: [
+          Text('Select category of your product'),
+          Visibility(
+            visible: showCategoryError,
+            child: Text(
+              'Required',
+              style: TextStyle(
+                fontSize: 12.0,
+                color: Colors.red.shade400,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ),
+          _productCategories.isNotEmpty
+              ? GridView.count(
+                  padding: EdgeInsets.only(top: 20.0),
+                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(),
+                  childAspectRatio: 3 / 2,
+                  mainAxisSpacing: 10.0,
+                  crossAxisSpacing: 10.0,
+                  crossAxisCount: 3,
+                  children: _productCategories
+                      .where((cat) => cat.type == _selectedOfferType)
+                      .map((cat) => Center(
+                            child: InkWell(
+                              onTap: () {
+                                setState(() {
+                                  _selectedCategory = cat;
+                                  // if (_selectedCategories
+                                  //     .contains(cat))
+                                  //   _selectedCategories
+                                  //       .remove(cat);
+                                  // else
+                                  //   _selectedCategories
+                                  //       .add(cat);
+                                });
+                              },
+                              child: Container(
+                                height: SizeConfig.screenHeight * .08,
+                                width: SizeConfig.screenWidth * .25,
+                                padding: EdgeInsets.all(3.0),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(10.0),
+                                  color: _selectedCategory == cat
+                                      ? kBackgroundColor
+                                      : Color(0xFFEBFBFF),
+                                  border: _selectedCategory == cat
+                                      ? null
+                                      : Border.all(color: kBackgroundColor),
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    cat.name ?? '',
+                                    style: TextStyle(
+                                      color: _selectedCategory == cat
+                                          ? Colors.white
+                                          : kBackgroundColor,
+                                      fontSize: SizeConfig.screenWidth > 500
+                                          ? SizeConfig.textScaleFactor * 16
+                                          : SizeConfig.textScaleFactor * 11,
+                                      height: 1.2,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ))
+                      .toList(),
+                )
+              : Container(),
+          SizedBox(height: 16.0),
+        ],
+      ),
+    );
+  }
+
+  Container _buildMeetUpForm() {
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: 30.0,
+        vertical: 10.0,
+      ),
+      color: Colors.white,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('You may add up to 3 meet up locations', style: Style.subtitle2),
+          Visibility(
+            visible: showMeetUpError,
+            child: Text(
+              'Required',
+              style: TextStyle(
+                fontSize: 12.0,
+                color: Colors.red.shade400,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ),
+          SizedBox(height: 10.0),
+          CustomTextFormField(
+            label: 'Location',
+            hintText: 'Tap to search location',
+            controller: _locationTextController,
+            isReadOnly: true,
+            color: kBackgroundColor,
+            suffixIcon: Icon(
+              Icons.location_on,
+              color: Colors.white,
+            ),
+            onTap: () => _onSelectLocation(),
+          ),
+          Container(
+            child: Row(
+              children: [
+                Expanded(
+                  child: CustomButton(
+                    enabled: _selectedLocation != null,
+                    removeMargin: true,
+                    bgColor: kBackgroundColor,
+                    label: 'Add location',
+                    onTap: _onAddLocation,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Divider(),
+          _meetUpList.isNotEmpty
+              ? Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10.0),
+                  child: Column(
+                    children: _meetUpList
+                        .where((item) =>
+                            item.city != null &&
+                            item.country != null &&
+                            item.address != null &&
+                            item.location != null)
+                        .map(
+                          (address) => Container(
+                            child: Column(
+                              children: [
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                              '${address.address ?? ''} ${address.city ?? ''}, ${address.country ?? ''}'),
+                                        ],
+                                      ),
+                                    ),
+                                    GestureDetector(
+                                        onTap: () => setState(
+                                            () => _meetUpList.remove(address)),
+                                        child: Icon(Icons.close, size: 18.0)),
+                                  ],
+                                ),
+                                Divider(),
+                              ],
+                            ),
+                          ),
+                        )
+                        .toList(),
+                  ),
+                )
+              : Center(
+                  child: Text('No locations added'),
+                ),
+        ],
+      ),
+    );
+  }
+
+  Container _buildDetailsForm() {
+    return Container(
+      color: Color(0xFFEBFBFF),
+      padding: EdgeInsets.symmetric(
+        horizontal: 30.0,
+        vertical: 10.0,
+      ),
+      child: Column(
+        children: [
+          Visibility(
+            visible: widget.product == null,
+            child: Text(
+              'Add a product, event or service you want to offer',
+              style: Style.bodyText2,
+            ),
+          ),
+          SizedBox(height: 10.0),
+          widget.product != null ? _buildPhotoForEdit() : _buildPhotoForAdd(),
+          Visibility(
+            visible: showImageError,
+            child: Text(
+              'Please select image(s) of your offer',
+              style: TextStyle(
+                fontSize: 12.0,
+                color: Colors.red.shade400,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ),
+          SizedBox(height: 16.0),
+          CustomTextFormField(
+            label: 'Name',
+            hintText: 'Enter your offer\'s name',
+            controller: _nameTextController,
+            color: kBackgroundColor,
+            validator: (val) => val != null && val.isEmpty ? 'Required' : null,
+          ),
+          Container(
+            margin: EdgeInsets.only(bottom: 16),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Column(
+                  children: [
+                    Text('FREE',
+                        style: TextStyle(
+                          fontSize: SizeConfig.textScaleFactor * 13,
+                          color: kBackgroundColor,
+                          fontWeight: FontWeight.w600,
+                        )),
+                    SizedBox(height: 5.0),
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          isFree = !isFree;
+                        });
+
+                        _priceTextController.text = isFree ? '0' : '';
+                      },
+                      child: Icon(
+                        isFree
+                            ? Icons.check_box
+                            : Icons.check_box_outline_blank,
+                        color: kBackgroundColor,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(width: 10.0),
+                Expanded(
+                  child: CustomTextFormField(
+                    label: 'Price',
+                    hintText: 'Enter the price you want',
+                    controller: _priceTextController,
+                    color: kBackgroundColor,
+                    maxLength: 14,
+                    validator: (val) {
+                      if (val != null && val.isEmpty)
+                        return 'Required';
+                      else if (val != null && val.isNotEmpty) {
+                        final amount = double.parse(val.replaceAll(',', ''));
+                        if (amount > 100000000) {
+                          return 'Max amount is 100,000,000.00';
+                        }
+                      }
+
+                      return null;
+                    },
+                    keyboardType: TextInputType.number,
+                    isReadOnly: isFree,
+                    removeMargin: true,
+                    prefix: InkWell(
+                      onTap: _onCurrencySelect,
+                      child: Container(
+                        margin: EdgeInsets.only(right: 8.0),
+                        child: Text(
+                            _selectedLocalization != null
+                                ? _selectedLocalization!.currency!
+                                : 'PHP',
+                            style: TextStyle(
+                              color: Colors.white,
+                            )),
+                      ),
+                    ),
+                    inputFormatters: [
+                      CurrencyTextInputFormatter(symbol: ''),
+                      // FilteringTextInputFormatter.allow(
+                      //     RegExp(r'[0-9]')),
+                      // FilteringTextInputFormatter.digitsOnly
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            margin: EdgeInsets.only(bottom: 16),
+            child: Row(
+              children: [
+                Column(
+                  children: [
+                    Text(
+                      'Track Quantity',
+                      style: TextStyle(
+                        fontSize: SizeConfig.textScaleFactor * 13,
+                        color: kBackgroundColor,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    SizedBox(height: 5.0),
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          trackStock = !trackStock;
+                        });
+
+                        _quantityTextController.text = trackStock ? '1' : '0';
+                      },
+                      child: Icon(
+                        trackStock
+                            ? Icons.check_box
+                            : Icons.check_box_outline_blank,
+                        color: kBackgroundColor,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(width: 10.0),
+                Expanded(
+                  child: CustomTextFormField(
+                    label: 'Quantity',
+                    hintText: 'Enter quantity of your',
+                    controller: _quantityTextController,
+                    color: kBackgroundColor,
+                    validator: trackStock
+                        ? (val) {
+                            if (val != null && val.isEmpty) return 'Required';
+
+                            return null;
+                          }
+                        : null,
+                    keyboardType: TextInputType.number,
+                    isReadOnly: !trackStock,
+                    removeMargin: true,
+                    inputFormatters: <TextInputFormatter>[
+                      FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
+// for version 2 and greater youcan also use this
+                      FilteringTextInputFormatter.digitsOnly
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          CustomTextFormField(
+            label: 'Description',
+            hintText: 'Enter a description',
+            textInputAction: TextInputAction.done,
+            controller: _descTextController,
+            color: kBackgroundColor,
+            maxLines: 3,
+            maxLength: 120,
+            keyboardType: TextInputType.text,
+            validator: (val) => val != null && val.isEmpty ? 'Required' : null,
+          ),
+          Container(
+            width: double.infinity,
+            margin: EdgeInsets.only(bottom: 16.0),
+            padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 10.0),
+            decoration: BoxDecoration(
+              color: kBackgroundColor,
+              borderRadius: BorderRadius.circular(12.0),
+              border: Border.all(
+                color: kBackgroundColor,
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Offer Type',
+                  style: TextStyle(
+                    color: Colors.white,
+                  ),
+                ),
+                SizedBox(height: 12.0),
+                _productTypes.length > 0
+                    ? FittedBox(
+                        child: ToggleSwitch(
+                          activeBgColor: [
+                            kBackgroundColor,
+                          ],
+                          initialLabelIndex: 0,
+                          minWidth: double.infinity,
+                          minHeight: 25.0,
+                          borderColor: [Color(0xFFEBFBFF)],
+                          totalSwitches: _productTypes.length,
+                          labels: _productTypes.map((pt) => pt.name!).toList(),
+                          onToggle: (index) {
+                            _selectedOfferType = _productTypes[index!].code;
+                          },
+                          customTextStyles: [
+                            TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: SizeConfig.textScaleFactor * 15,
+                              color: Colors.white,
+                            ),
+                            TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: SizeConfig.textScaleFactor * 15,
+                              color: Colors.white,
+                            ),
+                          ],
+                        ),
+                      )
+                    : Container(),
+              ],
+            ),
+          ),
+          Visibility(
+            visible: showOfferTypeError,
+            child: Text(
+              'Required',
+              style: TextStyle(
+                fontSize: 12.0,
+                color: Colors.red.shade400,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ),
+          // CustomTextFormField(
+          //   label: 'Location',
+          //   hintText: 'Tap to search location',
+          //   controller: _locationTextController,
+          //   isReadOnly: true,
+          //   color: kBackgroundColor,
+          //   suffixIcon: Icon(
+          //     Icons.location_on,
+          //     color: Colors.white,
+          //   ),
+          //   onTap: () => _onSelectLocation(),
+          //   validator: (val) => val != null && val.isEmpty ? 'Required' : null,
+          // ),
+          Visibility(
+            visible: widget.product != null,
+            child: Container(
+              width: double.infinity,
+              margin: EdgeInsets.only(bottom: 16.0),
+              padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 10.0),
+              decoration: BoxDecoration(
+                color: kBackgroundColor,
+                borderRadius: BorderRadius.circular(12.0),
+                border: Border.all(
+                  color: kBackgroundColor,
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Status',
+                    style: TextStyle(
+                      color: Colors.white,
+                    ),
+                  ),
+                  SizedBox(height: 12.0),
+                  productStatusList.length > 0 && widget.product != null
+                      ? FittedBox(
+                          child: ToggleSwitch(
+                            initialLabelIndex: productStatusList
+                                .map((s) => s.toLowerCase())
+                                .toList()
+                                .indexOf(_selectedStatus),
+                            minWidth: double.infinity,
+                            minHeight: 25.0,
+                            activeBgColor: [
+                              kBackgroundColor,
+                            ],
+                            borderColor: [Color(0xFFEBFBFF)],
+                            totalSwitches: productStatusList.length,
+                            labels: productStatusList
+                                .map((pt) => pt.toUpperCase())
+                                .toList(),
+                            onToggle: (index) {
+                              setState(() {
+                                _selectedStatus = productStatusList[index ?? 0];
+                              });
+                              print(productStatusList
+                                  .map((s) => s.toLowerCase())
+                                  .toList()
+                                  .indexOf(widget.product!.status != null
+                                      ? widget.product!.status!.toLowerCase()
+                                      : _selectedStatus));
+                            },
+                            fontSize: SizeConfig.textScaleFactor * 12,
+                          ),
+                        )
+                      : Container(),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -714,8 +1104,8 @@ class _ProductAddEditScreenState extends State<ProductAddEditScreen> {
           ),
         ],
       );
-      _locationTextController.text =
-          '${application.currentUserModel!.address ?? ''} ${application.currentUserModel!.city ?? ''}, ${application.currentUserModel!.country ?? ''}';
+      // _locationTextController.text =
+      //     '${application.currentUserModel!.address ?? ''} ${application.currentUserModel!.city ?? ''}, ${application.currentUserModel!.country ?? ''}';
     } else {
       try {
         List<geoCoding.Placemark> placemarks =
@@ -834,6 +1224,139 @@ class _ProductAddEditScreenState extends State<ProductAddEditScreen> {
     );
   }
 
+  _onSubmitTapped() async {
+    if (widget.product == null) {
+      if (_selectedMedia.isEmpty) {
+        setState(() {
+          showImageError = true;
+        });
+        _scrollController.scrollToIndex(0);
+        return;
+      }
+    } else {
+      if (_media.isEmpty) {
+        setState(() {
+          showImageError = true;
+        });
+        _scrollController.scrollToIndex(0);
+        return;
+      }
+    }
+
+    print('image passed');
+
+    if (!_formKey.currentState!.validate()) {
+      _scrollController.scrollToIndex(0);
+      return;
+    }
+
+    print('1st form passed');
+
+    if (_selectedOfferType == null) {
+      setState(() {
+        showOfferTypeError = true;
+      });
+
+      _scrollController.scrollToIndex(0);
+      return;
+    } else {
+      print('offer type passed');
+      setState(() {
+        showOfferTypeError = false;
+      });
+    }
+
+    if (_selectedCategory == null) {
+      setState(() {
+        showCategoryError = true;
+      });
+
+      _scrollController.scrollToIndex(1);
+      return;
+    } else {
+      print('category passed');
+      setState(() {
+        showCategoryError = false;
+      });
+    }
+
+    if (_tradeForlist.isEmpty) {
+      setState(() {
+        showTradeForError = true;
+      });
+
+      _scrollController.scrollToIndex(2);
+      return;
+    } else {
+      print('trade for passed');
+      setState(() {
+        showTradeForError = false;
+      });
+    }
+
+    if (_meetUpList.isEmpty) {
+      setState(() {
+        showMeetUpError = true;
+      });
+
+      _scrollController.scrollToIndex(3);
+      return;
+    } else {
+      print('meetup passed');
+      setState(() {
+        showMeetUpError = false;
+      });
+    }
+
+    if (widget.product == null) {
+      final proceed = await DialogMessage.show(
+        context,
+        message:
+            'You are about to add ${_nameTextController.text.trim()} to your store for ${application.currentUserModel!.currency ?? 'PHP'} ${_priceTextController.text.trim()}',
+        buttonText: 'Confirm',
+        secondButtonText: 'Cancel',
+        result1: true,
+        result2: false,
+      );
+
+      if (proceed == null || proceed == false) return;
+    }
+
+    ProductRequestModel productRequest = ProductRequestModel();
+    if (widget.product != null) {
+      productRequest = ProductRequestModel.fromProduct(widget.product!);
+    }
+    productRequest.userid = application.currentUser!.uid;
+    productRequest.productname = _nameTextController.text.trim();
+    productRequest.price =
+        double.parse(_priceTextController.text.trim().replaceAll(',', ''));
+    productRequest.free = isFree;
+    productRequest.track_stock = trackStock;
+    productRequest.stock_count =
+        trackStock ? int.parse(_quantityTextController.text.trim()) : 0;
+    productRequest.productdesc = _descTextController.text.trim();
+    productRequest.type = _selectedOfferType!;
+    productRequest.location = LocationModel(
+      longitude: _meetUpList.first.location!.longitude,
+      latitude: _meetUpList.first.location!.latitude,
+    );
+    productRequest.address =
+        _meetUpList.first.address != null ? _meetUpList.first.address : null;
+    productRequest.city =
+        _meetUpList.first.city != null ? _meetUpList.first.city : null;
+    productRequest.country =
+        _meetUpList.first.country != null ? _meetUpList.first.country : null;
+    productRequest.category = _selectedCategory!.code;
+    productRequest.tradefor = _tradeForlist;
+    productRequest.meet_location = _meetUpList;
+
+    if (widget.product != null)
+      _productBloc.add(EditProduct(productRequest));
+    else
+      _productBloc.add(
+          SaveProduct(productRequest: productRequest, media: _selectedMedia));
+  }
+
   _onSaveTapped() {
     if (_selectedMedia.length < 1) {
       setState(() {
@@ -930,14 +1453,13 @@ class _ProductAddEditScreenState extends State<ProductAddEditScreen> {
       context: context,
       allowPhoto: true,
     );
-
     if (selectedMedia != null) {
       setState(() {
         showImageError = false;
-        if (widget.product != null)
+        if (widget.product != null) {
           _productBloc
               .add(AddProductImage(widget.product!.productid!, selectedMedia));
-        else
+        } else
           _selectedMedia.addAll(selectedMedia);
       });
     }
@@ -1381,5 +1903,23 @@ class _ProductAddEditScreenState extends State<ProductAddEditScreen> {
         ),
       ],
     );
+  }
+
+  void _onAddLocation() {
+    final loc = AddressModel(
+      city: _selectedLocation!.addressComponents[1]!.longName,
+      country: _selectedLocation!.addressComponents.last!.longName,
+      address: _selectedLocation!.formattedAddress,
+      location: LocationModel(
+        latitude: _selectedLocation!.geometry!.location.lat,
+        longitude: _selectedLocation!.geometry!.location.lng,
+      ),
+    );
+
+    setState(() {
+      _meetUpList.add(loc);
+      _selectedLocation = null;
+      _locationTextController.clear();
+    });
   }
 }
