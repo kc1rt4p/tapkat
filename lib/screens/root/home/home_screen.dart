@@ -722,9 +722,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildProductItem(
-      {required ProductModel product,
-      bool hideLike = false,
-      UserLikesRecord? record}) {
+      {required ProductModel product, bool hideLike = false}) {
     if (hideLike) {
       return BarterListItem(
         product: product,
@@ -743,7 +741,6 @@ class _HomeScreenState extends State<HomeScreen> {
           );
         },
         onLikeTapped: (val) {
-          print('---===== $val');
           if (val.isNegative) {
             _productBloc.add(AddLike(product));
           } else {

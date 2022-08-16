@@ -39,6 +39,7 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
       _user = application.currentUser;
       if (_user != null) {
         if (event is InitializeBarter) {
+          bool chatOnly = false;
           var _barterRecord = await _barterRepository
               .getBarterRecord(event.barterData.barterId!);
 
@@ -95,6 +96,8 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
                 barterProducts = await _barterRepository
                     .getBarterProducts(event.barterData.barterId!);
               }
+            } else {
+              chatOnly = true;
             }
 
             _barterRecord = await _barterRepository
@@ -131,6 +134,7 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
               currentUserProducts: currentUserProducts,
               barterProductsStream: _barterRepository
                   .streamBarterProducts(event.barterData.barterId!),
+              chatOnly: chatOnly,
             ));
           } else {
             final product =
