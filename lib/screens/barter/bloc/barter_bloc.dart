@@ -178,8 +178,6 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
                   _barterRecord.u2P1Image = bProd.imgUrl;
                   _barterRecord.u2P1Name = bProd.productName;
                   _barterRecord.u2P1Price = (bProd.price ?? 0).toDouble();
-                  await _barterRepository.updateBarter(
-                      _barterRecord.barterId!, _barterRecord.toJson());
                 }
               }
 
