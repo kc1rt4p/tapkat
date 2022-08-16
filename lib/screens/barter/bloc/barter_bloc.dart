@@ -185,6 +185,25 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
               event.barterData.barterId = newBarterId;
               add(InitializeBarter(event.barterData));
             } else {
+              List<BarterProductModel> barterProducts = await _barterRepository
+                  .getBarterProducts(_barterRecord.barterId!);
+              barterProducts = barterProducts
+                  .where((bProd) => !bProd.productId!.contains('cash'))
+                  .toList();
+              if (barterProducts.isNotEmpty) {
+                if (!barterProducts.contains((BarterProductModel bProd) =>
+                    bProd.productId == _barterRecord!.u2P1Id)) {
+                  final bProd = barterProducts.firstWhere(
+                      (bProd) =>
+                          !bProd.productId!.contains('cash') &&
+                          bProd.userId != application.currentUser!.uid,
+                      orElse: () => barterProducts.first);
+                  _barterRecord.u2P1Id = bProd.productId;
+                  _barterRecord.u2P1Image = bProd.imgUrl;
+                  _barterRecord.u2P1Name = bProd.productName;
+                  _barterRecord.u2P1Price = (bProd.price ?? 0).toDouble();
+                }
+              }
               await _barterRepository.updateBarter(
                   _barterRecord.barterId!, _barterRecord.toJson());
               add(StreamBarter(_barterRecord));
@@ -477,7 +496,7 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
             return;
           }
 
-          final barterProducts =
+          List<BarterProductModel> barterProducts =
               await _barterRepository.getBarterProducts(barterRecord.barterId!);
 
           if (barterProducts.isNotEmpty) {
@@ -521,6 +540,26 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
                 : senderUserId!,
             itemCount: 10,
           );
+
+          barterProducts = barterProducts
+              .where((bProd) => !bProd.productId!.contains('cash'))
+              .toList();
+          if (barterProducts.isNotEmpty) {
+            if (!barterProducts.contains((BarterProductModel bProd) =>
+                bProd.productId == barterRecord.u2P1Id)) {
+              final bProd = barterProducts.firstWhere(
+                  (bProd) =>
+                      !bProd.productId!.contains('cash') &&
+                      bProd.userId != application.currentUser!.uid,
+                  orElse: () => barterProducts.first);
+              barterRecord.u2P1Id = bProd.productId;
+              barterRecord.u2P1Image = bProd.imgUrl;
+              barterRecord.u2P1Name = bProd.productName;
+              barterRecord.u2P1Price = (bProd.price ?? 0).toDouble();
+              await _barterRepository.updateBarter(
+                  event.barterRecord.barterId!, barterRecord.toJson());
+            }
+          }
 
           emit(BarterInitialized(
             barterStream:
@@ -601,6 +640,31 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
               event.barterId,
               event.products.map((prod) => prod.productId!).toList());
           if (success) {
+            final _barterRecord =
+                await _barterRepository.getBarterRecord(event.barterId);
+
+            if (_barterRecord != null) {
+              List<BarterProductModel> barterProducts = await _barterRepository
+                  .getBarterProducts(_barterRecord.barterId!);
+              barterProducts = barterProducts
+                  .where((bProd) => !bProd.productId!.contains('cash'))
+                  .toList();
+              if (barterProducts.isNotEmpty) {
+                if (!barterProducts.contains((BarterProductModel bProd) =>
+                    bProd.productId == _barterRecord.u2P1Id)) {
+                  final bProd = barterProducts.firstWhere(
+                      (bProd) =>
+                          !bProd.productId!.contains('cash') &&
+                          bProd.userId != application.currentUser!.uid,
+                      orElse: () => barterProducts.first);
+                  _barterRecord.u2P1Id = bProd.productId;
+                  _barterRecord.u2P1Image = bProd.imgUrl;
+                  _barterRecord.u2P1Name = bProd.productName;
+                  _barterRecord.u2P1Price = (bProd.price ?? 0).toDouble();
+                }
+              }
+            }
+
             emit(DeleteBarterProductsSuccess());
           }
         }
