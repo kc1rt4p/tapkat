@@ -61,6 +61,7 @@ class BarterInitialized extends BarterState {
   final Stream<List<BarterProductModel>> barterProductsStream;
   final List<ProductModel> currentUserProducts;
   final bool existing;
+  final bool chatOnly;
 
   BarterInitialized({
     required this.barterStream,
@@ -68,6 +69,7 @@ class BarterInitialized extends BarterState {
     required this.currentUserProducts,
     required this.barterProductsStream,
     this.existing = false,
+    this.chatOnly = false,
   });
 }
 

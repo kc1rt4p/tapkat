@@ -130,6 +130,8 @@ class _BarterScreenState extends State<BarterScreen> {
 
   final _scaffoldKey = GlobalKey<ScaffoldState>();
 
+  bool chatOnly = false;
+
   @override
   void setState(fn) {
     if (mounted) {
@@ -528,6 +530,7 @@ class _BarterScreenState extends State<BarterScreen> {
                 print(
                     'x0000x remote user items count: ${remoteUserItems.length}');
                 currentUserItems = state.currentUserProducts;
+                chatOnly = state.chatOnly;
               });
 
               remoteUserItems
@@ -959,14 +962,14 @@ class _BarterScreenState extends State<BarterScreen> {
                   InkWell(
                     onTap: () async {
                       if (!_panelClosed) {
-                        // if (widget.showChatFirst &&
-                        //     widget.product != null &&
-                        //     widget.product!.status! == 'completed' &&
-                        //     _barterRecord != null &&
-                        //     _barterRecord!.dealStatus == 'inquiry') {
-                        //   Navigator.pop(context);
-                        //   return;
-                        // }
+                        if (widget.showChatFirst &&
+                            chatOnly &&
+                            (widget.product != null &&
+                                widget.product!.status!.toLowerCase() ==
+                                    'completed')) {
+                          Navigator.pop(context);
+                          return;
+                        }
                         _panelController.close();
                         _chatFocusNode.unfocus();
                         application.chatOpened = false;
@@ -1142,40 +1145,47 @@ class _BarterScreenState extends State<BarterScreen> {
                               ),
                             ),
                           ),
-                          Expanded(
-                            child: Align(
-                              alignment: Alignment.centerRight,
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: InkWell(
-                                  onTap: () {
-                                    // if (widget.showChatFirst &&
-                                    //     widget.product != null &&
-                                    //     widget.product!.status! ==
-                                    //         'completed' &&
-                                    //     _barterRecord != null &&
-                                    //     _barterRecord!.dealStatus == 'inquiry')
-                                    //   return;
-                                    _panelController.close();
-                                    _chatFocusNode.unfocus();
+                          Visibility(
+                            visible: !(widget.showChatFirst &&
+                                chatOnly &&
+                                (widget.product != null &&
+                                    widget.product!.status!.toLowerCase() ==
+                                        'completed')),
+                            child: Expanded(
+                              child: Align(
+                                alignment: Alignment.centerRight,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: InkWell(
+                                    onTap: () {
+                                      // if (widget.showChatFirst &&
+                                      //     widget.product != null &&
+                                      //     widget.product!.status! ==
+                                      //         'completed' &&
+                                      //     _barterRecord != null &&
+                                      //     _barterRecord!.dealStatus == 'inquiry')
+                                      //   return;
+                                      _panelController.close();
+                                      _chatFocusNode.unfocus();
 
-                                    application.chatOpened = false;
-                                  },
-                                  child: Container(
-                                    child: Icon(
-                                      Icons.close,
-                                      size: 30.0,
-                                      color:
-                                          // (widget.showChatFirst &&
-                                          //         widget.product != null &&
-                                          //         widget.product!.status! ==
-                                          //             'completed' &&
-                                          //         _barterRecord != null &&
-                                          //         _barterRecord!.dealStatus ==
-                                          //             'inquiry')
-                                          //     ? Colors.grey
-                                          //     :
-                                          kBackgroundColor,
+                                      application.chatOpened = false;
+                                    },
+                                    child: Container(
+                                      child: Icon(
+                                        Icons.close,
+                                        size: 30.0,
+                                        color:
+                                            // (widget.showChatFirst &&
+                                            //         widget.product != null &&
+                                            //         widget.product!.status! ==
+                                            //             'completed' &&
+                                            //         _barterRecord != null &&
+                                            //         _barterRecord!.dealStatus ==
+                                            //             'inquiry')
+                                            //     ? Colors.grey
+                                            //     :
+                                            kBackgroundColor,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -1427,7 +1437,11 @@ class _BarterScreenState extends State<BarterScreen> {
                 enabled: (currentUserOffers.isNotEmpty ||
                         _currentUserOfferedCash != null) &&
                     (remoteUserOffers.isNotEmpty ||
-                        _remoteUserOfferedCash != null),
+                        _remoteUserOfferedCash != null) &&
+                    !((currentUserOffers.isEmpty &&
+                            _currentUserOfferedCash != null) &&
+                        (remoteUserOffers.isEmpty &&
+                            _remoteUserOfferedCash != null)),
                 removeMargin: true,
                 label: 'Make Offer',
                 onTap: () => _onSubmitTapped(false),
@@ -2824,9 +2838,54 @@ class _BarterScreenState extends State<BarterScreen> {
     }
   }
 
-  Container _buildMinimizedView() {
+  Widget _buildMinimizedView() {
     List<Widget> wantWidgets = [];
     List<Widget> offerWidgets = [];
+
+    if (widget.showChatFirst &&
+        chatOnly &&
+        (widget.product != null &&
+            widget.product!.status!.toLowerCase() == 'completed')) {
+      return FittedBox(
+        child: Container(
+          margin: EdgeInsets.only(top: 10.0),
+          height: (SizeConfig.screenHeight * 0.25 + 10) -
+              (kToolbarHeight + SizeConfig.paddingTop),
+          child: Column(
+            children: [
+              Expanded(
+                child: Container(
+                  width: (SizeConfig.screenHeight * 0.25) -
+                      (kToolbarHeight + SizeConfig.paddingTop),
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: kBackgroundColor,
+                      width: 1.5,
+                    ),
+                    borderRadius: BorderRadius.circular(8.0),
+                    image: DecorationImage(
+                      image: widget.product!.media!.first.url_t != null
+                          ? NetworkImage(widget.product!.media!.first.url_t!)
+                          : AssetImage('assets/images/image_placeholder.jpg')
+                              as ImageProvider<Object>,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+              ),
+              Text(
+                'COMPLETED',
+                style: TextStyle(
+                  fontSize: 14.0,
+                  fontWeight: FontWeight.w600,
+                  color: kBackgroundColor,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
 
     if (_remoteUserOfferedCash != null) {
       wantWidgets.add(
@@ -3068,7 +3127,10 @@ class _BarterScreenState extends State<BarterScreen> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
-                                  Text('You will receive',
+                                  Text(
+                                      _barterRecord!.dealStatus != 'completed'
+                                          ? 'You will receive'
+                                          : 'You received',
                                       style: TextStyle(
                                         fontSize:
                                             SizeConfig.textScaleFactor * 13,
@@ -3113,7 +3175,10 @@ class _BarterScreenState extends State<BarterScreen> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text('You will send',
+                                  Text(
+                                      _barterRecord!.dealStatus != 'completed'
+                                          ? 'You will send'
+                                          : 'You sent',
                                       style: TextStyle(
                                         fontSize:
                                             SizeConfig.textScaleFactor * 13,

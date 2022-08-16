@@ -163,7 +163,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
               emit(AuthSignedIn(user));
             }
           } else {
-            emit(ShowSignUpPhoto());
+            emit(ContinueSignUp());
+            return;
           }
         } else
           emit(AuthInitial());
@@ -185,6 +186,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           } else {
             emit(ShowSignUpPhoto());
           }
+        } else {
+          emit(ContinueSignUp());
+          return;
         }
       }
 
@@ -270,6 +274,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             } else {
               emit(PhoneVerifiedButNoRecord());
             }
+          } else {
+            emit(PhoneVerifiedButNoRecord());
+            return;
           }
         } on FirebaseAuthException catch (e) {
           emit(AuthError(e.toString()));
