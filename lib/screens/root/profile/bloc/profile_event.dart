@@ -21,6 +21,12 @@ class UpdateUserInfo extends ProfileEvent {
   UpdateUserInfo(this.user);
 }
 
+class LinkAccToSocialMedia extends ProfileEvent {
+  final String platform;
+
+  LinkAccToSocialMedia(this.platform);
+}
+
 class GetUserRatings extends ProfileEvent {
   final String userId;
 

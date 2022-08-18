@@ -977,31 +977,36 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                                     mLoc.address !=
                                                                     null)
                                                                 .toList()
-                                                                .map((loc) {
-                                                              return Container(
-                                                                margin: EdgeInsets
-                                                                    .only(
-                                                                        bottom:
-                                                                            5.0),
-                                                                child: Row(
-                                                                  children: [
-                                                                    Icon(
-                                                                        Icons
-                                                                            .location_pin,
-                                                                        size:
-                                                                            15.0),
-                                                                    SizedBox(
-                                                                        width:
-                                                                            8.0),
-                                                                    Text(
+                                                                .map(
+                                                              (loc) {
+                                                                return Container(
+                                                                  margin: EdgeInsets
+                                                                      .only(
+                                                                          bottom:
+                                                                              5.0),
+                                                                  child: Row(
+                                                                    children: [
+                                                                      Icon(
+                                                                          Icons
+                                                                              .location_pin,
+                                                                          size:
+                                                                              15.0),
+                                                                      SizedBox(
+                                                                          width:
+                                                                              8.0),
+                                                                      Text(
                                                                         '${loc.address}, ${loc.city}, ${loc.country}',
-                                                                        style: TextStyle(
-                                                                            fontSize:
-                                                                                SizeConfig.textScaleFactor * 12)),
-                                                                  ],
-                                                                ),
-                                                              );
-                                                            }).toList(),
+                                                                        style:
+                                                                            TextStyle(
+                                                                          fontSize:
+                                                                              SizeConfig.textScaleFactor * 12,
+                                                                        ),
+                                                                      ),
+                                                                    ],
+                                                                  ),
+                                                                );
+                                                              },
+                                                            ).toList(),
                                                           ),
                                                         ],
                                                       ),
@@ -1366,6 +1371,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
             ),
             backgroundColor: Colors.white,
             child: Container(
+              height: SizeConfig.screenHeight * 0.7,
               child: Column(
                 children: [
                   Container(

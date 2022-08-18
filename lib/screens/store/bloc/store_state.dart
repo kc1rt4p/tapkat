@@ -26,13 +26,13 @@ class StoreError extends StoreState {
 }
 
 class GetFirstTopStoresSuccess extends StoreState {
-  final List<StoreModel> list;
+  final List<TopStoreModel> list;
 
   GetFirstTopStoresSuccess(this.list);
 }
 
 class GetNextTopStoresSuccess extends StoreState {
-  final List<StoreModel> list;
+  final List<TopStoreModel> list;
 
   GetNextTopStoresSuccess(
     this.list,

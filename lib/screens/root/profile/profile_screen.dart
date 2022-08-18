@@ -912,15 +912,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   _buildInfoItem(
                     center: true,
-                    label: 'Instagram',
+                    label: 'Google',
                     controller: TextEditingController(
-                        text: _userModel!.ig_profile ?? '-'),
+                        text: _userModel!.yt_profile ?? '-'),
                   ),
                   _buildInfoItem(
                     center: true,
-                    label: 'Youtube',
+                    label: 'Instagram',
                     controller: TextEditingController(
-                        text: _userModel!.yt_profile ?? '-'),
+                        text: _userModel!.ig_profile ?? '-'),
                   ),
                   _buildInfoItem(
                     center: true,

@@ -7,8 +7,10 @@ import 'package:tapkat/models/barter_record_model.dart';
 import 'package:tapkat/models/location.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/models/store.dart';
+import 'package:tapkat/models/top_store.dart';
 import 'package:tapkat/repositories/barter_repository.dart';
 import 'package:tapkat/repositories/product_repository.dart';
+import 'package:tapkat/repositories/store_repository.dart';
 import 'package:tapkat/repositories/user_repository.dart';
 import 'package:tapkat/utilities/application.dart' as application;
 
@@ -20,6 +22,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     final _productRepo = ProductRepository();
     final _userRepo = UserRepository();
     final _barterRepo = BarterRepository();
+    final _storeRepo = StoreRepository();
     on<HomeEvent>((event, emit) async {
       emit(HomeLoading());
 
@@ -62,7 +65,12 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
           emit(LoadingTopStoreList());
           emit(LoadingFreeList());
 
-          final topStoreItems = await _userRepo.getFirstTopStores();
+          LocationModel _location = application.currentUserLocation ??
+              application.currentUserModel!.location ??
+              LocationModel(latitude: 0, longitude: 0);
+
+          final topStoreItems = await _storeRepo.getFirstTopStores(
+              sortBy: 'rating', loc: _location);
           emit(LoadTopStoresSuccess(topStoreItems));
           // add(LoadProductsInCategories());
           add(LoadRecommendedList());

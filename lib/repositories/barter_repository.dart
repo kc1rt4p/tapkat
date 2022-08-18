@@ -313,7 +313,6 @@ class BarterRepository {
         _unreadMessages.addAll(
           msgs.docs.map(
             (msg) {
-              print('_-== ${ChatMessageModel.fromJson(msg.data()).toJson()}');
               return ChatMessageModel.fromJson(msg.data())..id = msg.id;
             },
           ),
@@ -325,7 +324,6 @@ class BarterRepository {
         .where((chat) => chat.userId != application.currentUser!.uid)
         .toList();
 
-    print('_-=msgforuser ${_unreadMessages.length} -==-');
     return _unreadMessages;
   }
 

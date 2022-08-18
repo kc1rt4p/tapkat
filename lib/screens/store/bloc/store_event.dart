@@ -13,13 +13,36 @@ class InitializeStoreScreen extends StoreEvent {
   InitializeStoreScreen(this.userId);
 }
 
-class GetFirstTopStores extends StoreEvent {}
+class GetFirstTopStores extends StoreEvent {
+  final int itemCount;
+  final String sortBy;
+  final double radius;
+  final LocationModel? loc;
+
+  GetFirstTopStores({
+    this.itemCount = 10,
+    required this.sortBy,
+    required this.radius,
+    this.loc,
+  });
+}
 
 class GetNextTopStores extends StoreEvent {
-  final String lastUserId;
-  final num lastUserRating;
+  final int? itemCount;
+  final String sortBy;
+  final double radius;
+  final LocationModel? loc;
+  final num startAfterVal;
+  final String userId;
 
-  GetNextTopStores({required this.lastUserId, required this.lastUserRating});
+  GetNextTopStores({
+    this.itemCount,
+    required this.sortBy,
+    required this.radius,
+    this.loc,
+    required this.startAfterVal,
+    required this.userId,
+  });
 }
 
 class EditUserLike extends StoreEvent {

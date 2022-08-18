@@ -65,8 +65,6 @@ class _BarterListItemState extends State<BarterListItem> {
   @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
-    LocationModel _location = application.currentUserLocation ??
-        application.currentUserModel!.location!;
     return StreamBuilder<List<UserLikesRecord?>>(
       stream: queryUserLikesRecord(
         queryBuilder: (userLikesRecord) => userLikesRecord

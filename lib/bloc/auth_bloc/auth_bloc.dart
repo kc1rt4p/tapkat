@@ -154,7 +154,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             final userLink =
                 await FacebookAuth.instance.getUserData(fields: 'user_link');
 
-            print('x---user_link---> ${userLink}');
+            // print('x---user_link---> ${userLink}');
+            var userUpdate = UpdateUserModel(
+              userid: user.uid,
+              fb_profile: user.email,
+            );
+            await userRepo.updateUser(userUpdate);
             if (application.currentUserModel!.location == null) {
               emit(ContinueSignUp());
               return;
@@ -176,6 +181,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           application.currentUser = user;
           application.currentUserModel = await userRepo.getUser(user.uid);
           if (application.currentUserModel != null) {
+            var userUpdate = UpdateUserModel(
+              userid: user.uid,
+              yt_profile: user.email,
+            );
+            await userRepo.updateUser(userUpdate);
             if (application.currentUserModel!.location == null) {
               emit(ContinueSignUp());
               return;
@@ -187,8 +197,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             emit(ShowSignUpPhoto());
           }
         } else {
-          emit(ContinueSignUp());
-          return;
+          emit(AuthInitial());
         }
       }
 

@@ -294,7 +294,7 @@ class _RootScreenState extends State<RootScreen> {
           }
         }
       } else {
-        print('__-==internet is gone');
+        // print('__-==internet is gone');
       }
     });
   }

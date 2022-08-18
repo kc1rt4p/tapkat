@@ -44,7 +44,7 @@ dependencies:
   google_maps_flutter: ^2.0.9
   google_maps_flutter_web: ^0.3.2+1
   google_sign_in: ^5.2.3
-  flutter_facebook_auth: ^4.4.0+1
+  flutter_facebook_auth: ^4.4.1
   image_picker: ^0.8.4+1
   intl: ^0.17.0
   json_path: ^0.3.0
