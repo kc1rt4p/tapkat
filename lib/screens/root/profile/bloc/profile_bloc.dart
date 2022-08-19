@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -15,6 +17,7 @@ import 'package:tapkat/repositories/product_repository.dart';
 import 'package:tapkat/repositories/user_repository.dart';
 import 'package:tapkat/schemas/index.dart';
 import 'package:tapkat/services/auth_service.dart';
+import 'package:tapkat/services/http/api_service.dart';
 import 'package:tapkat/utilities/upload_media.dart';
 import 'package:tapkat/utilities/application.dart' as application;
 
@@ -27,6 +30,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     final _productRepo = ProductRepository();
     final _userRepo = UserRepository();
     final _alertRepo = AlertRepository();
+    final _apiService = ApiService();
 
     on<ProfileEvent>((event, emit) async {
       print('profile bloc current event:: $event');
@@ -167,10 +171,14 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
               loginBehavior: LoginBehavior.nativeWithFallback,
             );
             if (loginResult.status == LoginStatus.success) {
-              final userData = await FacebookAuth.instance
-                  .getUserData(fields: 'email, user_link');
-              emit(LinkAccToSocialMediaSuccess(
-                  event.platform, userData['email']));
+              final OAuthCredential facebookAuthCredential =
+                  FacebookAuthProvider.credential(
+                      loginResult.accessToken!.token);
+              final response = await _apiService.get(
+                  url:
+                      'https://graph.facebook.com/v2.12/me?fields=name,first_name,last_name,email&access_token=${facebookAuthCredential.accessToken}');
+              var _json = json.decode(response.data);
+              emit(LinkAccToSocialMediaSuccess(event.platform, _json['email']));
             } else {
               ProfileError(
                   'Unable to link account with ${event.platform.toUpperCase()}');

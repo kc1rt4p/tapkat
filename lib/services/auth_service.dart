@@ -199,8 +199,7 @@ class AuthService {
       ],
       loginBehavior: LoginBehavior.nativeWithFallback,
     );
-    print('::: ${loginResult.message}');
-    print('::: ${loginResult.status}');
+
     if (loginResult.status != LoginStatus.success) return null;
 
     // Create a credential from the access token

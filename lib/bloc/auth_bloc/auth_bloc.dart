@@ -151,8 +151,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
           if (application.currentUserModel != null) {
             print('user model::: ${application.currentUserModel!.toJson()}');
-            final userLink =
-                await FacebookAuth.instance.getUserData(fields: 'user_link');
+            // final userLink =
+            //     await FacebookAuth.instance.getUserData(fields: 'user_link');
 
             // print('x---user_link---> ${userLink}');
             var userUpdate = UpdateUserModel(

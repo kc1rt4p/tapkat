@@ -10,6 +10,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
+import 'package:tapkat/models/location.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/models/product_category.dart';
 import 'package:tapkat/screens/barter/barter_screen.dart';
@@ -102,6 +103,8 @@ class _ProductListScreenState extends State<ProductListScreen> {
   double mapZoomLevel = 11;
 
   late LatLng _currentCenter;
+
+  Map<int, List<ProductModel>> groupedProducts = {};
 
   bool _loadingUserProducts = true;
   final _panelController = PanelController();
@@ -1606,8 +1609,105 @@ class _ProductListScreenState extends State<ProductListScreen> {
     );
   }
 
+  groupMarkers() {
+    List<ProductModel> _products = List.from(_list);
+
+    _products.asMap().forEach((index, prod) {
+      final newList = _products.sublist(index);
+      List<ProductModel> grouped = [];
+      newList.forEach((nProd) {
+        final prod1loc =
+            prod.address != null ? prod.address!.location : LocationModel();
+        final prod2loc =
+            nProd.address != null ? nProd.address!.location : LocationModel();
+
+        final distance = calculateDistance(
+          prod1loc!.latitude,
+          prod1loc.longitude,
+          prod2loc!.latitude,
+          prod2loc.longitude,
+        );
+
+        final distanceInMeters = distance * 1000;
+
+        if (distanceInMeters <= 100) {
+          grouped.add(nProd);
+        }
+      });
+
+      if (grouped.isNotEmpty) {
+        if (groupedProducts[index] == null) {
+          groupedProducts.addAll({
+            index: grouped,
+          });
+        } else {
+          groupedProducts[index]!.addAll(grouped);
+        }
+      }
+    });
+
+    // groupedProducts.clear();
+    // if (_list.isNotEmpty) {
+    //   List<ProductModel> editableList = List.from(_list);
+    //   int count = 0;
+    //   ProductModel? prod;
+    //   do {
+    //     if (prod == null) {
+    //       prod = editableList.first;
+    //       editableList.removeAt(0);
+    //     }
+    //     final nProd = editableList.last;
+
+    //     final prod1loc =
+    //         prod.address != null ? prod.address!.location : LocationModel();
+    //     final prod2loc =
+    //         nProd.address != null ? nProd.address!.location : LocationModel();
+
+    //     // editableList.forEach((eProd) {});
+
+    //     final distance = calculateDistance(
+    //       prod1loc!.latitude,
+    //       prod1loc.longitude,
+    //       prod2loc!.latitude,
+    //       prod2loc.longitude,
+    //     );
+
+    //     final distanceInMeters = distance * 1000;
+
+    //     if (distanceInMeters <= 100) {
+    //       if (groupedProducts[count] == null) {
+    //         groupedProducts.addAll({
+    //           count: [nProd],
+    //         });
+    //       } else {
+    //         if (!groupedProducts[count]!.contains(nProd))
+    //           groupedProducts[count]!.add(nProd);
+    //       }
+
+    //       editableList.removeLast();
+    //     }
+
+    //     if (editableList.length == 1) {
+    //       prod = null;
+    //     }
+    //   } while (editableList.isNotEmpty);
+
+    if (groupedProducts.isNotEmpty) {
+      groupedProducts.forEach((key, value) {
+        print('@@----[$key]----@@');
+        if (value.isNotEmpty) {
+          value.forEach((element) {
+            print('---- ${element.productname}');
+          });
+        }
+      });
+    }
+    // }
+  }
+
   _buildMarkers() async {
     if (_list.isNotEmpty) {
+      groupMarkers();
       setState(
         () {
           _list.forEach(
@@ -1676,6 +1776,15 @@ class _ProductListScreenState extends State<ProductListScreen> {
         cos(application.currentUserLocation!.latitude! * pi / 180);
     // print('km based on zoom level: $km');
     return km;
+  }
+
+  double calculateDistance(lat1, lon1, lat2, lon2) {
+    var p = 0.017453292519943295;
+    var c = cos;
+    var a = 0.5 -
+        c((lat2 - lat1) * p) / 2 +
+        c(lat1 * p) * c(lat2 * p) * (1 - c((lon2 - lon1) * p)) / 2;
+    return 12742 * asin(sqrt(a));
   }
 
   // _onSelectView() {
