@@ -482,26 +482,37 @@ class _BarterScreenState extends State<BarterScreen> {
             }
 
             if (state is UpdateBarterStatusSuccess) {
-              String message = '';
+              // String message = '';
 
-              switch (_barterRecord!.dealStatus) {
-                case 'accepted':
-                  message = 'You have accepted this offer';
-                  break;
-                case 'revoked':
-                  message = 'You have revoked acceptance for this offer';
-                  break;
-                case 'completed':
-                  message = 'You marked this barter as completed';
-                  break;
-                case 'withdrawn':
-                  message = 'You have withdrawn your offer';
-                  break;
-                case 'rejected':
-                  message = 'You have rejected the offer';
-                  break;
-                default:
-                  message = 'You have submitted this offer';
+              // switch (_barterRecord!.dealStatus) {
+              //   case 'accepted':
+              //     message = 'You have accepted this offer';
+              //     break;
+              //   case 'revoked':
+              //     message = 'You have revoked acceptance for this offer';
+              //     break;
+              //   case 'completed':
+              //     message = 'You marked this barter as completed';
+              //     break;
+              //   case 'withdrawn':
+              //     message = 'You have withdrawn your offer';
+              //     break;
+              //   case 'rejected':
+              //     message = 'You have rejected the offer';
+              //     break;
+              //   default:
+              //     message = 'You have submitted this offer';
+              // }
+
+              if (_barterRecord!.dealStatus == 'submitted' &&
+                  widget.buying &&
+                  widget.product != null) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text(
+                      'Your have submitted an offer to buy ${widget.product!.productname}'),
+                  duration: Duration(seconds: 5),
+                ));
+                Navigator.pop(context);
               }
 
               if (!_closing &&
@@ -514,14 +525,17 @@ class _BarterScreenState extends State<BarterScreen> {
                 Navigator.pop(context);
               }
 
-              if (!_closing && !widget.quickBarter) {
-                await DialogMessage.show(
-                  context,
-                  title: 'Info',
-                  message: message,
-                  hideClose: true,
-                );
-              }
+              // if (_barterRecord!.dealStatus != 'submitted') {
+              //   if (!_closing && !widget.quickBarter) {
+              //   await DialogMessage.show(
+              //     context,
+              //     title: 'Info',
+              //     message: message,
+              //     hideClose: true,
+              //   );
+              // }
+              // }
+              _panelController.open();
             }
 
             if (state is BarterInitialized) {
@@ -1096,7 +1110,7 @@ class _BarterScreenState extends State<BarterScreen> {
                 }
 
                 if (state is BarterChatInitialized) {
-                  if (widget.showChatFirst && widget.product != null) {
+                  if (widget.showChatFirst) {
                     _panelController.open();
 
                     _barterBloc
@@ -3362,6 +3376,8 @@ class _BarterScreenState extends State<BarterScreen> {
     });
 
     if (unavailableItems.length > 0) {
+      unavailableItems
+          .forEach((uProd) => print('UNAVAILABLE::  ${uProd.toJson()}'));
       DialogMessage.show(
         context,
         message:

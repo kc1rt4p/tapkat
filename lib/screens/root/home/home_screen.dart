@@ -107,7 +107,6 @@ class _HomeScreenState extends State<HomeScreen> {
     SizeConfig().init(context);
     return ProgressHUD(
       indicatorColor: kBackgroundColor,
-      barrierEnabled: false,
       child: MultiBlocListener(
         listeners: [
           BlocListener(
@@ -706,6 +705,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                           child: Text(
                                             cat.value['name'] as String,
                                             textAlign: TextAlign.center,
+                                            maxLines: 2,
                                             style: TextStyle(
                                               fontWeight:
                                                   _selectedCategory == cat.value
@@ -780,31 +780,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             PagedChildBuilderDelegate<ProductModel>(
                           itemBuilder: (context, product, index) {
                             return DragTarget(
-                                builder: (context, candidateData,
-                                        rejectedData) =>
-                                    FittedBox(
-                                      child: BarterListItem(
-                                        likeLeftMargin: 25,
-                                        product: product,
-                                        onTapped: () => Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                ProductDetailsScreen(
-                                              productId:
-                                                  product.productid ?? '',
-                                            ),
-                                          ),
-                                        ),
-                                        onLikeTapped: (val) {
-                                          if (val.isNegative) {
-                                            _productBloc.add(AddLike(product));
-                                          } else {
-                                            _productBloc.add(Unlike(product));
-                                          }
-                                        },
-                                      ),
-                                    ),
+                                builder:
+                                    (context, candidateData, rejectedData) =>
+                                        _buildProductItem(product: product),
                                 onAccept: (ProductModel product2) async {
                                   if (product.userid !=
                                           application.currentUser!.uid &&
@@ -816,8 +794,58 @@ class _HomeScreenState extends State<HomeScreen> {
                                         product2: product2,
                                       ),
                                     );
+                                    // final result = await onQuickBarter(
+                                    //     context, product, product2);
+                                    // if (result == false) {
+                                    //   _homeBloc.add(
+                                    //     CheckBarter(
+                                    //       product1: product,
+                                    //       product2: product2,
+                                    //     ),
+                                    //   );
+                                    // }
                                   }
+                                  print(product.toJson());
                                 });
+                            // return DragTarget(
+                            //     builder: (context, candidateData,
+                            //             rejectedData) =>
+                            //         FittedBox(
+                            //           child: BarterListItem(
+                            //             likeLeftMargin: 25,
+                            //             product: product,
+                            //             onTapped: () => Navigator.push(
+                            //               context,
+                            //               MaterialPageRoute(
+                            //                 builder: (context) =>
+                            //                     ProductDetailsScreen(
+                            //                   productId:
+                            //                       product.productid ?? '',
+                            //                 ),
+                            //               ),
+                            //             ),
+                            //             onLikeTapped: (val) {
+                            //               if (val.isNegative) {
+                            //                 _productBloc.add(AddLike(product));
+                            //               } else {
+                            //                 _productBloc.add(Unlike(product));
+                            //               }
+                            //             },
+                            //           ),
+                            //         ),
+                            //     onAccept: (ProductModel product2) async {
+                            //       if (product.userid !=
+                            //               application.currentUser!.uid &&
+                            //           product.status != 'completed' &&
+                            //           product2.status != 'completed') {
+                            //         _homeBloc.add(
+                            //           CheckBarter(
+                            //             product1: product,
+                            //             product2: product2,
+                            //           ),
+                            //         );
+                            //       }
+                            //     });
                           },
                         ),
                       ),
@@ -828,550 +856,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               ),
-              // Container(
-              //   height: double.maxFinite,
-              //   width: double.infinity,
-              //   padding: EdgeInsets.fromLTRB(15.0, 15, 15.0, 0.0),
-              //   decoration: BoxDecoration(
-              //     color: Color(0xFFEBFBFF),
-              //     borderRadius: BorderRadius.only(
-              //       topLeft: Radius.circular(30.0),
-              //       topRight: Radius.circular(30.0),
-              //     ),
-              //   ),
-              //   child: SmartRefresher(
-              //     onRefresh: () => _homeBloc.add(InitializeHomeScreen()),
-              //     controller: _refreshController,
-              //     child: SingleChildScrollView(
-              //       child: Container(
-              //         child: Column(
-              //           crossAxisAlignment: CrossAxisAlignment.start,
-              //           children: [
-              //             Visibility(
-              //               visible:
-              //                   !_loadingTopStores && _topStoreList.isNotEmpty,
-              //               child: BarterList(
-              //                 loading: _loadingTopStores,
-              //                 loadingSize: 50.0,
-              //                 context: context,
-              //                 items: _topStoreList.map((store) {
-              //                   return StreamBuilder<bool>(
-              //                     stream: _userRepo
-              //                         .streamUserOnlineStatus(store.userid!),
-              //                     builder: (context, snapshot) {
-              //                       bool online = false;
-              //                       if (snapshot.hasData) {
-              //                         online = snapshot.data ?? false;
-              //                       }
-              //                       return Center(
-              //                         child: Stack(
-              //                           children: [
-              //                             StoreListItem(
-              //                               StoreModel(
-              //                                 display_name: store.display_name,
-              //                                 userid: store.userid,
-              //                                 photo_url: store.photo_url,
-              //                               ),
-              //                               removeLike: true,
-              //                               onTap: () => Navigator.push(
-              //                                 context,
-              //                                 MaterialPageRoute(
-              //                                   builder: (context) =>
-              //                                       StoreScreen(
-              //                                     userId: store.userid!,
-              //                                     userName: store.display_name!,
-              //                                   ),
-              //                                 ),
-              //                               ),
-              //                             ),
-              //                             Positioned(
-              //                               top: 10,
-              //                               right: 5,
-              //                               child: Stack(
-              //                                 alignment: Alignment.center,
-              //                                 children: [
-              //                                   Container(
-              //                                     height: 12.0,
-              //                                     width: 12.0,
-              //                                     decoration: BoxDecoration(
-              //                                       color: Colors.white,
-              //                                       shape: BoxShape.circle,
-              //                                     ),
-              //                                   ),
-              //                                   Container(
-              //                                     height: 10.0,
-              //                                     width: 10.0,
-              //                                     decoration: BoxDecoration(
-              //                                       color: online
-              //                                           ? Colors.green
-              //                                           : Colors.grey,
-              //                                       shape: BoxShape.circle,
-              //                                     ),
-              //                                   ),
-              //                                 ],
-              //                               ),
-              //                             ),
-              //                           ],
-              //                         ),
-              //                       );
-              //                     },
-              //                   );
-              //                 }).toList(),
-              //                 label: 'Stores Around You',
-              //                 onViewAllTapped: () => Navigator.push(
-              //                   context,
-              //                   MaterialPageRoute(
-              //                     builder: (context) => StoreListScreen(),
-              //                   ),
-              //                 ),
-              //                 removeMapBtn: true,
-              //               ),
-              //             ),
-              //             Visibility(
-              //               visible: !_loadingRecoList &&
-              //                   _recommendedList.isNotEmpty,
-              //               child: BarterList(
-              //                 loading: _loadingRecoList,
-              //                 context: context,
-              //                 items: _recommendedList.map((product) {
-              //                   return DragTarget(
-              //                       builder: (context, candidateData,
-              //                               rejectedData) =>
-              //                           _buildProductItem(product: product),
-              //                       onAccept: (ProductModel product2) async {
-              //                         if (product.userid !=
-              //                                 application.currentUser!.uid &&
-              //                             product.status != 'completed' &&
-              //                             product2.status != 'completed') {
-              //                           _homeBloc.add(
-              //                             CheckBarter(
-              //                               product1: product,
-              //                               product2: product2,
-              //                             ),
-              //                           );
-              //                           // final result = await onQuickBarter(
-              //                           //     context, product, product2);
-              //                           // if (result == false) {
-              //                           //   _homeBloc.add(
-              //                           //     CheckBarter(
-              //                           //       product1: product,
-              //                           //       product2: product2,
-              //                           //     ),
-              //                           //   );
-              //                           // }
-              //                         }
-              //                       });
-              //                 }).toList(),
-              //                 label: 'Recommended For You',
-              //                 onViewAllTapped: () => Navigator.push(
-              //                   context,
-              //                   MaterialPageRoute(
-              //                     builder: (context) => ProductListScreen(
-              //                       listType: 'reco',
-              //                       showAdd: false,
-              //                       userId: application.currentUser!.uid,
-              //                     ),
-              //                   ),
-              //                 ),
-              //                 onMapBtnTapped: () => Navigator.push(
-              //                   context,
-              //                   MaterialPageRoute(
-              //                     builder: (context) => ProductListScreen(
-              //                       listType: 'reco',
-              //                       showAdd: false,
-              //                       initialView: 'map',
-              //                       userId: application.currentUser!.uid,
-              //                     ),
-              //                   ),
-              //                 ),
-              //               ),
-              //             ),
-              //             Visibility(
-              //               visible: !_loadingTrendingList &&
-              //                   _trendingList.isNotEmpty,
-              //               child: BarterList(
-              //                 loading: _loadingTrendingList,
-              //                 context: context,
-              //                 items: _trendingList.map((product) {
-              //                   return DragTarget(
-              //                       builder: (context, candidateData,
-              //                               rejectedData) =>
-              //                           _buildProductItem(product: product),
-              //                       onAccept: (ProductModel product2) async {
-              //                         if (product.userid !=
-              //                                 application.currentUser!.uid &&
-              //                             product.status != 'completed' &&
-              //                             product2.status != 'completed') {
-              //                           _homeBloc.add(
-              //                             CheckBarter(
-              //                               product1: product,
-              //                               product2: product2,
-              //                             ),
-              //                           );
-              //                           // final result = await onQuickBarter(
-              //                           //     context, product, product2);
-              //                           // if (result == false) {
-              //                           //   _homeBloc.add(
-              //                           //     CheckBarter(
-              //                           //       product1: product,
-              //                           //       product2: product2,
-              //                           //     ),
-              //                           //   );
-              //                           // }
-              //                         }
-              //                       });
-              //                 }).toList(),
-              //                 label: 'What\'s Hot',
-              //                 onViewAllTapped: () => Navigator.push(
-              //                   context,
-              //                   MaterialPageRoute(
-              //                     builder: (context) => ProductListScreen(
-              //                       listType: 'demand',
-              //                       showAdd: false,
-              //                       userId: application.currentUser!.uid,
-              //                     ),
-              //                   ),
-              //                 ),
-              //                 onMapBtnTapped: () => Navigator.push(
-              //                   context,
-              //                   MaterialPageRoute(
-              //                     builder: (context) => ProductListScreen(
-              //                       listType: 'demand',
-              //                       showAdd: false,
-              //                       initialView: 'map',
-              //                     ),
-              //                   ),
-              //                 ),
-              //               ),
-              //             ),
-              //             Visibility(
-              //               visible: !_loadingFreeList && _freeList.isNotEmpty,
-              //               child: BarterList(
-              //                 loading: _loadingFreeList,
-              //                 context: context,
-              //                 items: _freeList.map((product) {
-              //                   return DragTarget(
-              //                       builder: (context, candidateData,
-              //                               rejectedData) =>
-              //                           _buildProductItem(product: product),
-              //                       onAccept: (ProductModel product2) async {
-              //                         if (product.userid !=
-              //                                 application.currentUser!.uid &&
-              //                             product.status != 'completed' &&
-              //                             product2.status != 'completed') {
-              //                           _homeBloc.add(
-              //                             CheckBarter(
-              //                               product1: product,
-              //                               product2: product2,
-              //                             ),
-              //                           );
-              //                           // final result = await onQuickBarter(
-              //                           //     context, product, product2);
-              //                           // if (result == false) {
-              //                           //   _homeBloc.add(
-              //                           //     CheckBarter(
-              //                           //       product1: product,
-              //                           //       product2: product2,
-              //                           //     ),
-              //                           //   );
-              //                           // }
-              //                         }
-              //                         print(product.toJson());
-              //                       });
-              //                 }).toList(),
-              //                 label: 'Free products',
-              //                 onViewAllTapped: () => Navigator.push(
-              //                   context,
-              //                   MaterialPageRoute(
-              //                     builder: (context) => ProductListScreen(
-              //                       listType: 'free',
-              //                       showAdd: false,
-              //                       userId: application.currentUser!.uid,
-              //                     ),
-              //                   ),
-              //                 ),
-              //                 onMapBtnTapped: () => Navigator.push(
-              //                   context,
-              //                   MaterialPageRoute(
-              //                     builder: (context) => ProductListScreen(
-              //                       listType: 'free',
-              //                       showAdd: false,
-              //                       initialView: 'map',
-              //                     ),
-              //                   ),
-              //                 ),
-              //               ),
-              //             ),
-              //             SizedBox(
-              //               height: 16,
-              //             ),
-
-              //             Container(
-              //               child: StickyHeader(
-              //                 overlapHeaders: true,
-              //                 header: Container(
-              //                   padding: EdgeInsets.symmetric(horizontal: 8.0),
-              //                   width: double.infinity,
-              //                   child: Column(
-              //                     children: [
-              //                       Container(
-              //                         height: 50.0,
-              //                         child: ListView(
-              //                           scrollDirection: Axis.horizontal,
-              //                           children: _categories
-              //                               .asMap()
-              //                               .entries
-              //                               .map((cat) {
-              //                             return InkWell(
-              //                               onTap: () {
-              //                                 final index = cat.key;
-
-              //                                 setState(() {
-              //                                   _categories.removeAt(index);
-              //                                   _categories.insert(
-              //                                       0, cat.value);
-              //                                   _selectedCategory = cat.value;
-              //                                 });
-              //                                 _categoryPagingController
-              //                                     .refresh();
-              //                                 _searchBloc.add(InitializeSearch(
-              //                                   keyword: '',
-              //                                   category: [
-              //                                     _selectedCategory!['code']
-              //                                         as String
-              //                                   ],
-              //                                   sortBy: 'name',
-              //                                   distance: 20000,
-              //                                   itemCount: 10,
-              //                                 ));
-              //                               },
-              //                               child: Container(
-              //                                 width: 90.0,
-              //                                 margin:
-              //                                     EdgeInsets.only(right: 8.0),
-              //                                 padding: EdgeInsets.all(5.0),
-              //                                 decoration: BoxDecoration(
-              //                                   color: _selectedCategory ==
-              //                                           cat.value
-              //                                       ? kBackgroundColor
-              //                                       : null,
-              //                                   border: Border.all(
-              //                                     color: kBackgroundColor,
-              //                                   ),
-              //                                   borderRadius:
-              //                                       BorderRadius.circular(10.0),
-              //                                 ),
-              //                                 child: Center(
-              //                                   child: Text(
-              //                                     cat.value['name'] as String,
-              //                                     textAlign: TextAlign.center,
-              //                                     style: TextStyle(
-              //                                       fontWeight: FontWeight.w500,
-              //                                       fontSize: SizeConfig
-              //                                               .textScaleFactor *
-              //                                           11,
-              //                                       color: _selectedCategory ==
-              //                                               cat.value
-              //                                           ? Colors.white
-              //                                           : kBackgroundColor,
-              //                                     ),
-              //                                   ),
-              //                                 ),
-              //                               ),
-              //                             );
-              //                           }).toList(),
-              //                         ),
-              //                       ),
-              //                       _selectedCategory != null &&
-              //                               _selectedCategoryProducts.isNotEmpty
-              //                           ? Container(
-              //                               child: TextButton(
-              //                                 child: Text(
-              //                                   'See All',
-              //                                   style: TextStyle(
-              //                                     decoration:
-              //                                         TextDecoration.underline,
-              //                                     color: kBackgroundColor,
-              //                                   ),
-              //                                 ),
-              //                                 style: TextButton.styleFrom(
-              //                                   padding: EdgeInsets.zero,
-              //                                   minimumSize: Size(50, 30),
-              //                                   tapTargetSize:
-              //                                       MaterialTapTargetSize
-              //                                           .shrinkWrap,
-              //                                 ),
-              //                                 onPressed: () {
-              //                                   Navigator.push(
-              //                                     context,
-              //                                     MaterialPageRoute(
-              //                                       builder: (context) =>
-              //                                           SearchResultScreen(
-              //                                         userid: _user!.uid,
-              //                                         keyword: '',
-              //                                         category:
-              //                                             _selectedCategory![
-              //                                                 'code'],
-              //                                       ),
-              //                                     ),
-              //                                   );
-              //                                 },
-              //                               ),
-              //                             )
-              //                           : Container(),
-              //                     ],
-              //                   ),
-              //                 ),
-              //                 content: Container(
-              //                   width: double.infinity,
-              //                   padding: EdgeInsets.only(top: 90.0),
-              //                   child: PagedGridView<int, ProductModel>(
-              //                     pagingController: _categoryPagingController,
-              //                     showNewPageProgressIndicatorAsGridChild:
-              //                         false,
-              //                     showNewPageErrorIndicatorAsGridChild: false,
-              //                     showNoMoreItemsIndicatorAsGridChild: false,
-              //                     shrinkWrap: true,
-              //                     physics: NeverScrollableScrollPhysics(),
-              //                     padding: EdgeInsets.symmetric(
-              //                       vertical: 10.0,
-              //                     ),
-              //                     gridDelegate:
-              //                         SliverGridDelegateWithFixedCrossAxisCount(
-              //                       mainAxisSpacing: 10.0,
-              //                       crossAxisCount:
-              //                           SizeConfig.screenWidth > 500 ? 3 : 2,
-              //                     ),
-              //                     builderDelegate:
-              //                         PagedChildBuilderDelegate<ProductModel>(
-              //                       itemBuilder: (context, product, index) {
-              //                         return DragTarget(
-              //                             builder: (context, candidateData,
-              //                                     rejectedData) =>
-              //                                 FittedBox(
-              //                                   child: BarterListItem(
-              //                                     likeLeftMargin: 25,
-              //                                     product: product,
-              //                                     onTapped: () =>
-              //                                         Navigator.push(
-              //                                       context,
-              //                                       MaterialPageRoute(
-              //                                         builder: (context) =>
-              //                                             ProductDetailsScreen(
-              //                                           productId:
-              //                                               product.productid ??
-              //                                                   '',
-              //                                         ),
-              //                                       ),
-              //                                     ),
-              //                                     onLikeTapped: (val) {
-              //                                       if (val.isNegative) {
-              //                                         _productBloc.add(
-              //                                             AddLike(product));
-              //                                       } else {
-              //                                         _productBloc
-              //                                             .add(Unlike(product));
-              //                                       }
-              //                                     },
-              //                                   ),
-              //                                 ),
-              //                             onAccept:
-              //                                 (ProductModel product2) async {
-              //                               if (product.userid !=
-              //                                       application
-              //                                           .currentUser!.uid &&
-              //                                   product.status != 'completed' &&
-              //                                   product2.status !=
-              //                                       'completed') {
-              //                                 _homeBloc.add(
-              //                                   CheckBarter(
-              //                                     product1: product,
-              //                                     product2: product2,
-              //                                   ),
-              //                                 );
-              //                               }
-              //                             });
-              //                       },
-              //                     ),
-              //                   ),
-              //                 ),
-              //               ),
-              //             ),
-              //             // ..._categories.map((cat) {
-              //             //   return BarterList(
-              //             //     loading: _loadingCatProducts,
-              //             //     items: cat['products'] != null
-              //             //         ? (cat['products'] as List<ProductModel>)
-              //             //             .map((product) {
-              //             //             return DragTarget(
-              //             //                 builder: (context, candidateData,
-              //             //                         rejectedData) =>
-              //             //                     _buildProductItem(
-              //             //                         product: product),
-              //             //                 onAccept:
-              //             //                     (ProductModel product2) async {
-              //             //                   if (product.userid !=
-              //             //                           application
-              //             //                               .currentUser!.uid &&
-              //             //                       product.status != 'completed' &&
-              //             //                       product2.status !=
-              //             //                           'completed') {
-              //             //                     _homeBloc.add(
-              //             //                       CheckBarter(
-              //             //                         product1: product,
-              //             //                         product2: product2,
-              //             //                       ),
-              //             //                     );
-              //             //                     // final result =
-              //             //                     //     await onQuickBarter(context,
-              //             //                     //         product, product2);
-              //             //                     // if (result == false) {
-              //             //                     //   _homeBloc.add(
-              //             //                     //     CheckBarter(
-              //             //                     //       product1: product,
-              //             //                     //       product2: product2,
-              //             //                     //     ),
-              //             //                     //   );
-              //             //                     // }
-              //             //                   }
-              //             //                 });
-              //             //           }).toList()
-              //             //         : [],
-              //             //     label: cat['name'] as String,
-              //             //     context: context,
-              //             //     onViewAllTapped: () {
-              //             //       Navigator.push(
-              //             //         context,
-              //             //         MaterialPageRoute(
-              //             //           builder: (context) => SearchResultScreen(
-              //             //             userid: _user!.uid,
-              //             //             keyword: '',
-              //             //             category: cat['code'],
-              //             //           ),
-              //             //         ),
-              //             //       );
-              //             //     },
-              //             //     onMapBtnTapped: () {
-              //             //       Navigator.push(
-              //             //         context,
-              //             //         MaterialPageRoute(
-              //             //           builder: (context) => SearchResultScreen(
-              //             //             userid: _user!.uid,
-              //             //             keyword: '',
-              //             //             category: cat['code'],
-              //             //             mapFirst: true,
-              //             //           ),
-              //             //         ),
-              //             //       );
-              //             //     },
-              //             //   );
-              //             // }).toList(),
-              //           ],
-              //         ),
-              //       ),
-              //     ),
-              //   ),
-              // ),
             ),
             SlidingUpPanel(
               isDraggable: true,

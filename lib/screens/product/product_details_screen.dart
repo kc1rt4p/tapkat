@@ -78,6 +78,8 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   final _photoViewController = PageController();
   final oCcy = new NumberFormat("#,##0.00", "en_US");
 
+  bool descViewAll = false;
+
   @override
   void initState() {
     application.currentScreen = 'Product Details Screen';
@@ -104,7 +106,6 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
       body: ProgressHUD(
         indicatorColor: kBackgroundColor,
         backgroundColor: Colors.white,
-        barrierEnabled: false,
         child: MultiBlocListener(
           listeners: [
             BlocListener(
@@ -861,13 +862,65 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                   ),
                                                 ),
                                                 Container(
-                                                  child: Text(_product !=
-                                                              null &&
-                                                          _product!
-                                                                  .productdesc !=
-                                                              null
-                                                      ? _product!.productdesc!
-                                                      : '0'),
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Text(_product != null &&
+                                                              _product!
+                                                                      .productdesc !=
+                                                                  null
+                                                          ? _getProductDesc()
+                                                          : ''),
+                                                      Visibility(
+                                                        visible: _product !=
+                                                                null &&
+                                                            _product!
+                                                                    .productdesc !=
+                                                                null &&
+                                                            _product!
+                                                                    .productdesc!
+                                                                    .length >
+                                                                200,
+                                                        child: Align(
+                                                          alignment: Alignment
+                                                              .centerRight,
+                                                          child: TextButton(
+                                                            child: Text(
+                                                              descViewAll
+                                                                  ? 'View less'
+                                                                  : 'View more',
+                                                              style: TextStyle(
+                                                                decoration:
+                                                                    TextDecoration
+                                                                        .underline,
+                                                                color:
+                                                                    kBackgroundColor,
+                                                                fontSize: 10.0,
+                                                              ),
+                                                            ),
+                                                            style: TextButton
+                                                                .styleFrom(
+                                                              padding:
+                                                                  EdgeInsets
+                                                                      .zero,
+                                                              minimumSize:
+                                                                  Size(50, 30),
+                                                              tapTargetSize:
+                                                                  MaterialTapTargetSize
+                                                                      .shrinkWrap,
+                                                            ),
+                                                            onPressed: () =>
+                                                                setState(() {
+                                                              descViewAll =
+                                                                  !descViewAll;
+                                                            }),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
                                                 ),
                                               ],
                                             ),
@@ -1330,6 +1383,20 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
         ),
       ),
     );
+  }
+
+  String _getProductDesc() {
+    if (_product == null) return 'No description';
+    if (_product!.productdesc == null) return 'No description';
+    final desc = _product!.productdesc!;
+    if (_product!.productdesc!.length > 200) {
+      if (descViewAll) {
+        return desc;
+      } else {
+        return desc.substring(0, 200) + '...';
+      }
+    }
+    return desc;
   }
 
   String _getProductDistance(ProductModel product) {

@@ -43,7 +43,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   late Timer _timer;
   int currentSeconds = 0;
-  int timerMaxSeconds = 30;
+  int timerMaxSeconds = 120;
   bool timerExpired = true;
   int? _forceResendingToken;
 
@@ -86,7 +86,6 @@ class _LoginScreenState extends State<LoginScreen> {
       body: ProgressHUD(
         indicatorColor: kBackgroundColor,
         backgroundColor: Colors.white,
-        barrierEnabled: false,
         child: BlocListener(
           bloc: _authBloc,
           listener: (context, state) async {

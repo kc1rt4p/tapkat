@@ -394,7 +394,6 @@ class _StoreListScreenState extends State<StoreListScreen> {
   String _displayRadius() {
     final radius = _selectedRadius;
     final ave = ((radius / 1000) * 2).round() / 2;
-    print('X---> $ave');
     return '${ave.toStringAsFixed(2)} km';
   }
 

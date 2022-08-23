@@ -167,7 +167,6 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
       body: ProgressHUD(
         indicatorColor: kBackgroundColor,
         backgroundColor: Colors.white,
-        barrierEnabled: false,
         child: MultiBlocListener(
           listeners: [
             BlocListener(
@@ -1277,7 +1276,6 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
   String _displayRadius() {
     final radius = _selectedRadius;
     final ave = ((radius / 1000) * 2).round() / 2;
-    print('X---> $ave');
     return '${ave.toStringAsFixed(2)} km';
   }
 

@@ -85,7 +85,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     SizeConfig().init(context);
     return ProgressHUD(
-      barrierEnabled: false,
       indicatorColor: kBackgroundColor,
       backgroundColor: Colors.white,
       child: MultiBlocListener(

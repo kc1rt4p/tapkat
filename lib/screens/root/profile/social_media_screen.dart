@@ -61,7 +61,6 @@ class _UserSocialMediaAccountsScreenState
       body: ProgressHUD(
         indicatorColor: kBackgroundColor,
         backgroundColor: Colors.white,
-        barrierEnabled: false,
         child: MultiBlocListener(
           listeners: [
             BlocListener(
@@ -348,25 +347,6 @@ class _UserSocialMediaAccountsScreenState
                                 ),
                               ),
                               SizedBox(height: 16.0),
-                              Container(
-                                width: double.infinity,
-                                decoration: BoxDecoration(
-                                  border: Border(
-                                    bottom: BorderSide(color: Colors.black),
-                                  ),
-                                ),
-                                child: fbEmail.isNotEmpty
-                                    ? RichText(
-                                        text: TextSpan(
-                                          children: [
-                                            TextSpan(text: 'Linked to '),
-                                            TextSpan(text: fbEmail),
-                                          ],
-                                        ),
-                                      )
-                                    : TextButton(
-                                        onPressed: () {}, child: Text('')),
-                              ),
                               CustomTextFormField(
                                 label: 'Facebook',
                                 hintText: 'Enter your Facebook Link',

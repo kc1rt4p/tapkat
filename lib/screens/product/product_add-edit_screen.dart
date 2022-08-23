@@ -97,7 +97,7 @@ class _ProductAddEditScreenState extends State<ProductAddEditScreen> {
   ProductCategoryModel? _selectedCategory;
   bool _textIsEmpty = true;
   bool showCategoryError = false;
-  bool showTradeForError = false;
+  // bool showTradeForError = false;
   bool showMeetUpError = false;
 
   @override
@@ -140,6 +140,7 @@ class _ProductAddEditScreenState extends State<ProductAddEditScreen> {
           location: application.currentUserModel!.location,
         ));
       }
+      _quantityTextController.text = '1';
     }
   }
 
@@ -150,7 +151,6 @@ class _ProductAddEditScreenState extends State<ProductAddEditScreen> {
       body: ProgressHUD(
         indicatorColor: kBackgroundColor,
         backgroundColor: Colors.white,
-        barrierEnabled: false,
         child: MultiBlocListener(
           listeners: [
             BlocListener(
@@ -358,17 +358,17 @@ class _ProductAddEditScreenState extends State<ProductAddEditScreen> {
         children: [
           Text('What do you want to get in return for this item?',
               style: Style.subtitle2),
-          Visibility(
-            visible: showTradeForError,
-            child: Text(
-              'Required',
-              style: TextStyle(
-                fontSize: 12.0,
-                color: Colors.red.shade400,
-                fontStyle: FontStyle.italic,
-              ),
-            ),
-          ),
+          // Visibility(
+          //   visible: showTradeForError,
+          //   child: Text(
+          //     'Required',
+          //     style: TextStyle(
+          //       fontSize: 12.0,
+          //       color: Colors.red.shade400,
+          //       fontStyle: FontStyle.italic,
+          //     ),
+          //   ),
+          // ),
           SizedBox(height: 16.0),
           TextFormField(
             focusNode: focusNode,
@@ -863,7 +863,7 @@ class _ProductAddEditScreenState extends State<ProductAddEditScreen> {
             controller: _descTextController,
             color: kBackgroundColor,
             maxLines: 3,
-            maxLength: 120,
+            maxLength: 2000,
             keyboardType: TextInputType.text,
             validator: (val) => val != null && val.isEmpty ? 'Required' : null,
           ),
@@ -1280,19 +1280,19 @@ class _ProductAddEditScreenState extends State<ProductAddEditScreen> {
       });
     }
 
-    if (_tradeForlist.isEmpty) {
-      setState(() {
-        showTradeForError = true;
-      });
+    // if (_tradeForlist.isEmpty) {
+    //   setState(() {
+    //     showTradeForError = true;
+    //   });
 
-      _scrollController.scrollToIndex(2);
-      return;
-    } else {
-      print('trade for passed');
-      setState(() {
-        showTradeForError = false;
-      });
-    }
+    //   _scrollController.scrollToIndex(2);
+    //   return;
+    // } else {
+    //   print('trade for passed');
+    //   setState(() {
+    //     showTradeForError = false;
+    //   });
+    // }
 
     if (_meetUpList.isEmpty) {
       setState(() {

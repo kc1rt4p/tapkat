@@ -135,18 +135,18 @@ class BarterRepository {
         final docSnapshot = await barterRef.doc(bProd.barterid).get();
         if (docSnapshot.exists) {
           final barterRecord = BarterRecordModel.fromJson(docSnapshot.data()!);
-          final usersInvolved = [barterRecord.userid1, barterRecord.userid2];
+          final usersInvolved = [application.currentUser!.uid, userId];
 
-          if (usersInvolved.contains(application.currentUser!.uid) &&
-              usersInvolved.contains(userId)) {
+          if (usersInvolved.contains(barterRecord.userid1) &&
+              usersInvolved.contains(barterRecord.userid2)) {
             if (!['new', 'completed', 'rejected', 'withdrawn']
                     .contains(barterRecord.dealStatus) &&
                 (barterRecord.deletedFor == null ||
                     (barterRecord.deletedFor != null &&
-                        !barterRecord.deletedFor!
-                            .contains(application.currentUser!.uid)) ||
-                    (barterRecord.deletedFor != null &&
+                            !barterRecord.deletedFor!
+                                .contains(application.currentUser!.uid) ||
                         barterRecord.deletedFor!.isEmpty))) {
+              print('barterid::: ${barterRecord.barterId}');
               barterable = false;
             }
           }

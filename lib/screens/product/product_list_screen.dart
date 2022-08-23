@@ -1,7 +1,10 @@
 import 'dart:math';
-
+import 'dart:typed_data';
+import 'dart:ui' as ui;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:custom_info_window/custom_info_window.dart';
+import 'package:custom_marker/marker_icon.dart';
+import 'package:fluster/fluster.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_progress_hud/flutter_progress_hud.dart';
@@ -11,6 +14,7 @@ import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:tapkat/models/location.dart';
+import 'package:tapkat/models/map-marker.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/models/product_category.dart';
 import 'package:tapkat/screens/barter/barter_screen.dart';
@@ -21,6 +25,7 @@ import 'package:tapkat/screens/search/search_result_screen.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/constants.dart';
 import 'package:tapkat/utilities/dialog_message.dart';
+import 'package:tapkat/utilities/helpers/map-helper.dart';
 import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/utilities/style.dart';
 import 'package:tapkat/utilities/utilities.dart';
@@ -28,6 +33,7 @@ import 'package:tapkat/widgets/barter_list_item.dart';
 import 'package:tapkat/widgets/custom_app_bar.dart';
 import 'package:tapkat/widgets/custom_button.dart';
 import 'package:tapkat/widgets/custom_search_bar.dart';
+import 'package:tapkat/widgets/product-marker.dart';
 import 'package:tapkat/widgets/tapkat_map.dart';
 import 'package:tapkat/utilities/application.dart' as application;
 import 'package:toggle_switch/toggle_switch.dart';
@@ -84,7 +90,6 @@ class _ProductListScreenState extends State<ProductListScreen> {
   ProductModel? lastUserProduct;
 
   bool _loading = false;
-  Set<Marker> _markers = {};
 
   Circle? _currentCircle;
 
@@ -96,6 +101,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
     'Rating',
   ];
   ProductCategoryModel? _selectedCategory;
+  List<MapMarker> _mapMarkerList = [];
 
   List<ProductCategoryModel> _categoryList = [];
 
@@ -113,6 +119,25 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
   final _userItemsPagingController =
       PagingController<int, ProductModel>(firstPageKey: 0);
+
+  final Completer<GoogleMapController> _mapController = Completer();
+
+  /// Set of displayed markers and cluster markers on the map
+  final Set<Marker> _markers = Set();
+
+  /// Minimum zoom at which the markers will cluster
+  final int _minClusterZoom = 9;
+
+  /// Maximum zoom at which the markers will cluster
+  final int _maxClusterZoom = 16;
+
+  /// [Fluster] instance used to manage the clusters
+  Fluster<MapMarker>? _clusterManager;
+
+  /// Current map zoom. Initial zoom will be 15, street level
+  double _currentZoom = 15;
+  final Color _clusterColor = kBackgroundColor;
+  final Color _clusterTextColor = Colors.white;
 
   @override
   void initState() {
@@ -169,12 +194,19 @@ class _ProductListScreenState extends State<ProductListScreen> {
     }
   }
 
-  // @override
-  // void setState(fn) {
-  //   if (mounted) {
-  //     super.setState(fn);
-  //   }
-  // }
+  @override
+  void setState(fn) {
+    if (mounted) {
+      super.setState(fn);
+    }
+  }
+
+  void _onMapCreated(GoogleMapController controller) {
+    // _mapController.complete(controller);
+    googleMapsController = controller;
+
+    _initMarkers();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -182,7 +214,6 @@ class _ProductListScreenState extends State<ProductListScreen> {
     return Scaffold(
       backgroundColor: Color(0xFFEBFBFF),
       body: ProgressHUD(
-        barrierEnabled: false,
         indicatorColor: kBackgroundColor,
         backgroundColor: Colors.white,
         child: MultiBlocListener(
@@ -258,14 +289,11 @@ class _ProductListScreenState extends State<ProductListScreen> {
                   _refreshController.refreshCompleted();
                   _pagingController.refresh();
                   lastProduct = null;
-                  setState(() {
-                    _list.clear();
-                    _buildMarkers();
-                  });
+                  _list.clear();
+                  groupedProducts.clear();
 
                   if (state.list.isNotEmpty) {
                     _list = state.list;
-                    _buildMarkers();
 
                     final _productCount = (_selectedView == 'map') ? 50 : 10;
 
@@ -278,10 +306,6 @@ class _ProductListScreenState extends State<ProductListScreen> {
                     }
                   } else {
                     _pagingController.appendLastPage([]);
-                    setState(() {
-                      _list.clear();
-                      _buildMarkers();
-                    });
 
                     if (_selectedRadius < 20000) {
                       _selectedRadius += 5000;
@@ -309,6 +333,9 @@ class _ProductListScreenState extends State<ProductListScreen> {
                       }
                     }
                   }
+                  if (_selectedView == 'map')
+                    // _buildMarkers();
+                    _initMarkers();
 
                   _pagingController.addPageRequestListener((pageKey) {
                     if (lastProduct != null) {
@@ -393,8 +420,6 @@ class _ProductListScreenState extends State<ProductListScreen> {
                   print('X=====> got next products');
                   if (state.list.isNotEmpty) {
                     _list.addAll(state.list);
-                    _buildMarkers();
-                    print('X=====> no. of all products: ${_list.length}');
 
                     final _productCount = (_selectedView == 'map') ? 50 : 10;
                     if (state.list.length == _productCount) {
@@ -409,6 +434,10 @@ class _ProductListScreenState extends State<ProductListScreen> {
                   } else {
                     _pagingController.appendLastPage([]);
                   }
+
+                  if (_selectedView == 'map')
+                    // _buildMarkers();
+                    _initMarkers();
                 }
               },
             ),
@@ -647,7 +676,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                     });
 
                     if (index == 1)
-                      _buildMarkers();
+                      _initMarkers();
                     else {
                       setOriginalCenter();
                       _productBloc.add(GetFirstProducts(
@@ -891,7 +920,6 @@ class _ProductListScreenState extends State<ProductListScreen> {
   String _displayRadius() {
     final radius = _selectedRadius;
     final ave = ((radius / 1000) * 2).round() / 2;
-    print('X---> $ave');
     return '${ave.toStringAsFixed(2)} km';
   }
 
@@ -1428,12 +1456,13 @@ class _ProductListScreenState extends State<ProductListScreen> {
                 setState(() {
                   _currentCenter = camPos.target;
                 });
+                _updateMarkers(camPos.zoom);
               },
               onCameraIdle: (latLng) => googleMapsCenter = latLng,
               initialZoom: mapZoomLevel,
               initialLocation: _currentCenter,
               onMapCreated: (controller) {
-                googleMapsController = controller;
+                _onMapCreated(controller);
               },
               showLocation: false,
               showZoomControls: false,
@@ -1609,167 +1638,6 @@ class _ProductListScreenState extends State<ProductListScreen> {
     );
   }
 
-  groupMarkers() {
-    List<ProductModel> _products = List.from(_list);
-
-    _products.asMap().forEach((index, prod) {
-      final newList = _products.sublist(index);
-      List<ProductModel> grouped = [];
-      newList.forEach((nProd) {
-        final prod1loc =
-            prod.address != null ? prod.address!.location : LocationModel();
-        final prod2loc =
-            nProd.address != null ? nProd.address!.location : LocationModel();
-
-        final distance = calculateDistance(
-          prod1loc!.latitude,
-          prod1loc.longitude,
-          prod2loc!.latitude,
-          prod2loc.longitude,
-        );
-
-        final distanceInMeters = distance * 1000;
-
-        if (distanceInMeters <= 100) {
-          grouped.add(nProd);
-        }
-      });
-
-      if (grouped.isNotEmpty) {
-        if (groupedProducts[index] == null) {
-          groupedProducts.addAll({
-            index: grouped,
-          });
-        } else {
-          groupedProducts[index]!.addAll(grouped);
-        }
-      }
-    });
-
-    // groupedProducts.clear();
-    // if (_list.isNotEmpty) {
-    //   List<ProductModel> editableList = List.from(_list);
-    //   int count = 0;
-    //   ProductModel? prod;
-    //   do {
-    //     if (prod == null) {
-    //       prod = editableList.first;
-    //       editableList.removeAt(0);
-    //     }
-    //     final nProd = editableList.last;
-
-    //     final prod1loc =
-    //         prod.address != null ? prod.address!.location : LocationModel();
-    //     final prod2loc =
-    //         nProd.address != null ? nProd.address!.location : LocationModel();
-
-    //     // editableList.forEach((eProd) {});
-
-    //     final distance = calculateDistance(
-    //       prod1loc!.latitude,
-    //       prod1loc.longitude,
-    //       prod2loc!.latitude,
-    //       prod2loc.longitude,
-    //     );
-
-    //     final distanceInMeters = distance * 1000;
-
-    //     if (distanceInMeters <= 100) {
-    //       if (groupedProducts[count] == null) {
-    //         groupedProducts.addAll({
-    //           count: [nProd],
-    //         });
-    //       } else {
-    //         if (!groupedProducts[count]!.contains(nProd))
-    //           groupedProducts[count]!.add(nProd);
-    //       }
-
-    //       editableList.removeLast();
-    //     }
-
-    //     if (editableList.length == 1) {
-    //       prod = null;
-    //     }
-    //   } while (editableList.isNotEmpty);
-
-    if (groupedProducts.isNotEmpty) {
-      groupedProducts.forEach((key, value) {
-        print('@@----[$key]----@@');
-        if (value.isNotEmpty) {
-          value.forEach((element) {
-            print('---- ${element.productname}');
-          });
-        }
-      });
-    }
-    // }
-  }
-
-  _buildMarkers() async {
-    if (_list.isNotEmpty) {
-      groupMarkers();
-      setState(
-        () {
-          _list.forEach(
-            (product) {
-              _markers
-                  .addLabelMarker(
-                    LabelMarker(
-                      onTap: () => onMarkerTapped(context, product),
-                      label: product.productname != null
-                          ? '${product.productname!.trim()}'
-                          : '',
-                      markerId: MarkerId(product.productid!),
-                      position: LatLng(
-                        product.address != null &&
-                                product.address!.location != null
-                            ? product.address!.location!.latitude!.toDouble()
-                            : 0.00,
-                        product.address != null &&
-                                product.address!.location != null
-                            ? product.address!.location!.longitude!.toDouble()
-                            : 0.00,
-                      ),
-                      backgroundColor: kBackgroundColor,
-                      textStyle: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 27.0,
-                        letterSpacing: 1.0,
-                        fontFamily: 'Poppins',
-                        leadingDistribution: TextLeadingDistribution.even,
-                        inherit: false,
-                        decorationStyle: TextDecorationStyle.solid,
-                      ),
-                    ),
-                  )
-                  .then(
-                    (value) => setState(() {}),
-                  );
-            },
-          );
-        },
-      );
-    } else {
-      setState(() {
-        _markers.clear();
-      });
-    }
-
-    setState(() {
-      _markers.add(Marker(
-        markerId: MarkerId(application.currentUser!.uid),
-        position: _currentCenter,
-      ));
-    });
-
-    // if (markers.isNotEmpty) {
-    //   setState(() {
-    //     _markers = markers;
-    //   });
-    // }
-  }
-
   double getRadiusFromZoomLevel(double zoomLevel) {
     final km = 34500 /
         pow(2, zoomLevel - 3) *
@@ -1787,33 +1655,82 @@ class _ProductListScreenState extends State<ProductListScreen> {
     return 12742 * asin(sqrt(a));
   }
 
-  // _onSelectView() {
-  //   setState(() {
-  //     _selectedView = _selectedView != 'map' ? 'map' : 'grid';
-  //   });
+  void _initMarkers() async {
+    List<MapMarker> markers = [];
+    final list = List.from(_list);
 
-  //   if (_selectedView == 'map') {
-  //     _buildMarkers();
-  //     _selectedSortBy = 'distance';
-  //   }
-  // }
+    for (ProductModel product in list) {
+      var thumbnail = '';
 
-  // Expanded _buildSortOption() {
-  //   return Expanded(
-  //     child: Container(
-  //       padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
-  //       decoration: BoxDecoration(
-  //         borderRadius: BorderRadius.circular(9.0),
-  //         color: Colors.white,
-  //       ),
-  //       child: Center(
-  //           child: Text(
-  //         'Relevance',
-  //         style: TextStyle(
-  //           fontSize: 12.0,
-  //         ),
-  //       )),
-  //     ),
-  //   );
-  // }
+      if (product.media != null && product.media!.isNotEmpty) {
+        for (var media in product.media!) {
+          thumbnail = media.url_t ?? '';
+          if (thumbnail.isNotEmpty) break;
+        }
+      }
+
+      if (thumbnail.isEmpty) {
+        if (product.mediaPrimary != null &&
+            product.mediaPrimary!.url_t != null &&
+            product.mediaPrimary!.url_t!.isNotEmpty)
+          thumbnail = product.mediaPrimary!.url_t!;
+      }
+
+      final BitmapDescriptor markerImage =
+          await MapHelper.createCustomMarkerBitmap(
+        product.productname ?? '',
+        textStyle: TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w600,
+          fontSize: 27.0,
+          letterSpacing: 1.0,
+          fontFamily: 'Poppins',
+          leadingDistribution: TextLeadingDistribution.even,
+          inherit: false,
+          decorationStyle: TextDecorationStyle.solid,
+        ),
+      );
+      final pos = LatLng(
+        product.address!.location!.latitude!.toDouble(),
+        product.address!.location!.longitude!.toDouble(),
+      );
+
+      markers.add(
+        MapMarker(
+          id: product.productid!,
+          position: pos,
+          icon: markerImage,
+          onTap: () => onMarkerTapped(context, product),
+        ),
+      );
+    }
+
+    _clusterManager = await MapHelper.initClusterManager(
+      markers,
+      _minClusterZoom,
+      _maxClusterZoom,
+    );
+
+    await _updateMarkers();
+  }
+
+  Future<void> _updateMarkers([double? updatedZoom]) async {
+    if (_clusterManager == null || updatedZoom == _currentZoom) return;
+
+    if (updatedZoom != null) {
+      _currentZoom = updatedZoom;
+    }
+
+    final updatedMarkers = await MapHelper.getClusterMarkers(
+      _clusterManager,
+      _currentZoom,
+      _clusterColor,
+      _clusterTextColor,
+      80,
+    );
+
+    _markers
+      ..clear()
+      ..addAll(updatedMarkers);
+  }
 }
