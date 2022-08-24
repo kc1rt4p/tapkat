@@ -155,6 +155,7 @@ class MapHelper {
     Color clusterColor,
     Color clusterTextColor,
     int clusterWidth,
+    Function(int, int) onClusterTap,
   ) {
     if (clusterManager == null) return Future.value([]);
 
@@ -169,6 +170,7 @@ class MapHelper {
           clusterTextColor,
           clusterWidth,
         );
+        mapMarker.onClusterTap = onClusterTap;
       }
 
       return mapMarker.toMarker();

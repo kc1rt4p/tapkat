@@ -159,15 +159,6 @@ class _ProductListScreenState extends State<ProductListScreen> {
       _currentCenter = LatLng(
           application.currentUserLocation!.latitude!.toDouble(),
           application.currentUserLocation!.longitude!.toDouble());
-
-      _currentCircle = Circle(
-        circleId: CircleId('radius'),
-        center: _currentCenter,
-        radius: _selectedRadius.toDouble(),
-        strokeColor: kBackgroundColor,
-        strokeWidth: 1,
-        fillColor: kBackgroundColor.withOpacity(0.2),
-      );
     });
   }
 
@@ -1430,28 +1421,28 @@ class _ProductListScreenState extends State<ProductListScreen> {
               // circles: {
               //   _currentCircle!,
               // },
-              onTap: (latLng) {
-                setState(() {
-                  _currentCenter = latLng;
-                  // _currentCircle = Circle(
-                  //   circleId: CircleId('radius'),
-                  //   center: _currentCenter,
-                  //   radius: _selectedRadius.toDouble(),
-                  //   strokeColor: kBackgroundColor,
-                  //   strokeWidth: 1,
-                  //   fillColor: kBackgroundColor.withOpacity(0.2),
-                  // );
-                });
+              // onTap: (latLng) {
+              //   setState(() {
+              //     _currentCenter = latLng;
+              //     // _currentCircle = Circle(
+              //     //   circleId: CircleId('radius'),
+              //     //   center: _currentCenter,
+              //     //   radius: _selectedRadius.toDouble(),
+              //     //   strokeColor: kBackgroundColor,
+              //     //   strokeWidth: 1,
+              //     //   fillColor: kBackgroundColor.withOpacity(0.2),
+              //     // );
+              //   });
 
-                if (_selectedView == 'map') {
-                  double mapZoomLevel = getZoomLevel(_selectedRadius);
+              //   if (_selectedView == 'map') {
+              //     double mapZoomLevel = getZoomLevel(_selectedRadius);
 
-                  googleMapsController
-                      .animateCamera(CameraUpdate.newCameraPosition(
-                    CameraPosition(target: _currentCenter, zoom: mapZoomLevel),
-                  ));
-                }
-              },
+              //     googleMapsController
+              //         .animateCamera(CameraUpdate.newCameraPosition(
+              //       CameraPosition(target: _currentCenter, zoom: mapZoomLevel),
+              //     ));
+              //   }
+              // },
               onCameraMove: (camPos) {
                 setState(() {
                   _currentCenter = camPos.target;
@@ -1700,6 +1691,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
           id: product.productid!,
           position: pos,
           icon: markerImage,
+          productId: product.productid!,
           onTap: () => onMarkerTapped(context, product),
         ),
       );
@@ -1721,16 +1713,54 @@ class _ProductListScreenState extends State<ProductListScreen> {
       _currentZoom = updatedZoom;
     }
 
-    final updatedMarkers = await MapHelper.getClusterMarkers(
+    List<Marker> updatedMarkers = await MapHelper.getClusterMarkers(
       _clusterManager,
       _currentZoom,
       _clusterColor,
       _clusterTextColor,
       80,
+      _onClusterTapped,
     );
 
-    _markers
-      ..clear()
-      ..addAll(updatedMarkers);
+    setState(() {
+      _markers
+        ..clear()
+        ..addAll(updatedMarkers);
+    });
+  }
+
+  _onClusterTapped(int clusterId, int pointSize) {
+    print('point size::::: $pointSize');
+    List<ProductModel> productList = List.from(_list);
+    List<String> productIds = [];
+    if (_clusterManager != null) {
+      final mapMarkers1 = _clusterManager!.children(clusterId);
+      if (mapMarkers1 != null && mapMarkers1.isNotEmpty) {
+        mapMarkers1.forEach((mapMarker1) {
+          if (mapMarker1.isCluster!) {
+            final mapMarkers2 = _clusterManager!.children(mapMarker1.clusterId);
+            if (mapMarkers2 != null && mapMarkers2.isNotEmpty) {
+              mapMarkers2.forEach((mapMarker2) {
+                if (!mapMarker2.isCluster!) {
+                  if (mapMarker2.productId != null) {
+                    print('m2 prod id::::: ${mapMarker2.productId}');
+                    if (!productIds.contains(mapMarker2.productId))
+                      productIds.add(mapMarker2.productId!);
+                  }
+                }
+              });
+            }
+          } else {
+            if (mapMarker1.productId != null) {
+              print('m1 prod id::::: ${mapMarker1.productId}');
+              final prod = productList
+                  .firstWhere((p) => p.productid == mapMarker1.productId);
+              if (!productIds.contains(mapMarker1.productId))
+                productIds.add(mapMarker1.productId!);
+            }
+          }
+        });
+      }
+    }
   }
 }

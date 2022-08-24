@@ -8,13 +8,17 @@ class MapMarker extends Clusterable {
   final String? productName;
   final LatLng position;
   Function()? onTap;
+  Function(int, int)? onClusterTap;
+  final String? productId;
   BitmapDescriptor icon;
   MapMarker({
     required this.id,
     required this.position,
     this.productName,
+    this.productId,
     this.icon = BitmapDescriptor.defaultMarker,
     this.onTap,
+    this.onClusterTap,
     isCluster = false,
     clusterId,
     pointsSize,
@@ -29,7 +33,11 @@ class MapMarker extends Clusterable {
           childMarkerId: childMarkerId,
         );
   Marker toMarker() => Marker(
-        onTap: onTap,
+        onTap: isCluster!
+            ? () => onClusterTap != null
+                ? onClusterTap!(clusterId ?? 0, pointsSize ?? 0)
+                : null
+            : onTap,
         markerId: MarkerId(id),
         position: LatLng(
           position.latitude,
