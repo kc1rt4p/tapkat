@@ -409,6 +409,10 @@ class _BarterTransactionsScreenState extends State<BarterTransactionsScreen> {
                                 MaterialPageRoute(
                                   builder: (context) => BarterScreen(
                                     barterRecord: barter,
+                                    showChatFirst: application
+                                        .unreadBarterMessages
+                                        .any((bm) =>
+                                            bm.barterId == barter.barterId),
                                   ),
                                 ),
                               );

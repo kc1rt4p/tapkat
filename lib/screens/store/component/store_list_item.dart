@@ -3,11 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:loading_indicator/loading_indicator.dart';
 import 'package:tapkat/models/store.dart';
+import 'package:tapkat/models/top_store.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/size_config.dart';
 
 class StoreListItem extends StatefulWidget {
-  final StoreModel store;
+  final TopStoreModel store;
   final Function()? onLikeTapped;
   final Function()? onTap;
   final bool? liked;
@@ -42,7 +43,7 @@ class _StoreListItemState extends State<StoreListItem> {
                           progressIndicatorBuilder: (context, url, progress) {
                             return Container(
                               height: SizeConfig.screenHeight * 0.1,
-                              width: SizeConfig.screenHeight * 0.12,
+                              width: SizeConfig.screenHeight * 0.14,
                               child: LoadingIndicator(
                                 indicatorType: Indicator.ballScale,
                                 colors: const [Colors.white],
@@ -53,7 +54,7 @@ class _StoreListItemState extends State<StoreListItem> {
                           imageUrl: widget.store.photo_url!,
                           imageBuilder: (context, imageProvider) => Container(
                             height: SizeConfig.screenHeight * 0.1,
-                            width: SizeConfig.screenHeight * 0.12,
+                            width: SizeConfig.screenHeight * 0.14,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.only(
                                 topLeft: Radius.circular(20.0),
@@ -85,7 +86,7 @@ class _StoreListItemState extends State<StoreListItem> {
                           // ),
                           errorWidget: (context, url, error) => Container(
                             height: SizeConfig.screenHeight * 0.1,
-                            width: SizeConfig.screenHeight * 0.12,
+                            width: SizeConfig.screenHeight * 0.14,
                             child: Icon(
                               Icons.error,
                               color: kBackgroundColor,
@@ -93,6 +94,8 @@ class _StoreListItemState extends State<StoreListItem> {
                           ),
                         )
                       : Container(
+                          height: SizeConfig.screenHeight * 0.1,
+                          width: SizeConfig.screenHeight * 0.14,
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.only(
                               topLeft: Radius.circular(20.0),
@@ -111,7 +114,7 @@ class _StoreListItemState extends State<StoreListItem> {
             ),
             Container(
               color: Colors.white,
-              width: SizeConfig.screenHeight * 0.12,
+              width: SizeConfig.screenHeight * 0.14,
               padding: EdgeInsets.all(3.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -126,39 +129,50 @@ class _StoreListItemState extends State<StoreListItem> {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  widget.store.rating != null
-                      ? Column(
-                          children: [
-                            SizedBox(height: SizeConfig.screenHeight * 0.009),
-                            Row(
-                              children: [
-                                RatingBar.builder(
-                                  ignoreGestures: true,
-                                  initialRating: widget.store.rating != null
-                                      ? widget.store.rating!.roundToDouble()
-                                      : 0,
-                                  minRating: 0,
-                                  direction: Axis.horizontal,
-                                  allowHalfRating: true,
-                                  itemCount: 5,
-                                  itemSize: 15,
-                                  tapOnlyMode: true,
-                                  itemPadding:
-                                      EdgeInsets.symmetric(horizontal: 4.0),
-                                  itemBuilder: (context, _) => Icon(
-                                    Icons.star,
-                                    color: Colors.amber,
-                                  ),
-                                  onRatingUpdate: (rating) {
-                                    //
-                                  },
-                                ),
-                                Text(widget.store.rating!.toStringAsFixed(1)),
-                              ],
-                            ),
-                          ],
-                        )
-                      : Container(),
+                  // widget.store.rating != null
+                  //     ? Column(
+                  //         children: [
+                  //           SizedBox(height: SizeConfig.screenHeight * 0.009),
+                  //           Row(
+                  //             children: [
+                  //               RatingBar.builder(
+                  //                 ignoreGestures: true,
+                  //                 initialRating: widget.store.rating != null
+                  //                     ? widget.store.rating!.roundToDouble()
+                  //                     : 0,
+                  //                 minRating: 0,
+                  //                 direction: Axis.horizontal,
+                  //                 allowHalfRating: true,
+                  //                 itemCount: 5,
+                  //                 itemSize: 10,
+                  //                 tapOnlyMode: true,
+                  //                 itemBuilder: (context, _) => Icon(
+                  //                   Icons.star,
+                  //                   color: Colors.amber,
+                  //                 ),
+                  //                 onRatingUpdate: (rating) {
+                  //                   //
+                  //                 },
+                  //               ),
+                  //               Text(widget.store.rating!.toStringAsFixed(1)),
+                  //             ],
+                  //           ),
+                  //         ],
+                  //       )
+                  //     : Container(),
+                  Visibility(
+                    visible: widget.store.distance != null,
+                    child: Center(
+                      child: Text(
+                        _getProductDistance(widget.store),
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: SizeConfig.textScaleFactor * 8,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -166,5 +180,16 @@ class _StoreListItemState extends State<StoreListItem> {
         ),
       ),
     );
+  }
+
+  String _getProductDistance(TopStoreModel store) {
+    if (store.distance == null) return '';
+    final distance = store.distance;
+    if (store.distance! > 1) return store.distance!.toStringAsFixed(1) + ' Km';
+
+    final meters = store.distance! * 1000;
+    if (meters < 100) return 'within 100m';
+    if (meters < 300) return 'within 300m';
+    return 'within 900m';
   }
 }

@@ -41,7 +41,6 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
             location: _location,
             itemCount: event.itemCount ?? 10,
           );
-          print('search result count: ${result.length}');
 
           emit(SearchSuccess(result));
         }
@@ -65,6 +64,7 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
             lastProductId: event.lastProductId,
             startAfterVal: event.startAfterVal,
             location: _location,
+            category: [event.category ?? ''],
           );
 
           emit(SearchNextProductsSuccess(list));

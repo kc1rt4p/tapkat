@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:mime_type/mime_type.dart';
+import 'package:tapkat/models/liked_store.dart';
 import 'package:tapkat/models/localization.dart';
 import 'package:tapkat/models/request/update_user.dart';
 import 'package:tapkat/models/request/user_review_request.dart';

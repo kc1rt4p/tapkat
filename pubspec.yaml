@@ -44,7 +44,7 @@ dependencies:
   google_maps_flutter: ^2.0.9
   google_maps_flutter_web: ^0.3.2+1
   google_sign_in: ^5.2.3
-  flutter_facebook_auth: ^4.4.0+1
+  flutter_facebook_auth: ^4.4.1
   image_picker: ^0.8.4+1
   intl: ^0.17.0
   json_path: ^0.3.0
@@ -100,7 +100,12 @@ dependencies:
   flutter_email_sender: ^5.1.0
   currency_text_input_formatter: ^2.1.5
   loading_indicator: ^3.0.0
-  restart_app: ^1.1.0
+  sticky_headers: ^0.2.0
+  gallery_saver: ^2.3.2
+  sticky_infinite_list: ^4.0.1
+  scroll_to_index: ^2.1.1
+  fluster: ^1.2.0
+  custom_marker: ^1.0.0
 
 dev_dependencies:
   build_runner: ^2.1.2

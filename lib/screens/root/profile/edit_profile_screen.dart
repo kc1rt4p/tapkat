@@ -300,10 +300,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       allowPhoto: true,
     );
 
-    if (selectedMedia != null &&
-        validateFileFormat(selectedMedia.storagePath, context)) {
+    if (selectedMedia != null) {
       setState(() {
-        _selectedMedia = selectedMedia;
+        _selectedMedia = selectedMedia.first;
       });
 
       _profileBloc.add(UpdateUserPhoto(_selectedMedia!));

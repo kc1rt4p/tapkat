@@ -18,7 +18,7 @@ import 'package:tapkat/models/product.dart';
 import 'package:tapkat/models/request/update_user.dart';
 import 'package:tapkat/models/user.dart';
 import 'package:tapkat/screens/product/bloc/product_bloc.dart';
-import 'package:tapkat/screens/product/product_add_screen.dart';
+import 'package:tapkat/screens/product/product_add-edit_screen.dart';
 import 'package:tapkat/screens/product/product_details_screen.dart';
 import 'package:tapkat/screens/reviews/user_review_list_screen.dart';
 import 'package:tapkat/screens/root/profile/bloc/profile_bloc.dart';
@@ -85,7 +85,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     SizeConfig().init(context);
     return ProgressHUD(
-      barrierEnabled: false,
       indicatorColor: kBackgroundColor,
       backgroundColor: Colors.white,
       child: MultiBlocListener(
@@ -912,15 +911,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   _buildInfoItem(
                     center: true,
-                    label: 'Instagram',
+                    label: 'Google',
                     controller: TextEditingController(
-                        text: _userModel!.ig_profile ?? '-'),
+                        text: _userModel!.yt_profile ?? '-'),
                   ),
                   _buildInfoItem(
                     center: true,
-                    label: 'Youtube',
+                    label: 'Instagram',
                     controller: TextEditingController(
-                        text: _userModel!.yt_profile ?? '-'),
+                        text: _userModel!.ig_profile ?? '-'),
                   ),
                   _buildInfoItem(
                     center: true,

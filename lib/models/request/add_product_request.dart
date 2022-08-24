@@ -26,6 +26,8 @@ class ProductRequestModel {
   num? rating;
   List<String>? tradefor;
   bool? free;
+  int stock_count;
+  bool track_stock;
 
   ProductRequestModel({
     this.productid,
@@ -51,6 +53,8 @@ class ProductRequestModel {
     this.tradefor,
     this.free,
     this.meet_location,
+    this.stock_count = 0,
+    this.track_stock = false,
   });
 
   factory ProductRequestModel.fromProduct(ProductModel product) {
@@ -78,6 +82,8 @@ class ProductRequestModel {
       tradefor: product.tradeFor ?? [],
       free: product.free ?? null,
       meet_location: product.meet_location ?? null,
+      stock_count: product.stock_count,
+      track_stock: product.track_stock,
     );
   }
 
@@ -107,6 +113,8 @@ class ProductRequestModel {
       'meet_location': this.meet_location != null
           ? this.meet_location!.map((item) => item.toJson()).toList()
           : [],
+      'stock_count': this.stock_count,
+      'track_stock': this.track_stock,
     };
 
     if (updating) {

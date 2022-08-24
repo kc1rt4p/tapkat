@@ -39,6 +39,7 @@ class _CustomButtonState extends State<CustomButton> {
         width: widget.width ?? double.infinity,
         padding: EdgeInsets.symmetric(
           vertical: 8.0,
+          horizontal: 10.0,
         ),
         decoration: BoxDecoration(
           color: widget.enabled ? widget.bgColor : Colors.grey.shade400,
@@ -48,26 +49,29 @@ class _CustomButtonState extends State<CustomButton> {
           ),
         ),
         child: Center(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              widget.icon != null
-                  ? Row(
-                      children: [
-                        widget.icon!,
-                        SizedBox(width: 10.0),
-                      ],
-                    )
-                  : Container(),
-              Text(
-                widget.label,
-                style: TextStyle(
-                  color: widget.textColor,
-                  fontSize: widget.fontSize ?? SizeConfig.textScaleFactor * 14,
-                  fontWeight: FontWeight.bold,
+          child: FittedBox(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                widget.icon != null
+                    ? Row(
+                        children: [
+                          widget.icon!,
+                          SizedBox(width: 10.0),
+                        ],
+                      )
+                    : Container(),
+                Text(
+                  widget.label,
+                  style: TextStyle(
+                    color: widget.textColor,
+                    fontSize:
+                        widget.fontSize ?? SizeConfig.textScaleFactor * 14,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

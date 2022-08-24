@@ -30,7 +30,7 @@ class LoadedTrendingList extends HomeState {
 }
 
 class LoadTopStoresSuccess extends HomeState {
-  final List<StoreModel> topStoreItems;
+  final List<TopStoreModel> topStoreItems;
 
   LoadTopStoresSuccess(this.topStoreItems);
 }

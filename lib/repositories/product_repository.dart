@@ -423,7 +423,14 @@ class ProductRepository {
     };
   }
 
-  Future<bool> updateProduct(ProductRequestModel product) async {
+  Future<bool> updateProduct(ProductRequestModel product,
+      {bool dealDone = false}) async {
+    var body = product.toJson();
+    if (dealDone) {
+      body.addAll({
+        'deal_done': dealDone,
+      });
+    }
     final response = await _apiService.post(
       url: 'products/update/${product.productid}',
       body: {

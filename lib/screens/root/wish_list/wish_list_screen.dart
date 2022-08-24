@@ -5,10 +5,12 @@ import 'package:flutter_progress_hud/flutter_progress_hud.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:tapkat/models/address.dart';
+import 'package:tapkat/models/liked_store.dart';
 import 'package:tapkat/models/media_primary_model.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/models/store.dart';
 import 'package:tapkat/models/store_like.dart';
+import 'package:tapkat/models/top_store.dart';
 import 'package:tapkat/screens/product/bloc/product_bloc.dart';
 import 'package:tapkat/screens/product/product_details_screen.dart';
 import 'package:tapkat/screens/root/profile/bloc/profile_bloc.dart';
@@ -75,7 +77,6 @@ class _WishListScreenState extends State<WishListScreen> {
   Widget build(BuildContext context) {
     SizeConfig().init(context);
     return ProgressHUD(
-      barrierEnabled: false,
       indicatorColor: kBackgroundColor,
       backgroundColor: Colors.white,
       child: MultiBlocListener(
@@ -404,7 +405,7 @@ class _WishListScreenState extends State<WishListScreen> {
         itemBuilder: (context, store, index) {
           return FittedBox(
             child: StoreListItem(
-              StoreModel(
+              TopStoreModel(
                 display_name: store.username,
                 userid: store.userid,
                 photo_url: store.user_image_url,

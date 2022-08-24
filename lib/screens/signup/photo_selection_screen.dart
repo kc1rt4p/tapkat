@@ -43,7 +43,6 @@ class _SignUpPhotoSelectionScreenState
       body: ProgressHUD(
         indicatorColor: kBackgroundColor,
         backgroundColor: Colors.white,
-        barrierEnabled: false,
         child: BlocListener(
           bloc: _authBloc,
           listener: (context, state) {
@@ -243,10 +242,9 @@ class _SignUpPhotoSelectionScreenState
       allowPhoto: true,
     );
 
-    if (selectedMedia != null &&
-        validateFileFormat(selectedMedia.storagePath, context)) {
+    if (selectedMedia != null) {
       setState(() {
-        _selectedMedia = selectedMedia;
+        _selectedMedia = selectedMedia.first;
       });
     }
   }

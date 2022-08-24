@@ -1,7 +1,11 @@
+import 'dart:convert';
+
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:flutter_logs/flutter_logs.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:tapkat/models/notification.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/models/request/product_review_resuest.dart';
@@ -13,6 +17,7 @@ import 'package:tapkat/repositories/product_repository.dart';
 import 'package:tapkat/repositories/user_repository.dart';
 import 'package:tapkat/schemas/index.dart';
 import 'package:tapkat/services/auth_service.dart';
+import 'package:tapkat/services/http/api_service.dart';
 import 'package:tapkat/utilities/upload_media.dart';
 import 'package:tapkat/utilities/application.dart' as application;
 
@@ -25,8 +30,10 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     final _productRepo = ProductRepository();
     final _userRepo = UserRepository();
     final _alertRepo = AlertRepository();
+    final _apiService = ApiService();
 
     on<ProfileEvent>((event, emit) async {
+      print('profile bloc current event:: $event');
       emit(ProfileLoading());
 
       try {
@@ -147,6 +154,46 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
         if (event is GetNextNotifications) {
           final list = await _alertRepo.getNotifications(event.startAfterVal);
           emit(GetNextNotificationsSuccess(list));
+        }
+
+        if (event is LinkAccToSocialMedia) {
+          if (event.platform == 'facebook') {
+            final existingToken = await FacebookAuth.instance.accessToken;
+            if (existingToken != null) await FacebookAuth.instance.logOut();
+
+            final LoginResult loginResult = await FacebookAuth.instance.login(
+              permissions: [
+                'email',
+                'public_profile',
+                'user_friends',
+                'user_link',
+              ],
+              loginBehavior: LoginBehavior.nativeWithFallback,
+            );
+            if (loginResult.status == LoginStatus.success) {
+              final OAuthCredential facebookAuthCredential =
+                  FacebookAuthProvider.credential(
+                      loginResult.accessToken!.token);
+              final response = await _apiService.get(
+                  url:
+                      'https://graph.facebook.com/v2.12/me?fields=name,first_name,last_name,email&access_token=${facebookAuthCredential.accessToken}');
+              var _json = json.decode(response.data);
+              emit(LinkAccToSocialMediaSuccess(event.platform, _json['email']));
+            } else {
+              ProfileError(
+                  'Unable to link account with ${event.platform.toUpperCase()}');
+            }
+          } else if (event.platform == 'google') {
+            final auth = GoogleSignIn().currentUser == null
+                ? await GoogleSignIn().signIn()
+                : GoogleSignIn().currentUser;
+            if (auth != null) {
+              emit(LinkAccToSocialMediaSuccess(event.platform, auth.email));
+            } else {
+              ProfileError(
+                  'Unable to link account with ${event.platform.toUpperCase()}');
+            }
+          }
         }
       } catch (e) {
         // FlutterLogs.logToFile(

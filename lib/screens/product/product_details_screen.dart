@@ -28,6 +28,7 @@ import 'package:tapkat/repositories/barter_repository.dart';
 import 'package:tapkat/schemas/user_likes_record.dart';
 import 'package:tapkat/screens/barter/barter_screen.dart';
 import 'package:tapkat/screens/product/bloc/product_bloc.dart';
+import 'package:tapkat/screens/product/product_add-edit_screen.dart';
 import 'package:tapkat/screens/product/product_edit_screen.dart';
 import 'package:tapkat/screens/product/product_ratings_screen.dart';
 import 'package:tapkat/screens/store/store_screen.dart';
@@ -77,6 +78,8 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   final _photoViewController = PageController();
   final oCcy = new NumberFormat("#,##0.00", "en_US");
 
+  bool descViewAll = false;
+
   @override
   void initState() {
     application.currentScreen = 'Product Details Screen';
@@ -103,7 +106,6 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
       body: ProgressHUD(
         indicatorColor: kBackgroundColor,
         backgroundColor: Colors.white,
-        barrierEnabled: false,
         child: MultiBlocListener(
           listeners: [
             BlocListener(
@@ -860,13 +862,65 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                   ),
                                                 ),
                                                 Container(
-                                                  child: Text(_product !=
-                                                              null &&
-                                                          _product!
-                                                                  .productdesc !=
-                                                              null
-                                                      ? _product!.productdesc!
-                                                      : '0'),
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Text(_product != null &&
+                                                              _product!
+                                                                      .productdesc !=
+                                                                  null
+                                                          ? _getProductDesc()
+                                                          : ''),
+                                                      Visibility(
+                                                        visible: _product !=
+                                                                null &&
+                                                            _product!
+                                                                    .productdesc !=
+                                                                null &&
+                                                            _product!
+                                                                    .productdesc!
+                                                                    .length >
+                                                                200,
+                                                        child: Align(
+                                                          alignment: Alignment
+                                                              .centerRight,
+                                                          child: TextButton(
+                                                            child: Text(
+                                                              descViewAll
+                                                                  ? 'View less'
+                                                                  : 'View more',
+                                                              style: TextStyle(
+                                                                decoration:
+                                                                    TextDecoration
+                                                                        .underline,
+                                                                color:
+                                                                    kBackgroundColor,
+                                                                fontSize: 10.0,
+                                                              ),
+                                                            ),
+                                                            style: TextButton
+                                                                .styleFrom(
+                                                              padding:
+                                                                  EdgeInsets
+                                                                      .zero,
+                                                              minimumSize:
+                                                                  Size(50, 30),
+                                                              tapTargetSize:
+                                                                  MaterialTapTargetSize
+                                                                      .shrinkWrap,
+                                                            ),
+                                                            onPressed: () =>
+                                                                setState(() {
+                                                              descViewAll =
+                                                                  !descViewAll;
+                                                            }),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
                                                 ),
                                               ],
                                             ),
@@ -976,31 +1030,36 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                                     mLoc.address !=
                                                                     null)
                                                                 .toList()
-                                                                .map((loc) {
-                                                              return Container(
-                                                                margin: EdgeInsets
-                                                                    .only(
-                                                                        bottom:
-                                                                            5.0),
-                                                                child: Row(
-                                                                  children: [
-                                                                    Icon(
-                                                                        Icons
-                                                                            .location_pin,
-                                                                        size:
-                                                                            15.0),
-                                                                    SizedBox(
-                                                                        width:
-                                                                            8.0),
-                                                                    Text(
+                                                                .map(
+                                                              (loc) {
+                                                                return Container(
+                                                                  margin: EdgeInsets
+                                                                      .only(
+                                                                          bottom:
+                                                                              5.0),
+                                                                  child: Row(
+                                                                    children: [
+                                                                      Icon(
+                                                                          Icons
+                                                                              .location_pin,
+                                                                          size:
+                                                                              15.0),
+                                                                      SizedBox(
+                                                                          width:
+                                                                              8.0),
+                                                                      Text(
                                                                         '${loc.address}, ${loc.city}, ${loc.country}',
-                                                                        style: TextStyle(
-                                                                            fontSize:
-                                                                                SizeConfig.textScaleFactor * 12)),
-                                                                  ],
-                                                                ),
-                                                              );
-                                                            }).toList(),
+                                                                        style:
+                                                                            TextStyle(
+                                                                          fontSize:
+                                                                              SizeConfig.textScaleFactor * 12,
+                                                                        ),
+                                                                      ),
+                                                                    ],
+                                                                  ),
+                                                                );
+                                                              },
+                                                            ).toList(),
                                                           ),
                                                         ],
                                                       ),
@@ -1009,6 +1068,127 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                                   ],
                                                 )
                                               : Text(''),
+
+                                          Visibility(
+                                            visible: _product!.track_stock,
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Padding(
+                                                  padding: EdgeInsets.only(
+                                                      bottom: 10.0),
+                                                  child: Divider(
+                                                    thickness: 0.6,
+                                                    color: kBackgroundColor,
+                                                  ),
+                                                ),
+                                                Container(
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Row(
+                                                        children: [
+                                                          Expanded(
+                                                            child: Text(
+                                                              'Quantity',
+                                                              style: Style
+                                                                  .subtitle2
+                                                                  .copyWith(
+                                                                color:
+                                                                    kBackgroundColor,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w600,
+                                                                fontSize: SizeConfig
+                                                                        .textScaleFactor *
+                                                                    14,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                          Text(
+                                                            _product!
+                                                                .stock_count
+                                                                .toString(),
+                                                            style: Style
+                                                                .subtitle2
+                                                                .copyWith(
+                                                              color:
+                                                                  kBackgroundColor,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w600,
+                                                              fontSize: SizeConfig
+                                                                      .textScaleFactor *
+                                                                  14,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                Padding(
+                                                  padding: EdgeInsets.only(
+                                                      bottom: 10.0),
+                                                  child: Divider(
+                                                    thickness: 0.6,
+                                                    color: kBackgroundColor,
+                                                  ),
+                                                ),
+                                                Container(
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Row(
+                                                        children: [
+                                                          Expanded(
+                                                            child: Text(
+                                                              'No. of times dealt',
+                                                              style: Style
+                                                                  .subtitle2
+                                                                  .copyWith(
+                                                                color:
+                                                                    kBackgroundColor,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w600,
+                                                                fontSize: SizeConfig
+                                                                        .textScaleFactor *
+                                                                    14,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                          Text(
+                                                            _product!.deal_count
+                                                                .toString(),
+                                                            style: Style
+                                                                .subtitle2
+                                                                .copyWith(
+                                                              color:
+                                                                  kBackgroundColor,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w600,
+                                                              fontSize: SizeConfig
+                                                                      .textScaleFactor *
+                                                                  14,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                SizedBox(height: 16.0),
+                                              ],
+                                            ),
+                                          ),
+
                                           _product != null
                                               ? Text(
                                                   'Last updated ${timeago.format(_product!.updated_time ?? DateTime.now())}.',
@@ -1205,6 +1385,20 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
     );
   }
 
+  String _getProductDesc() {
+    if (_product == null) return 'No description';
+    if (_product!.productdesc == null) return 'No description';
+    final desc = _product!.productdesc!;
+    if (_product!.productdesc!.length > 200) {
+      if (descViewAll) {
+        return desc;
+      } else {
+        return desc.substring(0, 200) + '...';
+      }
+    }
+    return desc;
+  }
+
   String _getProductDistance(ProductModel product) {
     if (product.distance == null) return '';
     final distance = product.distance;
@@ -1244,6 +1438,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
             ),
             backgroundColor: Colors.white,
             child: Container(
+              height: SizeConfig.screenHeight * 0.7,
               child: Column(
                 children: [
                   Container(
@@ -1411,7 +1606,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
     await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ProductEditScreen(product: _product!),
+        builder: (context) => ProductAddEditScreen(product: _product!),
       ),
     );
     _productBloc.add(GetProductDetails(widget.productId));

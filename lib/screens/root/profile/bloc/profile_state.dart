@@ -23,6 +23,13 @@ class ProfileScreenInitialized extends ProfileState {
   });
 }
 
+class LinkAccToSocialMediaSuccess extends ProfileState {
+  final String platform;
+  final String email;
+
+  LinkAccToSocialMediaSuccess(this.platform, this.email);
+}
+
 class UpdatePasswordSuccess extends ProfileState {}
 
 class ProfileLoading extends ProfileState {}

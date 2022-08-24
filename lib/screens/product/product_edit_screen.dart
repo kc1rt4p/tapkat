@@ -942,10 +942,9 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
       allowPhoto: true,
     );
 
-    if (selectedMedia != null &&
-        validateFileFormat(selectedMedia.storagePath, context)) {
+    if (selectedMedia != null) {
       showImageError = false;
-      _productBloc.add(AddProductImage(_product.productid!, [selectedMedia]));
+      _productBloc.add(AddProductImage(_product.productid!, selectedMedia));
     }
   }
 

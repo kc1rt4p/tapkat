@@ -30,6 +30,7 @@ import 'package:tapkat/widgets/barter_list_item.dart';
 import 'package:tapkat/widgets/custom_app_bar.dart';
 import 'package:tapkat/widgets/custom_search_bar.dart';
 import 'package:tapkat/widgets/tapkat_map.dart';
+import 'package:toggle_switch/toggle_switch.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:label_marker/label_marker.dart';
 import 'package:tapkat/utilities/application.dart' as application;
@@ -59,6 +60,8 @@ class _StoreScreenState extends State<StoreScreen> {
   String storeOwnerName = '';
   UserModel? _storeOwner;
 
+  String _selectedView = 'grid';
+
   ProductModel? lastProduct;
 
   final _refreshController = RefreshController();
@@ -68,8 +71,6 @@ class _StoreScreenState extends State<StoreScreen> {
 
   LatLng? googleMapsCenter;
   late GoogleMapController googleMapsController;
-
-  String _selectedView = 'grid';
 
   bool _isFollowing = false;
 
@@ -141,6 +142,8 @@ class _StoreScreenState extends State<StoreScreen> {
                       );
                     }
                   });
+                } else {
+                  _pagingController.appendLastPage([]);
                 }
               }
 
@@ -432,22 +435,28 @@ class _StoreScreenState extends State<StoreScreen> {
                                         ],
                                       ),
                                     ),
-                                    _buildInfoItem(
-                                      label: 'Location',
-                                      controller: TextEditingController(
-                                          text: (_storeOwner!.address != null &&
-                                                  _storeOwner!.city != null &&
-                                                  _storeOwner!.country != null)
-                                              ? (_storeOwner!.address ?? '') +
-                                                  ', ' +
-                                                  (_storeOwner!.city ?? '') +
-                                                  ', ' +
-                                                  (_storeOwner!.country ?? '')
-                                              : ''),
-                                      suffix: Icon(
-                                        FontAwesomeIcons.mapMarked,
-                                        color: kBackgroundColor,
-                                        size: 12.0,
+                                    InkWell(
+                                      onTap: () => _onMapViewTapped(),
+                                      child: _buildInfoItem(
+                                        label: 'Location',
+                                        underline: true,
+                                        controller: TextEditingController(
+                                            text: (_storeOwner!.address !=
+                                                        null &&
+                                                    _storeOwner!.city != null &&
+                                                    _storeOwner!.country !=
+                                                        null)
+                                                ? (_storeOwner!.address ?? '') +
+                                                    ', ' +
+                                                    (_storeOwner!.city ?? '') +
+                                                    ', ' +
+                                                    (_storeOwner!.country ?? '')
+                                                : ''),
+                                        suffix: Icon(
+                                          FontAwesomeIcons.mapMarked,
+                                          color: kBackgroundColor,
+                                          size: 12.0,
+                                        ),
                                       ),
                                     ),
                                     SizedBox(height: 8.0),
@@ -805,6 +814,7 @@ class _StoreScreenState extends State<StoreScreen> {
     required String label,
     required TextEditingController controller,
     Widget? suffix,
+    bool underline = false,
   }) {
     return Container(
       constraints: BoxConstraints(
@@ -826,8 +836,10 @@ class _StoreScreenState extends State<StoreScreen> {
                 controller.text,
                 textAlign: TextAlign.right,
                 style: Style.fieldText.copyWith(
-                    fontSize: SizeConfig.textScaleFactor * 11,
-                    overflow: TextOverflow.ellipsis),
+                  fontSize: SizeConfig.textScaleFactor * 11,
+                  overflow: TextOverflow.ellipsis,
+                  decoration: underline ? TextDecoration.underline : null,
+                ),
               ),
             ),
           ),
@@ -1104,5 +1116,86 @@ class _StoreScreenState extends State<StoreScreen> {
         );
       },
     );
+  }
+
+  _onMapViewTapped() {
+    showGeneralDialog(
+        context: context,
+        pageBuilder: (context, _, __) {
+          return Dialog(
+            insetPadding: EdgeInsets.symmetric(
+              horizontal: 10.0,
+              vertical: 30.0,
+            ),
+            backgroundColor: Colors.white,
+            child: Container(
+              height: SizeConfig.screenHeight * 0.7,
+              child: Column(
+                children: [
+                  Container(
+                    padding: EdgeInsets.fromLTRB(10.0, 5.0, 5.0, 5.0),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.map,
+                          color: kBackgroundColor,
+                        ),
+                        SizedBox(width: 16.0),
+                        Text(
+                          _storeOwner!.display_name ?? '',
+                          style: TextStyle(
+                            color: kBackgroundColor,
+                          ),
+                        ),
+                        Spacer(),
+                        InkWell(
+                          onTap: () => Navigator.pop(context, false),
+                          child: Container(
+                              padding: EdgeInsets.all(8.0),
+                              child: Icon(Icons.close)),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: TapkatGoogleMap(
+                      showLocation: true,
+                      initialZoom: 14,
+                      onCameraIdle: (latLng) => googleMapsCenter = latLng,
+                      initialLocation: LatLng(
+                        _storeOwner!.location != null &&
+                                _storeOwner!.location != null
+                            ? _storeOwner!.location!.latitude!.toDouble()
+                            : 0.00,
+                        _storeOwner!.location != null &&
+                                _storeOwner!.location != null
+                            ? _storeOwner!.location!.longitude!.toDouble()
+                            : 0.00,
+                      ),
+                      onMapCreated: (controller) {
+                        //
+                      },
+                      markers: {
+                        Marker(
+                          markerId: MarkerId(_storeOwner!.userid!),
+                          position: LatLng(
+                            _storeOwner!.location != null &&
+                                    _storeOwner!.location != null
+                                ? _storeOwner!.location!.latitude!.toDouble()
+                                : 0.00,
+                            _storeOwner!.location != null &&
+                                    _storeOwner!.location != null
+                                ? _storeOwner!.location!.longitude!.toDouble()
+                                : 0.00,
+                          ),
+                        ),
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        });
   }
 }

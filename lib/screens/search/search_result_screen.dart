@@ -22,6 +22,7 @@ import 'package:tapkat/utilities/constants.dart';
 import 'package:tapkat/utilities/dialog_message.dart';
 import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/utilities/style.dart';
+import 'package:tapkat/utilities/utilities.dart';
 import 'package:tapkat/widgets/barter_list_item.dart';
 import 'package:tapkat/widgets/custom_app_bar.dart';
 import 'package:tapkat/widgets/custom_button.dart';
@@ -166,19 +167,24 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
       body: ProgressHUD(
         indicatorColor: kBackgroundColor,
         backgroundColor: Colors.white,
-        barrierEnabled: false,
         child: MultiBlocListener(
           listeners: [
             BlocListener(
               bloc: _homeBloc,
-              listener: (context, state) {
+              listener: (context, state) async {
                 if (state is BarterDoesNotExist) {
+                  final product = state.product1;
+                  final product2 = state.product2;
+                  final result =
+                      await onQuickBarter(context, product, product2);
+                  if (result == null) return;
                   Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => BarterScreen(
-                        product: state.product1,
-                        initialOffer: state.product2,
+                        product: product,
+                        initialOffer: product2,
+                        quickBarter: result ? true : false,
                       ),
                     ),
                   );
@@ -1270,7 +1276,6 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
   String _displayRadius() {
     final radius = _selectedRadius;
     final ave = ((radius / 1000) * 2).round() / 2;
-    print('X---> $ave');
     return '${ave.toStringAsFixed(2)} km';
   }
 
@@ -1662,7 +1667,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                         },
                       ),
                     ),
-                onAccept: (ProductModel product2) {
+                onAccept: (ProductModel product2) async {
                   if (product.userid != application.currentUser!.uid &&
                       product.status != 'completed' &&
                       product2.status != 'completed') {

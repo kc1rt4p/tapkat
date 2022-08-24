@@ -2,6 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_logs/flutter_logs.dart';
+import 'package:tapkat/models/liked_store.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/models/store.dart';
 import 'package:tapkat/models/store_like.dart';

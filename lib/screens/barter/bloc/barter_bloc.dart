@@ -24,7 +24,6 @@ part 'barter_event.dart';
 part 'barter_state.dart';
 
 class BarterBloc extends Bloc<BarterEvent, BarterState> {
-  List<ChatMessageModel> unreadMessages = [];
   BarterBloc() : super(BarterInitial()) {
     final _productRepository = ProductRepository();
     final _barterRepository = BarterRepository();
@@ -91,6 +90,7 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
                     productName: event.barterData.u2P1Name,
                     price: event.barterData.u2P1Price,
                     imgUrl: event.barterData.u2P1Image,
+                    barterid: event.barterData.barterId,
                   )
                 ]);
                 barterProducts = await _barterRepository
@@ -139,27 +139,6 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
           } else {
             final product =
                 await _productRepository.getProduct(event.barterData.u2P1Id!);
-
-            final barterProducts = await _barterRepository
-                .getBarterProducts(_barterRecord.barterId!);
-
-            if (barterProducts.isNotEmpty) {
-              List<String> toDeleteIds = [];
-              await Future.forEach(
-                  barterProducts
-                      .where((bProd) => !bProd.productId!.contains('cash')),
-                  (BarterProductModel bProd) async {
-                final prod =
-                    await _productRepository.getProduct(bProd.productId!);
-                if (prod == null ||
-                    (prod.status == 'completed' &&
-                        _barterRecord!.dealStatus != 'completed')) {
-                  toDeleteIds.add(bProd.productId!);
-                }
-              });
-              await _barterRepository.removeBarterProduct(
-                  _barterRecord.barterId!, toDeleteIds);
-            }
 
             print('remote product::::: ${product!.toJson()}');
             if (_barterRecord.dealStatus == 'new') {
@@ -305,7 +284,7 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
         }
 
         if (event is CounterOffer) {
-          final _barterRecord =
+          BarterRecordModel? _barterRecord =
               await _barterRepository.getBarterRecord(event.barterId);
 
           if (_barterRecord != null) {
@@ -352,6 +331,28 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
                 barterId: _barterRecord.barterId!,
               );
 
+              List<BarterProductModel> barterProducts =
+                  await _barterRepository.getBarterProducts(event.barterId);
+              barterProducts = barterProducts
+                  .where((bProd) => !bProd.productId!.contains('cash'))
+                  .toList();
+              if (barterProducts.isNotEmpty) {
+                if (!barterProducts.contains((BarterProductModel bProd) =>
+                    bProd.productId == _barterRecord.u2P1Id)) {
+                  final bProd = barterProducts.firstWhere(
+                      (bProd) =>
+                          !bProd.productId!.contains('cash') &&
+                          bProd.userId != application.currentUser!.uid,
+                      orElse: () => barterProducts.first);
+                  _barterRecord.u2P1Id = bProd.productId;
+                  _barterRecord.u2P1Image = bProd.imgUrl;
+                  _barterRecord.u2P1Name = bProd.productName;
+                  _barterRecord.u2P1Price = (bProd.price ?? 0).toDouble();
+                  await _barterRepository.updateBarter(
+                      event.barterId, _barterRecord.toJson());
+                }
+              }
+
               emit(UpdateBarterStatusSuccess());
             } else
               emit(BarterError('unable to counter offer'));
@@ -361,7 +362,7 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
         if (event is UpdateBarterStatus) {
           await _barterRepository.updateBarterStatus(
               event.barterId, event.status);
-          final barterRecord =
+          BarterRecordModel? barterRecord =
               await _barterRepository.getBarterRecord(event.barterId);
           if (barterRecord != null) {
             // if (['accepted', 'rejected', 'completed']
@@ -486,6 +487,7 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
               price: event.amount,
               currency: event.currency,
               userId: event.userId,
+              barterid: event.barterId,
             ),
           );
 
@@ -498,6 +500,7 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
             event.barterId,
             BarterProductModel(
               productId: event.productId,
+              barterid: event.barterId,
             ),
           );
 
@@ -661,6 +664,7 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
           final success = await _barterRepository.removeBarterProduct(
               event.barterId,
               event.products.map((prod) => prod.productId!).toList());
+
           if (success) {
             final _barterRecord =
                 await _barterRepository.getBarterRecord(event.barterId);
@@ -720,6 +724,8 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
       // }
     });
   }
+
+  List<ChatMessageModel> unreadMessages = [];
 }
 
 final home = {
