@@ -38,12 +38,14 @@ class SearchResultScreen extends StatefulWidget {
   final String? category;
   final bool mapFirst;
   final String userid;
+  final double initialRadius;
   const SearchResultScreen({
     Key? key,
     required this.keyword,
     this.category,
     this.mapFirst = false,
     required this.userid,
+    this.initialRadius = 5000,
   }) : super(key: key);
 
   @override
@@ -114,6 +116,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
     _keyWordTextController.text = widget.keyword;
     _productBloc.add(InitializeAddUpdateProduct());
     mapZoomLevel = getZoomLevel(_selectedRadius);
+    _selectedRadius = widget.initialRadius;
 
     super.initState();
 

@@ -142,7 +142,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 _lastCategoryProduct = null;
 
                 if (state.searchResults.isNotEmpty) {
-                  _selectedCategoryProducts.addAll(state.searchResults);
+                  setState(() {
+                    _selectedCategoryProducts = state.searchResults;
+                  });
                   if (state.searchResults.length == productCount) {
                     _categoryPagingController.appendPage(
                         state.searchResults, currentPage + 1);
@@ -160,15 +162,12 @@ class _HomeScreenState extends State<HomeScreen> {
                           lastProductId: _lastCategoryProduct!.productid!,
                           startAfterVal: _lastCategoryProduct!.productname,
                           category: _selectedCategory!['code'],
-                          sortBy: 'name',
+                          sortBy: 'distance',
                           distance: 20,
                         ),
                       );
                     }
                   });
-                } else {
-                  _selectedCategoryProducts.clear();
-                  _categoryPagingController.appendLastPage([]);
                 }
               }
             },
@@ -194,7 +193,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   _searchBloc.add(InitializeSearch(
                     keyword: '',
                     category: [_selectedCategory!['code'] as String],
-                    sortBy: 'name',
+                    sortBy: 'distance',
                     distance: 20000,
                     itemCount: 10,
                   ));
@@ -664,7 +663,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     child: InkWell(
                                       onTap: () {
                                         final index = cat.key;
-
+                                        _categoryPagingController.refresh();
                                         setState(() {
                                           _categories.removeAt(index);
                                           _categories.insert(0, cat.value);
@@ -673,7 +672,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                         _catScrollController.scrollToIndex(0,
                                             preferPosition:
                                                 AutoScrollPosition.begin);
-                                        _categoryPagingController.refresh();
                                         _searchBloc.add(
                                           InitializeSearch(
                                             keyword: '',
@@ -754,6 +752,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                               keyword: '',
                                               category:
                                                   _selectedCategory!['code'],
+                                              initialRadius: 20000,
                                             ),
                                           ),
                                         );
@@ -850,7 +849,17 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                       SliverToBoxAdapter(
-                        child: SizedBox(height: 20.0),
+                        child: SizedBox(
+                            height: _loadingCatProducts ||
+                                    _categoryPagingController.itemList ==
+                                        null ||
+                                    (_categoryPagingController.itemList !=
+                                            null &&
+                                        _categoryPagingController
+                                                .itemList!.length <
+                                            10)
+                                ? SizeConfig.screenHeight * 0.5
+                                : 20.0),
                       ),
                     ],
                   ),
@@ -904,6 +913,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               panel: Container(
+                height: SizeConfig.screenHeight * 0.5,
                 color: Colors.white,
                 padding: EdgeInsets.symmetric(
                   horizontal: 20.0,

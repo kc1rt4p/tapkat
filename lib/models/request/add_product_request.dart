@@ -87,7 +87,7 @@ class ProductRequestModel {
     );
   }
 
-  Map<String, dynamic> toJson({bool updating = false}) {
+  Map<String, dynamic> toJson({bool updating = false, bool deal_done = false}) {
     Map<String, dynamic> map = {
       'userid': this.userid ?? '',
       'productname': this.productname ?? '',
@@ -120,6 +120,12 @@ class ProductRequestModel {
     if (updating) {
       map.addAll({
         'productid': this.productid,
+      });
+    }
+
+    if (deal_done) {
+      map.addAll({
+        'deal_done': true,
       });
     }
 

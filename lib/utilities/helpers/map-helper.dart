@@ -127,8 +127,8 @@ class MapHelper {
     return Fluster<MapMarker>(
       minZoom: minZoom,
       maxZoom: maxZoom,
-      radius: 100,
-      extent: 1024,
+      radius: 150,
+      extent: 2048,
       nodeSize: 64,
       points: markers,
       createCluster: (
@@ -199,25 +199,26 @@ class MapHelper {
     painter.paint(canvas, const Offset(20.0, 10.0));
     int textWidth = painter.width.toInt();
     int textHeight = painter.height.toInt();
-    canvas.drawRRect(
-        RRect.fromLTRBAndCorners(0, 0, textWidth + 40, textHeight + 20,
-            bottomLeft: const Radius.circular(10),
-            bottomRight: const Radius.circular(10),
-            topLeft: const Radius.circular(10),
-            topRight: const Radius.circular(10)),
-        Paint()..color = Colors.white);
-    canvas.drawRRect(
-        RRect.fromLTRBAndCorners(0, 0, textWidth + 35, textHeight + 15,
-            bottomLeft: const Radius.circular(10),
-            bottomRight: const Radius.circular(10),
-            topLeft: const Radius.circular(10),
-            topRight: const Radius.circular(10)),
-        Paint()..color = kBackgroundColor);
+
+    final rrectBorder = RRect.fromRectAndRadius(
+        Offset(0, 2) & Size(textWidth + 38, textHeight + 18),
+        Radius.circular(10));
+    final rrectShadow = RRect.fromRectAndRadius(
+        Offset.zero & Size(textWidth + 40, textHeight + 20),
+        Radius.circular(10));
     var arrowPath = Path();
-    arrowPath.moveTo((textWidth + 40) / 2 - 15, textHeight + 20);
+    arrowPath.moveTo((textWidth + 40) / 2 - 15, textHeight + 15);
     arrowPath.lineTo((textWidth + 40) / 2, textHeight + 40);
-    arrowPath.lineTo((textWidth + 40) / 2 + 15, textHeight + 20);
+    arrowPath.lineTo((textWidth + 40) / 2 + 15, textHeight + 15);
     arrowPath.close();
+    final borderPaint = Paint()
+      ..strokeWidth = 3
+      ..color = Colors.white
+      ..style = PaintingStyle.stroke;
+
+    canvas.drawRRect(rrectShadow, Paint()..color = kBackgroundColor);
+    canvas.drawRRect(rrectBorder, borderPaint);
+
     canvas.drawPath(arrowPath, Paint()..color = kBackgroundColor);
     painter.layout();
     painter.paint(canvas, const Offset(20.0, 10.0));

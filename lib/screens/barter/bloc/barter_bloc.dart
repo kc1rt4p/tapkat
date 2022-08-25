@@ -422,6 +422,36 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
               }
             }
 
+            if (event.status == 'completed') {
+              List<BarterProductModel> bProducts =
+                  await _barterRepository.getBarterProducts(event.barterId);
+              if (bProducts.isEmpty) {
+                bProducts = bProducts
+                    .where((bProd) => !bProd.productId!.contains('cash'))
+                    .toList();
+                await Future.forEach(bProducts,
+                    (BarterProductModel bProd) async {
+                  final product =
+                      await _productRepository.getProduct(bProd.productId!);
+                  if (product != null) {
+                    if (product.track_stock) {
+                      ProductRequestModel productRequest =
+                          ProductRequestModel.fromProduct(product);
+                      if (product.stock_count > 0) {
+                        await _productRepository.updateProduct(
+                          productRequest,
+                          dealDone: true,
+                        );
+                      } else {
+                        productRequest.status = 'completed';
+                      }
+                      await _productRepository.updateProduct(productRequest);
+                    }
+                  }
+                });
+              }
+            }
+
             // update products' status
             // final barterProducts =
             //     await _barterRepository.getBarterProducts(event.barterId);

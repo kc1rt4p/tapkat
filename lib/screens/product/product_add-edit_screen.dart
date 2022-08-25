@@ -859,12 +859,12 @@ class _ProductAddEditScreenState extends State<ProductAddEditScreen> {
           CustomTextFormField(
             label: 'Description',
             hintText: 'Enter a description',
-            textInputAction: TextInputAction.done,
+            textInputAction: TextInputAction.newline,
             controller: _descTextController,
             color: kBackgroundColor,
             maxLines: 3,
             maxLength: 2000,
-            keyboardType: TextInputType.text,
+            keyboardType: TextInputType.multiline,
             validator: (val) => val != null && val.isEmpty ? 'Required' : null,
           ),
           Container(
@@ -1340,6 +1340,7 @@ class _ProductAddEditScreenState extends State<ProductAddEditScreen> {
       longitude: _meetUpList.first.location!.longitude,
       latitude: _meetUpList.first.location!.latitude,
     );
+    productRequest.status = _selectedStatus;
     productRequest.address =
         _meetUpList.first.address != null ? _meetUpList.first.address : null;
     productRequest.city =
@@ -1355,97 +1356,6 @@ class _ProductAddEditScreenState extends State<ProductAddEditScreen> {
     else
       _productBloc.add(
           SaveProduct(productRequest: productRequest, media: _selectedMedia));
-  }
-
-  _onSaveTapped() {
-    if (_selectedMedia.length < 1) {
-      setState(() {
-        showImageError = true;
-      });
-      return;
-    }
-    if (!_formKey.currentState!.validate()) return;
-
-    if (_selectedOfferType == null) {
-      setState(() {
-        showOfferTypeError = true;
-      });
-      return;
-    } else {
-      setState(() {
-        showOfferTypeError = false;
-      });
-    }
-    if (_selectedLocation!.addressComponents.isNotEmpty) {
-      var newProduct = ProductRequestModel(
-        track_stock: trackStock,
-        stock_count: int.parse(_quantityTextController.text.trim()),
-        userid: _user!.uid,
-        productname: _nameTextController.text.trim(),
-        productdesc: _descTextController.text.trim(),
-        free: isFree,
-        price:
-            double.parse(_priceTextController.text.trim().replaceAll(',', '')),
-        type: _selectedOfferType!,
-        location: LocationModel(
-          longitude: _selectedLocation!.geometry!.location.lng,
-          latitude: _selectedLocation!.geometry!.location.lat,
-        ),
-        address: _selectedLocation!.addressComponents[0] != null
-            ? _selectedLocation!.addressComponents[0]!.longName
-            : null,
-        city: _selectedLocation!.addressComponents[1] != null
-            ? _selectedLocation!.addressComponents[1]!.longName
-            : null,
-        country: _selectedLocation!.addressComponents.last != null
-            ? _selectedLocation!.addressComponents.last!.longName
-            : null,
-        media_type: 'image',
-      );
-
-      if (_selectedLocalization != null) {
-        newProduct.currency = _selectedLocalization!.currency;
-      }
-
-      if (_selectedLocation != null) {
-        newProduct.address = _selectedLocation!.addressComponents[0] != null
-            ? _selectedLocation!.addressComponents[0]!.longName
-            : null;
-        newProduct.city = _selectedLocation!.addressComponents[1] != null
-            ? _selectedLocation!.addressComponents[1]!.longName
-            : null;
-        newProduct.country = _selectedLocation!.addressComponents.last != null
-            ? _selectedLocation!.addressComponents.last!.longName
-            : null;
-        newProduct.location = LocationModel(
-          longitude: _selectedLocation!.geometry!.location.lng,
-          latitude: _selectedLocation!.geometry!.location.lat,
-        );
-      } else {
-        if (_currentUserLoc != null && _currentUserPosition != null) {
-          newProduct.address = _currentUserLoc!.street ?? '';
-          newProduct.city = _currentUserLoc!.locality ?? '';
-          newProduct.country = _currentUserLoc!.country ?? '';
-          newProduct.location = LocationModel(
-            longitude: _currentUserPosition!.longitude,
-            latitude: _currentUserPosition!.latitude,
-          );
-        }
-      }
-
-      print('product request: ${newProduct.toJson()}');
-
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => SelectProductCategoryScreen(
-            productRequest: newProduct,
-            media: _selectedMedia,
-            categories: _productCategories,
-          ),
-        ),
-      );
-    }
   }
 
   _onPhotoTapped() async {

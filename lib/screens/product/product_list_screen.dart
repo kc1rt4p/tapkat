@@ -60,7 +60,8 @@ class ProductListScreen extends StatefulWidget {
   _ProductListScreenState createState() => _ProductListScreenState();
 }
 
-class _ProductListScreenState extends State<ProductListScreen> {
+class _ProductListScreenState extends State<ProductListScreen>
+    with AutomaticKeepAliveClientMixin {
   final _productBloc = ProductBloc();
   final _homeBloc = HomeBloc();
   late String _title;
@@ -77,6 +78,9 @@ class _ProductListScreenState extends State<ProductListScreen> {
   final _keywordTextController = TextEditingController();
 
   final _refreshController = RefreshController();
+
+  @override
+  bool get wantKeepAlive => true;
 
   LatLng? googleMapsCenter;
   late GoogleMapController googleMapsController;
@@ -1735,32 +1739,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
     List<String> productIds = [];
     if (_clusterManager != null) {
       final mapMarkers1 = _clusterManager!.children(clusterId);
-      if (mapMarkers1 != null && mapMarkers1.isNotEmpty) {
-        mapMarkers1.forEach((mapMarker1) {
-          if (mapMarker1.isCluster!) {
-            final mapMarkers2 = _clusterManager!.children(mapMarker1.clusterId);
-            if (mapMarkers2 != null && mapMarkers2.isNotEmpty) {
-              mapMarkers2.forEach((mapMarker2) {
-                if (!mapMarker2.isCluster!) {
-                  if (mapMarker2.productId != null) {
-                    print('m2 prod id::::: ${mapMarker2.productId}');
-                    if (!productIds.contains(mapMarker2.productId))
-                      productIds.add(mapMarker2.productId!);
-                  }
-                }
-              });
-            }
-          } else {
-            if (mapMarker1.productId != null) {
-              print('m1 prod id::::: ${mapMarker1.productId}');
-              final prod = productList
-                  .firstWhere((p) => p.productid == mapMarker1.productId);
-              if (!productIds.contains(mapMarker1.productId))
-                productIds.add(mapMarker1.productId!);
-            }
-          }
-        });
-      }
+      if (mapMarkers1 != null && mapMarkers1.isNotEmpty) {}
     }
   }
 }

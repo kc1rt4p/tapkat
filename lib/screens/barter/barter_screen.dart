@@ -693,10 +693,6 @@ class _BarterScreenState extends State<BarterScreen> {
                       });
                     }
 
-                    if (widget.quickBarter) {
-                      _onSubmitTapped(true);
-                    }
-
                     _initialOffer = null;
                   }
 
@@ -828,6 +824,11 @@ class _BarterScreenState extends State<BarterScreen> {
                         'An existing pending barter deal was found for these products.',
                   );
                   _existing = false;
+                }
+
+                if (widget.quickBarter &&
+                    _barterRecord!.dealStatus == 'submitted') {
+                  _onSubmitTapped(true);
                 }
               });
             }
