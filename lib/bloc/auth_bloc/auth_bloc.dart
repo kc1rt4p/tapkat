@@ -2,7 +2,6 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_maps_webservice/places.dart';
 import 'package:tapkat/backend.dart';
 import 'package:tapkat/models/localization.dart';
@@ -93,13 +92,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
                 longitude: event.location.geometry!.location.lng,
               ),
               address: _location.addressComponents[0] != null
-                  ? _location.addressComponents[0]!.longName
+                  ? _location.addressComponents[0].longName
                   : null,
               city: _location.addressComponents[1] != null
-                  ? _location.addressComponents[1]!.longName
+                  ? _location.addressComponents[1].longName
                   : null,
               country: _location.addressComponents.last != null
-                  ? _location.addressComponents.last!.longName
+                  ? _location.addressComponents.last.longName
                   : null,
             );
 

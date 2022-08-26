@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:tapkat/services/http/dio_config.dart';
 import 'package:tapkat/services/tapkat_encryption.dart';
 import 'package:tapkat/utilities/error_exception.dart';
@@ -120,7 +121,7 @@ class ApiService {
 
   static Future<String?> getDeviceId() async {
     var deviceInfo = DeviceInfoPlugin();
-    if (Platform.isIOS) {
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
       // import 'dart:io'
       var iosDeviceInfo = await deviceInfo.iosInfo;
       return iosDeviceInfo.identifierForVendor; // unique ID on iOS
@@ -132,7 +133,7 @@ class ApiService {
 
   static Future<String?> getDeviceName() async {
     var deviceInfo = DeviceInfoPlugin();
-    if (Platform.isIOS) {
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
       // import 'dart:io'
       var iosDeviceInfo = await deviceInfo.iosInfo;
       return iosDeviceInfo.localizedModel; // unique ID on iOS

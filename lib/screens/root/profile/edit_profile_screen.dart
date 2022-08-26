@@ -376,7 +376,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   _loadUserLocation() async {
-    if (await Permission.location.isDenied) return;
+    if (!kIsWeb) {
+      if (await Permission.location.isDenied) return;
+    }
     if (!(await geoLocator.GeolocatorPlatform.instance
         .isLocationServiceEnabled())) return;
     final userLoc = await geoLocator.Geolocator.getCurrentPosition();

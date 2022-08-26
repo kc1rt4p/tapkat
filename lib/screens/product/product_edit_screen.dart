@@ -72,8 +72,6 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
   bool showImageError = false;
   bool showOfferTypeError = false;
 
-  int _deleteIndex = 0;
-
   @override
   void initState() {
     application.currentScreen = 'Product Edit Screen';
@@ -610,11 +608,10 @@ class _ProductEditScreenState extends State<ProductEditScreen> {
     productRequest.free = isFree;
 
     if (_selectedLocation != null) {
-      productRequest.address =
-          _selectedLocation!.addressComponents[0]!.longName;
-      productRequest.city = _selectedLocation!.addressComponents[1]!.longName;
+      productRequest.address = _selectedLocation!.addressComponents[0].longName;
+      productRequest.city = _selectedLocation!.addressComponents[1].longName;
       productRequest.country =
-          _selectedLocation!.addressComponents.last!.longName;
+          _selectedLocation!.addressComponents.last.longName;
       productRequest.location!.latitude =
           _selectedLocation!.geometry!.location.lat;
       productRequest.location!.longitude =

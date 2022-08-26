@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:fluster/fluster.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_progress_hud/flutter_progress_hud.dart';
@@ -9,6 +10,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
+import 'package:tapkat/models/map-marker.dart';
 import 'package:tapkat/models/product.dart';
 import 'package:tapkat/models/product_category.dart';
 import 'package:tapkat/schemas/product_markers_record.dart';
@@ -20,6 +22,7 @@ import 'package:tapkat/screens/search/bloc/search_bloc.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/constants.dart';
 import 'package:tapkat/utilities/dialog_message.dart';
+import 'package:tapkat/utilities/helpers/map-helper.dart';
 import 'package:tapkat/utilities/size_config.dart';
 import 'package:tapkat/utilities/style.dart';
 import 'package:tapkat/utilities/utilities.dart';
@@ -81,7 +84,6 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
   List<ProductCategoryModel> _categoryList = [];
 
   bool _loading = false;
-  Set<Marker> _markers = {};
 
   bool zoomingByDrag = false;
 
@@ -108,6 +110,19 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
 
   final _userItemsPagingController =
       PagingController<int, ProductModel>(firstPageKey: 0);
+
+  /// Set of displayed markers and cluster markers on the map
+  final Set<Marker> _markers = Set();
+
+  final int _minClusterZoom = 9;
+
+  final int _maxClusterZoom = 20;
+
+  Fluster<MapMarker>? _clusterManager;
+
+  double _currentZoom = 15;
+  final Color _clusterColor = kBackgroundColor;
+  final Color _clusterTextColor = Colors.white;
 
   @override
   void initState() {
@@ -161,6 +176,13 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
     if (mounted) {
       super.setState(fn);
     }
+  }
+
+  void _onMapCreated(GoogleMapController controller) {
+    // _mapController.complete(controller);
+    googleMapsController = controller;
+
+    _initMarkers();
   }
 
   @override
@@ -234,7 +256,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                   print('hey ${state.list.length}');
                   if (state.list.isNotEmpty) {
                     searchResults.addAll(state.list);
-                    _buildMarkers();
+
                     lastProduct = state.list.last;
                     if (state.list.length == productCount) {
                       _pagingController.appendPage(state.list, currentPage + 1);
@@ -244,18 +266,14 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                   } else {
                     _pagingController.appendLastPage([]);
                   }
+                  _initMarkers();
                 }
 
                 if (state is SearchSuccess) {
                   _refreshController.refreshCompleted();
                   _pagingController.refresh();
                   lastProduct = null;
-
-                  setState(() {
-                    _markers.clear();
-                    searchResults.clear();
-                    _buildMarkers();
-                  });
+                  searchResults.clear();
 
                   if (mapFirst) {
                     if (_selectedView != 'map') {
@@ -308,11 +326,6 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                       }
                     });
                   } else {
-                    setState(() {
-                      _markers.clear();
-                      searchResults.clear();
-                      _buildMarkers();
-                    });
                     if (_selectedRadius < 20000) {
                       _selectedRadius += 5000;
                       _searchBloc.add(InitializeSearch(
@@ -335,7 +348,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                     }
                   }
 
-                  _buildMarkers();
+                  if (_selectedView == 'map') _initMarkers();
                 }
               },
             ),
@@ -575,7 +588,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                               _selectedView = index == 0 ? 'grid' : 'map';
                             });
                             if (index == 1)
-                              _buildMarkers();
+                              _initMarkers();
                             else {
                               setOriginalCenter();
                               _searchBloc.add(InitializeSearch(
@@ -1350,42 +1363,42 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
               // circles: {
               //   _currentCircle!,
               // },
-              onTap: (latLng) {
-                setState(() {
-                  _currentCenter = latLng;
-                  _currentCircle = Circle(
-                    circleId: CircleId('radius'),
-                    center: _currentCenter,
-                    radius: _selectedRadius.toDouble(),
-                    strokeColor: kBackgroundColor,
-                    strokeWidth: 1,
-                    fillColor: kBackgroundColor.withOpacity(0.2),
-                  );
-                });
+              // onTap: (latLng) {
+              //   setState(() {
+              //     _currentCenter = latLng;
+              //     _currentCircle = Circle(
+              //       circleId: CircleId('radius'),
+              //       center: _currentCenter,
+              //       radius: _selectedRadius.toDouble(),
+              //       strokeColor: kBackgroundColor,
+              //       strokeWidth: 1,
+              //       fillColor: kBackgroundColor.withOpacity(0.2),
+              //     );
+              //   });
 
-                if (_selectedView == 'map') {
-                  double mapZoomLevel = getZoomLevel(_selectedRadius);
+              //   if (_selectedView == 'map') {
+              //     double mapZoomLevel = getZoomLevel(_selectedRadius);
 
-                  googleMapsController
-                      .animateCamera(CameraUpdate.newCameraPosition(
-                    CameraPosition(target: _currentCenter, zoom: mapZoomLevel),
-                  ));
-                }
-              },
+              //     googleMapsController
+              //         .animateCamera(CameraUpdate.newCameraPosition(
+              //       CameraPosition(target: _currentCenter, zoom: mapZoomLevel),
+              //     ));
+              //   }
+              // },
               onCameraIdle: (latLng) => googleMapsCenter = latLng,
               initialZoom: mapZoomLevel,
-              initialLocation: LatLng(
-                  application.currentUserLocation!.latitude!.toDouble(),
-                  application.currentUserLocation!.longitude!.toDouble()),
+              initialLocation: _currentCenter,
               onMapCreated: (controller) {
-                googleMapsController = controller;
+                _onMapCreated(controller);
               },
               showLocation: false,
               showZoomControls: false,
               markers: _markers.toSet(),
               onCameraMove: (camPos) {
-                final km = getRadiusFromZoomLevel(camPos.zoom) / 10;
-                print('====> $km');
+                setState(() {
+                  _currentCenter = camPos.target;
+                });
+                _updateMarkers(camPos.zoom);
               },
             ),
           ),
@@ -1557,70 +1570,6 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
     );
   }
 
-  _buildMarkers() async {
-    if (searchResults.isNotEmpty) {
-      setState(
-        () {
-          searchResults.forEach(
-            (product) {
-              _markers
-                  .addLabelMarker(
-                    LabelMarker(
-                      onTap: () => onMarkerTapped(context, product),
-                      label: product.productname != null
-                          ? '${product.productname!.trim()}'
-                          : '',
-                      markerId: MarkerId(product.productid!),
-                      position: LatLng(
-                        product.address != null &&
-                                product.address!.location != null
-                            ? product.address!.location!.latitude!.toDouble()
-                            : 0.00,
-                        product.address != null &&
-                                product.address!.location != null
-                            ? product.address!.location!.longitude!.toDouble()
-                            : 0.00,
-                      ),
-                      backgroundColor: kBackgroundColor,
-                      textStyle: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 27.0,
-                        letterSpacing: 1.0,
-                        fontFamily: 'Poppins',
-                        leadingDistribution: TextLeadingDistribution.even,
-                        inherit: false,
-                        decorationStyle: TextDecorationStyle.solid,
-                      ),
-                    ),
-                  )
-                  .then(
-                    (value) => setState(() {}),
-                  );
-            },
-          );
-        },
-      );
-    } else {
-      setState(() {
-        _markers.clear();
-      });
-    }
-
-    setState(() {
-      _markers.add(Marker(
-        markerId: MarkerId(application.currentUser!.uid),
-        position: _currentCenter,
-      ));
-    });
-
-    // if (markers.isNotEmpty) {
-    //   setState(() {
-    //     _markers = markers;
-    //   });
-    // }
-  }
-
   Widget _buildGridView2() {
     return SmartRefresher(
       onRefresh: () => _searchBloc.add(InitializeSearch(
@@ -1734,5 +1683,283 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
       itemCount: _selectedView == 'map' ? 50 : 10,
       loc: _currentCenter,
     ));
+  }
+
+  void _initMarkers() async {
+    List<MapMarker> markers = [];
+    final list = List.from(searchResults);
+
+    for (ProductModel product in list) {
+      final BitmapDescriptor markerImage =
+          await MapHelper.createCustomMarkerBitmap(
+        product.productname ?? '',
+        textStyle: TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w600,
+          fontSize: 27.0,
+          letterSpacing: 1.0,
+          fontFamily: 'Poppins',
+          leadingDistribution: TextLeadingDistribution.even,
+          inherit: false,
+          decorationStyle: TextDecorationStyle.solid,
+        ),
+      );
+      final pos = LatLng(
+        product.address!.location!.latitude!.toDouble(),
+        product.address!.location!.longitude!.toDouble(),
+      );
+
+      markers.add(
+        MapMarker(
+          id: product.productid!,
+          position: pos,
+          icon: markerImage,
+          productId: product.productid!,
+          onTap: () => onMarkerTapped(context, product),
+        ),
+      );
+    }
+
+    _clusterManager = await MapHelper.initClusterManager(
+      markers,
+      _minClusterZoom,
+      _maxClusterZoom,
+    );
+
+    await _updateMarkers();
+  }
+
+  Future<void> _updateMarkers([double? updatedZoom]) async {
+    if (_clusterManager == null || updatedZoom == _currentZoom) return;
+
+    if (updatedZoom != null) {
+      _currentZoom = updatedZoom;
+    }
+
+    List<Marker> updatedMarkers = await MapHelper.getClusterMarkers(
+      _clusterManager,
+      _currentZoom,
+      _clusterColor,
+      _clusterTextColor,
+      80,
+      _onClusterTapped,
+    );
+
+    setState(() {
+      _markers
+        ..clear()
+        ..addAll(updatedMarkers);
+    });
+  }
+
+  _onClusterTapped(int clusterId, int pointSize) {
+    print('point size::::: $pointSize');
+    List<ProductModel> productList = List.from(searchResults);
+    List<ProductModel> clusterProducts = [];
+    if (_clusterManager != null) {
+      final mapMarkers = _clusterManager!.points(clusterId);
+      final prodIds = mapMarkers.map((mMarker) => mMarker.productId);
+      if (prodIds.isNotEmpty) {
+        prodIds.forEach((id) {
+          final prod = productList.singleWhere((prod) => prod.productid == id);
+          clusterProducts.add(prod);
+        });
+      }
+    }
+
+    if (clusterProducts.isNotEmpty) {
+      showModalBottomSheet(
+        context: context,
+        builder: (context) {
+          return Container(
+            padding: EdgeInsets.symmetric(
+              vertical: 10.0,
+              horizontal: 20.0,
+            ),
+            color: Colors.white,
+            height: SizeConfig.screenHeight * 0.4,
+            width: double.infinity,
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      'Products',
+                      style: Style.title2.copyWith(
+                        color: kBackgroundColor,
+                      ),
+                    ),
+                    Spacer(),
+                    InkWell(
+                      onTap: () => Navigator.pop(context),
+                      child: Container(
+                        padding: EdgeInsets.all(8.0),
+                        child: Center(
+                          child: Icon(
+                            Icons.close,
+                            color: kBackgroundColor,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: clusterProducts.map((product) {
+                        var thumbnail = '';
+
+                        if (product.media != null &&
+                            product.media!.isNotEmpty) {
+                          for (var media in product.media!) {
+                            thumbnail = media.url_t ?? '';
+                            if (thumbnail.isNotEmpty) break;
+                          }
+                        }
+
+                        if (thumbnail.isEmpty) {
+                          if (product.mediaPrimary != null &&
+                              product.mediaPrimary!.url_t != null &&
+                              product.mediaPrimary!.url_t!.isNotEmpty)
+                            thumbnail = product.mediaPrimary!.url_t!;
+                        }
+
+                        product.mediaPrimary!.url_t = thumbnail;
+                        return InkWell(
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ProductDetailsScreen(
+                                productId: product.productid ?? '',
+                                ownItem: application.currentUser!.uid ==
+                                    product.userid,
+                              ),
+                            ),
+                          ),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              border: Border(
+                                bottom: BorderSide(
+                                  color: kBackgroundColor,
+                                ),
+                              ),
+                            ),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 20.0, vertical: 8.0),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Container(
+                                      width: SizeConfig.screenWidth * .25,
+                                      height: SizeConfig.screenWidth * .25,
+                                      decoration: BoxDecoration(
+                                        image: DecorationImage(
+                                          image: thumbnail.isNotEmpty
+                                              ? NetworkImage(thumbnail)
+                                              : AssetImage(
+                                                      'assets/images/image_placeholder.jpg')
+                                                  as ImageProvider<Object>,
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                    ),
+                                    SizedBox(width: 16.0),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            product.productname ?? '',
+                                            style: Style.subtitle2.copyWith(
+                                              color: kBackgroundColor,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          SizedBox(height: 8.0),
+                                          Text(
+                                            product.price == null
+                                                ? ''
+                                                : '${application.currentUserModel!.currency ?? 'PHP'} ${product.price!.toStringAsFixed(2)}',
+                                            style: Style.subtitle2.copyWith(
+                                              color: kBackgroundColor,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          SizedBox(height: 8.0),
+                                          Row(
+                                            children: [
+                                              Icon(
+                                                Icons.location_pin,
+                                                size: 20.0,
+                                                color: Colors.red,
+                                              ),
+                                              Text(
+                                                product.address!.address!
+                                                        .isNotEmpty
+                                                    ? product.address!.address!
+                                                    : 'No address',
+                                                style: Style.subtitle2.copyWith(
+                                                    color: kBackgroundColor),
+                                              )
+                                            ],
+                                          ),
+                                          SizedBox(height: 8.0),
+                                          Row(
+                                            children: [
+                                              ...List.generate(5, (i) {
+                                                return Padding(
+                                                  padding: EdgeInsets.only(
+                                                      right:
+                                                          i != 5 ? 5.0 : 0.0),
+                                                  child: Icon(
+                                                    i <
+                                                            (product.rating !=
+                                                                    null
+                                                                ? product
+                                                                    .rating!
+                                                                    .round()
+                                                                : 0)
+                                                        ? Icons.star
+                                                        : Icons.star_border,
+                                                    color: Color(0xFFFFC107),
+                                                    size: 20.0,
+                                                  ),
+                                                );
+                                              }),
+                                              Text(
+                                                product.rating != null
+                                                    ? product.rating!
+                                                        .toStringAsFixed(1)
+                                                    : '0',
+                                                style:
+                                                    TextStyle(fontSize: 16.0),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      );
+    }
   }
 }

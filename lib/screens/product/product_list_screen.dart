@@ -113,8 +113,6 @@ class _ProductListScreenState extends State<ProductListScreen>
 
   late LatLng _currentCenter;
 
-  Map<int, List<ProductModel>> groupedProducts = {};
-
   bool _loadingUserProducts = true;
   final _panelController = PanelController();
   bool _showYourItems = false;
@@ -123,8 +121,6 @@ class _ProductListScreenState extends State<ProductListScreen>
   final _userItemsPagingController =
       PagingController<int, ProductModel>(firstPageKey: 0);
 
-  final Completer<GoogleMapController> _mapController = Completer();
-
   /// Set of displayed markers and cluster markers on the map
   final Set<Marker> _markers = Set();
 
@@ -132,7 +128,7 @@ class _ProductListScreenState extends State<ProductListScreen>
   final int _minClusterZoom = 9;
 
   /// Maximum zoom at which the markers will cluster
-  final int _maxClusterZoom = 20;
+  final int _maxClusterZoom = 15;
 
   /// [Fluster] instance used to manage the clusters
   Fluster<MapMarker>? _clusterManager;
@@ -290,7 +286,6 @@ class _ProductListScreenState extends State<ProductListScreen>
                     _pagingController.refresh();
                     lastProduct = null;
                     _list.clear();
-                    groupedProducts.clear();
 
                     if (state.list.isNotEmpty) {
                       _list = state.list;
@@ -1787,147 +1782,151 @@ class _ProductListScreenState extends State<ProductListScreen>
                 Expanded(
                   child: SingleChildScrollView(
                     child: Column(
-                      children: clusterProducts
-                          .map((product) => InkWell(
-                                onTap: () => Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => ProductDetailsScreen(
-                                      productId: product.productid ?? '',
-                                      ownItem: application.currentUser!.uid ==
-                                          product.userid,
-                                    ),
-                                  ),
+                      children: clusterProducts.map((product) {
+                        var thumbnail = '';
+
+                        if (product.media != null &&
+                            product.media!.isNotEmpty) {
+                          for (var media in product.media!) {
+                            thumbnail = media.url_t ?? '';
+                            if (thumbnail.isNotEmpty) break;
+                          }
+                        }
+
+                        if (thumbnail.isEmpty) {
+                          if (product.mediaPrimary != null &&
+                              product.mediaPrimary!.url_t != null &&
+                              product.mediaPrimary!.url_t!.isNotEmpty)
+                            thumbnail = product.mediaPrimary!.url_t!;
+                        }
+
+                        product.mediaPrimary!.url_t = thumbnail;
+                        return InkWell(
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ProductDetailsScreen(
+                                productId: product.productid ?? '',
+                                ownItem: application.currentUser!.uid ==
+                                    product.userid,
+                              ),
+                            ),
+                          ),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              border: Border(
+                                bottom: BorderSide(
+                                  color: kBackgroundColor,
                                 ),
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    border: Border(
-                                      bottom: BorderSide(
-                                        color: kBackgroundColor,
+                              ),
+                            ),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 20.0, vertical: 8.0),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Container(
+                                      width: SizeConfig.screenWidth * .25,
+                                      height: SizeConfig.screenWidth * .25,
+                                      decoration: BoxDecoration(
+                                        image: DecorationImage(
+                                          image: thumbnail.isNotEmpty
+                                              ? NetworkImage(thumbnail)
+                                              : AssetImage(
+                                                      'assets/images/image_placeholder.jpg')
+                                                  as ImageProvider<Object>,
+                                          fit: BoxFit.cover,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: 20.0, vertical: 8.0),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Row(
-                                        mainAxisSize: MainAxisSize.min,
+                                    SizedBox(width: 16.0),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
-                                          Container(
-                                            width: SizeConfig.screenWidth * .25,
-                                            height:
-                                                SizeConfig.screenWidth * .25,
-                                            decoration: BoxDecoration(
-                                              image: DecorationImage(
-                                                image: product.mediaPrimary !=
-                                                        null
-                                                    ? NetworkImage(product
-                                                        .mediaPrimary!.url_t!)
-                                                    : AssetImage(
-                                                            'assets/images/image_placeholder.jpg')
-                                                        as ImageProvider<
-                                                            Object>,
-                                                fit: BoxFit.cover,
-                                              ),
+                                          Text(
+                                            product.productname ?? '',
+                                            style: Style.subtitle2.copyWith(
+                                              color: kBackgroundColor,
+                                              fontWeight: FontWeight.bold,
                                             ),
                                           ),
-                                          SizedBox(width: 16.0),
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  product.productname ?? '',
-                                                  style:
-                                                      Style.subtitle2.copyWith(
-                                                    color: kBackgroundColor,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                ),
-                                                SizedBox(height: 8.0),
-                                                Text(
-                                                  product.price == null
-                                                      ? ''
-                                                      : '${application.currentUserModel!.currency ?? 'PHP'} ${product.price!.toStringAsFixed(2)}',
-                                                  style:
-                                                      Style.subtitle2.copyWith(
-                                                    color: kBackgroundColor,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                ),
-                                                SizedBox(height: 8.0),
-                                                Row(
-                                                  children: [
-                                                    Icon(
-                                                      Icons.location_pin,
-                                                      size: 20.0,
-                                                      color: Colors.red,
-                                                    ),
-                                                    Text(
-                                                      product.address!.address!
-                                                              .isNotEmpty
-                                                          ? product
-                                                              .address!.address!
-                                                          : 'No address',
-                                                      style: Style.subtitle2
-                                                          .copyWith(
-                                                              color:
-                                                                  kBackgroundColor),
-                                                    )
-                                                  ],
-                                                ),
-                                                SizedBox(height: 8.0),
-                                                Row(
-                                                  children: [
-                                                    ...List.generate(5, (i) {
-                                                      return Padding(
-                                                        padding:
-                                                            EdgeInsets.only(
-                                                                right: i != 5
-                                                                    ? 5.0
-                                                                    : 0.0),
-                                                        child: Icon(
-                                                          i <
-                                                                  (product.rating !=
-                                                                          null
-                                                                      ? product
-                                                                          .rating!
-                                                                          .round()
-                                                                      : 0)
-                                                              ? Icons.star
-                                                              : Icons
-                                                                  .star_border,
-                                                          color:
-                                                              Color(0xFFFFC107),
-                                                          size: 20.0,
-                                                        ),
-                                                      );
-                                                    }),
-                                                    Text(
-                                                      product.rating != null
-                                                          ? product.rating!
-                                                              .toStringAsFixed(
-                                                                  1)
-                                                          : '0',
-                                                      style: TextStyle(
-                                                          fontSize: 16.0),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ],
+                                          SizedBox(height: 8.0),
+                                          Text(
+                                            product.price == null
+                                                ? ''
+                                                : '${application.currentUserModel!.currency ?? 'PHP'} ${product.price!.toStringAsFixed(2)}',
+                                            style: Style.subtitle2.copyWith(
+                                              color: kBackgroundColor,
+                                              fontWeight: FontWeight.bold,
                                             ),
+                                          ),
+                                          SizedBox(height: 8.0),
+                                          Row(
+                                            children: [
+                                              Icon(
+                                                Icons.location_pin,
+                                                size: 20.0,
+                                                color: Colors.red,
+                                              ),
+                                              Text(
+                                                product.address!.address!
+                                                        .isNotEmpty
+                                                    ? product.address!.address!
+                                                    : 'No address',
+                                                style: Style.subtitle2.copyWith(
+                                                    color: kBackgroundColor),
+                                              )
+                                            ],
+                                          ),
+                                          SizedBox(height: 8.0),
+                                          Row(
+                                            children: [
+                                              ...List.generate(5, (i) {
+                                                return Padding(
+                                                  padding: EdgeInsets.only(
+                                                      right:
+                                                          i != 5 ? 5.0 : 0.0),
+                                                  child: Icon(
+                                                    i <
+                                                            (product.rating !=
+                                                                    null
+                                                                ? product
+                                                                    .rating!
+                                                                    .round()
+                                                                : 0)
+                                                        ? Icons.star
+                                                        : Icons.star_border,
+                                                    color: Color(0xFFFFC107),
+                                                    size: 20.0,
+                                                  ),
+                                                );
+                                              }),
+                                              Text(
+                                                product.rating != null
+                                                    ? product.rating!
+                                                        .toStringAsFixed(1)
+                                                    : '0',
+                                                style:
+                                                    TextStyle(fontSize: 16.0),
+                                              ),
+                                            ],
                                           ),
                                         ],
                                       ),
-                                    ],
-                                  ),
+                                    ),
+                                  ],
                                 ),
-                              ))
-                          .toList(),
+                              ],
+                            ),
+                          ),
+                        );
+                      }).toList(),
                     ),
                   ),
                 ),

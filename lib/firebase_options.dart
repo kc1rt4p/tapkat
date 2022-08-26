@@ -48,12 +48,12 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions web = FirebaseOptions(
     apiKey: 'AIzaSyAzPjfTTLzdfp-56tarHguvLXgdw7QAGkg',
-    appId: '1:317757606033:web:63bf79e5fa469859f99730',
+    appId: '1:317757606033:web:4e0e72f4ea42df7af99730',
     messagingSenderId: '317757606033',
     projectId: 'map-surf',
     authDomain: 'map-surf.firebaseapp.com',
     storageBucket: 'map-surf.appspot.com',
-    measurementId: 'G-DCSP0SCHPT',
+    measurementId: 'G-4HB1P3JPH1',
   );
 
   static const FirebaseOptions android = FirebaseOptions(

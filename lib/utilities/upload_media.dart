@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
@@ -171,8 +172,8 @@ Future<List<SelectedMedia>?> selectMedia({
 
 Future<File> changeFileNameOnly(File file, String newFileName) {
   var path = file.path;
-  var lastSeparator = path.lastIndexOf(Platform.pathSeparator);
-  final split = path.split(Platform.pathSeparator);
+  var lastSeparator = path.lastIndexOf(kIsWeb ? '/' : Platform.pathSeparator);
+  final split = path.split(kIsWeb ? '/' : Platform.pathSeparator);
   var newPath = path.substring(0, lastSeparator + 1) +
       newFileName +
       '.' +

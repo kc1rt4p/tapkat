@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show defaultTargetPlatform, kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:json_path/json_path.dart';
@@ -51,7 +51,8 @@ dynamic getJsonField(dynamic response, String jsonPath) {
       : null;
 }
 
-bool get isAndroid => !kIsWeb && Platform.isAndroid;
+bool get isAndroid =>
+    !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
 
 void showSnackbar(
   BuildContext context,

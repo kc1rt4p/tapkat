@@ -33,21 +33,23 @@ import 'package:tapkat/utilities/dialog_message.dart';
 
 _loadUserLocation() async {
   try {
-    final per1 = await Permission.location.request();
-    final per2 =
-        await geoLocator.GeolocatorPlatform.instance.isLocationServiceEnabled();
-    if (per1 != PermissionStatus.denied && per2) {
-      final userLoc = await geoLocator.Geolocator.getCurrentPosition();
-      final places = await geoCoding.placemarkFromCoordinates(
-          userLoc.latitude, userLoc.longitude);
-      final place = places.first;
-      application.currentCountry = place.isoCountryCode;
-      print(
-          '-=======< using device location: ${userLoc.latitude}, ${userLoc.longitude}');
-      application.currentUserLocation = LocationModel(
-        latitude: userLoc.latitude,
-        longitude: userLoc.longitude,
-      );
+    if (!kIsWeb) {
+      final per1 = await Permission.location.request();
+      final per2 = await geoLocator.GeolocatorPlatform.instance
+          .isLocationServiceEnabled();
+      if (per1 != PermissionStatus.denied && per2) {
+        final userLoc = await geoLocator.Geolocator.getCurrentPosition();
+        final places = await geoCoding.placemarkFromCoordinates(
+            userLoc.latitude, userLoc.longitude);
+        final place = places.first;
+        application.currentCountry = place.isoCountryCode;
+        print(
+            '-=======< using device location: ${userLoc.latitude}, ${userLoc.longitude}');
+        application.currentUserLocation = LocationModel(
+          latitude: userLoc.latitude,
+          longitude: userLoc.longitude,
+        );
+      }
     }
   } catch (e) {
     print('Unable to get current device location::::::: ${e.toString()}');
@@ -65,8 +67,14 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
 
-  application.deviceId = await ApiService.getDeviceId();
-  application.deviceName = await ApiService.getDeviceName();
+  application.deviceId = defaultTargetPlatform == TargetPlatform.android ||
+          defaultTargetPlatform == TargetPlatform.iOS
+      ? await ApiService.getDeviceId()
+      : null;
+  application.deviceName = defaultTargetPlatform == TargetPlatform.android ||
+          defaultTargetPlatform == TargetPlatform.iOS
+      ? await ApiService.getDeviceName()
+      : null;
   await _loadUserLocation();
 
   runApp(Phoenix(child: const MyApp()));
@@ -95,9 +103,13 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     _authBloc = AuthBloc();
     _barterBloc = BarterBloc();
     _authBloc.add(InitializeAuth());
-
-    initLogs();
-    WidgetsBinding.instance!.addObserver(this);
+    if (defaultTargetPlatform == TargetPlatform.android ||
+        defaultTargetPlatform == TargetPlatform.iOS) {
+      initLogs();
+    }
+    if (!kIsWeb) {
+      WidgetsBinding.instance.addObserver(this);
+    }
 
     super.initState();
   }
@@ -186,7 +198,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
       // await FlutterEmailSender.send(email);
 
-      SchedulerBinding.instance!.addPostFrameCallback((_) {
+      SchedulerBinding.instance.addPostFrameCallback((_) {
         DialogMessage.show(
           navigatorKey.currentContext!,
           message:
@@ -234,7 +246,9 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
   @override
   void dispose() {
-    WidgetsBinding.instance!.removeObserver(this);
+    if (!kIsWeb) {
+      WidgetsBinding.instance.removeObserver(this);
+    }
     _userStream?.cancel();
     // _barterBloc.close();
     super.dispose();
@@ -293,46 +307,43 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
               },
             ),
           ],
-          child: DevicePreview(
-            enabled: false,
-            builder: (context) => MaterialApp(
-              useInheritedMediaQuery: true,
-              locale: DevicePreview.locale(context),
-              navigatorKey: navigatorKey,
-              debugShowCheckedModeBanner: false,
-              title: 'Tapkat',
-              localizationsDelegates: [
-                GlobalMaterialLocalizations.delegate,
-                GlobalWidgetsLocalizations.delegate,
-                GlobalCupertinoLocalizations.delegate,
-              ],
-              supportedLocales: const [Locale('en', '')],
-              theme: ThemeData(
-                sliderTheme: SliderThemeData(
-                  overlayShape: SliderComponentShape.noThumb,
-                  thumbShape: RoundSliderThumbShape(enabledThumbRadius: 8.0),
-                ),
-                primarySwatch: Colors.blue,
-                fontFamily: 'Poppins',
-                bottomSheetTheme: BottomSheetThemeData(
-                  backgroundColor: Colors.transparent,
-                ),
+          child: MaterialApp(
+            useInheritedMediaQuery: true,
+            locale: DevicePreview.locale(context),
+            navigatorKey: navigatorKey,
+            debugShowCheckedModeBanner: false,
+            title: 'Tapkat',
+            localizationsDelegates: [
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: const [Locale('en', '')],
+            theme: ThemeData(
+              sliderTheme: SliderThemeData(
+                overlayShape: SliderComponentShape.noThumb,
+                thumbShape: RoundSliderThumbShape(enabledThumbRadius: 8.0),
               ),
-              home: StreamBuilder<User?>(
-                  stream: FirebaseAuth.instance.authStateChanges(),
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData) {
-                      if (snapshot.data != null && _userModel != null) {
-                        print('bxxxxx> ${snapshot.data!.emailVerified}');
-                        return RootScreen(
-                          barterId: barterId,
-                        );
-                      }
-                    }
-
-                    return LoginScreen();
-                  }),
+              primarySwatch: Colors.blue,
+              fontFamily: 'Poppins',
+              bottomSheetTheme: BottomSheetThemeData(
+                backgroundColor: Colors.transparent,
+              ),
             ),
+            home: StreamBuilder<User?>(
+                stream: FirebaseAuth.instance.authStateChanges(),
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    if (snapshot.data != null && _userModel != null) {
+                      print('bxxxxx> ${snapshot.data!.emailVerified}');
+                      return RootScreen(
+                        barterId: barterId,
+                      );
+                    }
+                  }
+
+                  return LoginScreen();
+                }),
           ),
         ),
       );
