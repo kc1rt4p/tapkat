@@ -11,6 +11,7 @@ import 'package:flutter_progress_hud/flutter_progress_hud.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
+import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:tapkat/models/location.dart';
@@ -33,11 +34,9 @@ import 'package:tapkat/widgets/barter_list_item.dart';
 import 'package:tapkat/widgets/custom_app_bar.dart';
 import 'package:tapkat/widgets/custom_button.dart';
 import 'package:tapkat/widgets/custom_search_bar.dart';
-import 'package:tapkat/widgets/product-marker.dart';
 import 'package:tapkat/widgets/tapkat_map.dart';
 import 'package:tapkat/utilities/application.dart' as application;
 import 'package:toggle_switch/toggle_switch.dart';
-import 'package:label_marker/label_marker.dart';
 
 class ProductListScreen extends StatefulWidget {
   final bool showAdd;
@@ -133,7 +132,7 @@ class _ProductListScreenState extends State<ProductListScreen>
   final int _minClusterZoom = 9;
 
   /// Maximum zoom at which the markers will cluster
-  final int _maxClusterZoom = 16;
+  final int _maxClusterZoom = 20;
 
   /// [Fluster] instance used to manage the clusters
   Fluster<MapMarker>? _clusterManager;
@@ -206,107 +205,485 @@ class _ProductListScreenState extends State<ProductListScreen>
   @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
-    return Scaffold(
-      backgroundColor: Color(0xFFEBFBFF),
-      body: ProgressHUD(
-        indicatorColor: kBackgroundColor,
-        backgroundColor: Colors.white,
-        child: MultiBlocListener(
-          listeners: [
-            BlocListener(
-              bloc: _homeBloc,
-              listener: (context, state) async {
-                if (state is BarterDoesNotExist) {
-                  final product = state.product1;
-                  final product2 = state.product2;
-                  final result =
-                      await onQuickBarter(context, product, product2);
-                  if (result == null) return;
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => BarterScreen(
-                        product: product,
-                        initialOffer: product2,
-                        quickBarter: result ? true : false,
+    return WillPopScope(
+      onWillPop: () async {
+        ProgressHUD.of(context)!.dismiss();
+        return true;
+      },
+      child: Scaffold(
+        backgroundColor: Color(0xFFEBFBFF),
+        body: ProgressHUD(
+          indicatorColor: kBackgroundColor,
+          backgroundColor: Colors.white,
+          barrierEnabled: false,
+          child: MultiBlocListener(
+            listeners: [
+              BlocListener(
+                bloc: _homeBloc,
+                listener: (context, state) async {
+                  if (state is BarterDoesNotExist) {
+                    final product = state.product1;
+                    final product2 = state.product2;
+                    final result =
+                        await onQuickBarter(context, product, product2);
+                    if (result == null) return;
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => BarterScreen(
+                          product: product,
+                          initialOffer: product2,
+                          quickBarter: result ? true : false,
+                        ),
                       ),
-                    ),
-                  );
-                }
+                    );
+                  }
 
-                if (state is BarterExists) {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => BarterScreen(
-                        product: state.product1,
-                        initialOffer: state.product2,
-                        existing: true,
+                  if (state is BarterExists) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => BarterScreen(
+                          product: state.product1,
+                          initialOffer: state.product2,
+                          existing: true,
+                        ),
                       ),
-                    ),
-                  );
-                }
-              },
-            ),
-            BlocListener(
-              bloc: _productBloc,
-              listener: (context, state) {
-                print('X=====> current product list state: $state');
-                if (state is ProductLoading) {
-                  setState(() {
-                    _loading = true;
-                    ProgressHUD.of(context)!.show();
-                  });
-                } else {
-                  setState(() {
-                    _loading = false;
-                  });
-                  ProgressHUD.of(context)!.dismiss();
-                }
-
-                if (state is InitializeAddUpdateProductSuccess) {
-                  _categoryList = state.categories;
-
-                  _productBloc.add(GetFirstProducts(
-                    userid: application.currentUser!.uid,
-                    loc: _currentCenter,
-                    listType: widget.listType,
-                    sortBy: _selectedSortBy,
-                    distance: _selectedRadius,
-                    category: _selectedCategory != null
-                        ? [_selectedCategory!.code!]
-                        : null,
-                    itemCount: _selectedView == 'map' ? 50 : null,
-                  ));
-                }
-
-                if (state is GetFirstProductsSuccess) {
-                  _refreshController.refreshCompleted();
-                  _pagingController.refresh();
-                  lastProduct = null;
-                  _list.clear();
-                  groupedProducts.clear();
-
-                  if (state.list.isNotEmpty) {
-                    _list = state.list;
-
-                    final _productCount = (_selectedView == 'map') ? 50 : 10;
-
-                    if (state.list.length == _productCount) {
-                      currentPage += 1;
-                      _pagingController.appendPage(state.list, currentPage);
-                      lastProduct = state.list.last;
-                    } else {
-                      _pagingController.appendLastPage(state.list);
-                    }
+                    );
+                  }
+                },
+              ),
+              BlocListener(
+                bloc: _productBloc,
+                listener: (context, state) {
+                  print('X=====> current product list state: $state');
+                  if (state is ProductLoading) {
+                    setState(() {
+                      _loading = true;
+                      ProgressHUD.of(context)!.show();
+                    });
                   } else {
-                    _pagingController.appendLastPage([]);
+                    setState(() {
+                      _loading = false;
+                    });
+                    ProgressHUD.of(context)!.dismiss();
+                  }
 
-                    if (_selectedRadius < 20000) {
-                      _selectedRadius += 5000;
+                  if (state is InitializeAddUpdateProductSuccess) {
+                    _categoryList = state.categories;
 
-                      _productBloc.add(
-                        GetFirstProducts(
+                    _productBloc.add(GetFirstProducts(
+                      userid: application.currentUser!.uid,
+                      loc: _currentCenter,
+                      listType: widget.listType,
+                      sortBy: _selectedSortBy,
+                      distance: _selectedRadius,
+                      category: _selectedCategory != null
+                          ? [_selectedCategory!.code!]
+                          : null,
+                      itemCount: _selectedView == 'map' ? 50 : null,
+                    ));
+                  }
+
+                  if (state is GetFirstProductsSuccess) {
+                    _refreshController.refreshCompleted();
+                    _pagingController.refresh();
+                    lastProduct = null;
+                    _list.clear();
+                    groupedProducts.clear();
+
+                    if (state.list.isNotEmpty) {
+                      _list = state.list;
+
+                      final _productCount = (_selectedView == 'map') ? 50 : 10;
+
+                      if (state.list.length == _productCount) {
+                        currentPage += 1;
+                        _pagingController.appendPage(state.list, currentPage);
+                        lastProduct = state.list.last;
+                      } else {
+                        _pagingController.appendLastPage(state.list);
+                      }
+                    } else {
+                      _pagingController.appendLastPage([]);
+
+                      if (_selectedRadius < 20000) {
+                        _selectedRadius += 5000;
+
+                        _productBloc.add(
+                          GetFirstProducts(
+                            userid: application.currentUser!.uid,
+                            loc: _currentCenter,
+                            listType: widget.listType,
+                            sortBy: _selectedSortBy,
+                            distance: _selectedRadius,
+                            category: _selectedCategory != null
+                                ? [_selectedCategory!.code!]
+                                : null,
+                            itemCount: _selectedView == 'map' ? 50 : null,
+                          ),
+                        );
+                      } else {
+                        if (mounted) {
+                          DialogMessage.show(
+                            context,
+                            message:
+                                'No results found.\nTry to change your search criteria.',
+                          );
+                        }
+                      }
+                    }
+                    if (_selectedView == 'map')
+                      // _buildMarkers();
+                      _initMarkers();
+
+                    _pagingController.addPageRequestListener((pageKey) {
+                      if (lastProduct != null) {
+                        var startAfterVal;
+                        switch (_selectedSortBy.toLowerCase()) {
+                          case 'rating':
+                            startAfterVal = lastProduct!.rating;
+                            break;
+                          case 'name':
+                            startAfterVal = lastProduct!.productname;
+                            break;
+                          case 'distance':
+                            startAfterVal = lastProduct!.distance;
+                            break;
+
+                          default:
+                            startAfterVal = lastProduct!.price;
+                        }
+                        _productBloc.add(
+                          GetNextProducts(
+                            listType: widget.listType,
+                            lastProductId: lastProduct!.productid!,
+                            startAfterVal: widget.listType != 'demand'
+                                ? startAfterVal
+                                : lastProduct!.likes.toString(),
+                            userId:
+                                widget.listType == 'user' ? widget.userId : '',
+                            sortBy: _selectedSortBy,
+                            distance: _selectedRadius,
+                            category: _selectedCategory != null
+                                ? [_selectedCategory!.code!]
+                                : null,
+                            itemCount: _selectedView == 'map' ? 50 : null,
+                            loc: _currentCenter,
+                          ),
+                        );
+                      }
+                    });
+                  }
+
+                  if (state is GetFirstUserItemsSuccess) {
+                    _userItemsPagingController.refresh();
+
+                    if (state.list.isNotEmpty) {
+                      lastUserProduct = state.list.last;
+                      if (state.list.length == productCount) {
+                        _userItemsPagingController.appendPage(
+                            state.list, currentPage + 1);
+                      } else {
+                        _userItemsPagingController.appendLastPage(state.list);
+                      }
+                    } else {
+                      _userItemsPagingController.appendLastPage([]);
+                    }
+                    _userItemsPagingController
+                        .addPageRequestListener((pageKey) {
+                      if (lastUserProduct != null) {
+                        _productBloc.add(
+                          GetNextUserItems(
+                            lastProductId: lastProduct!.productid!,
+                            startAfterVal: lastProduct!.price.toString(),
+                          ),
+                        );
+                      }
+                    });
+                  }
+
+                  if (state is GetNextUserItemsSuccess) {
+                    if (state.list.isNotEmpty) {
+                      lastProduct = state.list.last;
+                      if (state.list.length == productCount) {
+                        _userItemsPagingController.appendPage(
+                            state.list, currentPage + 1);
+                      } else {
+                        _userItemsPagingController.appendLastPage(state.list);
+                      }
+                    } else {
+                      _userItemsPagingController.appendLastPage([]);
+                    }
+                  }
+
+                  if (state is GetProductsSuccess) {
+                    print('X=====> got next products');
+                    if (state.list.isNotEmpty) {
+                      _list.addAll(state.list);
+
+                      final _productCount = (_selectedView == 'map') ? 50 : 10;
+                      if (state.list.length == _productCount) {
+                        currentPage += 1;
+                        _pagingController.appendPage(state.list, currentPage);
+                        lastProduct = state.list.last;
+                        print('X=====> appended next page');
+                      } else {
+                        _pagingController.appendLastPage(state.list);
+                        print('X=====> appended last page');
+                      }
+                    } else {
+                      _pagingController.appendLastPage([]);
+                    }
+
+                    if (_selectedView == 'map')
+                      // _buildMarkers();
+                      _initMarkers();
+                  }
+                },
+              ),
+            ],
+            child: Container(
+              child: Column(
+                children: [
+                  CustomAppBar(
+                    label: _title,
+                  ),
+                  Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 20.0,
+                    ),
+                    child: Column(
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: CustomSearchBar(
+                                margin: EdgeInsets.symmetric(horizontal: 20.0),
+                                controller: _keywordTextController,
+                                backgroundColor:
+                                    Color(0xFF005F73).withOpacity(0.3),
+                                onSubmitted: (val) => _onSearchSubmitted(val),
+                              ),
+                            ),
+                          ],
+                        ),
+                        Container(
+                          margin: EdgeInsets.only(bottom: 8.0),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                flex: 2,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Category',
+                                      style: TextStyle(
+                                        fontSize:
+                                            SizeConfig.textScaleFactor * 12,
+                                      ),
+                                    ),
+                                    SizedBox(height: 5.0),
+                                    InkWell(
+                                      onTap: _onFilterByCategory,
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          border: Border(
+                                            bottom: BorderSide(
+                                              color: kBackgroundColor,
+                                              width: 0.6,
+                                            ),
+                                          ),
+                                        ),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Text(
+                                              _selectedCategory != null
+                                                  ? _selectedCategory!.name!
+                                                  : 'All',
+                                              style: Style.subtitle2.copyWith(
+                                                color: kBackgroundColor,
+                                                fontSize:
+                                                    SizeConfig.textScaleFactor *
+                                                        12,
+                                              ),
+                                            ),
+                                            Spacer(),
+                                            Icon(
+                                              FontAwesomeIcons.chevronDown,
+                                              color: kBackgroundColor,
+                                              size: SizeConfig.textScaleFactor *
+                                                  12,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              VerticalDivider(),
+                              Expanded(
+                                flex: 1,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Distance',
+                                      style: TextStyle(
+                                        fontSize:
+                                            SizeConfig.textScaleFactor * 12,
+                                      ),
+                                    ),
+                                    SizedBox(height: 5.0),
+                                    InkWell(
+                                      onTap: _onSelectDistance,
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          border: Border(
+                                            bottom: BorderSide(
+                                              color: kBackgroundColor,
+                                              width: 0.6,
+                                            ),
+                                          ),
+                                        ),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Text(
+                                              _displayRadius(),
+                                              style: Style.subtitle2.copyWith(
+                                                color: kBackgroundColor,
+                                                fontSize:
+                                                    SizeConfig.textScaleFactor *
+                                                        12,
+                                              ),
+                                            ),
+                                            Spacer(),
+                                            Icon(
+                                              FontAwesomeIcons.chevronDown,
+                                              color: kBackgroundColor,
+                                              size: SizeConfig.textScaleFactor *
+                                                  12,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              VerticalDivider(),
+                              Expanded(
+                                flex: 1,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Sort by',
+                                      style: TextStyle(
+                                        fontSize:
+                                            SizeConfig.textScaleFactor * 12,
+                                        color: _selectedView == 'map'
+                                            ? Colors.grey
+                                            : Colors.black,
+                                      ),
+                                    ),
+                                    SizedBox(height: 5.0),
+                                    InkWell(
+                                      onTap: _selectedView != 'map'
+                                          ? _onSortBy
+                                          : null,
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          border: Border(
+                                            bottom: BorderSide(
+                                              color: _selectedView == 'map'
+                                                  ? Colors.grey
+                                                  : kBackgroundColor,
+                                              width: 0.6,
+                                            ),
+                                          ),
+                                        ),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Text(
+                                              '${_selectedSortBy[0].toUpperCase()}${_selectedSortBy.substring(1).toLowerCase()}',
+                                              style: Style.subtitle2.copyWith(
+                                                color: _selectedView != 'map'
+                                                    ? kBackgroundColor
+                                                    : Colors.grey,
+                                                fontSize:
+                                                    SizeConfig.textScaleFactor *
+                                                        12,
+                                              ),
+                                            ),
+                                            Spacer(),
+                                            Icon(
+                                              FontAwesomeIcons.chevronDown,
+                                              color: _selectedView == 'map'
+                                                  ? Colors.grey
+                                                  : kBackgroundColor,
+                                              size: SizeConfig.textScaleFactor *
+                                                  12,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  ToggleSwitch(
+                    activeBgColor: [kBackgroundColor],
+                    initialLabelIndex: _selectedView == 'grid' ? 0 : 1,
+                    minWidth: SizeConfig.screenWidth,
+                    minHeight: 20.0,
+                    borderColor: [Color(0xFFEBFBFF)],
+                    totalSwitches: 2,
+                    customTextStyles: [
+                      TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: SizeConfig.textScaleFactor * 15,
+                        color: Colors.white,
+                      ),
+                      TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: SizeConfig.textScaleFactor * 15,
+                        color: Colors.white,
+                      ),
+                    ],
+                    icons: [
+                      Icons.grid_view,
+                      Icons.map,
+                    ],
+                    inactiveFgColor: Colors.white60,
+                    labels: [
+                      'Grid',
+                      'Map',
+                    ],
+                    onToggle: (index) {
+                      setState(() {
+                        _selectedView = index == 0 ? 'grid' : 'map';
+                      });
+
+                      if (index == 1)
+                        _initMarkers();
+                      else {
+                        setOriginalCenter();
+                        _productBloc.add(GetFirstProducts(
                           userid: application.currentUser!.uid,
                           loc: _currentCenter,
                           listType: widget.listType,
@@ -316,595 +693,233 @@ class _ProductListScreenState extends State<ProductListScreen>
                               ? [_selectedCategory!.code!]
                               : null,
                           itemCount: _selectedView == 'map' ? 50 : null,
-                        ),
-                      );
-                    } else {
-                      if (mounted) {
-                        DialogMessage.show(
-                          context,
-                          message:
-                              'No results found.\nTry to change your search criteria.',
-                        );
+                        ));
                       }
-                    }
-                  }
-                  if (_selectedView == 'map')
-                    // _buildMarkers();
-                    _initMarkers();
-
-                  _pagingController.addPageRequestListener((pageKey) {
-                    if (lastProduct != null) {
-                      var startAfterVal;
-                      switch (_selectedSortBy.toLowerCase()) {
-                        case 'rating':
-                          startAfterVal = lastProduct!.rating;
-                          break;
-                        case 'name':
-                          startAfterVal = lastProduct!.productname;
-                          break;
-                        case 'distance':
-                          startAfterVal = lastProduct!.distance;
-                          break;
-
-                        default:
-                          startAfterVal = lastProduct!.price;
-                      }
-                      _productBloc.add(
-                        GetNextProducts(
-                          listType: widget.listType,
-                          lastProductId: lastProduct!.productid!,
-                          startAfterVal: widget.listType != 'demand'
-                              ? startAfterVal
-                              : lastProduct!.likes.toString(),
-                          userId:
-                              widget.listType == 'user' ? widget.userId : '',
-                          sortBy: _selectedSortBy,
-                          distance: _selectedRadius,
-                          category: _selectedCategory != null
-                              ? [_selectedCategory!.code!]
-                              : null,
-                          itemCount: _selectedView == 'map' ? 50 : null,
-                          loc: _currentCenter,
-                        ),
-                      );
-                    }
-                  });
-                }
-
-                if (state is GetFirstUserItemsSuccess) {
-                  _userItemsPagingController.refresh();
-
-                  if (state.list.isNotEmpty) {
-                    lastUserProduct = state.list.last;
-                    if (state.list.length == productCount) {
-                      _userItemsPagingController.appendPage(
-                          state.list, currentPage + 1);
-                    } else {
-                      _userItemsPagingController.appendLastPage(state.list);
-                    }
-                  } else {
-                    _userItemsPagingController.appendLastPage([]);
-                  }
-                  _userItemsPagingController.addPageRequestListener((pageKey) {
-                    if (lastUserProduct != null) {
-                      _productBloc.add(
-                        GetNextUserItems(
-                          lastProductId: lastProduct!.productid!,
-                          startAfterVal: lastProduct!.price.toString(),
-                        ),
-                      );
-                    }
-                  });
-                }
-
-                if (state is GetNextUserItemsSuccess) {
-                  if (state.list.isNotEmpty) {
-                    lastProduct = state.list.last;
-                    if (state.list.length == productCount) {
-                      _userItemsPagingController.appendPage(
-                          state.list, currentPage + 1);
-                    } else {
-                      _userItemsPagingController.appendLastPage(state.list);
-                    }
-                  } else {
-                    _userItemsPagingController.appendLastPage([]);
-                  }
-                }
-
-                if (state is GetProductsSuccess) {
-                  print('X=====> got next products');
-                  if (state.list.isNotEmpty) {
-                    _list.addAll(state.list);
-
-                    final _productCount = (_selectedView == 'map') ? 50 : 10;
-                    if (state.list.length == _productCount) {
-                      currentPage += 1;
-                      _pagingController.appendPage(state.list, currentPage);
-                      lastProduct = state.list.last;
-                      print('X=====> appended next page');
-                    } else {
-                      _pagingController.appendLastPage(state.list);
-                      print('X=====> appended last page');
-                    }
-                  } else {
-                    _pagingController.appendLastPage([]);
-                  }
-
-                  if (_selectedView == 'map')
-                    // _buildMarkers();
-                    _initMarkers();
-                }
-              },
-            ),
-          ],
-          child: Container(
-            child: Column(
-              children: [
-                CustomAppBar(
-                  label: _title,
-                ),
-                Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 20.0,
+                    },
                   ),
-                  child: Column(
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: CustomSearchBar(
-                              margin: EdgeInsets.symmetric(horizontal: 20.0),
-                              controller: _keywordTextController,
-                              backgroundColor:
-                                  Color(0xFF005F73).withOpacity(0.3),
-                              onSubmitted: (val) => _onSearchSubmitted(val),
-                            ),
-                          ),
-                        ],
-                      ),
-                      Container(
-                        margin: EdgeInsets.only(bottom: 8.0),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              flex: 2,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                  Expanded(
+                    child: Container(
+                        child: _selectedView == 'grid'
+                            ? Column(
                                 children: [
-                                  Text(
-                                    'Category',
-                                    style: TextStyle(
-                                      fontSize: SizeConfig.textScaleFactor * 12,
-                                    ),
-                                  ),
-                                  SizedBox(height: 5.0),
-                                  InkWell(
-                                    onTap: _onFilterByCategory,
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        border: Border(
-                                          bottom: BorderSide(
-                                            color: kBackgroundColor,
-                                            width: 0.6,
-                                          ),
-                                        ),
-                                      ),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            _selectedCategory != null
-                                                ? _selectedCategory!.name!
-                                                : 'All',
-                                            style: Style.subtitle2.copyWith(
-                                              color: kBackgroundColor,
-                                              fontSize:
-                                                  SizeConfig.textScaleFactor *
-                                                      12,
-                                            ),
-                                          ),
-                                          Spacer(),
-                                          Icon(
-                                            FontAwesomeIcons.chevronDown,
-                                            color: kBackgroundColor,
-                                            size:
-                                                SizeConfig.textScaleFactor * 12,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            VerticalDivider(),
-                            Expanded(
-                              flex: 1,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Distance',
-                                    style: TextStyle(
-                                      fontSize: SizeConfig.textScaleFactor * 12,
-                                    ),
-                                  ),
-                                  SizedBox(height: 5.0),
-                                  InkWell(
-                                    onTap: _onSelectDistance,
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        border: Border(
-                                          bottom: BorderSide(
-                                            color: kBackgroundColor,
-                                            width: 0.6,
-                                          ),
-                                        ),
-                                      ),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            _displayRadius(),
-                                            style: Style.subtitle2.copyWith(
-                                              color: kBackgroundColor,
-                                              fontSize:
-                                                  SizeConfig.textScaleFactor *
-                                                      12,
-                                            ),
-                                          ),
-                                          Spacer(),
-                                          Icon(
-                                            FontAwesomeIcons.chevronDown,
-                                            color: kBackgroundColor,
-                                            size:
-                                                SizeConfig.textScaleFactor * 12,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            VerticalDivider(),
-                            Expanded(
-                              flex: 1,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Sort by',
-                                    style: TextStyle(
-                                      fontSize: SizeConfig.textScaleFactor * 12,
-                                      color: _selectedView == 'map'
-                                          ? Colors.grey
-                                          : Colors.black,
-                                    ),
-                                  ),
-                                  SizedBox(height: 5.0),
-                                  InkWell(
-                                    onTap: _selectedView != 'map'
-                                        ? _onSortBy
-                                        : null,
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        border: Border(
-                                          bottom: BorderSide(
-                                            color: _selectedView == 'map'
-                                                ? Colors.grey
-                                                : kBackgroundColor,
-                                            width: 0.6,
-                                          ),
-                                        ),
-                                      ),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            '${_selectedSortBy[0].toUpperCase()}${_selectedSortBy.substring(1).toLowerCase()}',
-                                            style: Style.subtitle2.copyWith(
-                                              color: _selectedView != 'map'
-                                                  ? kBackgroundColor
-                                                  : Colors.grey,
-                                              fontSize:
-                                                  SizeConfig.textScaleFactor *
-                                                      12,
-                                            ),
-                                          ),
-                                          Spacer(),
-                                          Icon(
-                                            FontAwesomeIcons.chevronDown,
-                                            color: _selectedView == 'map'
-                                                ? Colors.grey
-                                                : kBackgroundColor,
-                                            size:
-                                                SizeConfig.textScaleFactor * 12,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                ToggleSwitch(
-                  activeBgColor: [kBackgroundColor],
-                  initialLabelIndex: _selectedView == 'grid' ? 0 : 1,
-                  minWidth: SizeConfig.screenWidth,
-                  minHeight: 20.0,
-                  borderColor: [Color(0xFFEBFBFF)],
-                  totalSwitches: 2,
-                  customTextStyles: [
-                    TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: SizeConfig.textScaleFactor * 15,
-                      color: Colors.white,
-                    ),
-                    TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: SizeConfig.textScaleFactor * 15,
-                      color: Colors.white,
-                    ),
-                  ],
-                  icons: [
-                    Icons.grid_view,
-                    Icons.map,
-                  ],
-                  inactiveFgColor: Colors.white60,
-                  labels: [
-                    'Grid',
-                    'Map',
-                  ],
-                  onToggle: (index) {
-                    setState(() {
-                      _selectedView = index == 0 ? 'grid' : 'map';
-                    });
-
-                    if (index == 1)
-                      _initMarkers();
-                    else {
-                      setOriginalCenter();
-                      _productBloc.add(GetFirstProducts(
-                        userid: application.currentUser!.uid,
-                        loc: _currentCenter,
-                        listType: widget.listType,
-                        sortBy: _selectedSortBy,
-                        distance: _selectedRadius,
-                        category: _selectedCategory != null
-                            ? [_selectedCategory!.code!]
-                            : null,
-                        itemCount: _selectedView == 'map' ? 50 : null,
-                      ));
-                    }
-                  },
-                ),
-                Expanded(
-                  child: Container(
-                      child: _selectedView == 'grid'
-                          ? Column(
-                              children: [
-                                Expanded(child: _buildGridView2()),
-                                SlidingUpPanel(
-                                  isDraggable: true,
-                                  controller: _panelController,
-                                  backdropEnabled: false,
-                                  minHeight: SizeConfig.screenHeight * 0.06,
-                                  maxHeight: SizeConfig.screenHeight * 0.22,
-                                  onPanelClosed: () {
-                                    setState(() {
-                                      _showYourItems = false;
-                                    });
-                                    application.chatOpened = false;
-                                  },
-                                  onPanelOpened: () {
-                                    setState(() {
-                                      _showYourItems = true;
-                                    });
-                                    application.chatOpened = true;
-                                  },
-                                  collapsed: InkWell(
-                                    onTap: () {
-                                      _panelController.open();
+                                  Expanded(child: _buildGridView2()),
+                                  SlidingUpPanel(
+                                    isDraggable: true,
+                                    controller: _panelController,
+                                    backdropEnabled: false,
+                                    minHeight: SizeConfig.screenHeight * 0.06,
+                                    maxHeight: SizeConfig.screenHeight * 0.22,
+                                    onPanelClosed: () {
+                                      setState(() {
+                                        _showYourItems = false;
+                                      });
+                                      application.chatOpened = false;
                                     },
-                                    child: Container(
-                                      padding: EdgeInsets.symmetric(
-                                          horizontal: 15.0, vertical: 5.0),
-                                      color: Colors.white,
-                                      child: Row(
-                                        children: [
-                                          Text(
-                                            'Your Items',
-                                            style: Style.subtitle2.copyWith(
+                                    onPanelOpened: () {
+                                      setState(() {
+                                        _showYourItems = true;
+                                      });
+                                      application.chatOpened = true;
+                                    },
+                                    collapsed: InkWell(
+                                      onTap: () {
+                                        _panelController.open();
+                                      },
+                                      child: Container(
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 15.0, vertical: 5.0),
+                                        color: Colors.white,
+                                        child: Row(
+                                          children: [
+                                            Text(
+                                              'Your Items',
+                                              style: Style.subtitle2.copyWith(
+                                                color: kBackgroundColor,
+                                                fontWeight: FontWeight.bold,
+                                                decoration:
+                                                    TextDecoration.underline,
+                                              ),
+                                            ),
+                                            Icon(
+                                              _showYourItems
+                                                  ? Icons.arrow_drop_down
+                                                  : Icons.arrow_drop_up,
                                               color: kBackgroundColor,
-                                              fontWeight: FontWeight.bold,
-                                              decoration:
-                                                  TextDecoration.underline,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                    panel: Container(
+                                      color: Colors.white,
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 20.0,
+                                        vertical: 10.0,
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          InkWell(
+                                            onTap: () =>
+                                                _panelController.close(),
+                                            child: Row(
+                                              children: [
+                                                Text(
+                                                  'Your Items',
+                                                  style:
+                                                      Style.subtitle2.copyWith(
+                                                    color: kBackgroundColor,
+                                                    fontWeight: FontWeight.bold,
+                                                    decoration: TextDecoration
+                                                        .underline,
+                                                  ),
+                                                ),
+                                                Icon(
+                                                  _showYourItems
+                                                      ? Icons.arrow_drop_down
+                                                      : Icons.arrow_drop_up,
+                                                  color: kBackgroundColor,
+                                                ),
+                                              ],
                                             ),
                                           ),
-                                          Icon(
-                                            _showYourItems
-                                                ? Icons.arrow_drop_down
-                                                : Icons.arrow_drop_up,
-                                            color: kBackgroundColor,
+                                          Expanded(
+                                            child: PagedGridView<int,
+                                                ProductModel>(
+                                              pagingController:
+                                                  _userItemsPagingController,
+                                              showNewPageProgressIndicatorAsGridChild:
+                                                  false,
+                                              showNewPageErrorIndicatorAsGridChild:
+                                                  false,
+                                              showNoMoreItemsIndicatorAsGridChild:
+                                                  false,
+                                              padding: EdgeInsets.symmetric(
+                                                vertical: 10.0,
+                                              ),
+                                              gridDelegate:
+                                                  SliverGridDelegateWithFixedCrossAxisCount(
+                                                crossAxisCount: 1,
+                                              ),
+                                              scrollDirection: Axis.horizontal,
+                                              builderDelegate:
+                                                  PagedChildBuilderDelegate<
+                                                      ProductModel>(
+                                                itemBuilder:
+                                                    (context, product, index) {
+                                                  var thumbnail = '';
+
+                                                  if (product.media != null &&
+                                                      product
+                                                          .media!.isNotEmpty) {
+                                                    for (var media
+                                                        in product.media!) {
+                                                      thumbnail =
+                                                          media.url_t ?? '';
+                                                      if (thumbnail.isNotEmpty)
+                                                        break;
+                                                    }
+                                                  }
+
+                                                  if (thumbnail.isEmpty) {
+                                                    if (product.mediaPrimary !=
+                                                            null &&
+                                                        product.mediaPrimary!
+                                                                .url_t !=
+                                                            null &&
+                                                        product.mediaPrimary!
+                                                            .url_t!.isNotEmpty)
+                                                      thumbnail = product
+                                                          .mediaPrimary!.url_t!;
+                                                  }
+                                                  return LongPressDraggable(
+                                                    data: product,
+                                                    childWhenDragging:
+                                                        Container(
+                                                      height: SizeConfig
+                                                              .screenHeight *
+                                                          0.12,
+                                                      width: SizeConfig
+                                                              .screenHeight *
+                                                          0.12,
+                                                      decoration: BoxDecoration(
+                                                        color: kBackgroundColor,
+                                                        borderRadius:
+                                                            BorderRadius.only(
+                                                          topLeft:
+                                                              Radius.circular(
+                                                                  20.0),
+                                                          topRight:
+                                                              Radius.circular(
+                                                                  20.0),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    feedback: Container(
+                                                      height: 100.0,
+                                                      width: 100.0,
+                                                      decoration: BoxDecoration(
+                                                        shape: BoxShape.circle,
+                                                        image: DecorationImage(
+                                                          image: thumbnail
+                                                                  .isNotEmpty
+                                                              ? CachedNetworkImageProvider(
+                                                                  thumbnail)
+                                                              : AssetImage(
+                                                                      'assets/images/image_placeholder.jpg')
+                                                                  as ImageProvider,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    child: BarterListItem(
+                                                      height: SizeConfig
+                                                              .screenHeight *
+                                                          0.07,
+                                                      width: SizeConfig
+                                                              .screenHeight *
+                                                          0.12,
+                                                      hideLikeBtn: true,
+                                                      hideDistance: true,
+                                                      showRating: false,
+                                                      product: product,
+                                                      onTapped: () async {
+                                                        final changed =
+                                                            await Navigator
+                                                                .push(
+                                                          context,
+                                                          MaterialPageRoute(
+                                                            builder: (context) =>
+                                                                ProductDetailsScreen(
+                                                              productId: product
+                                                                      .productid ??
+                                                                  '',
+                                                              ownItem: false,
+                                                            ),
+                                                          ),
+                                                        );
+
+                                                        if (changed == true) {
+                                                          _productBloc.add(
+                                                              InitializeAddUpdateProduct());
+                                                        }
+                                                      },
+                                                    ),
+                                                  );
+                                                },
+                                              ),
+                                            ),
                                           ),
                                         ],
                                       ),
                                     ),
                                   ),
-                                  panel: Container(
-                                    color: Colors.white,
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: 20.0,
-                                      vertical: 10.0,
-                                    ),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        InkWell(
-                                          onTap: () => _panelController.close(),
-                                          child: Row(
-                                            children: [
-                                              Text(
-                                                'Your Items',
-                                                style: Style.subtitle2.copyWith(
-                                                  color: kBackgroundColor,
-                                                  fontWeight: FontWeight.bold,
-                                                  decoration:
-                                                      TextDecoration.underline,
-                                                ),
-                                              ),
-                                              Icon(
-                                                _showYourItems
-                                                    ? Icons.arrow_drop_down
-                                                    : Icons.arrow_drop_up,
-                                                color: kBackgroundColor,
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        Expanded(
-                                          child:
-                                              PagedGridView<int, ProductModel>(
-                                            pagingController:
-                                                _userItemsPagingController,
-                                            showNewPageProgressIndicatorAsGridChild:
-                                                false,
-                                            showNewPageErrorIndicatorAsGridChild:
-                                                false,
-                                            showNoMoreItemsIndicatorAsGridChild:
-                                                false,
-                                            padding: EdgeInsets.symmetric(
-                                              vertical: 10.0,
-                                            ),
-                                            gridDelegate:
-                                                SliverGridDelegateWithFixedCrossAxisCount(
-                                              crossAxisCount: 1,
-                                            ),
-                                            scrollDirection: Axis.horizontal,
-                                            builderDelegate:
-                                                PagedChildBuilderDelegate<
-                                                    ProductModel>(
-                                              itemBuilder:
-                                                  (context, product, index) {
-                                                var thumbnail = '';
-
-                                                if (product.media != null &&
-                                                    product.media!.isNotEmpty) {
-                                                  for (var media
-                                                      in product.media!) {
-                                                    thumbnail =
-                                                        media.url_t ?? '';
-                                                    if (thumbnail.isNotEmpty)
-                                                      break;
-                                                  }
-                                                }
-
-                                                if (thumbnail.isEmpty) {
-                                                  if (product.mediaPrimary !=
-                                                          null &&
-                                                      product.mediaPrimary!
-                                                              .url_t !=
-                                                          null &&
-                                                      product.mediaPrimary!
-                                                          .url_t!.isNotEmpty)
-                                                    thumbnail = product
-                                                        .mediaPrimary!.url_t!;
-                                                }
-                                                return LongPressDraggable(
-                                                  data: product,
-                                                  childWhenDragging: Container(
-                                                    height: SizeConfig
-                                                            .screenHeight *
-                                                        0.12,
-                                                    width: SizeConfig
-                                                            .screenHeight *
-                                                        0.12,
-                                                    decoration: BoxDecoration(
-                                                      color: kBackgroundColor,
-                                                      borderRadius:
-                                                          BorderRadius.only(
-                                                        topLeft:
-                                                            Radius.circular(
-                                                                20.0),
-                                                        topRight:
-                                                            Radius.circular(
-                                                                20.0),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  feedback: Container(
-                                                    height: 100.0,
-                                                    width: 100.0,
-                                                    decoration: BoxDecoration(
-                                                      shape: BoxShape.circle,
-                                                      image: DecorationImage(
-                                                        image: thumbnail
-                                                                .isNotEmpty
-                                                            ? CachedNetworkImageProvider(
-                                                                thumbnail)
-                                                            : AssetImage(
-                                                                    'assets/images/image_placeholder.jpg')
-                                                                as ImageProvider,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  child: BarterListItem(
-                                                    height: SizeConfig
-                                                            .screenHeight *
-                                                        0.07,
-                                                    width: SizeConfig
-                                                            .screenHeight *
-                                                        0.12,
-                                                    hideLikeBtn: true,
-                                                    hideDistance: true,
-                                                    showRating: false,
-                                                    product: product,
-                                                    onTapped: () async {
-                                                      final changed =
-                                                          await Navigator.push(
-                                                        context,
-                                                        MaterialPageRoute(
-                                                          builder: (context) =>
-                                                              ProductDetailsScreen(
-                                                            productId: product
-                                                                    .productid ??
-                                                                '',
-                                                            ownItem: false,
-                                                          ),
-                                                        ),
-                                                      );
-
-                                                      if (changed == true) {
-                                                        _productBloc.add(
-                                                            InitializeAddUpdateProduct());
-                                                      }
-                                                    },
-                                                  ),
-                                                );
-                                              },
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            )
-                          : _buildMapView()),
-                ),
-              ],
+                                ],
+                              )
+                            : _buildMapView()),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -1655,22 +1670,6 @@ class _ProductListScreenState extends State<ProductListScreen>
     final list = List.from(_list);
 
     for (ProductModel product in list) {
-      var thumbnail = '';
-
-      if (product.media != null && product.media!.isNotEmpty) {
-        for (var media in product.media!) {
-          thumbnail = media.url_t ?? '';
-          if (thumbnail.isNotEmpty) break;
-        }
-      }
-
-      if (thumbnail.isEmpty) {
-        if (product.mediaPrimary != null &&
-            product.mediaPrimary!.url_t != null &&
-            product.mediaPrimary!.url_t!.isNotEmpty)
-          thumbnail = product.mediaPrimary!.url_t!;
-      }
-
       final BitmapDescriptor markerImage =
           await MapHelper.createCustomMarkerBitmap(
         product.productname ?? '',
@@ -1736,10 +1735,207 @@ class _ProductListScreenState extends State<ProductListScreen>
   _onClusterTapped(int clusterId, int pointSize) {
     print('point size::::: $pointSize');
     List<ProductModel> productList = List.from(_list);
-    List<String> productIds = [];
+    List<ProductModel> clusterProducts = [];
     if (_clusterManager != null) {
-      final mapMarkers1 = _clusterManager!.children(clusterId);
-      if (mapMarkers1 != null && mapMarkers1.isNotEmpty) {}
+      final mapMarkers = _clusterManager!.points(clusterId);
+      final prodIds = mapMarkers.map((mMarker) => mMarker.productId);
+      if (prodIds.isNotEmpty) {
+        prodIds.forEach((id) {
+          final prod = productList.singleWhere((prod) => prod.productid == id);
+          clusterProducts.add(prod);
+        });
+      }
+    }
+
+    if (clusterProducts.isNotEmpty) {
+      showModalBottomSheet(
+        context: context,
+        builder: (context) {
+          return Container(
+            padding: EdgeInsets.symmetric(
+              vertical: 10.0,
+              horizontal: 20.0,
+            ),
+            color: Colors.white,
+            height: SizeConfig.screenHeight * 0.4,
+            width: double.infinity,
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      'Products',
+                      style: Style.title2.copyWith(
+                        color: kBackgroundColor,
+                      ),
+                    ),
+                    Spacer(),
+                    InkWell(
+                      onTap: () => Navigator.pop(context),
+                      child: Container(
+                        padding: EdgeInsets.all(8.0),
+                        child: Center(
+                          child: Icon(
+                            Icons.close,
+                            color: kBackgroundColor,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: clusterProducts
+                          .map((product) => InkWell(
+                                onTap: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => ProductDetailsScreen(
+                                      productId: product.productid ?? '',
+                                      ownItem: application.currentUser!.uid ==
+                                          product.userid,
+                                    ),
+                                  ),
+                                ),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    border: Border(
+                                      bottom: BorderSide(
+                                        color: kBackgroundColor,
+                                      ),
+                                    ),
+                                  ),
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 20.0, vertical: 8.0),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Container(
+                                            width: SizeConfig.screenWidth * .25,
+                                            height:
+                                                SizeConfig.screenWidth * .25,
+                                            decoration: BoxDecoration(
+                                              image: DecorationImage(
+                                                image: product.mediaPrimary !=
+                                                        null
+                                                    ? NetworkImage(product
+                                                        .mediaPrimary!.url_t!)
+                                                    : AssetImage(
+                                                            'assets/images/image_placeholder.jpg')
+                                                        as ImageProvider<
+                                                            Object>,
+                                                fit: BoxFit.cover,
+                                              ),
+                                            ),
+                                          ),
+                                          SizedBox(width: 16.0),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  product.productname ?? '',
+                                                  style:
+                                                      Style.subtitle2.copyWith(
+                                                    color: kBackgroundColor,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                                SizedBox(height: 8.0),
+                                                Text(
+                                                  product.price == null
+                                                      ? ''
+                                                      : '${application.currentUserModel!.currency ?? 'PHP'} ${product.price!.toStringAsFixed(2)}',
+                                                  style:
+                                                      Style.subtitle2.copyWith(
+                                                    color: kBackgroundColor,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                                SizedBox(height: 8.0),
+                                                Row(
+                                                  children: [
+                                                    Icon(
+                                                      Icons.location_pin,
+                                                      size: 20.0,
+                                                      color: Colors.red,
+                                                    ),
+                                                    Text(
+                                                      product.address!.address!
+                                                              .isNotEmpty
+                                                          ? product
+                                                              .address!.address!
+                                                          : 'No address',
+                                                      style: Style.subtitle2
+                                                          .copyWith(
+                                                              color:
+                                                                  kBackgroundColor),
+                                                    )
+                                                  ],
+                                                ),
+                                                SizedBox(height: 8.0),
+                                                Row(
+                                                  children: [
+                                                    ...List.generate(5, (i) {
+                                                      return Padding(
+                                                        padding:
+                                                            EdgeInsets.only(
+                                                                right: i != 5
+                                                                    ? 5.0
+                                                                    : 0.0),
+                                                        child: Icon(
+                                                          i <
+                                                                  (product.rating !=
+                                                                          null
+                                                                      ? product
+                                                                          .rating!
+                                                                          .round()
+                                                                      : 0)
+                                                              ? Icons.star
+                                                              : Icons
+                                                                  .star_border,
+                                                          color:
+                                                              Color(0xFFFFC107),
+                                                          size: 20.0,
+                                                        ),
+                                                      );
+                                                    }),
+                                                    Text(
+                                                      product.rating != null
+                                                          ? product.rating!
+                                                              .toStringAsFixed(
+                                                                  1)
+                                                          : '0',
+                                                      style: TextStyle(
+                                                          fontSize: 16.0),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ))
+                          .toList(),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      );
     }
   }
 }

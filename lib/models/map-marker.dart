@@ -9,7 +9,7 @@ class MapMarker extends Clusterable {
   final LatLng position;
   Function()? onTap;
   Function(int, int)? onClusterTap;
-  final String? productId;
+  String? productId;
   BitmapDescriptor icon;
   MapMarker({
     required this.id,

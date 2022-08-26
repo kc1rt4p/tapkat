@@ -127,7 +127,7 @@ class MapHelper {
     return Fluster<MapMarker>(
       minZoom: minZoom,
       maxZoom: maxZoom,
-      radius: 150,
+      radius: 250,
       extent: 2048,
       nodeSize: 64,
       points: markers,
@@ -171,6 +171,7 @@ class MapHelper {
           clusterWidth,
         );
         mapMarker.onClusterTap = onClusterTap;
+        mapMarker.productId = null;
       }
 
       return mapMarker.toMarker();

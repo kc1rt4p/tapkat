@@ -482,28 +482,6 @@ class _BarterScreenState extends State<BarterScreen> {
             }
 
             if (state is UpdateBarterStatusSuccess) {
-              // String message = '';
-
-              // switch (_barterRecord!.dealStatus) {
-              //   case 'accepted':
-              //     message = 'You have accepted this offer';
-              //     break;
-              //   case 'revoked':
-              //     message = 'You have revoked acceptance for this offer';
-              //     break;
-              //   case 'completed':
-              //     message = 'You marked this barter as completed';
-              //     break;
-              //   case 'withdrawn':
-              //     message = 'You have withdrawn your offer';
-              //     break;
-              //   case 'rejected':
-              //     message = 'You have rejected the offer';
-              //     break;
-              //   default:
-              //     message = 'You have submitted this offer';
-              // }
-
               if (_barterRecord!.dealStatus == 'submitted' &&
                   widget.buying &&
                   widget.product != null) {
@@ -525,16 +503,6 @@ class _BarterScreenState extends State<BarterScreen> {
                 Navigator.pop(context);
               }
 
-              // if (_barterRecord!.dealStatus != 'submitted') {
-              //   if (!_closing && !widget.quickBarter) {
-              //   await DialogMessage.show(
-              //     context,
-              //     title: 'Info',
-              //     message: message,
-              //     hideClose: true,
-              //   );
-              // }
-              // }
               _panelController.open();
             }
 
@@ -1077,7 +1045,8 @@ class _BarterScreenState extends State<BarterScreen> {
                 if (state is BarterLoading) {
                   _loading = true;
                   ProgressHUD.of(context)!.show();
-                } else {
+                } else if (!(state is GetUnreadBarterMessagesSuccess) ||
+                    !(state is MarkMessagesAsReadSuccess)) {
                   _loading = false;
                   ProgressHUD.of(context)!.dismiss();
                 }
