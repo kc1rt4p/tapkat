@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -106,6 +105,7 @@ class _BarterScreenState extends State<BarterScreen> {
   final _messageTextController = TextEditingController();
   final _panelController = PanelController();
   bool _panelClosed = true;
+  bool _quickBarter = false;
 
   List<ChatMessageModel> _messages = [];
   StreamSubscription<List<ChatMessageModel?>>? _barterChatStreamSub;
@@ -163,6 +163,7 @@ class _BarterScreenState extends State<BarterScreen> {
     _initialOffer = widget.initialOffer;
 
     super.initState();
+    _quickBarter = widget.quickBarter;
     _existing = widget.existing;
   }
 
@@ -404,6 +405,7 @@ class _BarterScreenState extends State<BarterScreen> {
         BlocListener(
           bloc: _barterBloc,
           listener: (context, state) async {
+            print('_barter current state::::: $state');
             if (state is BarterLoading) {
               _loading = true;
               ProgressHUD.of(context)!.show();
@@ -493,24 +495,12 @@ class _BarterScreenState extends State<BarterScreen> {
                 Navigator.pop(context);
               }
 
-              if (!_closing &&
-                  _barterRecord!.dealStatus == 'submitted' &&
-                  widget.quickBarter) {
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  content: Text('Your offer has been submitted'),
-                  duration: Duration(seconds: 2),
-                ));
-                Navigator.pop(context);
-              }
-
               _panelController.open();
             }
 
             if (state is BarterInitialized) {
               setState(() {
                 remoteUserItems = state.remoteUserProducts;
-                print(
-                    'x0000x remote user items count: ${remoteUserItems.length}');
                 currentUserItems = state.currentUserProducts;
                 chatOnly = state.chatOnly;
               });
@@ -536,6 +526,15 @@ class _BarterScreenState extends State<BarterScreen> {
                     unsaveProductsStorage = new LocalStorage('$_barterId.json');
 
                     _barterBloc.add(InitializeBarterChat(_barterId!));
+
+                    if (_quickBarter &&
+                        _barterRecord!.dealStatus == 'submitted') {
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: Text('Your offer has been submitted'),
+                        duration: Duration(seconds: 2),
+                      ));
+                      Navigator.pop(context);
+                    }
 
                     if (_barterRecord!.userid1Role == 'sender') {
                       _senderUserId = _barterRecord!.userid1;
@@ -793,11 +792,6 @@ class _BarterScreenState extends State<BarterScreen> {
                   );
                   _existing = false;
                 }
-
-                if (widget.quickBarter &&
-                    _barterRecord!.dealStatus == 'submitted') {
-                  _onSubmitTapped(true);
-                }
               });
             }
 
@@ -921,6 +915,7 @@ class _BarterScreenState extends State<BarterScreen> {
                       userid1Role: 'sender',
                       userid2Role: 'recipient',
                     ),
+                    quickBarter: _quickBarter,
                   ),
                 );
               } else {
@@ -1926,7 +1921,6 @@ class _BarterScreenState extends State<BarterScreen> {
   }
 
   Widget _userItem(String owner, ProductModel product) {
-    print('X====> PRODUCT:: ${product.toJson()}');
     var thumbnail = '';
 
     if (product.media != null && product.media!.isNotEmpty) {
