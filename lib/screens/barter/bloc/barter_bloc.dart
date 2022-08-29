@@ -485,8 +485,8 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
                         );
                       } else {
                         productRequest.status = 'completed';
+                        await _productRepository.updateProduct(productRequest);
                       }
-                      await _productRepository.updateProduct(productRequest);
                     }
                   }
                 });

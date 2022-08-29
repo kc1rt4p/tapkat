@@ -483,9 +483,19 @@ class BarterRepository {
 
   Future<bool> deleteBarter(String id, {bool permanent = false}) async {
     try {
+      final docSnapshot = await barterRef.doc(id).get();
+      if (!docSnapshot.exists) return false;
+      final barterRecord = BarterRecordModel.fromJson(docSnapshot.data()!);
       if (!permanent) {
+        List<String> deletedFor = [];
+
+        if (barterRecord.deletedFor != null &&
+            barterRecord.deletedFor!.isNotEmpty) {
+          deletedFor.add(application.currentUser!.uid);
+        }
+
         await barterRef.doc(id).update({
-          'deletedFor': [application.currentUser!.uid],
+          'deletedFor': deletedFor,
         });
       } else {
         await barterRef.doc(id).delete();

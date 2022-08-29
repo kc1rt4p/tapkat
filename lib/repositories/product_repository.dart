@@ -425,20 +425,20 @@ class ProductRepository {
 
   Future<bool> updateProduct(ProductRequestModel product,
       {bool dealDone = false}) async {
-    var body = product.toJson();
+    var body = Map<String, dynamic>();
     if (dealDone) {
       body.addAll({
+        'productid': product.productid,
         'deal_done': dealDone,
+        'userid': product.userid ?? '',
       });
+    } else {
+      body = product.toJson(updating: true);
     }
-
-    body.addAll(product.toJson(updating: true));
 
     final response = await _apiService.post(
       url: 'products/update/${product.productid}',
-      body: {
-        ...product.toJson(updating: true),
-      },
+      body: body,
     );
 
     return response.data['status'] == 'SUCCESS';
