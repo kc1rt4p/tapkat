@@ -879,6 +879,30 @@ class _BarterScreenState extends State<BarterScreen> {
                       ? _product!.media!.first.url_t!
                       : _product!.media!.first.url!;
 
+                var thumbnail2 = '';
+
+                if (widget.initialOffer != null) {
+                  final _product2 = widget.initialOffer!;
+                  if (_product2.mediaPrimary != null &&
+                      _product2.mediaPrimary!.url != null &&
+                      _product2.mediaPrimary!.url!.isNotEmpty)
+                    thumbnail = _product2.mediaPrimary!.url!;
+
+                  if (_product2.mediaPrimary != null &&
+                      _product2.mediaPrimary!.url_t != null &&
+                      _product2.mediaPrimary!.url_t!.isNotEmpty)
+                    thumbnail = _product2.mediaPrimary!.url_t!;
+
+                  if (_product2.mediaPrimary == null ||
+                      _product2.mediaPrimary!.url!.isEmpty &&
+                          _product2.mediaPrimary!.url_t!.isEmpty &&
+                          _product2.media != null &&
+                          _product2.media!.isNotEmpty)
+                    thumbnail = _product2.media!.first.url_t != null
+                        ? _product2.media!.first.url_t!
+                        : _product2.media!.first.url!;
+                }
+
                 setState(() {
                   _barterId = _currentUser!.uid +
                       _product!.userid! +
@@ -910,6 +934,7 @@ class _BarterScreenState extends State<BarterScreen> {
                       u1P1Price: widget.initialOffer != null
                           ? widget.initialOffer!.price!.toDouble()
                           : null,
+                      u1P1Image: thumbnail2,
                       barterNo: 0,
                       dealDate: DateTime.now(),
                       userid1Role: 'sender',
