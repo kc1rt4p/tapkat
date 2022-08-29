@@ -487,11 +487,13 @@ class BarterRepository {
       if (!docSnapshot.exists) return false;
       final barterRecord = BarterRecordModel.fromJson(docSnapshot.data()!);
       if (!permanent) {
-        List<String> deletedFor = [];
+        List<String>? deletedFor = barterRecord.deletedFor;
 
         if (barterRecord.deletedFor != null &&
             barterRecord.deletedFor!.isNotEmpty) {
-          deletedFor.add(application.currentUser!.uid);
+          deletedFor!.add(application.currentUser!.uid);
+        } else {
+          deletedFor = [application.currentUser!.uid];
         }
 
         await barterRef.doc(id).update({
