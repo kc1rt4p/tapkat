@@ -95,7 +95,6 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
     'Rating',
   ];
   double _selectedRadius = 5000;
-  double mapZoomLevel = 11;
 
   Circle? _currentCircle;
 
@@ -116,7 +115,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
 
   final int _minClusterZoom = 9;
 
-  final int _maxClusterZoom = 20;
+  final int _maxClusterZoom = 15;
 
   Fluster<MapMarker>? _clusterManager;
 
@@ -130,7 +129,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
     application.currentScreen = 'Search Result Screen';
     _keyWordTextController.text = widget.keyword;
     _productBloc.add(InitializeAddUpdateProduct());
-    mapZoomLevel = getZoomLevel(_selectedRadius);
+    _currentZoom = getZoomLevel(_selectedRadius);
     _selectedRadius = widget.initialRadius;
 
     super.initState();
@@ -1101,10 +1100,10 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
     });
 
     if (_selectedView == 'map') {
-      double mapZoomLevel = getZoomLevel(_selectedRadius);
+      double _currentZoom = getZoomLevel(_selectedRadius);
 
       googleMapsController.animateCamera(CameraUpdate.newCameraPosition(
-        CameraPosition(target: _currentCenter, zoom: mapZoomLevel),
+        CameraPosition(target: _currentCenter, zoom: _currentZoom),
       ));
     }
 
@@ -1312,7 +1311,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
 
   Widget _buildMapView() {
     setState(() {
-      mapZoomLevel = getZoomLevel(_selectedRadius.toDouble());
+      _currentZoom = getZoomLevel(_selectedRadius.toDouble());
     });
     return Container(
       padding: EdgeInsets.fromLTRB(20.0, 5.0, 20.0, 10.0),
@@ -1331,7 +1330,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
 
                 final _km = km * 1000;
 
-                print('0---> $zoomLevel & $mapZoomLevel');
+                print('0---> $zoomLevel & $_currentZoom');
                 if ((_km >= 500 && _km <= 30000)) {
                   setState(() {
                     _selectedRadius = _km;
@@ -1377,16 +1376,16 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
               //   });
 
               //   if (_selectedView == 'map') {
-              //     double mapZoomLevel = getZoomLevel(_selectedRadius);
+              //     double _currentZoom = getZoomLevel(_selectedRadius);
 
               //     googleMapsController
               //         .animateCamera(CameraUpdate.newCameraPosition(
-              //       CameraPosition(target: _currentCenter, zoom: mapZoomLevel),
+              //       CameraPosition(target: _currentCenter, zoom: _currentZoom),
               //     ));
               //   }
               // },
               onCameraIdle: (latLng) => googleMapsCenter = latLng,
-              initialZoom: mapZoomLevel,
+              initialZoom: _currentZoom,
               initialLocation: _currentCenter,
               onMapCreated: (controller) {
                 _onMapCreated(controller);
@@ -1412,11 +1411,11 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                 setState(() {
                   _selectedRadius = 500;
                 });
-                mapZoomLevel = getZoomLevel(_selectedRadius.toDouble());
+                _currentZoom = getZoomLevel(_selectedRadius.toDouble());
                 googleMapsController
                     .animateCamera(CameraUpdate.newCameraPosition(
                   CameraPosition(
-                      target: _currentCenter, zoom: mapZoomLevel + 2),
+                      target: _currentCenter, zoom: _currentZoom + 2),
                 ));
 
                 _searchBloc.add(InitializeSearch(
@@ -1461,11 +1460,11 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                       }
                     });
 
-                    double mapZoomLevel = 0;
+                    double _currentZoom = 0;
                     if (_selectedRadius > 500 && _selectedRadius < 30000) {
-                      mapZoomLevel = getZoomLevel(_selectedRadius.toDouble());
+                      _currentZoom = getZoomLevel(_selectedRadius.toDouble());
                     } else {
-                      mapZoomLevel =
+                      _currentZoom =
                           await googleMapsController.getZoomLevel() + 1;
                     }
 
@@ -1473,7 +1472,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                         .animateCamera(CameraUpdate.newCameraPosition(
                       CameraPosition(
                         target: _currentCenter,
-                        zoom: mapZoomLevel,
+                        zoom: _currentZoom,
                       ),
                     ));
 
@@ -1524,18 +1523,18 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                         );
                       }
                     });
-                    double mapZoomLevel = 0;
+                    double _currentZoom = 0;
                     if (_selectedRadius > 500 && _selectedRadius < 30000) {
-                      mapZoomLevel = getZoomLevel(_selectedRadius.toDouble());
+                      _currentZoom = getZoomLevel(_selectedRadius.toDouble());
                     } else {
-                      mapZoomLevel =
+                      _currentZoom =
                           await googleMapsController.getZoomLevel() - 1;
                     }
                     googleMapsController
                         .animateCamera(CameraUpdate.newCameraPosition(
                       CameraPosition(
                         target: _currentCenter,
-                        zoom: mapZoomLevel,
+                        zoom: _currentZoom,
                       ),
                     ));
 

@@ -2923,7 +2923,7 @@ class _BarterScreenState extends State<BarterScreen> {
           ),
           borderRadius: BorderRadius.circular(8.0),
           image: DecorationImage(
-            image: want.imgUrl!.isNotEmpty
+            image: want.imgUrl != null && want.imgUrl!.isNotEmpty
                 ? NetworkImage(want.imgUrl!)
                 : AssetImage('assets/images/image_placeholder.jpg')
                     as ImageProvider<Object>,
@@ -2988,7 +2988,7 @@ class _BarterScreenState extends State<BarterScreen> {
             ),
             borderRadius: BorderRadius.circular(8.0),
             image: DecorationImage(
-              image: offer.imgUrl!.isNotEmpty
+              image: offer.imgUrl != null && offer.imgUrl!.isNotEmpty
                   ? NetworkImage(offer.imgUrl!)
                   : AssetImage('assets/images/image_placeholder.jpg')
                       as ImageProvider<Object>,

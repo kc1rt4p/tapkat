@@ -431,6 +431,9 @@ class ProductRepository {
         'deal_done': dealDone,
       });
     }
+
+    body.addAll(product.toJson(updating: true));
+
     final response = await _apiService.post(
       url: 'products/update/${product.productid}',
       body: {

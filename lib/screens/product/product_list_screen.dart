@@ -109,7 +109,6 @@ class _ProductListScreenState extends State<ProductListScreen>
   List<ProductCategoryModel> _categoryList = [];
 
   double _selectedRadius = 5000;
-  double mapZoomLevel = 11;
 
   late LatLng _currentCenter;
 
@@ -1182,10 +1181,10 @@ class _ProductListScreenState extends State<ProductListScreen>
     });
 
     if (_selectedView == 'map') {
-      double mapZoomLevel = getZoomLevel(_selectedRadius);
+      _currentZoom = getZoomLevel(_selectedRadius);
 
       googleMapsController.animateCamera(CameraUpdate.newCameraPosition(
-        CameraPosition(target: _currentCenter, zoom: mapZoomLevel),
+        CameraPosition(target: _currentCenter, zoom: _currentZoom),
       ));
     }
 
@@ -1389,7 +1388,7 @@ class _ProductListScreenState extends State<ProductListScreen>
 
   Widget _buildMapView() {
     setState(() {
-      mapZoomLevel = getZoomLevel(_selectedRadius);
+      _currentZoom = getZoomLevel(_selectedRadius);
     });
     return Container(
       padding: EdgeInsets.fromLTRB(20.0, 5.0, 20.0, 10.0),
@@ -1464,7 +1463,7 @@ class _ProductListScreenState extends State<ProductListScreen>
                 _updateMarkers(camPos.zoom);
               },
               onCameraIdle: (latLng) => googleMapsCenter = latLng,
-              initialZoom: mapZoomLevel,
+              initialZoom: _currentZoom,
               initialLocation: _currentCenter,
               onMapCreated: (controller) {
                 _onMapCreated(controller);
@@ -1484,11 +1483,11 @@ class _ProductListScreenState extends State<ProductListScreen>
                 setState(() {
                   _selectedRadius = 500;
                 });
-                mapZoomLevel = getZoomLevel(_selectedRadius);
+                _currentZoom = getZoomLevel(_selectedRadius);
                 googleMapsController
                     .animateCamera(CameraUpdate.newCameraPosition(
                   CameraPosition(
-                      target: _currentCenter, zoom: mapZoomLevel + 2),
+                      target: _currentCenter, zoom: _currentZoom + 2),
                 ));
 
                 _productBloc.add(GetFirstProducts(

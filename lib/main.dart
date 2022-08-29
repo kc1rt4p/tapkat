@@ -108,7 +108,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       initLogs();
     }
     if (!kIsWeb) {
-      WidgetsBinding.instance!.addObserver(this);
+      WidgetsBinding.instance.addObserver(this);
     }
 
     super.initState();
@@ -198,7 +198,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
       // await FlutterEmailSender.send(email);
 
-      SchedulerBinding.instance!.addPostFrameCallback((_) {
+      SchedulerBinding.instance.addPostFrameCallback((_) {
         DialogMessage.show(
           navigatorKey.currentContext!,
           message:
@@ -247,7 +247,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   @override
   void dispose() {
     if (!kIsWeb) {
-      WidgetsBinding.instance!.removeObserver(this);
+      WidgetsBinding.instance.removeObserver(this);
     }
     _userStream?.cancel();
     // _barterBloc.close();

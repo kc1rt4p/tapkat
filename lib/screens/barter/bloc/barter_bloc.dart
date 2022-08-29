@@ -158,6 +158,26 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
                   .streamBarterProducts(event.barterData.barterId!),
               chatOnly: chatOnly,
             ));
+
+            if (event.quickBarter) {
+              _barterRepository.addMessage(ChatMessageModel(
+                barterId: event.barterData.barterId!,
+                userId: application.currentUser!.uid,
+                userName: application.currentUser!.displayName,
+                message: 'Offer SUBMITTED',
+                dateCreated: DateTime.now(),
+              ));
+
+              _notifRepo.sendNotification(
+                body: 'Offer SUBMITTED',
+                title: application.currentUserModel!.display_name!,
+                receiver: event.barterData.userid1 == _user!.uid
+                    ? event.barterData.userid2!
+                    : event.barterData.userid1!,
+                sender: _user!.uid,
+                barterId: event.barterData.barterId!,
+              );
+            }
           } else {
             final product =
                 await _productRepository.getProduct(event.barterData.u2P1Id!);
@@ -443,10 +463,10 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
               }
             }
 
-            if (event.status == 'completed') {
+            if (event.status.toLowerCase() == 'completed') {
               List<BarterProductModel> bProducts =
                   await _barterRepository.getBarterProducts(event.barterId);
-              if (bProducts.isEmpty) {
+              if (bProducts.isNotEmpty) {
                 bProducts = bProducts
                     .where((bProd) => !bProd.productId!.contains('cash'))
                     .toList();

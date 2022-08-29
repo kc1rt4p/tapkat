@@ -1,7 +1,3 @@
-import 'dart:io';
-
-import 'package:device_info_plus/device_info_plus.dart';
-import 'package:flutter/foundation.dart';
 import 'package:tapkat/services/http/api_service.dart';
 import 'package:tapkat/utilities/application.dart' as application;
 
@@ -30,15 +26,15 @@ class NotificationRepository {
     return response.data['status'] == 'SUCCESS';
   }
 
-  Future<String?> _getId() async {
-    var deviceInfo = DeviceInfoPlugin();
-    if (defaultTargetPlatform == TargetPlatform.iOS) {
-      // import 'dart:io'
-      var iosDeviceInfo = await deviceInfo.iosInfo;
-      return iosDeviceInfo.identifierForVendor; // unique ID on iOS
-    } else {
-      var androidDeviceInfo = await deviceInfo.androidInfo;
-      return androidDeviceInfo.androidId; // unique ID on Android
-    }
-  }
+  // Future<String?> _getId() async {
+  //   var deviceInfo = DeviceInfoPlugin();
+  //   if (defaultTargetPlatform == TargetPlatform.iOS) {
+  //     // import 'dart:io'
+  //     var iosDeviceInfo = await deviceInfo.iosInfo;
+  //     return iosDeviceInfo.identifierForVendor; // unique ID on iOS
+  //   } else {
+  //     var androidDeviceInfo = await deviceInfo.androidInfo;
+  //     return androidDeviceInfo.id; // unique ID on Android
+  //   }
+  // }
 }
