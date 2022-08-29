@@ -295,6 +295,8 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                       _pagingController.appendLastPage(state.searchResults);
                     }
 
+                    if (_selectedView == 'map') _initMarkers();
+
                     _pagingController.addPageRequestListener((pageKey) {
                       if (lastProduct != null) {
                         var startAfterVal;
@@ -346,8 +348,6 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                       }
                     }
                   }
-
-                  if (_selectedView == 'map') _initMarkers();
                 }
               },
             ),

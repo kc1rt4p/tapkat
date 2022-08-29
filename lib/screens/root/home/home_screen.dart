@@ -161,6 +161,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       );
                     }
                   });
+                } else {
+                  _selectedCategoryProducts.clear();
+                  _categoryPagingController.appendLastPage([]);
                 }
               }
             },
