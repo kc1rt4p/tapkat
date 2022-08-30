@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_progress_hud/flutter_progress_hud.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:tapkat/bloc/auth_bloc/auth_bloc.dart';
 import 'package:tapkat/models/request/update_user.dart';
 import 'package:tapkat/screens/login/email_verification_screen.dart';
@@ -33,6 +34,7 @@ class _ItemsWantedScreenState extends State<ItemsWantedScreen> {
 
   final _profileBloc = ProfileBloc();
   late AuthBloc _authBloc;
+  bool _textIsEmpty = false;
 
   @override
   void initState() {
@@ -49,7 +51,9 @@ class _ItemsWantedScreenState extends State<ItemsWantedScreen> {
       child: Scaffold(
         body: Column(
           children: [
-            CustomAppBar(),
+            CustomAppBar(
+              label: 'Sign Up',
+            ),
             Expanded(
               child: BlocListener(
                 bloc: _profileBloc,
@@ -92,6 +96,7 @@ class _ItemsWantedScreenState extends State<ItemsWantedScreen> {
                       EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
                   child: SingleChildScrollView(
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         SizedBox(height: SizeConfig.screenHeight * 0.1),
                         Text('What products or services are you looking for?',
@@ -100,10 +105,34 @@ class _ItemsWantedScreenState extends State<ItemsWantedScreen> {
                         TextFormField(
                           focusNode: focusNode,
                           controller: inputTextController,
+                          onChanged: (val) {
+                            setState(() {
+                              _textIsEmpty = val.isEmpty;
+                            });
+                          },
                           decoration: InputDecoration(
                             border: UnderlineInputBorder(),
                             focusedBorder: UnderlineInputBorder(
                               borderSide: BorderSide(color: kBackgroundColor),
+                            ),
+                            suffixIcon: GestureDetector(
+                              onTap: !_textIsEmpty
+                                  ? () {
+                                      setState(() {
+                                        _list.add(
+                                            inputTextController.text.trim());
+                                      });
+                                      inputTextController.clear();
+                                      focusNode.requestFocus();
+                                    }
+                                  : null,
+                              child: Icon(
+                                FontAwesomeIcons.plus,
+                                color: _textIsEmpty
+                                    ? Colors.grey
+                                    : kBackgroundColor,
+                                size: 15.0,
+                              ),
                             ),
                           ),
                           onFieldSubmitted: (val) {
@@ -119,64 +148,89 @@ class _ItemsWantedScreenState extends State<ItemsWantedScreen> {
                         SizedBox(height: 25.0),
                         Visibility(
                           visible: _list.isNotEmpty,
-                          child: Container(
-                            padding: EdgeInsets.all(10.0),
-                            width: double.infinity,
-                            decoration: BoxDecoration(
-                              color: Colors.grey.shade300,
-                              borderRadius: BorderRadius.circular(10.0),
-                            ),
-                            child: Wrap(
-                              alignment: WrapAlignment.center,
-                              runSpacing: 8.0,
-                              spacing: 8.0,
-                              children: [
-                                ..._list
-                                    .map(
-                                      (val) => InkWell(
-                                        onTap: () {
-                                          setState(() {
-                                            _list.remove(val);
-                                          });
-                                        },
-                                        child: Container(
-                                          padding: EdgeInsets.symmetric(
-                                            horizontal: 10.0,
-                                            vertical: 5.0,
-                                          ),
-                                          child: Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Text(
-                                                val,
-                                                style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: SizeConfig
-                                                          .textScaleFactor *
-                                                      15,
-                                                ),
+                          child: Column(
+                            children: [
+                              Container(
+                                padding: EdgeInsets.all(10.0),
+                                width: double.infinity,
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade300,
+                                  borderRadius: BorderRadius.circular(10.0),
+                                ),
+                                child: Wrap(
+                                  alignment: WrapAlignment.center,
+                                  runSpacing: 8.0,
+                                  spacing: 8.0,
+                                  children: [
+                                    ..._list
+                                        .map(
+                                          (val) => InkWell(
+                                            onTap: () {
+                                              setState(() {
+                                                _list.remove(val);
+                                              });
+                                            },
+                                            child: Container(
+                                              padding: EdgeInsets.symmetric(
+                                                horizontal: 10.0,
+                                                vertical: 5.0,
                                               ),
-                                              SizedBox(width: 5.0),
-                                              Icon(
-                                                Icons.close,
-                                                size:
-                                                    SizeConfig.textScaleFactor *
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Text(
+                                                    val,
+                                                    style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: SizeConfig
+                                                              .textScaleFactor *
+                                                          15,
+                                                    ),
+                                                  ),
+                                                  SizedBox(width: 5.0),
+                                                  Icon(
+                                                    Icons.close,
+                                                    size: SizeConfig
+                                                            .textScaleFactor *
                                                         13,
-                                                color: Colors.white,
+                                                    color: Colors.white,
+                                                  ),
+                                                ],
                                               ),
-                                            ],
+                                              decoration: BoxDecoration(
+                                                color: Colors.blue,
+                                                borderRadius:
+                                                    BorderRadius.circular(15.0),
+                                              ),
+                                            ),
                                           ),
-                                          decoration: BoxDecoration(
-                                            color: Colors.blue,
-                                            borderRadius:
-                                                BorderRadius.circular(15.0),
-                                          ),
-                                        ),
+                                        )
+                                        .toList(),
+                                  ],
+                                ),
+                              ),
+                              Align(
+                                alignment: Alignment.bottomRight,
+                                child: GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      _list.clear();
+                                    });
+                                  },
+                                  child: Padding(
+                                    padding:
+                                        EdgeInsets.fromLTRB(0.0, 5.0, 5.0, 0.0),
+                                    child: Text(
+                                      'Clear items',
+                                      style: TextStyle(
+                                        color: kBackgroundColor,
+                                        decoration: TextDecoration.underline,
                                       ),
-                                    )
-                                    .toList(),
-                              ],
-                            ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
@@ -190,27 +244,6 @@ class _ItemsWantedScreenState extends State<ItemsWantedScreen> {
               padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 3.0),
               child: Row(
                 children: [
-                  Expanded(
-                    child: CustomButton(
-                      label: 'Skip',
-                      onTap: () => _onSaveTapped(),
-                      bgColor: Style.secondaryColor,
-                    ),
-                  ),
-                  SizedBox(width: 10.0),
-                  Expanded(
-                    child: CustomButton(
-                      enabled: _list.isNotEmpty,
-                      bgColor: Colors.red.shade400,
-                      label: 'Clear',
-                      onTap: () {
-                        setState(() {
-                          _list.clear();
-                        });
-                      },
-                    ),
-                  ),
-                  SizedBox(width: 10.0),
                   Expanded(
                     child: CustomButton(
                       bgColor: kBackgroundColor,

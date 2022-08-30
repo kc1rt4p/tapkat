@@ -139,8 +139,10 @@ class DeleteCashOffer extends BarterEvent {
 class InitializeBarter extends BarterEvent {
   final BarterRecordModel barterData;
   final bool quickBarter;
+  final ProductModel? initialOffer;
 
-  InitializeBarter(this.barterData, {this.quickBarter = false});
+  InitializeBarter(this.barterData,
+      {this.quickBarter = false, this.initialOffer});
 }
 
 class UpdateBarterStatus extends BarterEvent {

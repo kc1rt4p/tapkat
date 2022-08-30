@@ -1,4 +1,5 @@
 import 'package:tapkat/models/location.dart';
+import 'package:tapkat/models/user.dart';
 
 class UpdateUserModel {
   String? userid;
@@ -53,6 +54,28 @@ class UpdateUserModel {
     this.signin_method,
   });
 
+  factory UpdateUserModel.fromUser(UserModel user) => UpdateUserModel(
+        userid: user.userid,
+        display_name: user.display_name,
+        email: user.email,
+        country: user.country,
+        country_code: user.country_code,
+        currency: user.currency,
+        city: user.city,
+        address: user.address,
+        postcode: user.postcode,
+        verifiedByPhone: user.verifiedByPhone,
+        phone_number: user.phone_number,
+        location: user.location,
+        interests: user.interests,
+        items_wanted: user.items_wanted,
+        fb_profile: user.fb_profile,
+        ig_profile: user.ig_profile,
+        yt_profile: user.yt_profile,
+        tt_profile: user.tt_profile,
+        tw_profile: user.tw_profile,
+      );
+
   Map<String, dynamic> toJson() {
     return {
       "userid": this.userid,
@@ -73,12 +96,12 @@ class UpdateUserModel {
       "location": this.location != null ? this.location!.toJson() : null,
       'interests': this.interests,
       'items_wanted': this.items_wanted,
-      'fb_profile': this.fb_profile ?? null,
-      'ig_profile': this.ig_profile ?? null,
-      'yt_profile': this.yt_profile ?? null,
-      'tt_profile': this.tt_profile ?? null,
-      'tw_profile': this.tw_profile ?? null,
-      'signin_method': this.signin_method ?? '',
+      'fb_profile': this.fb_profile,
+      'ig_profile': this.ig_profile,
+      'yt_profile': this.yt_profile,
+      'tt_profile': this.tt_profile,
+      'tw_profile': this.tw_profile,
+      'signin_method': this.signin_method,
     };
   }
 }

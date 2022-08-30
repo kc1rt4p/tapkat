@@ -879,30 +879,6 @@ class _BarterScreenState extends State<BarterScreen> {
                       ? _product!.media!.first.url_t!
                       : _product!.media!.first.url!;
 
-                var thumbnail2 = '';
-
-                if (widget.initialOffer != null) {
-                  final _product2 = widget.initialOffer!;
-                  if (_product2.mediaPrimary != null &&
-                      _product2.mediaPrimary!.url != null &&
-                      _product2.mediaPrimary!.url!.isNotEmpty)
-                    thumbnail = _product2.mediaPrimary!.url!;
-
-                  if (_product2.mediaPrimary != null &&
-                      _product2.mediaPrimary!.url_t != null &&
-                      _product2.mediaPrimary!.url_t!.isNotEmpty)
-                    thumbnail = _product2.mediaPrimary!.url_t!;
-
-                  if (_product2.mediaPrimary == null ||
-                      _product2.mediaPrimary!.url!.isEmpty &&
-                          _product2.mediaPrimary!.url_t!.isEmpty &&
-                          _product2.media != null &&
-                          _product2.media!.isNotEmpty)
-                    thumbnail = _product2.media!.first.url_t != null
-                        ? _product2.media!.first.url_t!
-                        : _product2.media!.first.url!;
-                }
-
                 setState(() {
                   _barterId = _currentUser!.uid +
                       _product!.userid! +
@@ -925,22 +901,13 @@ class _BarterScreenState extends State<BarterScreen> {
                           ? widget.product!.price!.toDouble()
                           : null,
                       u2P1Image: thumbnail,
-                      u1P1Id: widget.initialOffer != null
-                          ? widget.initialOffer!.productid
-                          : null,
-                      u1P1Name: widget.initialOffer != null
-                          ? widget.initialOffer!.productname
-                          : null,
-                      u1P1Price: widget.initialOffer != null
-                          ? widget.initialOffer!.price!.toDouble()
-                          : null,
-                      u1P1Image: thumbnail2,
                       barterNo: 0,
                       dealDate: DateTime.now(),
                       userid1Role: 'sender',
                       userid2Role: 'recipient',
                     ),
                     quickBarter: _quickBarter,
+                    initialOffer: _initialOffer,
                   ),
                 );
               } else {
@@ -2940,6 +2907,7 @@ class _BarterScreenState extends State<BarterScreen> {
     }
 
     wantWidgets.addAll(remoteUserOffers.reversed.map((want) {
+      print('~~~wanted offer::::: ${want.toJson()}');
       return Container(
         decoration: BoxDecoration(
           border: Border.all(
@@ -3005,6 +2973,7 @@ class _BarterScreenState extends State<BarterScreen> {
 
     offerWidgets.addAll(
       currentUserOffers.reversed.map((offer) {
+        print('~~~user offer::::: ${offer.toJson()}');
         return Container(
           decoration: BoxDecoration(
             border: Border.all(

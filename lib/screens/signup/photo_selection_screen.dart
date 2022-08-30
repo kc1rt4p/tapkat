@@ -66,12 +66,21 @@ class _SignUpPhotoSelectionScreenState
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => UserSocialMediaAccountsScreen(
+                  builder: (context) => InterestSelectionScreen(
                     user: _user!,
-                    op: 'register',
+                    signingUp: true,
                   ),
                 ),
               );
+              // Navigator.push(
+              //   context,
+              //   MaterialPageRoute(
+              //     builder: (context) => UserSocialMediaAccountsScreen(
+              //       user: _user!,
+              //       op: 'register',
+              //     ),
+              //   ),
+              // );
             }
 
             // if (state is ShowSignUpSocialMedia) {
@@ -204,24 +213,27 @@ class _SignUpPhotoSelectionScreenState
                         ),
                         CustomButton(
                           label: 'Skip',
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    UserSocialMediaAccountsScreen(
-                                  user: _user!,
-                                  op: 'register',
-                                ),
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => InterestSelectionScreen(
+                                user: _user!,
+                                signingUp: true,
                               ),
-                              // MaterialPageRoute(
-                              //   builder: (context) => InterestSelectionScreen(
-                              //     user: _user!,
-                              //     signingUp: true,
-                              //   ),
-                              // ),
-                            );
-                          },
+                            ),
+                          ),
+                          // onTap: () {
+                          //   Navigator.push(
+                          //     context,
+                          //     MaterialPageRoute(
+                          //       builder: (context) =>
+                          //           UserSocialMediaAccountsScreen(
+                          //         user: _user!,
+                          //         op: 'register',
+                          //       ),
+                          //     ),
+                          //   );
+                          // },
                           bgColor: Color(0xFFBB3F03),
                         ),
                       ],

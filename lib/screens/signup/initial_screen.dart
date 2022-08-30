@@ -326,7 +326,7 @@ class _InitialSignUpScreenState extends State<InitialSignUpScreen> {
   _onCreateAccount() {
     if (!_formKey.currentState!.validate()) return;
     LocalizationModel? localization;
-    if (application.currentUserLocation != null) {
+    if (application.currentUserLocation != null && _currentUserLoc != null) {
       LocalizationModel? _loc;
       final countryCode = _currentUserLoc!.isoCountryCode;
 

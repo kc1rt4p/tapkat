@@ -18,14 +18,12 @@ import 'package:tapkat/models/product.dart';
 import 'package:tapkat/models/request/update_user.dart';
 import 'package:tapkat/models/user.dart';
 import 'package:tapkat/screens/product/bloc/product_bloc.dart';
-import 'package:tapkat/screens/product/product_add-edit_screen.dart';
 import 'package:tapkat/screens/product/product_details_screen.dart';
 import 'package:tapkat/screens/reviews/user_review_list_screen.dart';
 import 'package:tapkat/screens/root/profile/bloc/profile_bloc.dart';
 import 'package:tapkat/screens/root/profile/edit_profile_screen.dart';
 import 'package:tapkat/screens/root/profile/notification_list_screen.dart';
 import 'package:tapkat/screens/root/profile/user_ratings_screen.dart';
-import 'package:tapkat/screens/settings/settings_screen.dart';
 import 'package:tapkat/utilities/constant_colors.dart';
 import 'package:tapkat/utilities/constants.dart';
 import 'package:tapkat/utilities/dialog_message.dart';
@@ -51,7 +49,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final _profileBloc = ProfileBloc();
   final _productBloc = ProductBloc();
   late AuthBloc _authBloc;
-  List<ProductModel> _list = [];
   bool editProfile = false;
   final _displayNameTextController = TextEditingController();
   final _emailTextController = TextEditingController();
@@ -110,7 +107,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               if (state is ProfileScreenInitialized) {
                 setState(() {
                   _user = state.user;
-                  _list = state.list;
                   _userModel = state.userModel;
                 });
 

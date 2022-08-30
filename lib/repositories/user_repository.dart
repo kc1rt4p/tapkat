@@ -299,9 +299,7 @@ class UserRepository {
   Future<bool> updateUser(UpdateUserModel user) async {
     final result = await _apiService.patch(
       url: 'users/${user.userid}',
-      body: {
-        ...user.toJson(),
-      },
+      body: user.toJson(),
     );
 
     return result.data['status'] == 'SUCCESS';

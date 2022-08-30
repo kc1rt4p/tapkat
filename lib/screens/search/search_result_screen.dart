@@ -373,9 +373,11 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                       _userItemsPagingController.appendPage(
                           state.list, currentPage + 1);
                     } else {
+                      lastUserProduct = null;
                       _userItemsPagingController.appendLastPage(state.list);
                     }
                   } else {
+                    lastUserProduct = null;
                     _userItemsPagingController.appendLastPage([]);
                   }
                   _userItemsPagingController.addPageRequestListener((pageKey) {
@@ -383,7 +385,7 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
                       _productBloc.add(
                         GetNextUserItems(
                           lastProductId: lastUserProduct!.productid!,
-                          startAfterVal: lastUserProduct!.price.toString(),
+                          startAfterVal: lastUserProduct!.productname!,
                         ),
                       );
                     }
@@ -392,14 +394,16 @@ class _SearchResultScreenState extends State<SearchResultScreen> {
 
                 if (state is GetNextUserItemsSuccess) {
                   if (state.list.isNotEmpty) {
-                    lastProduct = state.list.last;
+                    lastUserProduct = state.list.last;
                     if (state.list.length == productCount) {
                       _userItemsPagingController.appendPage(
                           state.list, currentPage + 1);
                     } else {
                       _userItemsPagingController.appendLastPage(state.list);
+                      lastUserProduct = null;
                     }
                   } else {
+                    lastUserProduct = null;
                     _userItemsPagingController.appendLastPage([]);
                   }
                 }

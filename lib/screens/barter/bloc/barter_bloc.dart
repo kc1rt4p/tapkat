@@ -80,46 +80,37 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
 
             if (product != null) {
               if (product.status != 'completed') {
-                if (event.barterData.u1P1Id != null &&
-                    event.barterData.u1P1Id!.isNotEmpty) {
-                  final offeredProduct = await _productRepository
-                      .getProduct(event.barterData.u1P1Id!);
-                  if (offeredProduct != null) {
-                    await _barterRepository
-                        .addBarterProducts(event.barterData.barterId!, [
-                      BarterProductModel(
-                        productId: event.barterData.u1P1Id,
-                        userId: event.barterData.userid1,
-                        productName: event.barterData.u1P1Name,
-                        price: event.barterData.u1P1Price,
-                        imgUrl: event.barterData.u1P1Image,
-                        barterid: event.barterData.barterId,
-                      )
-                    ]);
-                    barterProducts = await _barterRepository
-                        .getBarterProducts(event.barterData.barterId!);
-                  }
-                }
-                if (!barterProducts.any((bProd) =>
-                        bProd.productId == event.barterData.u2P1Id) ||
-                    barterProducts.isEmpty) {
-                  await _barterRepository
-                      .addBarterProducts(event.barterData.barterId!, [
-                    BarterProductModel(
-                      productId: event.barterData.u2P1Id,
-                      userId: event.barterData.userid2,
-                      productName: event.barterData.u2P1Name,
-                      price: event.barterData.u2P1Price,
-                      imgUrl: event.barterData.u2P1Image,
-                      barterid: event.barterData.barterId,
-                    )
-                  ]);
-                  barterProducts = await _barterRepository
-                      .getBarterProducts(event.barterData.barterId!);
-                }
+                await _barterRepository
+                    .addBarterProducts(event.barterData.barterId!, [
+                  BarterProductModel(
+                    productId: product.productid,
+                    userId: product.userid,
+                    productName: product.productname,
+                    price: product.price,
+                    imgUrl: event.barterData.u2P1Image,
+                    barterid: event.barterData.barterId,
+                  )
+                ]);
+                barterProducts = await _barterRepository
+                    .getBarterProducts(event.barterData.barterId!);
               } else {
                 chatOnly = true;
               }
+            }
+
+            if (event.initialOffer != null) {
+              final initialOffer = event.initialOffer!;
+              await _barterRepository
+                  .addBarterProducts(event.barterData.barterId!, [
+                BarterProductModel(
+                  productId: initialOffer.productid,
+                  userId: initialOffer.userid,
+                  productName: initialOffer.productname,
+                  price: initialOffer.price,
+                  imgUrl: initialOffer.media!.first.url_t,
+                  barterid: event.barterData.barterId,
+                )
+              ]);
             }
 
             _barterRecord = await _barterRepository
@@ -185,11 +176,14 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
             if (_barterRecord.dealStatus == 'new') {
               await _barterRepository.deleteBarter(_barterRecord.barterId!,
                   permanent: true);
-              add(InitializeBarter(event.barterData));
+              add(InitializeBarter(event.barterData,
+                  quickBarter: event.quickBarter,
+                  initialOffer: event.initialOffer));
               return;
             }
 
-            if (['withdrawn', 'rejected'].contains(_barterRecord.dealStatus) ||
+            if (['withdrawn', 'rejected', 'completed']
+                    .contains(_barterRecord.dealStatus) ||
                 (_barterRecord.deletedFor != null &&
                     _barterRecord.deletedFor!
                         .contains(application.currentUser!.uid))) {
@@ -203,7 +197,9 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
                 newBarterId = _barterId[0] + '_1';
               }
               event.barterData.barterId = newBarterId;
-              add(InitializeBarter(event.barterData));
+              add(InitializeBarter(event.barterData,
+                  quickBarter: event.quickBarter,
+                  initialOffer: event.initialOffer));
             } else {
               List<BarterProductModel> barterProducts = await _barterRepository
                   .getBarterProducts(_barterRecord.barterId!);

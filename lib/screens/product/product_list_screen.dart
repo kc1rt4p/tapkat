@@ -283,18 +283,16 @@ class _ProductListScreenState extends State<ProductListScreen>
                   if (state is GetFirstProductsSuccess) {
                     _refreshController.refreshCompleted();
                     _pagingController.refresh();
-                    lastProduct = null;
                     _list.clear();
 
                     if (state.list.isNotEmpty) {
                       _list = state.list;
-
+                      lastProduct = state.list.last;
                       final _productCount = (_selectedView == 'map') ? 50 : 10;
 
                       if (state.list.length == _productCount) {
                         currentPage += 1;
                         _pagingController.appendPage(state.list, currentPage);
-                        lastProduct = state.list.last;
                       } else {
                         _pagingController.appendLastPage(state.list);
                       }
@@ -318,6 +316,7 @@ class _ProductListScreenState extends State<ProductListScreen>
                           ),
                         );
                       } else {
+                        lastProduct = null;
                         if (mounted) {
                           DialogMessage.show(
                             context,
@@ -380,17 +379,21 @@ class _ProductListScreenState extends State<ProductListScreen>
                             state.list, currentPage + 1);
                       } else {
                         _userItemsPagingController.appendLastPage(state.list);
+                        lastUserProduct = null;
                       }
                     } else {
+                      lastUserProduct = null;
                       _userItemsPagingController.appendLastPage([]);
                     }
                     _userItemsPagingController
                         .addPageRequestListener((pageKey) {
+                      print('~~~~ $lastProduct');
                       if (lastUserProduct != null) {
                         _productBloc.add(
                           GetNextUserItems(
-                            lastProductId: lastProduct!.productid!,
-                            startAfterVal: lastProduct!.price.toString(),
+                            lastProductId: lastUserProduct!.productid!,
+                            startAfterVal:
+                                lastUserProduct!.productname.toString(),
                           ),
                         );
                       }
@@ -399,14 +402,16 @@ class _ProductListScreenState extends State<ProductListScreen>
 
                   if (state is GetNextUserItemsSuccess) {
                     if (state.list.isNotEmpty) {
-                      lastProduct = state.list.last;
+                      lastUserProduct = state.list.last;
                       if (state.list.length == productCount) {
                         _userItemsPagingController.appendPage(
                             state.list, currentPage + 1);
                       } else {
                         _userItemsPagingController.appendLastPage(state.list);
+                        lastUserProduct = null;
                       }
                     } else {
+                      lastUserProduct = null;
                       _userItemsPagingController.appendLastPage([]);
                     }
                   }
