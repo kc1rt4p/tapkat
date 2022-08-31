@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:dio/dio.dart';
@@ -124,9 +125,12 @@ class ApiService {
       // import 'dart:io'
       var iosDeviceInfo = await deviceInfo.iosInfo;
       return iosDeviceInfo.identifierForVendor; // unique ID on iOS
-    } else {
+    } else if (defaultTargetPlatform == TargetPlatform.android) {
       var androidDeviceInfo = await deviceInfo.androidInfo;
       return androidDeviceInfo.id; // unique ID on Android
+    } else if (kIsWeb) {
+      var webInfo = await deviceInfo.webBrowserInfo;
+      return webInfo.productSub;
     }
   }
 
@@ -136,9 +140,12 @@ class ApiService {
       // import 'dart:io'
       var iosDeviceInfo = await deviceInfo.iosInfo;
       return iosDeviceInfo.localizedModel; // unique ID on iOS
-    } else {
+    } else if (defaultTargetPlatform == TargetPlatform.android) {
       var androidDeviceInfo = await deviceInfo.androidInfo;
       return androidDeviceInfo.device; // unique ID on Android
+    } else if (kIsWeb) {
+      var webInfo = await deviceInfo.webBrowserInfo;
+      return webInfo.appName;
     }
   }
 }

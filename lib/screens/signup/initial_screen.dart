@@ -88,16 +88,12 @@ class _InitialSignUpScreenState extends State<InitialSignUpScreen> {
             }
 
             if (state is ShowSignUpPhoto) {
-              final photo = await Navigator.push<SelectedMedia?>(
+              Navigator.push<SelectedMedia?>(
                 context,
                 MaterialPageRoute(
                   builder: (context) => SignUpPhotoSelectionScreen(),
                 ),
               );
-
-              if (photo != null) {
-                _authBloc.add(SaveUserPhoto(context, photo));
-              }
             }
 
             if (state is AuthError) {
@@ -156,7 +152,7 @@ class _InitialSignUpScreenState extends State<InitialSignUpScreen> {
                       Expanded(
                         child: Container(
                           margin: EdgeInsets.only(
-                              top: SizeConfig.screenHeight * .26),
+                              top: SizeConfig.screenHeight * .24),
                           width: double.infinity,
                           padding: EdgeInsets.symmetric(horizontal: 30.0),
                           child: Center(
@@ -168,12 +164,8 @@ class _InitialSignUpScreenState extends State<InitialSignUpScreen> {
                                     Column(
                                       children: [
                                         Visibility(
-                                          visible: (application.currentUser ==
-                                                      null &&
-                                                  widget.method != 'OTHER') ||
-                                              (application.currentUser !=
-                                                      null &&
-                                                  widget.method == 'PHONE'),
+                                          visible: widget.method != 'OTHER' ||
+                                              widget.method == 'PHONE',
                                           child: CustomTextFormField(
                                             hintText:
                                                 'Enter your email address',
@@ -186,8 +178,7 @@ class _InitialSignUpScreenState extends State<InitialSignUpScreen> {
                                           ),
                                         ),
                                         Visibility(
-                                          visible:
-                                              application.currentUser == null,
+                                          visible: widget.method == 'EMAIL',
                                           child: Column(
                                             children: [
                                               CustomTextFormField(
