@@ -29,7 +29,11 @@ class BarterBloc extends Bloc<BarterEvent, BarterState> {
     final _notifRepo = NotificationRepository();
     on<BarterEvent>((event, emit) async {
       print('current event: $event');
-      emit(BarterLoading());
+
+      if (!(event is MarkMessagesAsRead) &&
+          !(event is GetUnreadBarterMessages)) {
+        emit(BarterLoading());
+      }
 
       // try {
       _user = application.currentUser;
